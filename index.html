@@ -642,10 +642,10 @@
           Soy licenciado en Negocios Internacionales con experiencia en <strong>análisis logístico, automatización de procesos</strong> y control operativo en el sector naviero.
         </p>
         <p>
-          Lo que me diferencia: veo el proceso completo, entiendo el costo real de hacerlo a mano, y construyo la solución — sin depender de equipos externos ni presupuestos millonarios.
+          Lo que me diferencia: veo el proceso completo, entiendo el costo real de hacerlo a mano, y construyo la solución sin depender de equipos externos ni presupuestos millonarios.
         </p>
         <p>
-          En mi empresa actual lidero la implementación de un sistema de gestión integrada (USD 380K) y en paralelo he construido un ecosistema de herramientas propias que hoy usa el equipo de operaciones todos los días para ahorrar horas, eliminar errores y tomar decisiones más rápido.
+          En mi empresa actual actuo como enlace en la implementación de un sistema de gestión integrada (USD 380K) y en paralelo he construido un ecosistema de herramientas propias que hoy usa el equipo de operaciones todos los días para ahorrar horas, eliminar errores y tomar decisiones más rápido.
         </p>
         <div class="about-chips">
           <span class="chip">Python</span>
@@ -657,40 +657,60 @@
           <span class="chip">Cumplimiento regulatorio</span>
         </div>
       </div>
-      <div class="about-stats">
-        <div class="about-stat">
-          <div class="stat-icon">🎓</div>
-          <div>
-            <div class="stat-label">Formación</div>
-            <div class="stat-value">Negocios Internacionales — UPC</div>
+      <div>
+        <!-- FOTO + STATS -->
+        <div style="display:flex;flex-direction:column;gap:1px;">
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px 12px 0 0;padding:1.5rem;display:flex;align-items:center;gap:1.25rem;">
+            <img
+              src="foto.jpg"
+              alt="Alonso Peña"
+              id="profile-photo"
+              style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid var(--teal);flex-shrink:0;"
+              onerror="this.style.display='none';document.getElementById('photo-fallback').style.display='flex';"
+            >
+            <div id="photo-fallback" style="display:none;width:72px;height:72px;border-radius:50%;background:var(--teal-dim);border:2px solid var(--teal);align-items:center;justify-content:center;flex-shrink:0;font-family:var(--head);font-size:1.4rem;font-weight:700;color:var(--teal);">AP</div>
+            <div>
+              <div style="font-family:var(--head);font-size:1rem;font-weight:700;color:var(--text);">Alonso Peña Anicama</div>
+              <div style="font-family:var(--mono);font-size:11px;color:var(--teal);margin-top:2px;">Analista de Operaciones & Automatización</div>
+              <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:3px;">Lima, Perú</div>
+            </div>
           </div>
-        </div>
-        <div class="about-stat">
-          <div class="stat-icon">🏢</div>
-          <div>
-            <div class="stat-label">Empresa actual</div>
-            <div class="stat-value">Cosmos Oficial — Analista de Control</div>
-          </div>
-        </div>
-        <div class="about-stat">
-          <div class="stat-icon">⚙️</div>
-          <div>
-            <div class="stat-label">Enfoque</div>
-            <div class="stat-value">Automatización · PMO · Datos</div>
-          </div>
-        </div>
-        <div class="about-stat">
-          <div class="stat-icon">📦</div>
-          <div>
-            <div class="stat-label">Sector</div>
-            <div class="stat-value">Naviero / Logístico / Comercio Exterior</div>
-          </div>
-        </div>
-        <div class="about-stat">
-          <div class="stat-icon">🌎</div>
-          <div>
-            <div class="stat-label">Experiencia previa</div>
-            <div class="stat-value">Repsol · Complejo Agroindustrial Beta</div>
+          <div class="about-stats" style="border-radius:0 0 12px 12px;border-top:none;">
+            <div class="about-stat">
+              <div class="stat-icon">🎓</div>
+              <div>
+                <div class="stat-label">Formación</div>
+                <div class="stat-value">Negocios Internacionales, UPC</div>
+              </div>
+            </div>
+            <div class="about-stat">
+              <div class="stat-icon">🏢</div>
+              <div>
+                <div class="stat-label">Empresa actual</div>
+                <div class="stat-value">Cosmos Oficial, Analista de Control</div>
+              </div>
+            </div>
+            <div class="about-stat">
+              <div class="stat-icon">⚙️</div>
+              <div>
+                <div class="stat-label">Enfoque</div>
+                <div class="stat-value">Automatización · PMO · Datos</div>
+              </div>
+            </div>
+            <div class="about-stat">
+              <div class="stat-icon">📦</div>
+              <div>
+                <div class="stat-label">Sector</div>
+                <div class="stat-value">Naviero / Logístico / Comercio Exterior</div>
+              </div>
+            </div>
+            <div class="about-stat">
+              <div class="stat-icon">🌎</div>
+              <div>
+                <div class="stat-label">Experiencia previa</div>
+                <div class="stat-value">Repsol · Complejo Agroindustrial Beta</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1016,6 +1036,12 @@
             <div class="impact-item"><div class="impact-dot"></div>Genera instrucciones operativas listas para entregar a cada depósito</div>
             <div class="impact-item"><div class="impact-dot"></div>Permite redistribuir ante cambios sin rehacer todo el proceso</div>
           </div>
+          <div class="project-mini-metrics" style="margin-top:1.5rem;">
+            <div class="mini-metric"><div class="mini-metric-num">300+</div><div class="mini-metric-label">contenedores por nave</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">0</div><div class="mini-metric-label">errores de distribución</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">100%</div><div class="mini-metric-label">acuerdos cumplidos</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">3</div><div class="mini-metric-label">depósitos gestionados</div></div>
+          </div>
         </div>
         <div>
           <div class="mockup-tabs">
@@ -1174,60 +1200,101 @@
         </div>
       </div>
 
-      <!-- RESTO DE PROYECTOS — grid compacto -->
+      <!-- RESTO DE PROYECTOS — grid compacto con métricas -->
       <div>
         <p style="font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2rem;">Otras herramientas del ecosistema</p>
         <div class="projects-grid" style="border-radius:16px;">
 
+          <!-- Auditoría -->
           <div class="project-card">
             <div class="project-tags"><span class="project-tag">Auditoría</span><span class="project-tag">Cumplimiento</span><span class="project-tag">Regulatorio</span></div>
             <div class="project-title">Auditoría Automatizada de Agentes de Carga</div>
-            <p class="project-problem">Verificar que cada embarque tuviera correctamente identificado a su agente de carga requería revisar uno por uno cientos de registros contra bases de datos regulatorias.</p>
+            <p class="project-problem">Verificar que cada embarque tuviera correctamente identificado a su agente de carga requería revisar uno por uno hasta 200 registros por nave contra bases de datos regulatorias, con alto riesgo de error y exposición a sanciones.</p>
             <div class="project-impact">
               <div class="impact-item"><div class="impact-dot"></div>Audita el 100% de embarques con reglas por destino (EE.UU., Canadá, Puerto Rico)</div>
               <div class="impact-item"><div class="impact-dot"></div>Valida contra el padrón oficial de operadores autorizados</div>
-              <div class="impact-item"><div class="impact-dot"></div>Resultado por embarque: correcto, a corregir, o pendiente de validar</div>
+              <div class="impact-item"><div class="impact-dot"></div>Resultado claro por embarque: correcto, a corregir, o pendiente de validar</div>
+            </div>
+            <div class="project-mini-metrics" style="margin-top:1.25rem;">
+              <div class="mini-metric"><div class="mini-metric-num">45m→2m</div><div class="mini-metric-label">por nave</div></div>
+              <div class="mini-metric"><div class="mini-metric-num">90m/sem</div><div class="mini-metric-label">ahorrados</div></div>
+              <div class="mini-metric"><div class="mini-metric-num">200+</div><div class="mini-metric-label">bookings auditados</div></div>
+              <div class="mini-metric"><div class="mini-metric-num">100%</div><div class="mini-metric-label">cobertura automática</div></div>
             </div>
           </div>
 
+          <!-- Buscador -->
           <div class="project-card">
             <div class="project-tags"><span class="project-tag">Búsqueda inteligente</span><span class="project-tag">Multi-archivo</span></div>
             <div class="project-title">Buscador de Instrucciones Críticas</div>
-            <p class="project-problem">Instrucciones especiales de clientes estaban enterradas en comentarios de texto libre dentro de docenas de reportes. Encontrarlas manualmente era lento y arriesgado.</p>
+            <p class="project-problem">Instrucciones especiales de clientes estaban enterradas en comentarios de texto libre dentro de los reportes de cada nave. Con 1 a 2 naves por semana, la búsqueda manual consumía horas del equipo con riesgo real de omitir algo crítico.</p>
             <div class="project-impact">
-              <div class="impact-item"><div class="impact-dot"></div>Escanea simultáneamente todos los reportes del período en segundos</div>
+              <div class="impact-item"><div class="impact-dot"></div>Escanea simultáneamente todos los reportes de la nave en segundos</div>
               <div class="impact-item"><div class="impact-dot"></div>Extrae el texto completo sin truncar ni perder contexto</div>
               <div class="impact-item"><div class="impact-dot"></div>Genera el correo interno listo para enviar al finalizar</div>
             </div>
+            <div class="project-mini-metrics" style="margin-top:1.25rem;">
+              <div class="mini-metric"><div class="mini-metric-num">60m→30s</div><div class="mini-metric-label">por nave</div></div>
+              <div class="mini-metric"><div class="mini-metric-num">2h/sem</div><div class="mini-metric-label">ahorradas</div></div>
+              <div class="mini-metric"><div class="mini-metric-num">−98%</div><div class="mini-metric-label">tiempo de búsqueda</div></div>
+              <div class="mini-metric"><div class="mini-metric-num">0</div><div class="mini-metric-label">instrucciones omitidas</div></div>
+            </div>
           </div>
 
+          <!-- Discrepancias -->
           <div class="project-card">
             <div class="project-tags"><span class="project-tag">Liquidación</span><span class="project-tag">Discrepancias</span></div>
             <div class="project-title">Detector de Discrepancias de Embarque</div>
-            <p class="project-problem">Identificar qué contenedores embarcados no aparecían en documentos oficiales — o viceversa — era manual y crítico para la liquidación.</p>
+            <p class="project-problem">Identificar qué contenedores embarcados no aparecían en documentos oficiales, o viceversa, tomaba entre 30 y 45 minutos de cruce manual por nave. Con 1 a 2 naves por semana, era un proceso crítico que consumía tiempo clave del equipo de liquidación.</p>
             <div class="project-impact">
               <div class="impact-item"><div class="impact-dot"></div>Cruza tres fuentes documentales y clasifica: conforme, faltante o no documentada</div>
               <div class="impact-item"><div class="impact-dot"></div>Genera reporte de auditoría completo y reporte limpio para enviar</div>
+              <div class="impact-item"><div class="impact-dot"></div>Resalta visualmente las discrepancias para acción inmediata</div>
+            </div>
+            <div class="project-mini-metrics" style="margin-top:1.25rem;">
+              <div class="mini-metric"><div class="mini-metric-num">40m→2m</div><div class="mini-metric-label">por nave</div></div>
+              <div class="mini-metric"><div class="mini-metric-num">80m/sem</div><div class="mini-metric-label">ahorrados</div></div>
+              <div class="mini-metric"><div class="mini-metric-num">−95%</div><div class="mini-metric-label">tiempo de proceso</div></div>
+              <div class="mini-metric"><div class="mini-metric-num">3</div><div class="mini-metric-label">fuentes cruzadas</div></div>
             </div>
           </div>
 
+          <!-- Demurrage -->
           <div class="project-card">
             <div class="project-tags"><span class="project-tag">Sobrestadía</span><span class="project-tag">Verificación</span></div>
             <div class="project-title">Verificador de Días Libres vs Cobros por Sobrestadía</div>
-            <p class="project-problem">Detectar si los días libres acordados coincidían con lo que la línea naviera cobraba requería cruzar manualmente dos reportes con formatos distintos.</p>
+            <p class="project-problem">Detectar si los días libres acordados coincidían con lo que la línea naviera cobraba requería cruzar manualmente dos reportes por nave, hasta 45 minutos cada vez, con riesgo de pagar de más o cobrar de menos.</p>
             <div class="project-impact">
-              <div class="impact-item"><div class="impact-dot"></div>Proceso completo en menos de 10 segundos</div>
+              <div class="impact-item"><div class="impact-dot"></div>Valida automáticamente el formato de cada archivo antes de procesar</div>
               <div class="impact-item"><div class="impact-dot"></div>Lista todas las discrepancias con detalle para gestionar el reclamo</div>
+            </div>
+            <div class="project-mini-metrics" style="margin-top:1.25rem;">
+              <div class="mini-metric"><div class="mini-metric-num">45m→10s</div><div class="mini-metric-label">por nave</div></div>
+              <div class="mini-metric"><div class="mini-metric-num">90m/sem</div><div class="mini-metric-label">ahorrados</div></div>
+              <div class="mini-metric"><div class="mini-metric-num">−98%</div><div class="mini-metric-label">tiempo de proceso</div></div>
+              <div class="mini-metric"><div class="mini-metric-num">100%</div><div class="mini-metric-label">discrepancias detectadas</div></div>
             </div>
           </div>
 
-          <div class="project-card">
-            <div class="project-tags"><span class="project-tag">Conciliación</span><span class="project-tag">Carga marítima</span></div>
-            <div class="project-title">Sistema de Conciliación de Carga Marítima</div>
-            <p class="project-problem">Confirmar que todos los contenedores documentados estuvieran físicamente a bordo era crítico — un error podía significar penalidades o carga de cliente quedada en tierra.</p>
-            <div class="project-impact">
-              <div class="impact-item"><div class="impact-dot"></div>Concilia documentos oficiales contra carga física a bordo</div>
-              <div class="impact-item"><div class="impact-dot"></div>Identifica embarques incompletos y los separa por tipo de destino</div>
+          <!-- Conciliación -->
+          <div class="project-card" style="grid-column: 1 / -1;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start;">
+              <div>
+                <div class="project-tags"><span class="project-tag">Conciliación</span><span class="project-tag">Carga marítima</span></div>
+                <div class="project-title">Sistema de Conciliación de Carga Marítima</div>
+                <p class="project-problem">Confirmar que todos los contenedores documentados estuvieran físicamente a bordo tomaba 1 hora por nave. Con 1 a 2 naves por semana, eran hasta 2 horas semanales en un proceso crítico sin herramienta de apoyo, donde un error podía significar penalidades o carga de cliente quedada en tierra.</p>
+                <div class="project-impact">
+                  <div class="impact-item"><div class="impact-dot"></div>Concilia documentos oficiales contra carga física a bordo en minutos</div>
+                  <div class="impact-item"><div class="impact-dot"></div>Identifica embarques incompletos: B/Ls donde parte de la carga se quedó en tierra</div>
+                  <div class="impact-item"><div class="impact-dot"></div>Separa resultados por tipo de destino para facilitar la gestión por equipo</div>
+                </div>
+              </div>
+              <div class="project-mini-metrics" style="margin-top:2rem;">
+                <div class="mini-metric"><div class="mini-metric-num">1h→3m</div><div class="mini-metric-label">por nave</div></div>
+                <div class="mini-metric"><div class="mini-metric-num">2h/sem</div><div class="mini-metric-label">ahorradas</div></div>
+                <div class="mini-metric"><div class="mini-metric-num">−95%</div><div class="mini-metric-label">tiempo de proceso</div></div>
+                <div class="mini-metric"><div class="mini-metric-num">100%</div><div class="mini-metric-label">B/Ls verificados</div></div>
+              </div>
             </div>
           </div>
 
@@ -1378,7 +1445,7 @@ function showTab(tabEl, groupId, panelName) {
       <a href="mailto:alonsostef2006@gmail.com" class="contact-email">alonsostef2006@gmail.com</a>
       <div class="contact-links">
         <a href="https://www.linkedin.com/in/alonsosocial/" target="_blank" class="btn btn-primary">LinkedIn →</a>
-        <a href="mailto:alonsostef2006@gmail.com" class="btn btn-ghost">Enviar correo</a>
+        <button class="btn btn-ghost" id="copy-btn" onclick="copyEmail()">Copiar correo</button>
       </div>
     </div>
   </div>
@@ -1398,6 +1465,20 @@ function showTab(tabEl, groupId, panelName) {
     });
   }, { threshold: 0.08 });
   document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+  function copyEmail() {
+    navigator.clipboard.writeText('alonsostef2006@gmail.com').then(() => {
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = 'Copiado ✓';
+      btn.style.color = 'var(--teal)';
+      btn.style.borderColor = 'var(--teal)';
+      setTimeout(() => {
+        btn.textContent = 'Copiar correo';
+        btn.style.color = '';
+        btn.style.borderColor = '';
+      }, 2000);
+    });
+  }
 </script>
 
 </body>
