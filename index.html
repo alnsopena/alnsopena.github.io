@@ -160,17 +160,21 @@
   }
   .metric {
     background: var(--bg2);
-    padding: 1.5rem;
+    padding: 1.25rem 1rem;
     transition: background 0.2s;
+    overflow: hidden;
   }
   .metric:hover { background: var(--bg3); }
   .metric-num {
     font-family: var(--head);
-    font-size: 2.2rem;
+    font-size: clamp(1.6rem, 2.8vw, 2.2rem);
     font-weight: 800;
     color: var(--teal);
     line-height: 1;
     margin-bottom: 0.4rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: clip;
   }
   .metric-label {
     font-family: var(--mono);
@@ -582,6 +586,140 @@
     .stack-grid { grid-template-columns: 1fr; }
   }
 </style>
+
+<style>
+/* ── SCROLL PROGRESS BAR ── */
+#scroll-progress {
+  position: fixed; top: 0; left: 0;
+  height: 2px; width: 0%;
+  background: var(--teal); z-index: 999;
+  transition: width 0.1s linear;
+}
+@media (max-width: 600px) { #scroll-progress { height: 3px; } }
+
+/* ── IMPROVED FADE-IN ── */
+.fade-in {
+  opacity: 0; transform: translateY(32px);
+  transition: opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1);
+}
+.fade-in.visible { opacity: 1; transform: translateY(0); }
+.fade-left {
+  opacity: 0; transform: translateX(-40px);
+  transition: opacity 0.65s cubic-bezier(0.16,1,0.3,1), transform 0.65s cubic-bezier(0.16,1,0.3,1);
+}
+.fade-left.visible { opacity: 1; transform: translateX(0); }
+.fade-right {
+  opacity: 0; transform: translateX(40px);
+  transition: opacity 0.65s cubic-bezier(0.16,1,0.3,1), transform 0.65s cubic-bezier(0.16,1,0.3,1);
+}
+.fade-right.visible { opacity: 1; transform: translateX(0); }
+@media (prefers-reduced-motion: reduce) {
+  .fade-in, .fade-left, .fade-right { opacity:1; transform:none; transition:none; }
+}
+
+/* ── METRIC HOVER ── */
+.metric { transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1); cursor: default; }
+.metric:hover { transform: scale(1.05); }
+
+/* ── SECTION DIVIDER ── */
+.section-divider {
+  display: flex; align-items: center; justify-content: center;
+  gap: 1rem; padding: 1.5rem 0 0; margin-bottom: -1rem;
+}
+.section-divider span {
+  font-family: var(--mono); font-size: 11px; color: var(--text3);
+  letter-spacing: 0.15em; text-transform: uppercase; white-space: nowrap;
+}
+.section-divider::before { content:''; flex:1; height:1px; background: linear-gradient(90deg,transparent,var(--border2)); }
+.section-divider::after  { content:''; flex:1; height:1px; background: linear-gradient(90deg,var(--border2),transparent); }
+
+/* ── FILTER TRANSITION ── */
+.company-group { transition: opacity 0.3s ease, transform 0.3s ease; }
+.company-group.hidden { display: none; }
+
+/* ── TIMELINE DOT PULSE ── */
+@keyframes dot-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(13,190,140,0.5); }
+  70%  { box-shadow: 0 0 0 8px rgba(13,190,140,0); }
+  100% { box-shadow: 0 0 0 0 rgba(13,190,140,0); }
+}
+.timeline-dot.pulsed { animation: dot-pulse 0.8s ease-out 1; }
+
+/* ── BEFORE/AFTER TOGGLE ── */
+.ba-toggle { margin-top: 1.25rem; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+.ba-tabs { display: grid; grid-template-columns: 1fr 1fr; background: var(--bg3); }
+.ba-tab {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 0.5rem; text-align: center;
+  cursor: pointer; transition: all 0.2s; color: var(--text3);
+  border: none; background: transparent;
+}
+.ba-tab.active-before { background: rgba(255,60,60,0.12); color: #ff8080; }
+.ba-tab.active-after  { background: var(--teal-dim); color: var(--teal); }
+.ba-panel { display: none; padding: 1rem; font-size: 0.82rem; line-height: 1.7; }
+.ba-panel.active { display: flex; gap: 0.75rem; align-items: flex-start; }
+.ba-panel-before { background: rgba(255,60,60,0.04); border-top: 1px solid rgba(255,60,60,0.15); color: #ffbbbb; }
+.ba-panel-after  { background: rgba(13,190,140,0.04); border-top: 1px solid rgba(13,190,140,0.15); color: #aaffdd; }
+.ba-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
+
+/* ── IMPACT BAND ── */
+#impact-band {
+  background: #051a12;
+  border-top: 1px solid rgba(13,190,140,0.15);
+  border-bottom: 1px solid rgba(13,190,140,0.15);
+  padding: 3.5rem 0;
+}
+.impact-band-grid {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 1px; background: rgba(13,190,140,0.1);
+  border-radius: 12px; overflow: hidden;
+  border: 1px solid rgba(13,190,140,0.15);
+}
+.impact-band-item {
+  background: #051a12; padding: 2rem 1.5rem;
+  text-align: center; transition: background 0.2s;
+}
+.impact-band-item:hover { background: #071f15; }
+.impact-band-num {
+  font-family: var(--head);
+  font-size: clamp(2.5rem,5vw,4rem);
+  font-weight: 800; color: var(--teal);
+  line-height: 1; margin-bottom: 0.5rem;
+}
+.impact-band-label {
+  font-family: var(--mono); font-size: 11px;
+  color: rgba(13,190,140,0.6); letter-spacing: 0.1em;
+  text-transform: uppercase; line-height: 1.6;
+}
+@media (max-width: 600px) { .impact-band-grid { grid-template-columns: 1fr; } }
+
+/* ── SECTION BG OVERRIDES ── */
+#stack   { background: #051a12 !important; }
+#contact { background: #051a12 !important; }
+
+/* ── CONTACT CLAIM ── */
+.contact-claim {
+  font-family: var(--head);
+  font-size: clamp(1.4rem,3vw,2.2rem);
+  font-weight: 700; color: var(--text); line-height: 1.3;
+  margin-bottom: 0.5rem;
+}
+.contact-response {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text3); letter-spacing: 0.1em; margin-top: 0.75rem;
+}
+
+/* ── PROJECT TAG HOVER ── */
+.project-tag { transition: all 0.2s; }
+.project-tag:hover { border-color: rgba(13,190,140,0.4); color: var(--teal); background: var(--teal-dim); }
+
+/* ── STAGGERED DELAYS ── */
+.delay-1 { transition-delay: 0.08s !important; }
+.delay-2 { transition-delay: 0.16s !important; }
+.delay-3 { transition-delay: 0.24s !important; }
+.delay-4 { transition-delay: 0.32s !important; }
+</style>
+
 </head>
 <body>
 
@@ -597,6 +735,9 @@
   </ul>
 </nav>
 
+
+<body>
+<div id="scroll-progress"></div>
 <!-- HERO -->
 <section id="hero">
   <div class="hero-grid-bg"></div>
@@ -611,16 +752,16 @@
 
     <div class="metrics fade-in">
       <div class="metric">
-        <div class="metric-num">15+</div>
+        <div class="metric-num hero-counter" data-target="15" data-suffix="+">0</div>
         <div class="metric-label">herramientas construidas</div>
       </div>
       <div class="metric">
-        <div class="metric-num">+19h</div>
-        <div class="metric-label">devueltas al equipo / semana</div>
+        <div class="metric-num hero-counter" data-target="19" data-prefix="+" data-suffix="h">0</div>
+        <div class="metric-label">por semana al equipo &mdash; Cosmos</div>
       </div>
       <div class="metric">
-        <div class="metric-num">100%</div>
-        <div class="metric-label">auditoría automatizada</div>
+        <div class="metric-num hero-counter" data-target="41" data-prefix="~" data-suffix="h">0</div>
+        <div class="metric-label">ahorradas por mes &mdash; Repsol</div>
       </div>
     </div>
 
@@ -634,8 +775,8 @@
 <!-- ABOUT -->
 <section id="about">
   <div class="container">
-    <div class="about-grid fade-in">
-      <div class="about-text">
+    <div class="about-grid">
+      <div class="about-text fade-left">
         <div class="section-tag">Sobre mí</div>
         <h2 class="section-title">Operaciones<br>con código.</h2>
         <p>
@@ -659,7 +800,7 @@
           <span class="chip">Comercio exterior</span>
         </div>
       </div>
-      <div>
+      <div class="fade-right">
         <!-- FOTO + STATS -->
         <div style="display:flex;flex-direction:column;gap:1px;">
           <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px 12px 0 0;padding:1.5rem;display:flex;align-items:center;gap:1.25rem;">
@@ -720,6 +861,28 @@
   </div>
 </section>
 
+
+<!-- IMPACT BAND -->
+<section id="impact-band">
+  <div class="container">
+    <div class="impact-band-grid fade-in">
+      <div class="impact-band-item">
+        <div class="impact-band-num" data-target="50" data-suffix="/día">50/día</div>
+        <div class="impact-band-label">DAMs automatizadas<br>por mes &mdash; Repsol</div>
+      </div>
+      <div class="impact-band-item">
+        <div class="impact-band-num" data-target="287" data-suffix="+">287+</div>
+        <div class="impact-band-label">Contenedores distribuidos<br>por nave &mdash; Cosmos</div>
+      </div>
+      <div class="impact-band-item">
+        <div class="impact-band-num" data-target="2" data-suffix=" años">2 años</div>
+        <div class="impact-band-label">De documentación recuperada<br>en 1 semana</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider fade-in" style="padding: 3rem 2rem 0;"><span>&mdash; Proyectos en producci&oacute;n &mdash;</span></div>
 <!-- PROJECTS -->
 <style>
   .company-badge { display:inline-flex;align-items:center;gap:0.5rem;font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;padding:0.3rem 0.85rem;border-radius:100px;margin-bottom:1.5rem; }
@@ -838,7 +1001,22 @@
             <div class="mini-metric"><div class="mini-metric-num">2h&#8594;5m</div><div class="mini-metric-label">por ciclo</div></div>
             <div class="mini-metric"><div class="mini-metric-num">9h/sem</div><div class="mini-metric-label">devueltas al equipo</div></div>
             <div class="mini-metric"><div class="mini-metric-num">100%</div><div class="mini-metric-label">errores eliminados</div></div>
-            <div class="mini-metric"><div class="mini-metric-num">2x/d&iacute;a</div><div class="mini-metric-label">frecuencia</div></div>
+            
+          <div class="ba-toggle" id="ba-reservas">
+            <div class="ba-tabs">
+              <button class="ba-tab" data-mode="before" onclick="batoggle('reservas','before')">&#9200; Antes</button>
+              <button class="ba-tab active-after" data-mode="after" onclick="batoggle('reservas','after')">&#9889; Después</button>
+            </div>
+            <div class="ba-panel ba-panel-before" data-mode="before">
+              <div class="ba-icon">&#128338;</div>
+              <div style="padding-left:0.25rem;">Tres reportes abiertos en simultáneo. Cruce manual línea a línea. Búsqueda de RUCs en otro Excel aparte. 2 horas por ciclo, dos veces al día, todos los días — con riesgo de error en cada paso.</div>
+            </div>
+            <div class="ba-panel ba-panel-after active" data-mode="after">
+              <div class="ba-icon">&#9889;</div>
+              <div style="padding-left:0.25rem;">Un clic. El programa carga los reportes, cruza los datos, resuelve los RUCs con búsqueda inteligente y genera el reporte final en 5 minutos. Cero intervención manual.</div>
+            </div>
+          </div>
+          <div class="mini-metric"><div class="mini-metric-num">2x/d&iacute;a</div><div class="mini-metric-label">frecuencia</div></div>
           </div>
         </div>
         <div class="mockup-wrap">
@@ -1269,7 +1447,7 @@
         <div class="proj-info">
           <div class="project-tags" style="margin-bottom:1rem;"><span class="project-tag highlight" style="background:rgba(255,100,0,0.1);color:#ff8c42;border-color:rgba(255,100,0,0.3);">&#9733; Mayor impacto</span><span class="project-tag">Power Apps</span><span class="project-tag">Power Automate</span></div>
           <div class="project-title">Sistema de Gesti&oacute;n de Declaraciones Aduaneras</div>
-          <p class="project-problem">M&aacute;s de 50 DAMs al d&iacute;a se gestionaban por correo. El &aacute;rea comercial digitaba datos manualmente sin validaciones, cometi&oacute; errores frecuentes y sin visibilidad del estado de cada declaraci&oacute;n.</p>
+          <p class="project-problem">M&aacute;s de 50 DAMs al mes se gestionaban por correo. El &aacute;rea comercial digitaba datos manualmente sin validaciones, cometi&oacute; errores frecuentes y sin visibilidad del estado de cada declaraci&oacute;n.</p>
           <div class="project-impact">
             <div class="impact-item"><div class="impact-dot"></div>Campos con l&oacute;gica intr&iacute;nseca y autoc&aacute;lculo de importes eliminan errores de digitaci&oacute;n</div>
             <div class="impact-item"><div class="impact-dot"></div>El comercial ve el estado de su DAM en tiempo real y rectifica directamente</div>
@@ -1277,9 +1455,24 @@
             <div class="impact-item"><div class="impact-dot"></div>Descarga de DAM y sustento con notificaciones autom&aacute;ticas v&iacute;a Power Automate</div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-top:1.25rem;">
-            <div class="mini-metric"><div class="mini-metric-num">50+</div><div class="mini-metric-label">DAMs por d&iacute;a</div></div>
+            
+          <div class="ba-toggle" id="ba-dams">
+            <div class="ba-tabs">
+              <button class="ba-tab" data-mode="before" onclick="batoggle('dams','before')">&#9200; Antes</button>
+              <button class="ba-tab active-after" data-mode="after" onclick="batoggle('dams','after')">&#9889; Después</button>
+            </div>
+            <div class="ba-panel ba-panel-before" data-mode="before">
+              <div class="ba-icon">&#128338;</div>
+              <div style="padding-left:0.25rem;">El área comercial enviaba los datos por correo. El equipo de aduanas los recopiaba a mano. Errores de digitación frecuentes. Sin visibilidad del estado. 1 hora de ida y vuelta por DAM — 50 al mes.</div>
+            </div>
+            <div class="ba-panel ba-panel-after active" data-mode="after">
+              <div class="ba-icon">&#9889;</div>
+              <div style="padding-left:0.25rem;">El comercial llena un formulario con listas y autocalculo. El sistema determina si regularizar o anular. El equipo de aduanas gestiona todo en un panel. Notificaciones automáticas. 10 minutos por DAM.</div>
+            </div>
+          </div>
+          <div class="mini-metric"><div class="mini-metric-num">50+</div><div class="mini-metric-label">DAMs por mes</div></div>
             <div class="mini-metric"><div class="mini-metric-num">1h&#8594;10m</div><div class="mini-metric-label">por declaraci&oacute;n</div></div>
-            <div class="mini-metric"><div class="mini-metric-num">~41h</div><div class="mini-metric-label">ahorradas al d&iacute;a</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">~41h</div><div class="mini-metric-label">al mes &mdash; ahorradas al d&iacute;a</div></div>
             <div class="mini-metric"><div class="mini-metric-num">0</div><div class="mini-metric-label">errores de digitaci&oacute;n</div></div>
           </div>
         </div>
@@ -1391,22 +1584,7 @@
   </div>
 </section>
 
-<script>
-function stab(tabEl, gid, pid) {
-  tabEl.parentElement.querySelectorAll('.mockup-tab').forEach(t => t.classList.remove('active'));
-  tabEl.classList.add('active');
-  const panel = document.getElementById(gid + '-' + pid);
-  panel.parentElement.querySelectorAll('.mockup-panel').forEach(p => p.classList.remove('active'));
-  panel.classList.add('active');
-}
-function fproj(company, btn) {
-  document.querySelectorAll('.proj-filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.querySelectorAll('.company-group').forEach(g => {
-    g.style.display = (company === 'all' || g.dataset.company === company) ? '' : 'none';
-  });
-}
-</script>
+
 
 <!-- STACK -->
 <section id="stack">
@@ -1416,7 +1594,7 @@ function fproj(company, btn) {
     <p class="section-sub fade-in">Sin equipos de TI, sin licencias caras. Resultados con lo que hay.</p>
 
     <div class="stack-grid fade-in">
-      <div class="stack-category">
+      <div class="stack-category fade-in">
         <div class="stack-cat-label">Automatización Python</div>
         <div class="stack-items">
           <div class="stack-item">Python — pandas, openpyxl</div>
@@ -1427,7 +1605,7 @@ function fproj(company, btn) {
           <div class="stack-item">Integración con correo electrónico</div>
         </div>
       </div>
-      <div class="stack-category">
+      <div class="stack-category fade-in delay-1">
         <div class="stack-cat-label">Datos & Dashboards</div>
         <div class="stack-items">
           <div class="stack-item">Power BI intermedio</div>
@@ -1438,7 +1616,7 @@ function fproj(company, btn) {
           <div class="stack-item">Cruce y conciliación de datos</div>
         </div>
       </div>
-      <div class="stack-category">
+      <div class="stack-category fade-in delay-2">
         <div class="stack-cat-label">Plataformas & Sistemas</div>
         <div class="stack-items">
           <div class="stack-item">Power Apps</div>
@@ -1449,7 +1627,7 @@ function fproj(company, btn) {
           <div class="stack-item">Sistemas de gestión naviera</div>
         </div>
       </div>
-      <div class="stack-category">
+      <div class="stack-category fade-in delay-3">
         <div class="stack-cat-label">Gestión & Proyectos</div>
         <div class="stack-items">
           <div class="stack-item">Coordinación de implementación ERP</div>
@@ -1465,6 +1643,8 @@ function fproj(company, btn) {
 </section>
 
 <!-- EXPERIENCE -->
+
+<div class="section-divider fade-in" style="padding: 3rem 2rem 0;"><span>&mdash; Trayectoria profesional &mdash;</span></div>
 <section id="experience">
   <div class="container">
     <div class="section-tag fade-in">Experiencia</div>
@@ -1472,7 +1652,7 @@ function fproj(company, btn) {
 
     <div class="timeline fade-in">
 
-      <div class="timeline-item">
+      <div class="timeline-item fade-right">
         <div class="timeline-left">
           <div class="timeline-period">Jul 2025<br>- Presente</div>
         </div>
@@ -1489,7 +1669,7 @@ function fproj(company, btn) {
         </div>
       </div>
 
-      <div class="timeline-item">
+      <div class="timeline-item fade-right delay-1">
         <div class="timeline-left">
           <div class="timeline-period">Nov 2022<br>- Dic 2024</div>
         </div>
@@ -1506,7 +1686,7 @@ function fproj(company, btn) {
         </div>
       </div>
 
-      <div class="timeline-item">
+      <div class="timeline-item fade-right delay-2">
         <div class="timeline-left">
           <div class="timeline-period">Ene 2021<br>- Mar 2022</div>
         </div>
@@ -1530,14 +1710,14 @@ function fproj(company, btn) {
 <section id="contact">
   <div class="container">
     <div class="contact-inner fade-in">
-      <div class="section-tag" style="justify-content:center">Contacto</div>
-      <h2 class="section-title">¿Hablamos?</h2>
-      <p style="color:var(--text2);font-size:0.95rem;line-height:1.8;margin-top:1rem;">
-        Busco oportunidades donde pueda seguir generando impacto real: automatizando procesos que hoy consumen horas del equipo, liderando implementaciones tecnológicas o construyendo sistemas de control que mejoren la toma de decisiones.
+      <div class="contact-claim">Si llegaste hasta aquí, hablemos.</div>
+      <p style="color:var(--text2);font-size:0.95rem;line-height:1.8;margin-top:0.75rem;">
+        Busco oportunidades donde pueda seguir generando impacto real: automatizando procesos, coordinando implementaciones o construyendo sistemas de control que mejoren la toma de decisiones.
       </p>
       <a href="mailto:alonsostef2006@gmail.com" class="contact-email">alonsostef2006@gmail.com</a>
+      <div class="contact-response">&#128336; Tiempo de respuesta habitual: &lt; 24h</div>
       <div class="contact-links">
-        <a href="https://www.linkedin.com/in/alonsosocial/" target="_blank" class="btn btn-primary">LinkedIn →</a>
+        <a href="https://www.linkedin.com/in/alonsosocial/" target="_blank" class="btn btn-primary">LinkedIn &rarr;</a>
         <button class="btn btn-ghost" id="copy-btn" onclick="copyEmail()">Copiar correo</button>
       </div>
     </div>
@@ -1548,31 +1728,99 @@ function fproj(company, btn) {
   <p>Alonso Peña Anicama · Lima, Perú · Construido con código propio</p>
 </footer>
 
-<script>
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry, i) => {
-      if (entry.isIntersecting) {
-        setTimeout(() => entry.target.classList.add('visible'), i * 80);
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.08 });
-  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 
-  function copyEmail() {
-    navigator.clipboard.writeText('alonsostef2006@gmail.com').then(() => {
-      const btn = document.getElementById('copy-btn');
-      btn.textContent = 'Copiado ✓';
-      btn.style.color = 'var(--teal)';
-      btn.style.borderColor = 'var(--teal)';
-      setTimeout(() => {
-        btn.textContent = 'Copiar correo';
-        btn.style.color = '';
-        btn.style.borderColor = '';
-      }, 2000);
-    });
-  }
+<script>
+// SCROLL PROGRESS
+window.addEventListener('scroll', () => {
+  const el = document.getElementById('scroll-progress');
+  if (!el) return;
+  const pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight) * 100;
+  el.style.width = pct + '%';
+});
+
+// COUNTER ANIMATION
+function animateCounter(el) {
+  const target = parseInt(el.dataset.target);
+  const suffix = el.dataset.suffix || '';
+  const prefix = el.dataset.prefix || '';
+  const duration = 1400;
+  const start = performance.now();
+  (function update(now) {
+    const p = Math.min((now - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    el.textContent = prefix + Math.round(ease * target) + suffix;
+    if (p < 1) requestAnimationFrame(update);
+  })(performance.now());
+}
+
+// HERO COUNTERS ON LOAD
+window.addEventListener('load', () => {
+  document.querySelectorAll('.hero-counter').forEach(animateCounter);
+});
+
+// INTERSECTION OBSERVER
+const io = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (!entry.isIntersecting) return;
+    const el = entry.target;
+    el.classList.add('visible');
+    // Band counters
+    if (el.closest('#impact-band')) {
+      el.querySelectorAll('[data-target]').forEach(animateCounter);
+    }
+    // Timeline dot pulse
+    const dot = el.querySelector && el.querySelector('.timeline-dot');
+    if (dot) setTimeout(() => dot.classList.add('pulsed'), 300);
+    io.unobserve(el);
+  });
+}, { threshold: 0.08 });
+
+document.querySelectorAll('.fade-in, .fade-left, .fade-right').forEach(el => io.observe(el));
+
+// FILTER PROJECTS
+function fproj(company, btn) {
+  document.querySelectorAll('.proj-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.company-group').forEach(g => {
+    if (company === 'all' || g.dataset.company === company) {
+      g.classList.remove('hidden');
+    } else {
+      g.classList.add('hidden');
+    }
+  });
+}
+
+// MOCKUP TABS
+function stab(tabEl, gid, pid) {
+  tabEl.parentElement.querySelectorAll('.mockup-tab').forEach(t => t.classList.remove('active'));
+  tabEl.classList.add('active');
+  const panel = document.getElementById(gid + '-' + pid);
+  panel.parentElement.querySelectorAll('.mockup-panel').forEach(p => p.classList.remove('active'));
+  panel.classList.add('active');
+}
+
+// BEFORE/AFTER TOGGLE
+function batoggle(projId, mode) {
+  const wrap = document.getElementById('ba-' + projId);
+  wrap.querySelectorAll('.ba-tab').forEach(t => t.classList.remove('active-before', 'active-after'));
+  wrap.querySelectorAll('.ba-panel').forEach(p => p.classList.remove('active'));
+  wrap.querySelector('.ba-tab[data-mode="' + mode + '"]').classList.add(mode === 'before' ? 'active-before' : 'active-after');
+  wrap.querySelector('.ba-panel[data-mode="' + mode + '"]').classList.add('active');
+}
+
+// COPY EMAIL
+function copyEmail() {
+  navigator.clipboard.writeText('alonsostef2006@gmail.com').then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copiado ✓';
+    btn.style.color = 'var(--teal)';
+    btn.style.borderColor = 'var(--teal)';
+    setTimeout(() => { btn.textContent = 'Copiar correo'; btn.style.color=''; btn.style.borderColor=''; }, 2000);
+  });
+}
 </script>
+
+
 
 </body>
 </html>
