@@ -967,16 +967,16 @@
                 </div>
               </div>
               <div class="field-row">
-                <div class="field-label">Loading List</div>
-                <div class="field-input"><span>Loading_BOX_ENDURANCE.xlsx</span><span class="field-check">✔</span></div>
+                <div class="field-label">Reporte de embarques confirmados</div>
+                <div class="field-input"><span>Embarques_BOX_ENDURANCE.xlsx</span><span class="field-check">✔</span></div>
               </div>
               <div class="field-row">
-                <div class="field-label">Booking Registration</div>
-                <div class="field-input"><span>Book1_BOX_ENDURANCE.xlsx</span><span class="field-check">✔</span></div>
+                <div class="field-label">Registro de reservas activas</div>
+                <div class="field-input"><span>Reservas_BOX_ENDURANCE.xlsx</span><span class="field-check">✔</span></div>
               </div>
               <div class="field-row">
-                <div class="field-label">Matriz List (opcional)</div>
-                <div class="field-input"><span>Matriz_Anterior.xlsx</span><span class="field-check">✔</span></div>
+                <div class="field-label">Historial de registros anteriores (opcional)</div>
+                <div class="field-input"><span>Historial_Anterior.xlsx</span><span class="field-check">✔</span></div>
               </div>
               <div class="field-row">
                 <div class="field-label">Carpeta de salida</div>
@@ -985,8 +985,8 @@
               <div class="btn-run">▶ Ejecutar Proceso &nbsp; Ctrl+Enter</div>
               <div class="log-box">
                 <div class="log-info">[10:03:01] Iniciando proceso...</div>
-                <div class="log-ok">[10:03:02] Loading List: 148 registros cargados</div>
-                <div class="log-ok">[10:03:02] Book1: 143 bookings encontrados</div>
+                <div class="log-ok">[10:03:02] Reporte de embarques: 148 registros cargados</div>
+                <div class="log-ok">[10:03:02] Registro de reservas: 143 bookings encontrados</div>
                 <div class="log-info">[10:03:03] Cruzando RUCs con base de datos...</div>
                 <div class="log-warn">[10:03:03] 2 RUCs con coincidencia ambigua — resolucion requerida</div>
                 <div class="log-ok">[10:03:08] Proceso completado. 141 nuevos para MYC</div>
@@ -999,8 +999,8 @@
               <div class="win-title">CARGA_BOX_ENDURANCE_Cargas1.xlsx</div>
             </div>
             <div class="xls-tabs">
-              <div class="xls-tab active">Para MYC</div>
-              <div class="xls-tab">Ya en MYC</div>
+              <div class="xls-tab active">Nuevos registros</div>
+              <div class="xls-tab">Ya registrados</div>
               <div class="xls-tab">Discrepancias</div>
               <div class="xls-tab">Anular</div>
             </div>
@@ -1060,8 +1060,8 @@
                 <span style="font-family:var(--mono);font-size:10px;color:#060a0d;opacity:0.6;">▶ Asignación &nbsp; ♻ Redistribución &nbsp; ⚙ Config</span>
               </div>
               <div class="field-row">
-                <div class="field-label">CDL (Cargo Detail List)</div>
-                <div class="field-input"><span>CDL_NORDIC_GRACE.xlsx</span><span class="field-check">✔</span></div>
+                <div class="field-label">Listado de contenedores de la nave</div>
+                <div class="field-input"><span>Contenedores_NORDIC_GRACE.xlsx</span><span class="field-check">✔</span></div>
               </div>
               <div class="field-row">
                 <div class="field-label">Emisiones vigentes</div>
@@ -1077,7 +1077,7 @@
               </div>
               <div class="btn-run">▶ Ejecutar Asignación Nueva</div>
               <div class="log-box">
-                <div class="log-ok">[09:15:22] CDL: 312 contenedores cargados</div>
+                <div class="log-ok">[09:15:22] Listado de contenedores: 312 registros cargados</div>
                 <div class="log-info">[09:15:22] Filtros aplicados: FDS=PECLL, sin transbordo</div>
                 <div class="log-ok">[09:15:22] Validos para repartir: 287 contenedores</div>
                 <div class="log-info">[09:15:23] VIP procesados: 18 contenedores asignados</div>
@@ -1092,7 +1092,7 @@
             </div>
             <div class="xls-tabs">
               <div class="xls-tab active">Resumen Ejecutivo</div>
-              <div class="xls-tab">Asig_DPWL</div>
+              <div class="xls-tab">Depósito A</div>
               <div class="xls-tab">Asig_CONTRANS</div>
               <div class="xls-tab">Data Completa</div>
             </div>
@@ -1285,7 +1285,7 @@
                 <p class="project-problem">Confirmar que todos los contenedores documentados estuvieran físicamente a bordo tomaba 1 hora por nave. Con 1 a 2 naves por semana, eran hasta 2 horas semanales en un proceso crítico sin herramienta de apoyo, donde un error podía significar penalidades o carga de cliente quedada en tierra.</p>
                 <div class="project-impact">
                   <div class="impact-item"><div class="impact-dot"></div>Concilia documentos oficiales contra carga física a bordo en minutos</div>
-                  <div class="impact-item"><div class="impact-dot"></div>Identifica embarques incompletos: B/Ls donde parte de la carga se quedó en tierra</div>
+                  <div class="impact-item"><div class="impact-dot"></div>Identifica embarques incompletos: guías donde parte de la carga se quedó en tierra</div>
                   <div class="impact-item"><div class="impact-dot"></div>Separa resultados por tipo de destino para facilitar la gestión por equipo</div>
                 </div>
               </div>
@@ -1293,7 +1293,7 @@
                 <div class="mini-metric"><div class="mini-metric-num">1h→3m</div><div class="mini-metric-label">por nave</div></div>
                 <div class="mini-metric"><div class="mini-metric-num">2h/sem</div><div class="mini-metric-label">ahorradas</div></div>
                 <div class="mini-metric"><div class="mini-metric-num">−95%</div><div class="mini-metric-label">tiempo de proceso</div></div>
-                <div class="mini-metric"><div class="mini-metric-num">100%</div><div class="mini-metric-label">B/Ls verificados</div></div>
+                <div class="mini-metric"><div class="mini-metric-num">100%</div><div class="mini-metric-label">guías verificadas</div></div>
               </div>
             </div>
           </div>
