@@ -611,7 +611,7 @@
 
     <div class="metrics fade-in">
       <div class="metric">
-        <div class="metric-num">8+</div>
+        <div class="metric-num">15+</div>
         <div class="metric-label">herramientas construidas</div>
       </div>
       <div class="metric">
@@ -649,12 +649,14 @@
         </p>
         <div class="about-chips">
           <span class="chip">Python</span>
+          <span class="chip">Apps Script</span>
+          <span class="chip">Power Apps</span>
+          <span class="chip">Power Automate</span>
           <span class="chip">Power BI</span>
+          <span class="chip">Looker Studio</span>
           <span class="chip">Excel avanzado</span>
           <span class="chip">SAP MM</span>
-          <span class="chip">Gestión ágil</span>
           <span class="chip">Comercio exterior</span>
-          <span class="chip">Cumplimiento regulatorio</span>
         </div>
       </div>
       <div>
@@ -720,197 +722,82 @@
 
 <!-- PROJECTS -->
 <style>
-  .proj-showcase {
-    display: flex;
-    flex-direction: column;
-    gap: 5rem;
-  }
-  .proj-block {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 3rem;
-    align-items: start;
-  }
-  .proj-block.reverse { direction: rtl; }
-  .proj-block.reverse > * { direction: ltr; }
-  .proj-info {}
-  .proj-number {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text3);
-    letter-spacing: 0.15em;
-    margin-bottom: 1rem;
-  }
-  .proj-info .project-title {
-    font-family: var(--head);
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 1rem;
-    line-height: 1.3;
-  }
-  .proj-info .project-problem {
-    font-size: 0.875rem;
-    color: var(--text2);
-    line-height: 1.8;
-    margin-bottom: 1.25rem;
-  }
-  .proj-info .project-impact { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
-  .proj-info .impact-item { font-size: 0.82rem; color: var(--text2); display: flex; align-items: flex-start; gap: 0.6rem; line-height: 1.5; }
-  .proj-info .impact-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); margin-top: 0.5rem; flex-shrink: 0; }
-
-  /* Mockup tabs */
-  .mockup-tabs { display: flex; gap: 0; margin-bottom: 0; }
-  .mockup-tab {
-    font-family: var(--mono);
-    font-size: 11px;
-    padding: 0.45rem 1rem;
-    background: var(--bg3);
-    color: var(--text3);
-    border: 1px solid var(--border);
-    border-bottom: none;
-    cursor: pointer;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    transition: all 0.15s;
-  }
-  .mockup-tab:first-child { border-radius: 6px 0 0 0; }
-  .mockup-tab:last-child { border-radius: 0 6px 0 0; }
-  .mockup-tab.active { background: var(--bg2); color: var(--teal); border-color: var(--border2); }
-  .mockup-panel {
-    background: var(--bg2);
-    border: 1px solid var(--border2);
-    border-radius: 0 6px 6px 6px;
-    overflow: hidden;
-    display: none;
-  }
-  .mockup-panel.active { display: block; }
-
-  /* Window chrome */
-  .win-bar {
-    background: #1a2230;
-    padding: 8px 12px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    border-bottom: 1px solid var(--border);
-  }
-  .win-dot { width: 10px; height: 10px; border-radius: 50%; }
-  .win-dot.r { background: #ff5f57; }
-  .win-dot.y { background: #febc2e; }
-  .win-dot.g { background: #28c840; }
-  .win-title { font-family: var(--mono); font-size: 11px; color: var(--text3); margin-left: 8px; }
-
-  /* App body */
-  .win-body { padding: 16px; }
-  .field-row { margin-bottom: 10px; }
-  .field-label { font-family: var(--mono); font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
-  .field-input {
-    background: var(--bg3);
-    border: 1px solid var(--border2);
-    border-radius: 4px;
-    padding: 6px 10px;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text2);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-  }
-  .field-check { color: #28c840; font-size: 12px; }
-  .field-pending { color: #febc2e; font-size: 12px; }
-  .btn-run {
-    background: var(--teal);
-    color: #060a0d;
-    font-family: var(--mono);
-    font-size: 11px;
-    font-weight: 500;
-    padding: 8px 16px;
-    border-radius: 4px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    display: inline-block;
-    margin-top: 4px;
-    cursor: default;
-  }
-  .log-box {
-    background: #0a0f14;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 10px;
-    margin-top: 10px;
-    font-family: var(--mono);
-    font-size: 10px;
-    line-height: 1.7;
-    color: var(--text3);
-  }
-  .log-box .log-ok { color: #28c840; }
-  .log-box .log-warn { color: #febc2e; }
-  .log-box .log-info { color: var(--teal); }
-
-  /* Excel mockup */
-  .xls-tabs { display: flex; gap: 2px; padding: 0 12px; background: #1a2230; }
-  .xls-tab {
-    font-family: var(--mono);
-    font-size: 10px;
-    padding: 4px 10px;
-    border-radius: 4px 4px 0 0;
-    background: var(--bg3);
-    color: var(--text3);
-    cursor: default;
-    letter-spacing: 0.04em;
-  }
-  .xls-tab.active { background: var(--bg2); color: var(--teal); }
-  .xls-body { padding: 10px 12px; overflow-x: auto; }
-  .xls-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 10px; }
-  .xls-table th {
-    background: #1a2230;
-    color: var(--text3);
-    padding: 5px 8px;
-    text-align: left;
-    border: 1px solid var(--border);
-    font-weight: 500;
-    white-space: nowrap;
-  }
-  .xls-table td {
-    padding: 4px 8px;
-    border: 1px solid var(--border);
-    color: var(--text2);
-    white-space: nowrap;
-  }
-  .xls-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
-  .cell-green { background: rgba(40,200,64,0.15) !important; color: #28c840 !important; }
-  .cell-red { background: rgba(255,60,60,0.15) !important; color: #ff5f57 !important; }
-  .cell-yellow { background: rgba(254,188,46,0.15) !important; color: #febc2e !important; }
-  .cell-teal { background: rgba(13,190,140,0.12) !important; color: var(--teal) !important; }
-  .cell-blue { background: rgba(50,120,220,0.15) !important; color: #6ab0ff !important; }
-
-  /* Metric strip */
-  .metric-strip {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1px;
-    background: var(--border);
-    margin-bottom: 10px;
-  }
-  .metric-strip-item {
-    background: #1a2230;
-    padding: 10px;
-    text-align: center;
-  }
-  .metric-strip-num { font-family: var(--head); font-size: 1.4rem; font-weight: 700; color: var(--teal); line-height: 1; }
-  .metric-strip-label { font-family: var(--mono); font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; }
-
-  /* Progress bar */
-  .progress-wrap { margin: 8px 0; }
-  .progress-label { font-family: var(--mono); font-size: 10px; color: var(--text3); display: flex; justify-content: space-between; margin-bottom: 4px; }
-  .progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
-  .progress-fill { height: 100%; background: var(--teal); border-radius: 3px; transition: width 0.3s; }
-
-  @media (max-width: 900px) {
-    .proj-block { grid-template-columns: 1fr; }
-    .proj-block.reverse { direction: ltr; }
+  .company-badge { display:inline-flex;align-items:center;gap:0.5rem;font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;padding:0.3rem 0.85rem;border-radius:100px;margin-bottom:1.5rem; }
+  .badge-cosmos { background:var(--teal-dim);color:var(--teal);border:1px solid rgba(13,190,140,0.25); }
+  .badge-repsol { background:rgba(255,100,0,0.08);color:#ff8c42;border:1px solid rgba(255,100,0,0.2); }
+  .company-group { margin-bottom:4rem; }
+  .company-group-header { display:flex;align-items:flex-start;gap:1.5rem;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid var(--border); }
+  .company-group-title { font-family:var(--head);font-size:1.4rem;font-weight:700;color:var(--text);margin-bottom:0.25rem; }
+  .company-group-sub { font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:0.08em; }
+  .proj-filter { display:flex;gap:0.5rem;margin-bottom:3rem;flex-wrap:wrap; }
+  .proj-filter-btn { font-family:var(--mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;padding:0.4rem 1rem;border-radius:100px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;transition:all 0.2s; }
+  .proj-filter-btn:hover { border-color:var(--teal);color:var(--teal); }
+  .proj-filter-btn.active { background:var(--teal);color:#060a0d;border-color:var(--teal); }
+  .featured-block { display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start;margin-bottom:3rem;padding-bottom:3rem;border-bottom:1px solid var(--border); }
+  .featured-block.rev { direction:rtl; }
+  .featured-block.rev > * { direction:ltr; }
+  .proj-info .project-title { font-family:var(--head);font-size:1.3rem;font-weight:700;color:var(--text);margin-bottom:0.75rem;line-height:1.3; }
+  .proj-info .project-problem { font-size:0.875rem;color:var(--text2);line-height:1.8;margin-bottom:1.25rem; }
+  .proj-info .project-impact { display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1.25rem; }
+  .proj-info .impact-item { font-size:0.82rem;color:var(--text2);display:flex;align-items:flex-start;gap:0.6rem;line-height:1.5; }
+  .proj-info .impact-dot { width:5px;height:5px;border-radius:50%;background:var(--teal);margin-top:0.5rem;flex-shrink:0; }
+  .mockup-wrap { display:flex;flex-direction:column; }
+  .mockup-tabs { display:flex;gap:0; }
+  .mockup-tab { font-family:var(--mono);font-size:11px;padding:0.4rem 0.9rem;background:var(--bg3);color:var(--text3);border:1px solid var(--border);border-bottom:none;cursor:pointer;letter-spacing:0.06em;text-transform:uppercase;transition:all 0.15s; }
+  .mockup-tab:first-child { border-radius:6px 0 0 0; }
+  .mockup-tab:last-child { border-radius:0 6px 0 0; }
+  .mockup-tab.active { background:var(--bg2);color:var(--teal);border-color:var(--border2); }
+  .mockup-panel { background:var(--bg2);border:1px solid var(--border2);border-radius:0 6px 6px 6px;overflow:hidden;display:none; }
+  .mockup-panel.active { display:block; }
+  .win-bar { background:#1a2230;padding:8px 12px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border); }
+  .win-dot { width:10px;height:10px;border-radius:50%; }
+  .win-dot.r { background:#ff5f57; } .win-dot.y { background:#febc2e; } .win-dot.g { background:#28c840; }
+  .win-title { font-family:var(--mono);font-size:11px;color:var(--text3);margin-left:8px; }
+  .win-body { padding:14px; }
+  .fl { margin-bottom:8px; }
+  .fl-lbl { font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px; }
+  .fl-val { background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:5px 9px;font-family:var(--mono);font-size:11px;color:var(--text2);display:flex;align-items:center;justify-content:space-between; }
+  .ok { color:#28c840;font-size:12px; } .warn { color:#febc2e; }
+  .run-btn { background:var(--teal);color:#060a0d;font-family:var(--mono);font-size:11px;font-weight:500;padding:7px 14px;border-radius:4px;letter-spacing:0.08em;text-transform:uppercase;display:inline-block;margin-top:6px;cursor:default; }
+  .log { background:#0a0f14;border:1px solid var(--border);border-radius:4px;padding:9px;margin-top:8px;font-family:var(--mono);font-size:10px;line-height:1.7;color:var(--text3); }
+  .log .g { color:#28c840; } .log .t { color:var(--teal); } .log .w { color:#febc2e; }
+  .xt { display:flex;gap:2px;padding:0 10px;background:#1a2230; }
+  .xt-tab { font-family:var(--mono);font-size:10px;padding:3px 9px;border-radius:4px 4px 0 0;background:var(--bg3);color:var(--text3);cursor:default;letter-spacing:0.04em; }
+  .xt-tab.a { background:var(--bg2);color:var(--teal); }
+  .xb { padding:9px 10px;overflow-x:auto; }
+  .xt-tbl { width:100%;border-collapse:collapse;font-family:var(--mono);font-size:10px; }
+  .xt-tbl th { background:#1a2230;color:var(--text3);padding:4px 7px;text-align:left;border:1px solid var(--border);font-weight:500;white-space:nowrap; }
+  .xt-tbl td { padding:3px 7px;border:1px solid var(--border);color:var(--text2);white-space:nowrap; }
+  .xt-tbl tr:nth-child(even) td { background:rgba(255,255,255,0.02); }
+  .cg { background:rgba(40,200,64,0.15)!important;color:#28c840!important; }
+  .cr { background:rgba(255,60,60,0.15)!important;color:#ff5f57!important; }
+  .cy { background:rgba(254,188,46,0.15)!important;color:#febc2e!important; }
+  .ct { background:rgba(13,190,140,0.12)!important;color:var(--teal)!important; }
+  .cb { background:rgba(50,120,220,0.15)!important;color:#6ab0ff!important; }
+  .ms { display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);margin-bottom:9px; }
+  .ms-item { background:#1a2230;padding:9px;text-align:center; }
+  .ms-n { font-family:var(--head);font-size:1.3rem;font-weight:700;color:var(--teal);line-height:1; }
+  .ms-l { font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:2px; }
+  .pb-wrap { margin:7px 0; }
+  .pb-lbl { font-family:var(--mono);font-size:10px;color:var(--text3);display:flex;justify-content:space-between;margin-bottom:3px; }
+  .pb { height:5px;background:var(--border);border-radius:3px;overflow:hidden; }
+  .pb-fill { height:100%;background:var(--teal);border-radius:3px; }
+  /* compact grid cards */
+  .proj-grid-2 { display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:2rem; }
+  .pg-card { background:var(--card);padding:1.5rem;transition:background 0.2s;position:relative;overflow:hidden; }
+  .pg-card::before { content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--teal),transparent);opacity:0;transition:opacity 0.3s; }
+  .pg-card:hover { background:var(--bg3); }
+  .pg-card:hover::before { opacity:1; }
+  .pg-card.full { grid-column:1/-1; }
+  .pg-card .project-title { font-family:var(--head);font-size:1rem;font-weight:700;color:var(--text);margin-bottom:0.5rem;line-height:1.3; }
+  .pg-card .project-problem { font-size:0.82rem;color:var(--text2);line-height:1.7;margin-bottom:1rem; }
+  .pg-card .project-impact { display:flex;flex-direction:column;gap:0.4rem;margin-bottom:1rem; }
+  .pg-card .impact-item { font-size:0.8rem;color:var(--text2);display:flex;align-items:flex-start;gap:0.5rem;line-height:1.5; }
+  .pg-card .impact-dot { width:4px;height:4px;border-radius:50%;background:var(--teal);margin-top:0.55rem;flex-shrink:0; }
+  @media(max-width:900px) {
+    .featured-block { grid-template-columns:1fr; }
+    .featured-block.rev { direction:ltr; }
+    .proj-grid-2 { grid-template-columns:1fr; }
   }
 </style>
 
@@ -918,406 +805,608 @@
   <div class="container">
     <div class="section-tag fade-in">Proyectos</div>
     <h2 class="section-title fade-in">Problemas reales.<br>Soluciones que funcionan.</h2>
-    <p class="section-sub fade-in">Cada herramienta nació de un proceso que alguien hacía a mano. Aquí están los números.</p>
+    <p class="section-sub fade-in">16 herramientas en dos empresas, organizadas por dónde nacieron.</p>
 
-    <div class="proj-showcase fade-in">
+    <div class="proj-filter fade-in">
+      <button class="proj-filter-btn active" onclick="fproj('all',this)">Todos (16)</button>
+      <button class="proj-filter-btn" onclick="fproj('cosmos',this)">Cosmos Global Logistics (13)</button>
+      <button class="proj-filter-btn" onclick="fproj('repsol',this)">Repsol (3)</button>
+    </div>
 
-      <!-- ① AUTOMATIZADOR DE RESERVAS -->
-      <div class="proj-block">
+    <!-- ═══ COSMOS ═══ -->
+    <div class="company-group fade-in" data-company="cosmos">
+      <div class="company-group-header">
+        <div>
+          <div class="company-badge badge-cosmos">Cosmos Global Logistics</div>
+          <div class="company-group-title">13 herramientas &middot; Jul 2025 &ndash; Presente</div>
+          <div class="company-group-sub">Python &middot; Google Apps Script &middot; Looker Studio &middot; NotebookLM</div>
+        </div>
+      </div>
+
+      <!-- F1: Reservas -->
+      <div class="featured-block">
         <div class="proj-info">
-          <div class="proj-number">01 / 08 — Caso destacado</div>
-          <div class="project-tags" style="margin-bottom:1rem;">
-            <span class="project-tag highlight">★ Caso de impacto</span>
-            <span class="project-tag">Exportación</span>
-            <span class="project-tag">Automatización</span>
-          </div>
+          <div class="project-tags" style="margin-bottom:1rem;"><span class="project-tag highlight">&#9733; Caso de impacto</span><span class="project-tag">Python</span><span class="project-tag">Exportaci&oacute;n</span></div>
           <div class="project-title">Automatizador de Registro de Embarques</div>
-          <p class="project-problem">El equipo de exportación procesaba manualmente tres reportes operativos dos veces al día para registrar los embarques de clientes. Dos horas por ciclo, con alta exposición a errores que generaban retrabajos y retrasos en la atención al cliente.</p>
+          <p class="project-problem">El equipo cruzaba manualmente tres reportes dos veces al d&iacute;a. Dos horas por ciclo con alta exposici&oacute;n a errores que generaban retrabajos.</p>
           <div class="project-impact">
-            <div class="impact-item"><div class="impact-dot"></div>Consolida automáticamente múltiples fuentes de datos operativos en segundos</div>
-            <div class="impact-item"><div class="impact-dot"></div>Identifica clientes nuevos, cancelaciones y cambios de destino sin intervención manual</div>
-            <div class="impact-item"><div class="impact-dot"></div>Aprende de corridas anteriores: no repite preguntas ya resueltas</div>
+            <div class="impact-item"><div class="impact-dot"></div>Consolida autom&aacute;ticamente m&uacute;ltiples fuentes de datos en segundos</div>
+            <div class="impact-item"><div class="impact-dot"></div>Vincula embarcadores con b&uacute;squeda inteligente (fuzzy match)</div>
+            <div class="impact-item"><div class="impact-dot"></div>Aprende de corridas anteriores y no repite preguntas ya resueltas</div>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-top:1.5rem;">
-            <div class="mini-metric"><div class="mini-metric-num">2h→5m</div><div class="mini-metric-label">por ciclo</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-top:1.25rem;">
+            <div class="mini-metric"><div class="mini-metric-num">2h&#8594;5m</div><div class="mini-metric-label">por ciclo</div></div>
             <div class="mini-metric"><div class="mini-metric-num">9h/sem</div><div class="mini-metric-label">devueltas al equipo</div></div>
             <div class="mini-metric"><div class="mini-metric-num">100%</div><div class="mini-metric-label">errores eliminados</div></div>
-            <div class="mini-metric"><div class="mini-metric-num">2×/día</div><div class="mini-metric-label">frecuencia</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">2x/d&iacute;a</div><div class="mini-metric-label">frecuencia</div></div>
           </div>
         </div>
-        <div>
+        <div class="mockup-wrap">
           <div class="mockup-tabs">
-            <div class="mockup-tab active" onclick="showTab(this,'res1','interfaz')">Interfaz</div>
-            <div class="mockup-tab" onclick="showTab(this,'res1','reporte')">Reporte Excel</div>
+            <div class="mockup-tab active" onclick="stab(this,'m1','a')">Interfaz</div>
+            <div class="mockup-tab" onclick="stab(this,'m1','b')">Reporte</div>
           </div>
-          <div class="mockup-panel active" id="res1-interfaz">
-            <div class="win-bar">
-              <div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div>
-              <div class="win-title">Automatizador de Reservas v6.1</div>
-            </div>
+          <div class="mockup-panel active" id="m1-a">
+            <div class="win-bar"><div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div><span class="win-title">Automatizador de Reservas v6.1</span></div>
             <div class="win-body">
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
-                <div class="field-row">
-                  <div class="field-label">Vessel ID</div>
-                  <div class="field-input"><span>VZL-20240</span></div>
-                </div>
-                <div class="field-row">
-                  <div class="field-label">Nombre Nave</div>
-                  <div class="field-input"><span>BOX ENDURANCE</span></div>
-                </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                <div class="fl"><div class="fl-lbl">Vessel ID</div><div class="fl-val">VZL-20240</div></div>
+                <div class="fl"><div class="fl-lbl">Nombre Nave</div><div class="fl-val">BOX ENDURANCE</div></div>
               </div>
-              <div class="field-row">
-                <div class="field-label">Reporte de embarques confirmados</div>
-                <div class="field-input"><span>Embarques_BOX_ENDURANCE.xlsx</span><span class="field-check">✔</span></div>
-              </div>
-              <div class="field-row">
-                <div class="field-label">Registro de reservas activas</div>
-                <div class="field-input"><span>Reservas_BOX_ENDURANCE.xlsx</span><span class="field-check">✔</span></div>
-              </div>
-              <div class="field-row">
-                <div class="field-label">Historial de registros anteriores (opcional)</div>
-                <div class="field-input"><span>Historial_Anterior.xlsx</span><span class="field-check">✔</span></div>
-              </div>
-              <div class="field-row">
-                <div class="field-label">Carpeta de salida</div>
-                <div class="field-input"><span>BOX_ENDURANCE/Cargas_1/</span></div>
-              </div>
-              <div class="btn-run">▶ Ejecutar Proceso &nbsp; Ctrl+Enter</div>
-              <div class="log-box">
-                <div class="log-info">[10:03:01] Iniciando proceso...</div>
-                <div class="log-ok">[10:03:02] Reporte de embarques: 148 registros cargados</div>
-                <div class="log-ok">[10:03:02] Registro de reservas: 143 bookings encontrados</div>
-                <div class="log-info">[10:03:03] Cruzando RUCs con base de datos...</div>
-                <div class="log-warn">[10:03:03] 2 RUCs con coincidencia ambigua — resolucion requerida</div>
-                <div class="log-ok">[10:03:08] Proceso completado. 141 nuevos para MYC</div>
+              <div class="fl"><div class="fl-lbl">Reporte de embarques confirmados</div><div class="fl-val"><span>Embarques_BOX_ENDURANCE.xlsx</span><span class="ok">&#10004;</span></div></div>
+              <div class="fl"><div class="fl-lbl">Registro de reservas activas</div><div class="fl-val"><span>Reservas_BOX_ENDURANCE.xlsx</span><span class="ok">&#10004;</span></div></div>
+              <div class="fl"><div class="fl-lbl">Historial anterior (opcional)</div><div class="fl-val"><span>Historial.xlsx</span><span class="ok">&#10004;</span></div></div>
+              <div class="run-btn">&#9654; Ejecutar Proceso</div>
+              <div class="log">
+                <div class="t">[10:03:01] Iniciando proceso...</div>
+                <div class="g">[10:03:02] Embarques: 148 registros cargados</div>
+                <div class="g">[10:03:02] Reservas: 143 bookings encontrados</div>
+                <div class="w">[10:03:03] 2 embarcadores con coincidencia ambigua</div>
+                <div class="g">[10:03:08] Completado. 141 nuevos registros generados</div>
               </div>
             </div>
           </div>
-          <div class="mockup-panel" id="res1-reporte">
-            <div class="win-bar">
-              <div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div>
-              <div class="win-title">CARGA_BOX_ENDURANCE_Cargas1.xlsx</div>
-            </div>
-            <div class="xls-tabs">
-              <div class="xls-tab active">Nuevos registros</div>
-              <div class="xls-tab">Ya registrados</div>
-              <div class="xls-tab">Discrepancias</div>
-              <div class="xls-tab">Anular</div>
-            </div>
-            <div class="xls-body">
-              <table class="xls-table">
-                <tr><th>#</th><th>Booking</th><th>Shipper</th><th>RUC</th><th>Destino</th><th>Estado</th></tr>
-                <tr><td>1</td><td>ZIM4401823</td><td>TEXTIL ANDINA SAC</td><td>20501823401</td><td>USNYC</td><td class="cell-green">NUEVO</td></tr>
-                <tr><td>2</td><td>ZIM4401824</td><td>EXPORTA PERU SA</td><td>20304512033</td><td>USMIA</td><td class="cell-green">NUEVO</td></tr>
-                <tr><td>3</td><td>ZIM4401825</td><td>AGRO EXPORT SRL</td><td>20601234567</td><td>ESBCN</td><td class="cell-yellow">REVISAR</td></tr>
-                <tr><td>4</td><td>ZIM4401826</td><td>INDUSTRIAS DEL SUR</td><td>20112233445</td><td>USNYC</td><td class="cell-green">NUEVO</td></tr>
-                <tr><td>5</td><td>ZIM4401827</td><td>PACIFIC TRADE SAC</td><td>20998877665</td><td>CAHFX</td><td class="cell-red">ANULAR</td></tr>
-                <tr><td>6</td><td>ZIM4401828</td><td>QUIMICA LIMA SA</td><td>20456789012</td><td>USNYC</td><td class="cell-green">NUEVO</td></tr>
-              </table>
-            </div>
+          <div class="mockup-panel" id="m1-b">
+            <div class="win-bar"><div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div><span class="win-title">CARGA_BOX_ENDURANCE.xlsx</span></div>
+            <div class="xt"><div class="xt-tab a">Nuevos</div><div class="xt-tab">Ya registrados</div><div class="xt-tab">Discrepancias</div></div>
+            <div class="xb"><table class="xt-tbl"><tr><th>#</th><th>Reserva</th><th>Embarcador</th><th>Destino</th><th>Estado</th></tr>
+              <tr><td>1</td><td>ZIM4401823</td><td>TEXTIL ANDINA SAC</td><td>USNYC</td><td class="cg">NUEVO</td></tr>
+              <tr><td>2</td><td>ZIM4401824</td><td>EXPORTA PERU SA</td><td>USMIA</td><td class="cg">NUEVO</td></tr>
+              <tr><td>3</td><td>ZIM4401825</td><td>AGRO EXPORT SRL</td><td>ESBCN</td><td class="cy">REVISAR</td></tr>
+              <tr><td>4</td><td>ZIM4401827</td><td>PACIFIC TRADE SAC</td><td>CAHFX</td><td class="cr">ANULAR</td></tr>
+            </table></div>
           </div>
         </div>
       </div>
 
-      <!-- ② PRE-ASIGNACION -->
-      <div class="proj-block reverse">
+      <!-- F2: Pre-asignacion -->
+      <div class="featured-block rev">
         <div class="proj-info">
-          <div class="proj-number">02 / 08</div>
-          <div class="project-tags" style="margin-bottom:1rem;">
-            <span class="project-tag">Logística</span>
-            <span class="project-tag">Distribución</span>
-            <span class="project-tag">Reglas de negocio</span>
-          </div>
-          <div class="project-title">Motor de Distribución de Contenedores Vacíos</div>
-          <p class="project-problem">Asignar cientos de contenedores vacíos por nave entre múltiples depósitos se hacía a mano, sin garantía de cumplir los acuerdos comerciales ni de respetar la prioridad de clientes estratégicos.</p>
+          <div class="project-tags" style="margin-bottom:1rem;"><span class="project-tag">Python</span><span class="project-tag">Distribuci&oacute;n</span><span class="project-tag">Reglas de negocio</span></div>
+          <div class="project-title">Motor de Distribuci&oacute;n de Contenedores Vac&iacute;os</div>
+          <p class="project-problem">Asignar cientos de contenedores por nave entre dep&oacute;sitos se hac&iacute;a a mano, sin garant&iacute;a de cumplir acuerdos comerciales ni respetar clientes estrat&eacute;gicos.</p>
           <div class="project-impact">
-            <div class="impact-item"><div class="impact-dot"></div>Aplica automáticamente los porcentajes acordados con cada depósito por tipo de contenedor</div>
-            <div class="impact-item"><div class="impact-dot"></div>Prioriza clientes estratégicos antes del reparto general</div>
-            <div class="impact-item"><div class="impact-dot"></div>Genera instrucciones operativas listas para entregar a cada depósito</div>
-            <div class="impact-item"><div class="impact-dot"></div>Permite redistribuir ante cambios sin rehacer todo el proceso</div>
+            <div class="impact-item"><div class="impact-dot"></div>Aplica autom&aacute;ticamente los porcentajes acordados por tipo</div>
+            <div class="impact-item"><div class="impact-dot"></div>Prioriza clientes estrat&eacute;gicos antes del reparto general</div>
+            <div class="impact-item"><div class="impact-dot"></div>Redistribuye ante cambios sin rehacer el proceso completo</div>
           </div>
-          <div class="project-mini-metrics" style="margin-top:1.5rem;">
-            <div class="mini-metric"><div class="mini-metric-num">300+</div><div class="mini-metric-label">contenedores por nave</div></div>
-            <div class="mini-metric"><div class="mini-metric-num">0</div><div class="mini-metric-label">errores de distribución</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-top:1.25rem;">
+            <div class="mini-metric"><div class="mini-metric-num">300+</div><div class="mini-metric-label">contenedores/nave</div></div>
             <div class="mini-metric"><div class="mini-metric-num">100%</div><div class="mini-metric-label">acuerdos cumplidos</div></div>
-            <div class="mini-metric"><div class="mini-metric-num">3</div><div class="mini-metric-label">depósitos gestionados</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">0</div><div class="mini-metric-label">errores distribuci&oacute;n</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">3</div><div class="mini-metric-label">dep&oacute;sitos gestionados</div></div>
           </div>
         </div>
-        <div>
+        <div class="mockup-wrap">
           <div class="mockup-tabs">
-            <div class="mockup-tab active" onclick="showTab(this,'pre1','interfaz')">Interfaz</div>
-            <div class="mockup-tab" onclick="showTab(this,'pre1','reporte')">Reporte Excel</div>
+            <div class="mockup-tab active" onclick="stab(this,'m2','a')">Interfaz</div>
+            <div class="mockup-tab" onclick="stab(this,'m2','b')">Reporte</div>
           </div>
-          <div class="mockup-panel active" id="pre1-interfaz">
-            <div class="win-bar">
-              <div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div>
-              <div class="win-title">Pre-asignacion de Contenedores Vacios v15</div>
-            </div>
+          <div class="mockup-panel active" id="m2-a">
+            <div class="win-bar"><div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div><span class="win-title">Pre-asignacion Contenedores Vacios v15</span></div>
             <div class="win-body">
-              <div style="background:var(--teal);padding:6px 12px;margin:-16px -16px 12px;display:flex;align-items:center;gap:8px;">
-                <span style="font-family:var(--mono);font-size:10px;color:#060a0d;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;">NAVE:</span>
-                <span style="font-family:var(--mono);font-size:11px;color:#060a0d;font-weight:500;">NORDIC GRACE&nbsp;&nbsp;&nbsp;</span>
-                <span style="font-family:var(--mono);font-size:10px;color:#060a0d;opacity:0.6;">▶ Asignación &nbsp; ♻ Redistribución &nbsp; ⚙ Config</span>
-              </div>
-              <div class="field-row">
-                <div class="field-label">Listado de contenedores de la nave</div>
-                <div class="field-input"><span>Contenedores_NORDIC_GRACE.xlsx</span><span class="field-check">✔</span></div>
-              </div>
-              <div class="field-row">
-                <div class="field-label">Emisiones vigentes</div>
-                <div class="field-input"><span>Emisiones_semana42.xlsx</span><span class="field-check">✔</span></div>
-              </div>
-              <div class="field-row">
-                <div class="field-label">Clientes VIP</div>
-                <div class="field-input"><span>Clientes_Especiales.xlsx</span><span class="field-check">✔</span></div>
-              </div>
-              <div class="field-row">
-                <div class="field-label">Exclusiones (SOC / otros)</div>
-                <div class="field-input"><span style="color:var(--text3)">Opcional — no cargado</span></div>
-              </div>
-              <div class="btn-run">▶ Ejecutar Asignación Nueva</div>
-              <div class="log-box">
-                <div class="log-ok">[09:15:22] Listado de contenedores: 312 registros cargados</div>
-                <div class="log-info">[09:15:22] Filtros aplicados: FDS=PECLL, sin transbordo</div>
-                <div class="log-ok">[09:15:22] Validos para repartir: 287 contenedores</div>
-                <div class="log-info">[09:15:23] VIP procesados: 18 contenedores asignados</div>
-                <div class="log-ok">[09:15:23] Distribucion completada. Reporte generado.</div>
+              <div style="background:var(--teal);padding:5px 12px;margin:-14px -14px 10px;font-family:var(--mono);font-size:10px;color:#060a0d;font-weight:500;">NAVE: NORDIC GRACE &nbsp;|&nbsp; &#9654; Asignaci&oacute;n &nbsp; &#9851; Redistribuci&oacute;n &nbsp; &#9881; Config</div>
+              <div class="fl"><div class="fl-lbl">Listado de contenedores de la nave</div><div class="fl-val"><span>Contenedores_NORDIC_GRACE.xlsx</span><span class="ok">&#10004;</span></div></div>
+              <div class="fl"><div class="fl-lbl">Emisiones vigentes</div><div class="fl-val"><span>Emisiones_semana42.xlsx</span><span class="ok">&#10004;</span></div></div>
+              <div class="fl"><div class="fl-lbl">Clientes estrat&eacute;gicos</div><div class="fl-val"><span>Clientes_Especiales.xlsx</span><span class="ok">&#10004;</span></div></div>
+              <div class="run-btn">&#9654; Ejecutar Asignaci&oacute;n</div>
+              <div class="log">
+                <div class="g">[09:15:22] 312 contenedores cargados</div>
+                <div class="t">[09:15:22] Filtros aplicados: 287 v&aacute;lidos para repartir</div>
+                <div class="t">[09:15:23] Clientes VIP: 18 contenedores asignados</div>
+                <div class="g">[09:15:23] Distribuci&oacute;n completada. Reporte generado.</div>
               </div>
             </div>
           </div>
-          <div class="mockup-panel" id="pre1-reporte">
-            <div class="win-bar">
-              <div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div>
-              <div class="win-title">Pre-asignacion_NORDIC_GRACE.xlsx</div>
-            </div>
-            <div class="xls-tabs">
-              <div class="xls-tab active">Resumen Ejecutivo</div>
-              <div class="xls-tab">Depósito A</div>
-              <div class="xls-tab">Asig_CONTRANS</div>
-              <div class="xls-tab">Data Completa</div>
-            </div>
-            <div class="xls-body">
-              <div class="metric-strip">
-                <div class="metric-strip-item"><div class="metric-strip-num">287</div><div class="metric-strip-label">Total asignados</div></div>
-                <div class="metric-strip-item"><div class="metric-strip-num">18</div><div class="metric-strip-label">Clientes VIP</div></div>
-                <div class="metric-strip-item"><div class="metric-strip-num">3</div><div class="metric-strip-label">Alertas</div></div>
-              </div>
-              <div class="progress-wrap">
-                <div class="progress-label"><span>DPWL (40%)</span><span style="color:var(--teal)">115 / 115</span></div>
-                <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
-              </div>
-              <div class="progress-wrap">
-                <div class="progress-label"><span>CONTRANS (35%)</span><span style="color:var(--teal)">100 / 100</span></div>
-                <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
-              </div>
-              <div class="progress-wrap">
-                <div class="progress-label"><span>COSMOS DV (25%)</span><span style="color:var(--teal)">72 / 72</span></div>
-                <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
-              </div>
-              <table class="xls-table" style="margin-top:10px;">
-                <tr><th>Contenedor</th><th>Tipo</th><th>BL</th><th>Cliente</th><th>Depósito</th><th>Estado</th></tr>
-                <tr><td>ABCU1234567</td><td>40HC</td><td>ZIMULMA001</td><td>TEXTIL SA</td><td class="cell-teal">DPWL</td><td class="cell-yellow">VIP</td></tr>
-                <tr><td>TCKU9876543</td><td>20ST</td><td>ZIMULMA002</td><td>AGRO PERU</td><td class="cell-blue">CONTRANS</td><td style="color:var(--text2)">PCT</td></tr>
-                <tr><td>MSCU5551234</td><td>40HC</td><td>ZIMULMA002</td><td>AGRO PERU</td><td class="cell-blue">CONTRANS</td><td style="color:var(--text2)">PCT</td></tr>
-                <tr><td>GESU1122334</td><td>REEFER</td><td>ZIMULMA003</td><td>FRUTAS SRL</td><td class="cell-teal">DPWL</td><td class="cell-red">CONFLICTO</td></tr>
-              </table>
+          <div class="mockup-panel" id="m2-b">
+            <div class="win-bar"><div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div><span class="win-title">Pre-asignacion_NORDIC_GRACE.xlsx</span></div>
+            <div class="xt"><div class="xt-tab a">Resumen</div><div class="xt-tab">Dep A</div><div class="xt-tab">Dep B</div><div class="xt-tab">Data Completa</div></div>
+            <div class="xb">
+              <div class="ms"><div class="ms-item"><div class="ms-n">287</div><div class="ms-l">Asignados</div></div><div class="ms-item"><div class="ms-n">18</div><div class="ms-l">VIP</div></div><div class="ms-item"><div class="ms-n">3</div><div class="ms-l">Alertas</div></div></div>
+              <div class="pb-wrap"><div class="pb-lbl"><span>Dep&oacute;sito A (40%)</span><span style="color:var(--teal)">115/115</span></div><div class="pb"><div class="pb-fill" style="width:100%"></div></div></div>
+              <div class="pb-wrap"><div class="pb-lbl"><span>Dep&oacute;sito B (35%)</span><span style="color:var(--teal)">100/100</span></div><div class="pb"><div class="pb-fill" style="width:100%"></div></div></div>
+              <div class="pb-wrap"><div class="pb-lbl"><span>Dep&oacute;sito C (25%)</span><span style="color:var(--teal)">72/72</span></div><div class="pb"><div class="pb-fill" style="width:100%"></div></div></div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- ③ CORTE DIARIO -->
-      <div class="proj-block">
+      <!-- F3: Corte Diario -->
+      <div class="featured-block">
         <div class="proj-info">
-          <div class="proj-number">03 / 08</div>
-          <div class="project-tags" style="margin-bottom:1rem;">
-            <span class="project-tag">Control operativo</span>
-            <span class="project-tag">Alertas</span>
-            <span class="project-tag">Seguimiento</span>
-          </div>
-          <div class="project-title">Panel de Control de Devoluciones - Corte Diario y Semanal</div>
-          <p class="project-problem">El equipo verificaba manualmente dos veces al día si las instrucciones de devolución se habían ejecutado según lo planificado, sin alertas automáticas cuando algo salía mal.</p>
+          <div class="project-tags" style="margin-bottom:1rem;"><span class="project-tag">Python</span><span class="project-tag">Control operativo</span><span class="project-tag">Alertas</span></div>
+          <div class="project-title">Panel de Control de Devoluciones &ndash; Corte Diario y Semanal</div>
+          <p class="project-problem">El equipo verificaba dos veces al d&iacute;a si las instrucciones de devoluci&oacute;n se ejecutaron seg&uacute;n lo planificado, sin alertas autom&aacute;ticas cuando algo fallaba.</p>
           <div class="project-impact">
-            <div class="impact-item"><div class="impact-dot"></div>Genera el corte de avance automáticamente a las 12:00 pm y 5:30 pm</div>
-            <div class="impact-item"><div class="impact-dot"></div>Detecta y prioriza 8 tipos de alerta según gravedad operativa</div>
-            <div class="impact-item"><div class="impact-dot"></div>Reporte semanal con semáforo: verde cuando se cumple lo acordado, rojo cuando hay desvío</div>
+            <div class="impact-item"><div class="impact-dot"></div>Genera el corte autom&aacute;ticamente a las 12:00 pm y 5:30 pm</div>
+            <div class="impact-item"><div class="impact-dot"></div>8 tipos de alerta priorizadas por gravedad operativa</div>
+            <div class="impact-item"><div class="impact-dot"></div>Comparativo semanal instruido vs real con sem&aacute;foro</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-top:1.25rem;">
+            <div class="mini-metric"><div class="mini-metric-num">2x/d&iacute;a</div><div class="mini-metric-label">autom&aacute;tico</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">8</div><div class="mini-metric-label">tipos de alerta</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">100%</div><div class="mini-metric-label">cobertura</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">0</div><div class="mini-metric-label">revisi&oacute;n manual</div></div>
           </div>
         </div>
-        <div>
+        <div class="mockup-wrap">
           <div class="mockup-tabs">
-            <div class="mockup-tab active" onclick="showTab(this,'cor1','alertas')">Alertas</div>
-            <div class="mockup-tab" onclick="showTab(this,'cor1','semanal')">Comparativo Semanal</div>
+            <div class="mockup-tab active" onclick="stab(this,'m3','a')">Alertas</div>
+            <div class="mockup-tab" onclick="stab(this,'m3','b')">Comparativo</div>
           </div>
-          <div class="mockup-panel active" id="cor1-alertas">
-            <div class="win-bar">
-              <div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div>
-              <div class="win-title">Corte_Diario_12:00_23052026.xlsx — Validacion ATC</div>
-            </div>
-            <div class="xls-tabs">
-              <div class="xls-tab active">Validación ATC</div>
-              <div class="xls-tab">Resumen Ejecutivo</div>
-              <div class="xls-tab">Alertas Depósito</div>
-            </div>
-            <div class="xls-body">
-              <div class="metric-strip">
-                <div class="metric-strip-item"><div class="metric-strip-num" style="color:#ff5f57;">3</div><div class="metric-strip-label">Alertas críticas</div></div>
-                <div class="metric-strip-item"><div class="metric-strip-num" style="color:#febc2e;">7</div><div class="metric-strip-label">Requieren acción</div></div>
-                <div class="metric-strip-item"><div class="metric-strip-num">84%</div><div class="metric-strip-label">Avance emisión</div></div>
-              </div>
-              <table class="xls-table">
-                <tr><th>P.</th><th>Tipo de Alerta</th><th>Contenedor</th><th>Depósito</th><th>Severidad</th></tr>
-                <tr><td>1</td><td>SOC emitido</td><td>ABCU1234567</td><td>DPWL</td><td class="cell-red">CRITICA</td></tr>
-                <tr><td>2</td><td>Sin validar por ATC</td><td>MSCU5551234</td><td>CONTRANS</td><td class="cell-red">ALTA</td></tr>
-                <tr><td>3</td><td>Desvío no justificado</td><td>TCKU9876543</td><td>COSMOS DV</td><td class="cell-red">ALTA</td></tr>
-                <tr><td>4</td><td>Sin asignación</td><td>GESU1122334</td><td>DPWL</td><td class="cell-yellow">MEDIA</td></tr>
-                <tr><td>5</td><td>Supervisor no validó</td><td>CSNU4455667</td><td>CONTRANS</td><td class="cell-yellow">MEDIA</td></tr>
-                <tr><td>6</td><td>Desvío justificado</td><td>HLXU8899001</td><td>DPWL</td><td class="cell-blue">INFO</td></tr>
+          <div class="mockup-panel active" id="m3-a">
+            <div class="win-bar"><div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div><span class="win-title">Corte_Diario_12:00.xlsx</span></div>
+            <div class="xt"><div class="xt-tab a">Alertas ATC</div><div class="xt-tab">Resumen</div><div class="xt-tab">Desv&iacute;os</div></div>
+            <div class="xb">
+              <div class="ms"><div class="ms-item"><div class="ms-n" style="color:#ff5f57">3</div><div class="ms-l">Cr&iacute;ticas</div></div><div class="ms-item"><div class="ms-n" style="color:#febc2e">7</div><div class="ms-l">Requieren acci&oacute;n</div></div><div class="ms-item"><div class="ms-n">84%</div><div class="ms-l">Avance</div></div></div>
+              <table class="xt-tbl"><tr><th>P.</th><th>Alerta</th><th>Contenedor</th><th>Dep.</th><th>Nivel</th></tr>
+                <tr><td>1</td><td>SOC emitido</td><td>ABCU1234567</td><td>Dep A</td><td class="cr">CRITICA</td></tr>
+                <tr><td>2</td><td>Sin validar</td><td>MSCU5551234</td><td>Dep B</td><td class="cr">ALTA</td></tr>
+                <tr><td>3</td><td>Desv&iacute;o no justificado</td><td>TCKU9876543</td><td>Dep C</td><td class="cr">ALTA</td></tr>
+                <tr><td>4</td><td>Sin asignaci&oacute;n</td><td>GESU1122334</td><td>Dep A</td><td class="cy">MEDIA</td></tr>
               </table>
             </div>
           </div>
-          <div class="mockup-panel" id="cor1-semanal">
-            <div class="win-bar">
-              <div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div>
-              <div class="win-title">Corte_Semanal_semana42.xlsx — Comparativo Instruido vs Real</div>
-            </div>
-            <div class="xls-tabs">
-              <div class="xls-tab active">Comparativo</div>
-              <div class="xls-tab">Detalle</div>
-              <div class="xls-tab">Anomalías</div>
-            </div>
-            <div class="xls-body">
-              <table class="xls-table">
-                <tr><th>Depósito</th><th>Categoría</th><th>Instruido</th><th>Real</th><th>Desvío</th><th>Estado</th></tr>
-                <tr><td>DPWL</td><td>40HC</td><td>40%</td><td>41%</td><td>+1%</td><td class="cell-green">OK</td></tr>
-                <tr><td>DPWL</td><td>20ST</td><td>35%</td><td>38%</td><td>+3%</td><td class="cell-green">OK</td></tr>
-                <tr><td>CONTRANS</td><td>40HC</td><td>35%</td><td>52%</td><td>+17%</td><td class="cell-yellow">REVISAR</td></tr>
-                <tr><td>CONTRANS</td><td>REEFER</td><td>50%</td><td>50%</td><td>0%</td><td class="cell-green">OK</td></tr>
-                <tr><td>COSMOS DV</td><td>40HC</td><td>25%</td><td>7%</td><td>-18%</td><td class="cell-yellow">REVISAR</td></tr>
-                <tr><td>COSMOS DV</td><td>20ST</td><td>30%</td><td>5%</td><td>-25%</td><td class="cell-red">DESVIO</td></tr>
-              </table>
-            </div>
+          <div class="mockup-panel" id="m3-b">
+            <div class="win-bar"><div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div><span class="win-title">Corte_Semanal_semana42.xlsx</span></div>
+            <div class="xt"><div class="xt-tab a">Comparativo</div><div class="xt-tab">Detalle</div></div>
+            <div class="xb"><table class="xt-tbl"><tr><th>Dep&oacute;sito</th><th>Categor&iacute;a</th><th>Instruido</th><th>Real</th><th>Desv&iacute;o</th><th>Estado</th></tr>
+              <tr><td>Dep A</td><td>40HC</td><td>40%</td><td>41%</td><td>+1%</td><td class="cg">OK</td></tr>
+              <tr><td>Dep B</td><td>40HC</td><td>35%</td><td>52%</td><td>+17%</td><td class="cy">REVISAR</td></tr>
+              <tr><td>Dep C</td><td>20ST</td><td>30%</td><td>5%</td><td>-25%</td><td class="cr">DESVIO</td></tr>
+            </table></div>
           </div>
         </div>
       </div>
 
-      <!-- RESTO DE PROYECTOS — grid compacto con métricas -->
-      <div>
-        <p style="font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2rem;">Otras herramientas del ecosistema</p>
-        <div class="projects-grid" style="border-radius:16px;">
+      <!-- GRID Cosmos -->
+      <p style="font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:1.5rem;">Otras herramientas &mdash; Cosmos Global Logistics</p>
+      <div class="proj-grid-2">
 
-          <!-- Auditoría -->
-          <div class="project-card">
-            <div class="project-tags"><span class="project-tag">Auditoría</span><span class="project-tag">Cumplimiento</span><span class="project-tag">Regulatorio</span></div>
-            <div class="project-title">Auditoría Automatizada de Agentes de Carga</div>
-            <p class="project-problem">Verificar que cada embarque tuviera correctamente identificado a su agente de carga requería revisar uno por uno hasta 200 registros por nave contra bases de datos regulatorias, con alto riesgo de error y exposición a sanciones.</p>
-            <div class="project-impact">
-              <div class="impact-item"><div class="impact-dot"></div>Audita el 100% de embarques con reglas por destino (EE.UU., Canadá, Puerto Rico)</div>
-              <div class="impact-item"><div class="impact-dot"></div>Valida contra el padrón oficial de operadores autorizados</div>
-              <div class="impact-item"><div class="impact-dot"></div>Resultado claro por embarque: correcto, a corregir, o pendiente de validar</div>
-            </div>
-            <div class="project-mini-metrics" style="margin-top:1.25rem;">
-              <div class="mini-metric"><div class="mini-metric-num">45m→2m</div><div class="mini-metric-label">por nave</div></div>
-              <div class="mini-metric"><div class="mini-metric-num">90m/sem</div><div class="mini-metric-label">ahorrados</div></div>
-              <div class="mini-metric"><div class="mini-metric-num">200+</div><div class="mini-metric-label">bookings auditados</div></div>
-              <div class="mini-metric"><div class="mini-metric-num">100%</div><div class="mini-metric-label">cobertura automática</div></div>
+        <!-- Auditoría -->
+        <div class="pg-card">
+          <div class="project-tags"><span class="project-tag">Python</span><span class="project-tag">Auditor&iacute;a</span></div>
+          <div class="project-title">Auditor&iacute;a de Agentes de Carga</div>
+          <p class="project-problem">Revisi&oacute;n manual de hasta 200 registros por nave contra bases regulatorias. 45 minutos por nave.</p>
+          <div class="mockup-wrap" style="margin-top:0.75rem;">
+            <div class="mockup-tabs"><div class="mockup-tab active" onclick="stab(this,'m4','a')">Semáforo resultado</div></div>
+            <div class="mockup-panel active" id="m4-a">
+              <div class="win-bar"><div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div><span class="win-title">Auditoria_Forwarders_V28.xlsx</span></div>
+              <div class="xb"><table class="xt-tbl"><tr><th>Booking</th><th>Embarcador</th><th>Ruta</th><th>Resultado</th></tr>
+                <tr><td>ZIM001</td><td>EXPEDITORS SAC</td><td>US</td><td class="cg">CORRECTO</td></tr>
+                <tr><td>ZIM002</td><td>DHL FORWARDING</td><td>CA</td><td class="cr">FALTA A</td></tr>
+                <tr><td>ZIM003</td><td>TEXTIL SA</td><td>US</td><td class="cr">TIENE A ERRONEO</td></tr>
+                <tr><td>ZIM004</td><td>KUEHNE NAGEL</td><td>PR</td><td class="cb">VALIDAR CLIENTE</td></tr>
+                <tr><td>ZIM005</td><td>AGRO EXPORT</td><td>US</td><td class="cg">CORRECTO</td></tr>
+              </table></div>
             </div>
           </div>
+          <div class="project-mini-metrics" style="margin-top:0.75rem;">
+            <div class="mini-metric"><div class="mini-metric-num">45m&#8594;2m</div><div class="mini-metric-label">por nave</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">100%</div><div class="mini-metric-label">cobertura</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">200+</div><div class="mini-metric-label">bookings</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">0</div><div class="mini-metric-label">errores</div></div>
+          </div>
+        </div>
 
-          <!-- Buscador -->
-          <div class="project-card">
-            <div class="project-tags"><span class="project-tag">Búsqueda inteligente</span><span class="project-tag">Multi-archivo</span></div>
-            <div class="project-title">Buscador de Instrucciones Críticas</div>
-            <p class="project-problem">Instrucciones especiales de clientes estaban enterradas en comentarios de texto libre dentro de los reportes de cada nave. Con 1 a 2 naves por semana, la búsqueda manual consumía horas del equipo con riesgo real de omitir algo crítico.</p>
-            <div class="project-impact">
-              <div class="impact-item"><div class="impact-dot"></div>Escanea simultáneamente todos los reportes de la nave en segundos</div>
-              <div class="impact-item"><div class="impact-dot"></div>Extrae el texto completo sin truncar ni perder contexto</div>
-              <div class="impact-item"><div class="impact-dot"></div>Genera el correo interno listo para enviar al finalizar</div>
-            </div>
-            <div class="project-mini-metrics" style="margin-top:1.25rem;">
-              <div class="mini-metric"><div class="mini-metric-num">60m→30s</div><div class="mini-metric-label">por nave</div></div>
-              <div class="mini-metric"><div class="mini-metric-num">2h/sem</div><div class="mini-metric-label">ahorradas</div></div>
-              <div class="mini-metric"><div class="mini-metric-num">−98%</div><div class="mini-metric-label">tiempo de búsqueda</div></div>
-              <div class="mini-metric"><div class="mini-metric-num">0</div><div class="mini-metric-label">instrucciones omitidas</div></div>
+        <!-- Buscador instrucciones -->
+        <div class="pg-card">
+          <div class="project-tags"><span class="project-tag">Python</span><span class="project-tag">B&uacute;squeda inteligente</span></div>
+          <div class="project-title">Buscador de Instrucciones Cr&iacute;ticas</div>
+          <p class="project-problem">Instrucciones especiales enterradas en comentarios de texto libre en docenas de reportes. 60 min por nave buscando manualmente.</p>
+          <div class="mockup-wrap" style="margin-top:0.75rem;">
+            <div class="mockup-tabs"><div class="mockup-tab active" onclick="stab(this,'m5','a')">Resultado</div></div>
+            <div class="mockup-panel active" id="m5-a">
+              <div class="win-bar"><div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div><span class="win-title">REPORTE_OWNER_20260523.xlsx</span></div>
+              <div class="xb"><table class="xt-tbl"><tr><th>Item</th><th>Archivo origen</th><th>Reserva</th><th>Instrucci&oacute;n encontrada</th></tr>
+                <tr><td>1</td><td>Reporte_Nave_A.xlsx</td><td>ZIM4401823</td><td style="color:var(--teal)">..carga para &gt;&gt;&gt; OWNER &lt;&lt;&lt; en destino final...</td></tr>
+                <tr><td>2</td><td>Reporte_Nave_B.xlsx</td><td>ZIM4401891</td><td style="color:var(--teal)">...instrucci&oacute;n &gt;&gt;&gt; OWNER &lt;&lt;&lt; confirmada por cliente...</td></tr>
+                <tr><td>3</td><td>Reporte_Nave_A.xlsx</td><td>ZIM4401902</td><td style="color:var(--teal)">...contenedor con &gt;&gt;&gt; OWNER &lt;&lt;&lt; registrado...</td></tr>
+              </table></div>
             </div>
           </div>
+          <div class="project-mini-metrics" style="margin-top:0.75rem;">
+            <div class="mini-metric"><div class="mini-metric-num">60m&#8594;30s</div><div class="mini-metric-label">por nave</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">2h/sem</div><div class="mini-metric-label">ahorradas</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">-98%</div><div class="mini-metric-label">tiempo</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">0</div><div class="mini-metric-label">omisiones</div></div>
+          </div>
+        </div>
 
-          <!-- Discrepancias -->
-          <div class="project-card">
-            <div class="project-tags"><span class="project-tag">Liquidación</span><span class="project-tag">Discrepancias</span></div>
-            <div class="project-title">Detector de Discrepancias de Embarque</div>
-            <p class="project-problem">Identificar qué contenedores embarcados no aparecían en documentos oficiales, o viceversa, tomaba entre 30 y 45 minutos de cruce manual por nave. Con 1 a 2 naves por semana, era un proceso crítico que consumía tiempo clave del equipo de liquidación.</p>
-            <div class="project-impact">
-              <div class="impact-item"><div class="impact-dot"></div>Cruza tres fuentes documentales y clasifica: conforme, faltante o no documentada</div>
-              <div class="impact-item"><div class="impact-dot"></div>Genera reporte de auditoría completo y reporte limpio para enviar</div>
-              <div class="impact-item"><div class="impact-dot"></div>Resalta visualmente las discrepancias para acción inmediata</div>
-            </div>
-            <div class="project-mini-metrics" style="margin-top:1.25rem;">
-              <div class="mini-metric"><div class="mini-metric-num">40m→2m</div><div class="mini-metric-label">por nave</div></div>
-              <div class="mini-metric"><div class="mini-metric-num">80m/sem</div><div class="mini-metric-label">ahorrados</div></div>
-              <div class="mini-metric"><div class="mini-metric-num">−95%</div><div class="mini-metric-label">tiempo de proceso</div></div>
-              <div class="mini-metric"><div class="mini-metric-num">3</div><div class="mini-metric-label">fuentes cruzadas</div></div>
+        <!-- Discrepancias -->
+        <div class="pg-card">
+          <div class="project-tags"><span class="project-tag">Python</span><span class="project-tag">Liquidaci&oacute;n</span></div>
+          <div class="project-title">Detector de Discrepancias de Embarque</div>
+          <p class="project-problem">Cruce manual de tres fuentes documentales por nave. 40 minutos con riesgo cr&iacute;tico para la liquidaci&oacute;n y relaciones con el puerto.</p>
+          <div class="mockup-wrap" style="margin-top:0.75rem;">
+            <div class="mockup-tabs"><div class="mockup-tab active" onclick="stab(this,'m6','a')">Resultado</div></div>
+            <div class="mockup-panel active" id="m6-a">
+              <div class="win-bar"><div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div><span class="win-title">REPORTE_LIQUIDACION_NORDIC_GRACE.xlsx</span></div>
+              <div class="xt"><div class="xt-tab a">Liquidaci&oacute;n</div><div class="xt-tab">No embarcados</div><div class="xt-tab">No manifestados</div></div>
+              <div class="xb"><table class="xt-tbl"><tr><th>Contenedor</th><th>Tipo</th><th>DPW</th><th>Manifiesto</th><th>VGM(KG)</th><th>Estado</th></tr>
+                <tr><td>ABCU1234567</td><td>40HC</td><td class="cg">&#10004;</td><td class="cg">&#10004;</td><td>24,200</td><td class="cg">CONFORME</td></tr>
+                <tr><td>TCKU9876543</td><td>20ST</td><td class="cg">&#10004;</td><td class="cr">&#10008;</td><td>12,100</td><td class="cr">NO MANIFEST.</td></tr>
+                <tr><td>MSCU5551234</td><td>40HC</td><td class="cr">&#10008;</td><td class="cg">&#10004;</td><td>-</td><td class="cr">NO EMBARCADO</td></tr>
+              </table></div>
             </div>
           </div>
+          <div class="project-mini-metrics" style="margin-top:0.75rem;">
+            <div class="mini-metric"><div class="mini-metric-num">40m&#8594;2m</div><div class="mini-metric-label">por nave</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">80m/sem</div><div class="mini-metric-label">ahorrados</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">-95%</div><div class="mini-metric-label">tiempo</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">3</div><div class="mini-metric-label">fuentes cruzadas</div></div>
+          </div>
+        </div>
 
-          <!-- Demurrage -->
-          <div class="project-card">
-            <div class="project-tags"><span class="project-tag">Sobrestadía</span><span class="project-tag">Verificación</span></div>
-            <div class="project-title">Verificador de Días Libres vs Cobros por Sobrestadía</div>
-            <p class="project-problem">Detectar si los días libres acordados coincidían con lo que la línea naviera cobraba requería cruzar manualmente dos reportes por nave, hasta 45 minutos cada vez, con riesgo de pagar de más o cobrar de menos.</p>
-            <div class="project-impact">
-              <div class="impact-item"><div class="impact-dot"></div>Valida automáticamente el formato de cada archivo antes de procesar</div>
-              <div class="impact-item"><div class="impact-dot"></div>Lista todas las discrepancias con detalle para gestionar el reclamo</div>
-            </div>
-            <div class="project-mini-metrics" style="margin-top:1.25rem;">
-              <div class="mini-metric"><div class="mini-metric-num">45m→10s</div><div class="mini-metric-label">por nave</div></div>
-              <div class="mini-metric"><div class="mini-metric-num">90m/sem</div><div class="mini-metric-label">ahorrados</div></div>
-              <div class="mini-metric"><div class="mini-metric-num">−98%</div><div class="mini-metric-label">tiempo de proceso</div></div>
-              <div class="mini-metric"><div class="mini-metric-num">100%</div><div class="mini-metric-label">discrepancias detectadas</div></div>
+        <!-- Verificador demurrage -->
+        <div class="pg-card">
+          <div class="project-tags"><span class="project-tag">Python</span><span class="project-tag">Sobrestad&iacute;a</span></div>
+          <div class="project-title">Verificador D&iacute;as Libres vs Sobrestad&iacute;a</div>
+          <p class="project-problem">Cruce manual de dos reportes con formatos distintos. Riesgo de pagar de m&aacute;s o cobrar de menos en cada nave.</p>
+          <div class="mockup-wrap" style="margin-top:0.75rem;">
+            <div class="mockup-tabs"><div class="mockup-tab active" onclick="stab(this,'m7','a')">Resultado</div></div>
+            <div class="mockup-panel active" id="m7-a">
+              <div class="win-bar"><div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div><span class="win-title">DemurragevsFreeDaysReport_20260523.xlsx</span></div>
+              <div class="xb"><table class="xt-tbl"><tr><th>Contenedor</th><th>D&iacute;as libres acordados</th><th>D&iacute;as facturados</th><th>Diferencia</th><th>Estado</th></tr>
+                <tr><td>ABCU1234567</td><td>14</td><td>14</td><td>0</td><td class="cg">OK</td></tr>
+                <tr><td>TCKU9876543</td><td>14</td><td>18</td><td>+4</td><td class="cr">DISCREPANCIA</td></tr>
+                <tr><td>MSCU5551234</td><td>21</td><td>21</td><td>0</td><td class="cg">OK</td></tr>
+                <tr><td>GESU1122334</td><td>14</td><td>20</td><td>+6</td><td class="cr">DISCREPANCIA</td></tr>
+              </table></div>
             </div>
           </div>
+          <div class="project-mini-metrics" style="margin-top:0.75rem;">
+            <div class="mini-metric"><div class="mini-metric-num">45m&#8594;10s</div><div class="mini-metric-label">por nave</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">90m/sem</div><div class="mini-metric-label">ahorrados</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">-98%</div><div class="mini-metric-label">tiempo</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">100%</div><div class="mini-metric-label">detectadas</div></div>
+          </div>
+        </div>
 
-          <!-- Conciliación -->
-          <div class="project-card" style="grid-column: 1 / -1;">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start;">
-              <div>
-                <div class="project-tags"><span class="project-tag">Conciliación</span><span class="project-tag">Carga marítima</span></div>
-                <div class="project-title">Sistema de Conciliación de Carga Marítima</div>
-                <p class="project-problem">Confirmar que todos los contenedores documentados estuvieran físicamente a bordo tomaba 1 hora por nave. Con 1 a 2 naves por semana, eran hasta 2 horas semanales en un proceso crítico sin herramienta de apoyo, donde un error podía significar penalidades o carga de cliente quedada en tierra.</p>
-                <div class="project-impact">
-                  <div class="impact-item"><div class="impact-dot"></div>Concilia documentos oficiales contra carga física a bordo en minutos</div>
-                  <div class="impact-item"><div class="impact-dot"></div>Identifica embarques incompletos: guías donde parte de la carga se quedó en tierra</div>
-                  <div class="impact-item"><div class="impact-dot"></div>Separa resultados por tipo de destino para facilitar la gestión por equipo</div>
+        <!-- Conciliacion -->
+        <div class="pg-card">
+          <div class="project-tags"><span class="project-tag">Python</span><span class="project-tag">Conciliaci&oacute;n</span></div>
+          <div class="project-title">Sistema de Conciliaci&oacute;n de Carga Mar&iacute;tima</div>
+          <p class="project-problem">1 hora por nave para confirmar carga f&iacute;sica vs documentada. Un error: penalidades o carga de cliente en tierra.</p>
+          <div class="mockup-wrap" style="margin-top:0.75rem;">
+            <div class="mockup-tabs"><div class="mockup-tab active" onclick="stab(this,'m8','a')">Resumen</div></div>
+            <div class="mockup-panel active" id="m8-a">
+              <div class="win-bar"><div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div><span class="win-title">CONCILIACION_AS_FELICIA_108N.xlsx</span></div>
+              <div class="xt"><div class="xt-tab a">Resumen</div><div class="xt-tab">Conformes</div><div class="xt-tab">Discrepancias</div><div class="xt-tab">Shortship</div></div>
+              <div class="xb">
+                <div class="ms"><div class="ms-item"><div class="ms-n" style="color:#28c840">142</div><div class="ms-l">Conformes</div></div><div class="ms-item"><div class="ms-n" style="color:#ff5f57">3</div><div class="ms-l">Discrepancias</div></div><div class="ms-item"><div class="ms-n" style="color:#febc2e">1</div><div class="ms-l">Shortship</div></div></div>
+                <table class="xt-tbl"><tr><th>Gu&iacute;a</th><th>Manifiesto</th><th>A bordo</th><th>Estado</th></tr>
+                  <tr><td>BL-001</td><td class="cg">&#10004;</td><td class="cg">&#10004;</td><td class="cg">CONFORME</td></tr>
+                  <tr><td>BL-047</td><td class="cg">&#10004;</td><td class="cr">&#10008;</td><td class="cr">FALTANTE</td></tr>
+                  <tr><td>BL-089</td><td class="cy">PARCIAL</td><td class="cy">PARCIAL</td><td class="cy">SHORTSHIP</td></tr>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="project-mini-metrics" style="margin-top:0.75rem;">
+            <div class="mini-metric"><div class="mini-metric-num">1h&#8594;3m</div><div class="mini-metric-label">por nave</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">2h/sem</div><div class="mini-metric-label">ahorradas</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">-95%</div><div class="mini-metric-label">tiempo</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">100%</div><div class="mini-metric-label">gu&iacute;as verificadas</div></div>
+          </div>
+        </div>
+
+        <!-- Recuperacion documental -->
+        <div class="pg-card">
+          <div class="project-tags"><span class="project-tag highlight">&#9733; Auditor&iacute;a aprobada</span><span class="project-tag">Apps Script</span></div>
+          <div class="project-title">Recuperaci&oacute;n y Archivo de 2 A&ntilde;os de Documentaci&oacute;n</div>
+          <p class="project-problem">Sin documentaci&oacute;n organizada ante una auditor&iacute;a externa inminente. Un script recorri&oacute; 2 a&ntilde;os de correos y clasific&oacute; todo autom&aacute;ticamente en 1 semana.</p>
+          <div class="mockup-wrap" style="margin-top:0.75rem;">
+            <div class="mockup-tabs"><div class="mockup-tab active" onclick="stab(this,'m9','a')">Estructura generada</div></div>
+            <div class="mockup-panel active" id="m9-a">
+              <div class="win-bar"><div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div><span class="win-title">Google Drive &mdash; Estructura generada autom&aacute;ticamente</span></div>
+              <div class="win-body" style="font-family:var(--mono);font-size:10px;line-height:2;color:var(--text2);">
+                <div style="color:var(--teal)">&#128193; 01_DOCUMENTACION</div>
+                <div style="padding-left:1rem;">&#128193; 2024</div>
+                <div style="padding-left:2rem;">&#128193; Semana 01 &mdash; Enero</div>
+                <div style="padding-left:3rem;color:var(--text3)">&#128196; AS_FELICIA_108N &mdash; 01 &mdash; Manifiesto.pdf <span class="ok">&#10004;</span></div>
+                <div style="padding-left:3rem;color:var(--text3)">&#128196; AS_FELICIA_108N &mdash; 02 &mdash; Transmisi&oacute;n.pdf <span class="ok">&#10004;</span></div>
+                <div style="padding-left:3rem;color:var(--text3)">&#128196; AS_FELICIA_108N &mdash; 05 &mdash; Listado.xlsx <span class="ok">&#10004;</span></div>
+                <div style="padding-left:2rem;">&#128193; Semana 02 &mdash; Enero</div>
+                <div style="padding-left:2rem;color:var(--text3)">...</div>
+                <div style="padding-left:1rem;">&#128193; 2025</div>
+                <div style="padding-left:2rem;color:var(--text3)">... (52 semanas &times; N naves)</div>
+              </div>
+            </div>
+          </div>
+          <div class="project-mini-metrics" style="margin-top:0.75rem;">
+            <div class="mini-metric"><div class="mini-metric-num">2 a&ntilde;os</div><div class="mini-metric-label">recuperados</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">1 sem</div><div class="mini-metric-label">vs meses manual</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">0</div><div class="mini-metric-label">observaciones</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">3</div><div class="mini-metric-label">&aacute;reas cubiertas</div></div>
+          </div>
+        </div>
+
+        <!-- Monitor plazos -->
+        <div class="pg-card">
+          <div class="project-tags"><span class="project-tag">Apps Script</span><span class="project-tag">Control de plazos</span></div>
+          <div class="project-title">Monitor de Plazos Documentarios</div>
+          <p class="project-problem">Verificar 12 eventos documentarios por nave requeria revisar correo a correo manualmente. Ahora un script construye la tabla de seguimiento en Google Sheets autom&aacute;ticamente.</p>
+          <div class="mockup-wrap" style="margin-top:0.75rem;">
+            <div class="mockup-tabs"><div class="mockup-tab active" onclick="stab(this,'m10','a')">Google Sheets</div></div>
+            <div class="mockup-panel active" id="m10-a">
+              <div class="win-bar"><div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div><span class="win-title">Seguimiento_Plazos_NORDIC_GRACE.sheets</span></div>
+              <div class="xt"><div class="xt-tab a">Expo</div><div class="xt-tab">Impo</div></div>
+              <div class="xb"><table class="xt-tbl"><tr><th>C&oacute;digo</th><th>Evento</th><th>Plazo</th><th>Real</th><th>Estado</th></tr>
+                <tr><td>P01</td><td>Registro reservas (ETB-7d)</td><td>15/05 08:00</td><td>14/05 17:30</td><td class="cg">A TIEMPO</td></tr>
+                <tr><td>P03</td><td>Transmisi&oacute;n RCA aduana (ETB-40h)</td><td>16/05 06:00</td><td>16/05 05:45</td><td class="cg">A TIEMPO</td></tr>
+                <tr><td>P05</td><td>Transmisi&oacute;n USA CMS203 (ETB-25h)</td><td>16/05 21:00</td><td>17/05 02:10</td><td class="cr">VENCIDO</td></tr>
+                <tr><td>P09</td><td>Aviso de salida (Zarpe+6h)</td><td>18/05 14:00</td><td>-</td><td class="cy">PENDIENTE</td></tr>
+              </table></div>
+            </div>
+          </div>
+          <div class="project-mini-metrics" style="margin-top:0.75rem;">
+            <div class="mini-metric"><div class="mini-metric-num">12</div><div class="mini-metric-label">eventos monitoreados</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">2</div><div class="mini-metric-label">m&oacute;dulos expo/impo</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">100%</div><div class="mini-metric-label">trazabilidad</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">0</div><div class="mini-metric-label">revisi&oacute;n manual</div></div>
+          </div>
+        </div>
+
+        <!-- Avisos zarpe -->
+        <div class="pg-card">
+          <div class="project-tags"><span class="project-tag">Apps Script</span><span class="project-tag">Avisos</span></div>
+          <div class="project-title">Verificador de Avisos de Zarpe y Cumplimiento</div>
+          <p class="project-problem">Confirmar que los avisos de zarpe a clientes se enviaron dentro del plazo requeria abrir correo por correo nave a nave. Ahora el script valida autom&aacute;ticamente.</p>
+          <div class="mockup-wrap" style="margin-top:0.75rem;">
+            <div class="mockup-tabs"><div class="mockup-tab active" onclick="stab(this,'m11','a')">Google Sheets</div></div>
+            <div class="mockup-panel active" id="m11-a">
+              <div class="win-bar"><div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div><span class="win-title">Avisos_Zarpe_Seguimiento.sheets</span></div>
+              <div class="xb"><table class="xt-tbl"><tr><th>Nave</th><th>Viaje</th><th>Zarpe</th><th>Aviso enviado</th><th>Plazo (6h)</th><th>Cumplimiento</th></tr>
+                <tr><td>AS FELICIA</td><td>113N</td><td>20/05 08:00</td><td>20/05 12:30</td><td>20/05 14:00</td><td class="cg">A TIEMPO</td></tr>
+                <tr><td>NORDIC GRACE</td><td>44N</td><td>21/05 06:00</td><td>21/05 14:15</td><td>21/05 12:00</td><td class="cr">FUERA PLAZO</td></tr>
+                <tr><td>BOX ENDURANCE</td><td>22N</td><td>22/05 09:00</td><td>22/05 13:45</td><td>22/05 15:00</td><td class="cg">A TIEMPO</td></tr>
+              </table></div>
+            </div>
+          </div>
+          <div class="project-mini-metrics" style="margin-top:0.75rem;">
+            <div class="mini-metric"><div class="mini-metric-num">Nav/nav</div><div class="mini-metric-label">seguimiento</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">100%</div><div class="mini-metric-label">visible</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">0</div><div class="mini-metric-label">revisi&oacute;n manual</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">Sheets</div><div class="mini-metric-label">salida autom&aacute;tica</div></div>
+          </div>
+        </div>
+
+        <!-- KPIs Looker Studio -->
+        <div class="pg-card">
+          <div class="project-tags"><span class="project-tag">Looker Studio</span><span class="project-tag highlight">En desarrollo</span></div>
+          <div class="project-title">Dashboard de KPIs Operativos</div>
+          <p class="project-problem">Los indicadores de gesti&oacute;n se presentaban en reportes est&aacute;ticos mensuales. Este dashboard los consolida en tiempo real para Callao y Paita.</p>
+          <div class="mockup-wrap" style="margin-top:0.75rem;">
+            <div class="mockup-tabs"><div class="mockup-tab active" onclick="stab(this,'m12','a')">Dashboard</div></div>
+            <div class="mockup-panel active" id="m12-a">
+              <div class="win-bar"><div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div><span class="win-title">KPIs Documentaci&oacute;n &mdash; Looker Studio</span></div>
+              <div class="win-body">
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px;">
+                  <div style="background:rgba(13,190,140,0.1);border:1px solid rgba(13,190,140,0.2);border-radius:6px;padding:8px;text-align:center;"><div style="font-family:var(--head);font-size:1.4rem;font-weight:700;color:#28c840">100%</div><div style="font-family:var(--mono);font-size:9px;color:var(--text3)">Avisos llegada</div></div>
+                  <div style="background:rgba(13,190,140,0.1);border:1px solid rgba(13,190,140,0.2);border-radius:6px;padding:8px;text-align:center;"><div style="font-family:var(--head);font-size:1.4rem;font-weight:700;color:#28c840">100%</div><div style="font-family:var(--mono);font-size:9px;color:var(--text3)">Cumplim. expo</div></div>
+                  <div style="background:rgba(254,188,46,0.1);border:1px solid rgba(254,188,46,0.2);border-radius:6px;padding:8px;text-align:center;"><div style="font-family:var(--head);font-size:1.4rem;font-weight:700;color:#febc2e">85%</div><div style="font-family:var(--mono);font-size:9px;color:var(--text3)">Registro MYC</div></div>
+                </div>
+                <table class="xt-tbl"><tr><th>Sucursal</th><th>Contenedores Impo</th><th>Contenedores Expo</th><th>Naves</th></tr>
+                  <tr><td>Callao</td><td>816</td><td>891</td><td>4</td></tr>
+                  <tr><td>Paita</td><td>64</td><td>233</td><td>3</td></tr>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="project-mini-metrics" style="margin-top:0.75rem;">
+            <div class="mini-metric"><div class="mini-metric-num">2</div><div class="mini-metric-label">sucursales</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">3</div><div class="mini-metric-label">&aacute;reas</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">100%</div><div class="mini-metric-label">visible</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">Live</div><div class="mini-metric-label">tiempo real</div></div>
+          </div>
+        </div>
+
+        <!-- NotebookLM -->
+        <div class="pg-card">
+          <div class="project-tags"><span class="project-tag">NotebookLM</span><span class="project-tag">Gesti&oacute;n del conocimiento</span></div>
+          <div class="project-title">Base de Conocimiento T&eacute;cnico del ERP</div>
+          <p class="project-problem">Justificar t&eacute;cnicamente defectos y mejoras del sistema en desarrollo requer&iacute;a leer decenas de historias de usuario una por una. Centralic&eacute; todo y ahora genero las defensas en segundos.</p>
+          <div class="mockup-wrap" style="margin-top:0.75rem;">
+            <div class="mockup-tabs"><div class="mockup-tab active" onclick="stab(this,'m13','a')">Consulta</div></div>
+            <div class="mockup-panel active" id="m13-a">
+              <div class="win-bar"><div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div><span class="win-title">NotebookLM &mdash; Base de conocimiento SION</span></div>
+              <div class="win-body">
+                <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:10px;margin-bottom:8px;">
+                  <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:4px;">CONSULTA</div>
+                  <div style="font-size:12px;color:var(--text2);">"&iquest;Justificaci&oacute;n t&eacute;cnica para el defecto #DEF-0047 &mdash; campo de peso no actualiza autom&aacute;ticamente?"</div>
+                </div>
+                <div style="background:rgba(13,190,140,0.05);border:1px solid rgba(13,190,140,0.15);border-radius:6px;padding:10px;">
+                  <div style="font-family:var(--mono);font-size:10px;color:var(--teal);margin-bottom:4px;">RESPUESTA (basada en HU-0234, HU-0235)</div>
+                  <div style="font-size:11px;color:var(--text2);line-height:1.6;">Seg&uacute;n la Historia de Usuario HU-0234, el campo peso debe actualizarse autom&aacute;ticamente al confirmar la carga. El defecto reportado es consistente con la regla de negocio definida en criterios de aceptaci&oacute;n punto 3.b...</div>
                 </div>
               </div>
-              <div class="project-mini-metrics" style="margin-top:2rem;">
-                <div class="mini-metric"><div class="mini-metric-num">1h→3m</div><div class="mini-metric-label">por nave</div></div>
-                <div class="mini-metric"><div class="mini-metric-num">2h/sem</div><div class="mini-metric-label">ahorradas</div></div>
-                <div class="mini-metric"><div class="mini-metric-num">−95%</div><div class="mini-metric-label">tiempo de proceso</div></div>
-                <div class="mini-metric"><div class="mini-metric-num">100%</div><div class="mini-metric-label">guías verificadas</div></div>
-              </div>
             </div>
           </div>
+          <div class="project-mini-metrics" style="margin-top:0.75rem;">
+            <div class="mini-metric"><div class="mini-metric-num">100%</div><div class="mini-metric-label">historias cubiertas</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">Seg</div><div class="mini-metric-label">vs horas lectura</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">0</div><div class="mini-metric-label">sin revisar</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">$380K</div><div class="mini-metric-label">proyecto ERP</div></div>
+          </div>
+        </div>
 
+      </div>
+    </div><!-- end cosmos -->
+
+    <!-- ═══ REPSOL ═══ -->
+    <div class="company-group fade-in" data-company="repsol">
+      <div class="company-group-header">
+        <div>
+          <div class="company-badge badge-repsol">Repsol</div>
+          <div class="company-group-title">3 herramientas &middot; Nov 2022 &ndash; Dic 2024</div>
+          <div class="company-group-sub">Power Apps &middot; Power Automate &middot; Excel Macros &middot; VBA</div>
         </div>
       </div>
 
-    </div><!-- end proj-showcase -->
+      <!-- F4: Ticketera DAMs -->
+      <div class="featured-block">
+        <div class="proj-info">
+          <div class="project-tags" style="margin-bottom:1rem;"><span class="project-tag highlight" style="background:rgba(255,100,0,0.1);color:#ff8c42;border-color:rgba(255,100,0,0.3);">&#9733; Mayor impacto</span><span class="project-tag">Power Apps</span><span class="project-tag">Power Automate</span></div>
+          <div class="project-title">Sistema de Gesti&oacute;n de Declaraciones Aduaneras</div>
+          <p class="project-problem">M&aacute;s de 50 DAMs al d&iacute;a se gestionaban por correo. El &aacute;rea comercial digitaba datos manualmente sin validaciones, cometi&oacute; errores frecuentes y sin visibilidad del estado de cada declaraci&oacute;n.</p>
+          <div class="project-impact">
+            <div class="impact-item"><div class="impact-dot"></div>Campos con l&oacute;gica intr&iacute;nseca y autoc&aacute;lculo de importes eliminan errores de digitaci&oacute;n</div>
+            <div class="impact-item"><div class="impact-dot"></div>El comercial ve el estado de su DAM en tiempo real y rectifica directamente</div>
+            <div class="impact-item"><div class="impact-dot"></div>L&oacute;gica autom&aacute;tica: regularizar la misma DAM o anular y numerar nueva</div>
+            <div class="impact-item"><div class="impact-dot"></div>Descarga de DAM y sustento con notificaciones autom&aacute;ticas v&iacute;a Power Automate</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-top:1.25rem;">
+            <div class="mini-metric"><div class="mini-metric-num">50+</div><div class="mini-metric-label">DAMs por d&iacute;a</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">1h&#8594;10m</div><div class="mini-metric-label">por declaraci&oacute;n</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">~41h</div><div class="mini-metric-label">ahorradas al d&iacute;a</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">0</div><div class="mini-metric-label">errores de digitaci&oacute;n</div></div>
+          </div>
+        </div>
+        <div class="mockup-wrap">
+          <div class="mockup-tabs">
+            <div class="mockup-tab active" onclick="stab(this,'m14','a')">Formulario DAM</div>
+            <div class="mockup-tab" onclick="stab(this,'m14','b')">Panel de gesti&oacute;n</div>
+          </div>
+          <div class="mockup-panel active" id="m14-a">
+            <div class="win-bar"><div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div><span class="win-title">Gesti&oacute;n DAMs &mdash; Power Apps</span></div>
+            <div class="win-body">
+              <div style="background:rgba(255,100,0,0.06);border:1px solid rgba(255,100,0,0.15);border-radius:6px;padding:8px;margin-bottom:10px;font-family:var(--mono);font-size:10px;color:#ff8c42;">NUEVA SOLICITUD DE DAM &mdash; Bunker Exportaci&oacute;n</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                <div class="fl"><div class="fl-lbl">Tipo de operaci&oacute;n</div><div class="fl-val" style="color:var(--teal);">Exportaci&oacute;n &#9660;</div></div>
+                <div class="fl"><div class="fl-lbl">Aduana</div><div class="fl-val" style="color:var(--teal);">Callao &#9660;</div></div>
+                <div class="fl"><div class="fl-lbl">Valor FOB (USD)</div><div class="fl-val">125,400.00</div></div>
+                <div class="fl"><div class="fl-lbl">Flete (calculado)</div><div class="fl-val" style="color:var(--teal);">3,762.00 <span style="font-size:9px">&#9654; auto</span></div></div>
+                <div class="fl"><div class="fl-lbl">Seguro (calculado)</div><div class="fl-val" style="color:var(--teal);">627.00 <span style="font-size:9px">&#9654; auto</span></div></div>
+                <div class="fl"><div class="fl-lbl">Valor CIF (calculado)</div><div class="fl-val" style="color:var(--teal);font-weight:500;">129,789.00 <span style="font-size:9px">&#9654; auto</span></div></div>
+              </div>
+              <div class="fl" style="margin-top:6px;"><div class="fl-lbl">Estado de regularizaci&oacute;n</div><div class="fl-val" style="color:#28c840;">&#10004; Se puede regularizar en misma DAM</div></div>
+              <div style="display:flex;gap:6px;margin-top:8px;">
+                <div class="run-btn" style="background:rgba(255,100,0,0.8);flex:1;text-align:center;">Enviar al &aacute;rea de Aduanas</div>
+              </div>
+            </div>
+          </div>
+          <div class="mockup-panel" id="m14-b">
+            <div class="win-bar"><div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div><span class="win-title">Panel Aduanas &mdash; Gesti&oacute;n de DAMs</span></div>
+            <div class="xt"><div class="xt-tab a">Todas</div><div class="xt-tab">Pendientes</div><div class="xt-tab">Observadas</div></div>
+            <div class="xb"><table class="xt-tbl"><tr><th>DAM #</th><th>Solicitante</th><th>Tipo</th><th>Valor CIF</th><th>Estado</th><th>Acci&oacute;n</th></tr>
+              <tr><td>2026-001</td><td>Comercial A</td><td>Exportaci&oacute;n</td><td>129,789</td><td class="cg">NUMERADA</td><td style="color:var(--teal)">&#8595; Descargar</td></tr>
+              <tr><td>2026-002</td><td>Comercial B</td><td>Exportaci&oacute;n</td><td>87,200</td><td class="cy">EN REVISI&Oacute;N</td><td style="color:#febc2e">&#9998; Observar</td></tr>
+              <tr><td>2026-003</td><td>Comercial A</td><td>Exportaci&oacute;n</td><td>245,100</td><td class="cr">ANULAR &amp; NUEVA</td><td style="color:#ff5f57">&#9888; Ver motivo</td></tr>
+              <tr><td>2026-004</td><td>Comercial C</td><td>Exportaci&oacute;n</td><td>33,500</td><td class="cg">NUMERADA</td><td style="color:var(--teal)">&#8595; Descargar</td></tr>
+            </table></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRID Repsol -->
+      <div class="proj-grid-2">
+
+        <!-- Calculadora portes -->
+        <div class="pg-card">
+          <div class="project-tags"><span class="project-tag">Excel</span><span class="project-tag">Macros VBA</span><span class="project-tag">Comercio exterior</span></div>
+          <div class="project-title">Calculadora de Portes por Incoterm</div>
+          <p class="project-problem">El &aacute;rea de compras calculaba manualmente los costos adicionales por Incoterm y valor de factura en cada importaci&oacute;n, con riesgo de omitir conceptos clave.</p>
+          <div class="mockup-wrap" style="margin-top:0.75rem;">
+            <div class="mockup-tabs"><div class="mockup-tab active" onclick="stab(this,'m15','a')">Calculadora</div></div>
+            <div class="mockup-panel active" id="m15-a">
+              <div class="win-bar"><div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div><span class="win-title">Calculadora_Portes_Incoterm.xlsm</span></div>
+              <div class="win-body">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
+                  <div class="fl"><div class="fl-lbl">Incoterm</div><div class="fl-val" style="color:var(--teal)">FOB &#9660;</div></div>
+                  <div class="fl"><div class="fl-lbl">Valor factura (USD)</div><div class="fl-val">50,000</div></div>
+                </div>
+                <table class="xt-tbl"><tr><th>Concepto</th><th>Aplica</th><th>Importe (USD)</th></tr>
+                  <tr><td>Flete internacional</td><td class="cg">S&Iacute;</td><td style="color:var(--teal)">1,500.00</td></tr>
+                  <tr><td>Seguro</td><td class="cg">S&Iacute;</td><td style="color:var(--teal)">250.00</td></tr>
+                  <tr><td>Ad valorem (6%)</td><td class="cg">S&Iacute;</td><td style="color:var(--teal)">3,105.00</td></tr>
+                  <tr><td>IGV (16%)</td><td class="cg">S&Iacute;</td><td style="color:var(--teal)">8,280.00</td></tr>
+                  <tr><td>Descarga origen</td><td class="cr">NO</td><td style="color:var(--text3)">-</td></tr>
+                  <tr style="background:rgba(13,190,140,0.08)"><td><strong>TOTAL portes a considerar</strong></td><td></td><td style="color:var(--teal);font-weight:700">13,135.00</td></tr>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="project-impact" style="margin-top:0.75rem;">
+            <div class="impact-item"><div class="impact-dot"></div>Seleccionas Incoterm + valor y calcula autom&aacute;ticamente todos los conceptos</div>
+            <div class="impact-item"><div class="impact-dot"></div>Elimina omisiones en el c&aacute;lculo de costos de importaci&oacute;n</div>
+            <div class="impact-item"><div class="impact-dot"></div>Usado de forma aut&oacute;noma por compras sin intervenci&oacute;n de aduanas</div>
+          </div>
+        </div>
+
+        <!-- Catalogo arancelario -->
+        <div class="pg-card">
+          <div class="project-tags"><span class="project-tag">Excel</span><span class="project-tag">Comercio exterior</span><span class="project-tag">Regulatorio</span></div>
+          <div class="project-title">Cat&aacute;logo Interactivo de Partidas Arancelarias</div>
+          <p class="project-problem">Identificar impuestos, restricciones o prohibiciones de una mercanc&iacute;a requeri&oacute; consultar manualmente el arancel de aduanas. El cat&aacute;logo filtra y muestra todo al instante.</p>
+          <div class="mockup-wrap" style="margin-top:0.75rem;">
+            <div class="mockup-tabs"><div class="mockup-tab active" onclick="stab(this,'m16','a')">Cat&aacute;logo</div></div>
+            <div class="mockup-panel active" id="m16-a">
+              <div class="win-bar"><div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div><span class="win-title">Catalogo_Partidas_Arancelarias.xlsm</span></div>
+              <div class="win-body">
+                <div class="fl"><div class="fl-lbl">Buscar partida arancelaria</div><div class="fl-val" style="color:var(--teal)">2710.19.19.00 &#128269;</div></div>
+                <div style="background:rgba(13,190,140,0.05);border:1px solid rgba(13,190,140,0.15);border-radius:6px;padding:10px;margin-top:8px;">
+                  <div style="font-family:var(--mono);font-size:10px;color:var(--teal);margin-bottom:6px;">PARTIDA 2710.19.19.00 &mdash; Aceites de petr&oacute;leo</div>
+                  <table class="xt-tbl"><tr><th>Concepto</th><th>Valor</th><th>Estado</th></tr>
+                    <tr><td>Ad valorem</td><td>6%</td><td class="cg">APLICA</td></tr>
+                    <tr><td>ISC</td><td>1.78 S//gal</td><td class="cg">APLICA</td></tr>
+                    <tr><td>IQBF (fiscalizado)</td><td>S&Iacute;</td><td class="cy">REQUIERE PERMISO</td></tr>
+                    <tr><td>Restricci&oacute;n</td><td>Ninguna</td><td class="cg">LIBRE</td></tr>
+                    <tr><td>Prohibici&oacute;n</td><td>Ninguna</td><td class="cg">LIBRE</td></tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="project-impact" style="margin-top:0.75rem;">
+            <div class="impact-item"><div class="impact-dot"></div>Filtra por partida con impuestos, restricciones y prohibiciones en una vista</div>
+            <div class="impact-item"><div class="impact-dot"></div>Elimin&oacute; la consulta manual al arancel para compras y comercial</div>
+            <div class="impact-item"><div class="impact-dot"></div>Referencia interna para validar operaciones de importaci&oacute;n</div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- end repsol -->
+
   </div>
 </section>
 
 <script>
-function showTab(tabEl, groupId, panelName) {
-  const allTabs = tabEl.parentElement.querySelectorAll('.mockup-tab');
-  allTabs.forEach(t => t.classList.remove('active'));
+function stab(tabEl, gid, pid) {
+  tabEl.parentElement.querySelectorAll('.mockup-tab').forEach(t => t.classList.remove('active'));
   tabEl.classList.add('active');
-  const panel = document.getElementById(groupId + '-' + panelName);
-  const allPanels = panel.parentElement.querySelectorAll('.mockup-panel');
-  allPanels.forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById(gid + '-' + pid);
+  panel.parentElement.querySelectorAll('.mockup-panel').forEach(p => p.classList.remove('active'));
   panel.classList.add('active');
 }
+function fproj(company, btn) {
+  document.querySelectorAll('.proj-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.company-group').forEach(g => {
+    g.style.display = (company === 'all' || g.dataset.company === company) ? '' : 'none';
+  });
+}
 </script>
-
-<!-- STACK (continue below, remove old projects section closing tags) -->
 
 <!-- STACK -->
 <section id="stack">
@@ -1328,43 +1417,47 @@ function showTab(tabEl, groupId, panelName) {
 
     <div class="stack-grid fade-in">
       <div class="stack-category">
-        <div class="stack-cat-label">Automatización</div>
+        <div class="stack-cat-label">Automatización Python</div>
         <div class="stack-items">
-          <div class="stack-item">Python — procesamiento de datos</div>
+          <div class="stack-item">Python — pandas, openpyxl</div>
           <div class="stack-item">Interfaces gráficas de escritorio</div>
-          <div class="stack-item">Procesamiento por lotes</div>
+          <div class="stack-item">Google Apps Script</div>
+          <div class="stack-item">Power Automate</div>
           <div class="stack-item">Búsqueda aproximada (fuzzy match)</div>
           <div class="stack-item">Integración con correo electrónico</div>
         </div>
       </div>
       <div class="stack-category">
-        <div class="stack-cat-label">Datos & Reportes</div>
+        <div class="stack-cat-label">Datos & Dashboards</div>
         <div class="stack-items">
           <div class="stack-item">Power BI intermedio</div>
+          <div class="stack-item">Google Looker Studio</div>
           <div class="stack-item">Excel avanzado / Power Query</div>
-          <div class="stack-item">Reportes con formato condicional</div>
-          <div class="stack-item">Cruce y conciliación de datos</div>
+          <div class="stack-item">Macros VBA</div>
           <div class="stack-item">KPIs y dashboards operativos</div>
+          <div class="stack-item">Cruce y conciliación de datos</div>
         </div>
       </div>
       <div class="stack-category">
-        <div class="stack-cat-label">Sistemas Operativos</div>
+        <div class="stack-cat-label">Plataformas & Sistemas</div>
         <div class="stack-items">
-          <div class="stack-item">Sistemas de gestión naviera</div>
-          <div class="stack-item">Plataformas de documentación</div>
-          <div class="stack-item">Reportes de manifiesto y estiba</div>
-          <div class="stack-item">Bases regulatorias (SUNAT / VUCE)</div>
+          <div class="stack-item">Power Apps</div>
+          <div class="stack-item">Monday.com</div>
+          <div class="stack-item">Google Workspace</div>
+          <div class="stack-item">NotebookLM</div>
           <div class="stack-item">SAP MM — Expert User</div>
+          <div class="stack-item">Sistemas de gestión naviera</div>
         </div>
       </div>
       <div class="stack-category">
         <div class="stack-cat-label">Gestión & Proyectos</div>
         <div class="stack-items">
-          <div class="stack-item">SAP MM — Expert User</div>
-          <div class="stack-item">Pruebas UAT / CERT</div>
+          <div class="stack-item">Coordinación de implementación ERP</div>
+          <div class="stack-item">Pruebas de aceptación (UAT)</div>
           <div class="stack-item">Metodologías ágiles</div>
           <div class="stack-item">Gestión del cambio</div>
-          <div class="stack-item">Documentación de procesos</div>
+          <div class="stack-item">Cumplimiento aduanero (SUNAT-OEA)</div>
+          <div class="stack-item">Comercio exterior / VUCE</div>
         </div>
       </div>
     </div>
@@ -1390,7 +1483,7 @@ function showTab(tabEl, groupId, panelName) {
           <p class="timeline-desc">Enlace principal entre el proveedor de sistemas y los equipos internos en la implementacion de un ERP de operaciones. Presupuesto supervisado: USD 380,000.</p>
           <div class="timeline-wins">
             <div class="timeline-win"><span class="win-dot">›</span>Actue como punto de contacto entre el proveedor y los equipos, coordinando requerimientos y validando funcionalidades antes de su puesta en produccion</div>
-            <div class="timeline-win"><span class="win-dot">›</span>Construi en paralelo un ecosistema de 8+ herramientas propias que el equipo usa diariamente, sin costo adicional para la empresa</div>
+            <div class="timeline-win"><span class="win-dot">›</span>Construi en paralelo un ecosistema de 13 herramientas propias que el equipo usa diariamente, sin costo adicional para la empresa</div>
             <div class="timeline-win"><span class="win-dot">›</span>Reduje el tiempo de registro de embarques de 2 horas a 5 minutos, devolviendo 9 horas semanales al equipo</div>
           </div>
         </div>
