@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alonso Peña — Analista de Operaciones & Automatización</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c10;
+    --bg2: #0d1117;
+    --bg3: #111820;
+    --card: #111820;
+    --border: rgba(255,255,255,0.06);
+    --border2: rgba(255,255,255,0.12);
+    --teal: #0dbe8c;
+    --teal2: #09a378;
+    --teal-dim: rgba(13,190,140,0.08);
+    --teal-dim2: rgba(13,190,140,0.15);
+    --text: #e8edf2;
+    --text2: #8899aa;
+    --text3: #556677;
+    --mono: 'DM Mono', monospace;
+    --head: 'Syne', sans-serif;
+    --body: 'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 3rem;
+    height: 60px;
+    background: rgba(8,12,16,0.88);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--teal);
+    letter-spacing: 0.05em;
+    text-decoration: none;
+  }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text2);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--teal); }
+
+  /* LAYOUT */
+  section { padding: 6rem 0; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+
+  /* HERO */
+  #hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(13,190,140,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(13,190,140,0.025) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+  .hero-glow {
+    position: absolute;
+    top: 15%;
+    left: -8%;
+    width: 560px;
+    height: 560px;
+    background: radial-gradient(circle, rgba(13,190,140,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-content { position: relative; }
+  .hero-label {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--teal);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .hero-label::before {
+    content: '';
+    display: inline-block;
+    width: 24px; height: 1px;
+    background: var(--teal);
+  }
+  .hero-name {
+    font-family: var(--head);
+    font-size: clamp(3rem, 7vw, 6rem);
+    font-weight: 800;
+    line-height: 1.0;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+  }
+  .hero-name span { color: var(--teal); }
+  .hero-title {
+    font-family: var(--head);
+    font-size: clamp(1rem, 2.2vw, 1.5rem);
+    font-weight: 400;
+    color: var(--text2);
+    margin-bottom: 2rem;
+    line-height: 1.4;
+  }
+  .hero-desc {
+    font-size: 1rem;
+    color: var(--text2);
+    max-width: 520px;
+    margin-bottom: 3rem;
+    line-height: 1.8;
+  }
+
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    max-width: 600px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 3rem;
+  }
+  .metric {
+    background: var(--bg2);
+    padding: 1.5rem;
+    transition: background 0.2s;
+  }
+  .metric:hover { background: var(--bg3); }
+  .metric-num {
+    font-family: var(--head);
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--teal);
+    line-height: 1;
+    margin-bottom: 0.4rem;
+  }
+  .metric-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.75rem;
+    border-radius: 6px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .btn-primary { background: var(--teal); color: #060a0d; border: 1px solid var(--teal); font-weight: 500; }
+  .btn-primary:hover { background: var(--teal2); border-color: var(--teal2); }
+  .btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border2); }
+  .btn-ghost:hover { border-color: var(--teal); color: var(--teal); }
+
+  /* SECTION HEADERS */
+  .section-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--teal);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .section-tag::before {
+    content: '';
+    display: inline-block;
+    width: 16px; height: 1px;
+    background: var(--teal);
+  }
+  .section-title {
+    font-family: var(--head);
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+  }
+  .section-sub {
+    color: var(--text2);
+    font-size: 1rem;
+    max-width: 500px;
+    line-height: 1.7;
+    margin-bottom: 3.5rem;
+  }
+
+  /* ABOUT */
+  #about { background: var(--bg2); }
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+  }
+  .about-text p { color: var(--text2); margin-bottom: 1.2rem; line-height: 1.8; }
+  .about-text p strong { color: var(--text); font-weight: 500; }
+  .about-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 2rem; }
+  .chip {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--teal);
+    background: var(--teal-dim);
+    border: 1px solid rgba(13,190,140,0.2);
+    padding: 0.35rem 0.85rem;
+    border-radius: 100px;
+    letter-spacing: 0.05em;
+  }
+  .about-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .about-stat {
+    background: var(--bg3);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: background 0.2s;
+  }
+  .about-stat:hover { background: #161e28; }
+  .stat-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: var(--teal-dim);
+    border: 1px solid rgba(13,190,140,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 16px;
+  }
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .stat-value { font-size: 14px; color: var(--text); font-weight: 500; margin-top: 1px; }
+
+  /* PROJECTS */
+  #projects { background: var(--bg); }
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .project-card {
+    background: var(--card);
+    padding: 2rem;
+    transition: background 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .project-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--teal), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .project-card:hover { background: var(--bg3); }
+  .project-card:hover::before { opacity: 1; }
+  .project-card.featured {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+    align-items: start;
+  }
+  .project-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; }
+  .project-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    border: 1px solid var(--border2);
+    padding: 0.2rem 0.6rem;
+    border-radius: 100px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .project-tag.highlight {
+    color: var(--teal);
+    border-color: rgba(13,190,140,0.3);
+    background: var(--teal-dim);
+  }
+  .project-title {
+    font-family: var(--head);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.75rem;
+    line-height: 1.3;
+  }
+  .project-problem { font-size: 0.875rem; color: var(--text2); line-height: 1.7; margin-bottom: 1.25rem; }
+  .project-impact { display: flex; flex-direction: column; gap: 0.6rem; }
+  .impact-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    font-size: 0.82rem;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+  .impact-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--teal);
+    margin-top: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .project-metric-big {
+    background: var(--teal-dim);
+    border: 1px solid rgba(13,190,140,0.15);
+    border-radius: 10px;
+    padding: 1.5rem;
+    text-align: center;
+    margin-top: 0.5rem;
+  }
+  .metric-big-num {
+    font-family: var(--head);
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: var(--teal);
+    line-height: 1;
+    margin-bottom: 0.35rem;
+  }
+  .metric-big-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .project-mini-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+  }
+  .mini-metric {
+    background: rgba(13,190,140,0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem;
+    text-align: center;
+  }
+  .mini-metric-num {
+    font-family: var(--head);
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--teal);
+    line-height: 1;
+  }
+  .mini-metric-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-top: 0.25rem;
+  }
+
+  /* STACK */
+  #stack { background: var(--bg2); }
+  .stack-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .stack-category { background: var(--bg3); padding: 1.75rem; transition: background 0.2s; }
+  .stack-category:hover { background: #141c24; }
+  .stack-cat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--teal);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .stack-items { display: flex; flex-direction: column; gap: 0.6rem; }
+  .stack-item {
+    font-size: 13px;
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .stack-item::before {
+    content: '';
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--text3);
+    flex-shrink: 0;
+  }
+
+  /* EXPERIENCE */
+  #experience { background: var(--bg); }
+  .timeline { display: flex; flex-direction: column; }
+  .timeline-item {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    position: relative;
+  }
+  .timeline-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 179px;
+    top: 44px;
+    bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+  .timeline-left {
+    padding: 2rem 2rem 2rem 0;
+    text-align: right;
+  }
+  .timeline-period {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.08em;
+    line-height: 1.6;
+  }
+  .timeline-right {
+    border-left: 1px solid var(--border);
+    padding: 2rem 0 2rem 2rem;
+    position: relative;
+  }
+  .timeline-dot {
+    position: absolute;
+    left: -5px;
+    top: 2.4rem;
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: var(--teal);
+    border: 2px solid var(--bg);
+  }
+  .timeline-company {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--teal);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+  }
+  .timeline-role {
+    font-family: var(--head);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.75rem;
+    line-height: 1.3;
+  }
+  .timeline-desc { font-size: 0.875rem; color: var(--text2); line-height: 1.7; margin-bottom: 1rem; }
+  .timeline-wins { display: flex; flex-direction: column; gap: 0.4rem; }
+  .timeline-win {
+    font-size: 0.82rem;
+    color: var(--text2);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    line-height: 1.5;
+  }
+  .win-dot { color: var(--teal); flex-shrink: 0; margin-top: 1px; font-size: 12px; }
+
+  /* CONTACT */
+  #contact { background: var(--bg2); text-align: center; }
+  .contact-inner { max-width: 560px; margin: 0 auto; }
+  .contact-email {
+    font-family: var(--head);
+    font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+    font-weight: 700;
+    color: var(--teal);
+    text-decoration: none;
+    display: block;
+    margin: 2rem 0;
+    transition: opacity 0.2s;
+    word-break: break-all;
+  }
+  .contact-email:hover { opacity: 0.75; }
+  .contact-links { display: flex; justify-content: center; gap: 1rem; margin-top: 2rem; flex-wrap: wrap; }
+
+  /* FOOTER */
+  footer { border-top: 1px solid var(--border); padding: 2rem; text-align: center; }
+  footer p { font-family: var(--mono); font-size: 11px; color: var(--text3); letter-spacing: 0.08em; }
+
+  /* ANIMATIONS */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.65s ease, transform 0.65s ease;
+  }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    nav { padding: 0 1.5rem; }
+    .nav-links { gap: 1.2rem; }
+    .about-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+    .projects-grid { grid-template-columns: 1fr; }
+    .project-card.featured { grid-template-columns: 1fr; grid-column: 1; }
+    .stack-grid { grid-template-columns: repeat(2, 1fr); }
+    .timeline-item { grid-template-columns: 1fr; }
+    .timeline-item::after { display: none; }
+    .timeline-left { text-align: left; padding: 2rem 0 0; }
+    .timeline-right { border-left: none; padding: 0.75rem 0 2rem; }
+    .timeline-dot { display: none; }
+    .metrics { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .nav-links { display: none; }
+    .stack-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#hero" class="nav-logo">alonso.peña</a>
+  <ul class="nav-links">
+    <li><a href="#about">sobre mí</a></li>
+    <li><a href="#projects">proyectos</a></li>
+    <li><a href="#stack">herramientas</a></li>
+    <li><a href="#experience">experiencia</a></li>
+    <li><a href="#contact">contacto</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+  <div class="container hero-content">
+    <div class="hero-label">Analista de Operaciones · Lima, Perú</div>
+    <h1 class="hero-name">Alonso<br><span>Peña.</span></h1>
+    <p class="hero-title">Automatización de procesos · Sector naviero & logístico</p>
+    <p class="hero-desc">
+      Convierto procesos manuales lentos y propensos a error en herramientas que funcionan solas.
+      No soy desarrollador — soy el puente entre las operaciones y la tecnología.
+    </p>
+
+    <div class="metrics fade-in">
+      <div class="metric">
+        <div class="metric-num">8+</div>
+        <div class="metric-label">herramientas construidas</div>
+      </div>
+      <div class="metric">
+        <div class="metric-num">9h</div>
+        <div class="metric-label">ahorradas por semana</div>
+      </div>
+      <div class="metric">
+        <div class="metric-num">100%</div>
+        <div class="metric-label">auditoría automatizada</div>
+      </div>
+    </div>
+
+    <div class="hero-cta fade-in">
+      <a href="#projects" class="btn btn-primary">Ver proyectos →</a>
+      <a href="#contact" class="btn btn-ghost">Contactar</a>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="container">
+    <div class="about-grid fade-in">
+      <div class="about-text">
+        <div class="section-tag">Sobre mí</div>
+        <h2 class="section-title">Operaciones<br>con código.</h2>
+        <p>
+          Soy licenciado en Negocios Internacionales con experiencia en <strong>análisis logístico, automatización de procesos</strong> y control operativo en el sector naviero.
+        </p>
+        <p>
+          Lo que me diferencia: identifico cuellos de botella en procesos reales, entiendo el impacto de negocio, y construyo las herramientas que los resuelven — sin depender de un equipo de TI.
+        </p>
+        <p>
+          En Cosmos Oficial soy enlace clave en la implementación del sistema SION (USD 380K), liderando pruebas UAT y construyendo paralelamente un ecosistema de herramientas internas que usa el equipo de Atención al Cliente y Documentación de Exportación todos los días.
+        </p>
+        <div class="about-chips">
+          <span class="chip">Python</span>
+          <span class="chip">Power BI</span>
+          <span class="chip">Excel avanzado</span>
+          <span class="chip">SAP MM</span>
+          <span class="chip">Blueship</span>
+          <span class="chip">Gestión ágil</span>
+          <span class="chip">SUNAT / VUCE</span>
+        </div>
+      </div>
+      <div class="about-stats">
+        <div class="about-stat">
+          <div class="stat-icon">🎓</div>
+          <div>
+            <div class="stat-label">Formación</div>
+            <div class="stat-value">Negocios Internacionales — UPC</div>
+          </div>
+        </div>
+        <div class="about-stat">
+          <div class="stat-icon">🏢</div>
+          <div>
+            <div class="stat-label">Empresa actual</div>
+            <div class="stat-value">Cosmos Oficial — Analista de Control</div>
+          </div>
+        </div>
+        <div class="about-stat">
+          <div class="stat-icon">⚙️</div>
+          <div>
+            <div class="stat-label">Enfoque</div>
+            <div class="stat-value">Automatización · PMO · Datos</div>
+          </div>
+        </div>
+        <div class="about-stat">
+          <div class="stat-icon">📦</div>
+          <div>
+            <div class="stat-label">Sector</div>
+            <div class="stat-value">Naviero / Logístico / Comercio Exterior</div>
+          </div>
+        </div>
+        <div class="about-stat">
+          <div class="stat-icon">🌎</div>
+          <div>
+            <div class="stat-label">Experiencia previa</div>
+            <div class="stat-value">Repsol · Complejo Agroindustrial Beta</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="container">
+    <div class="section-tag fade-in">Proyectos</div>
+    <h2 class="section-title fade-in">Problemas reales.<br>Soluciones que funcionan.</h2>
+    <p class="section-sub fade-in">Cada herramienta nació de un proceso que alguien hacía a mano. Aquí están los números.</p>
+
+    <div class="projects-grid fade-in">
+
+      <!-- FEATURED -->
+      <div class="project-card featured">
+        <div>
+          <div class="project-tags">
+            <span class="project-tag highlight">★ Caso de impacto</span>
+            <span class="project-tag">Exportación</span>
+            <span class="project-tag">Automatización</span>
+          </div>
+          <div class="project-title">Automatizador de Carga de Reservas</div>
+          <p class="project-problem">
+            El equipo de Documentación de Exportación cruzaba manualmente tres reportes del sistema Citrix y MYC dos veces al día. Dos horas por ciclo, todos los días, con alta probabilidad de error y retrasos en el registro de matrices de clientes.
+          </p>
+          <div class="project-impact">
+            <div class="impact-item"><div class="impact-dot"></div>Cruza automáticamente Loading List, Book1 y Matriz List</div>
+            <div class="impact-item"><div class="impact-dot"></div>Vincula RUCs de embarcadores con búsqueda inteligente (fuzzy match)</div>
+            <div class="impact-item"><div class="impact-dot"></div>Genera reporte listo para carga a MYC + análisis de discrepancias</div>
+            <div class="impact-item"><div class="impact-dot"></div>Recuerda decisiones anteriores: no vuelve a preguntar por casos resueltos</div>
+          </div>
+        </div>
+        <div>
+          <div class="project-metric-big">
+            <div class="metric-big-num">−95%</div>
+            <div class="metric-big-label">reducción en tiempo de proceso</div>
+          </div>
+          <div class="project-mini-metrics">
+            <div class="mini-metric">
+              <div class="mini-metric-num">2h→5m</div>
+              <div class="mini-metric-label">por corrida</div>
+            </div>
+            <div class="mini-metric">
+              <div class="mini-metric-num">9h/sem</div>
+              <div class="mini-metric-label">ahorradas</div>
+            </div>
+            <div class="mini-metric">
+              <div class="mini-metric-num">100%</div>
+              <div class="mini-metric-label">errores eliminados</div>
+            </div>
+            <div class="mini-metric">
+              <div class="mini-metric-num">2×/día</div>
+              <div class="mini-metric-label">frecuencia</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pre-asignación -->
+      <div class="project-card">
+        <div class="project-tags">
+          <span class="project-tag">Vacíos</span>
+          <span class="project-tag">Distribución</span>
+          <span class="project-tag">Interfaz gráfica</span>
+        </div>
+        <div class="project-title">Pre-asignación de Contenedores Vacíos</div>
+        <p class="project-problem">
+          Distribuir cientos de contenedores vacíos entre tres depósitos se hacía manualmente, sin garantía de respetar porcentajes acordados, clientes VIP ni instrucciones especiales de la línea naviera.
+        </p>
+        <div class="project-impact">
+          <div class="impact-item"><div class="impact-dot"></div>Distribución automática respetando % por tipo de contenedor</div>
+          <div class="impact-item"><div class="impact-dot"></div>Prioriza clientes VIP y reglas forzosas antes del reparto general</div>
+          <div class="impact-item"><div class="impact-dot"></div>Genera reporte ejecutivo + instrucciones por depósito</div>
+          <div class="impact-item"><div class="impact-dot"></div>Módulo de redistribución sin rehacer el proceso completo</div>
+        </div>
+      </div>
+
+      <!-- Corte -->
+      <div class="project-card">
+        <div class="project-tags">
+          <span class="project-tag">Corte diario</span>
+          <span class="project-tag">Alertas</span>
+          <span class="project-tag">Blueship</span>
+        </div>
+        <div class="project-title">Reportes de Corte Diario y Semanal</div>
+        <p class="project-problem">
+          El equipo de ATC verificaba manualmente el avance de emisión de memos cruzando Blueship contra las asignaciones planificadas, dos veces al día, sin alertas automáticas de desviación.
+        </p>
+        <div class="project-impact">
+          <div class="impact-item"><div class="impact-dot"></div>Corte automático a las 12:00 pm y 5:30 pm</div>
+          <div class="impact-item"><div class="impact-dot"></div>8 tipos de alerta priorizadas por severidad</div>
+          <div class="impact-item"><div class="impact-dot"></div>Comparativo semanal instruido vs real con semáforo de colores</div>
+          <div class="impact-item"><div class="impact-dot"></div>Resumen copiado al portapapeles listo para pegar en el chat</div>
+        </div>
+      </div>
+
+      <!-- Auditoría -->
+      <div class="project-card">
+        <div class="project-tags">
+          <span class="project-tag">Auditoría</span>
+          <span class="project-tag">SUNAT</span>
+          <span class="project-tag">Cumplimiento</span>
+        </div>
+        <div class="project-title">Auditoría de Agentes de Carga</div>
+        <p class="project-problem">
+          Validar que el indicador "A" (Agente de Carga) estuviera correctamente asignado en Citrix requería revisar manualmente cada booking contra la base SUNAT y una base interna de RUCs.
+        </p>
+        <div class="project-impact">
+          <div class="impact-item"><div class="impact-dot"></div>Audita 100% de bookings aplicando reglas por destino (US, CA, PR)</div>
+          <div class="impact-item"><div class="impact-dot"></div>Valida contra padrón oficial de SUNAT</div>
+          <div class="impact-item"><div class="impact-dot"></div>Semáforo visual: CORRECTO / INCORRECTO / VALIDAR CON CLIENTE</div>
+        </div>
+      </div>
+
+      <!-- DMR Finder -->
+      <div class="project-card">
+        <div class="project-tags">
+          <span class="project-tag">Búsqueda</span>
+          <span class="project-tag">Multi-archivo</span>
+          <span class="project-tag">Outlook</span>
+        </div>
+        <div class="project-title">DMR Finder</div>
+        <p class="project-problem">
+          Encontrar instrucciones críticas (OWNER, DAMAGE, BOBBINS) ocultas en columnas de comentarios de múltiples reportes era lento y con alto riesgo de omisión en operaciones críticas de embarque.
+        </p>
+        <div class="project-impact">
+          <div class="impact-item"><div class="impact-dot"></div>Busca en N archivos simultáneamente (Excel, HTML, CSV)</div>
+          <div class="impact-item"><div class="impact-dot"></div>Auto-completa celdas combinadas sin perder el número de booking</div>
+          <div class="impact-item"><div class="impact-dot"></div>Genera correo en Outlook listo para enviar al finalizar</div>
+        </div>
+      </div>
+
+      <!-- Discrepancias -->
+      <div class="project-card">
+        <div class="project-tags">
+          <span class="project-tag">Liquidación</span>
+          <span class="project-tag">DPW</span>
+          <span class="project-tag">VGM</span>
+        </div>
+        <div class="project-title">Generador de Discrepancias COSMOS</div>
+        <p class="project-problem">
+          Cruzar la Lista de Contenedores Embarcados contra el Manifest Report y el VGM para identificar unidades no embarcadas o no manifestadas era un proceso manual crítico para la liquidación del embarque.
+        </p>
+        <div class="project-impact">
+          <div class="impact-item"><div class="impact-dot"></div>Genera reporte de auditoría + reporte limpio para enviar al cliente</div>
+          <div class="impact-item"><div class="impact-dot"></div>Formato condicional verde/rojo para precintos y marcas</div>
+          <div class="impact-item"><div class="impact-dot"></div>Compatible con .xlsx, .xls, .csv y archivos HTML de Citrix</div>
+        </div>
+      </div>
+
+      <!-- Demurrage -->
+      <div class="project-card">
+        <div class="project-tags">
+          <span class="project-tag">Demurrage</span>
+          <span class="project-tag">Free Days</span>
+          <span class="project-tag">Cruce</span>
+        </div>
+        <div class="project-title">Cruce Demurrage vs Free Days</div>
+        <p class="project-problem">
+          Detectar discrepancias entre los días libres acordados y los días facturados por demurrage requería cruzar manualmente dos reportes con formatos distintos y estructuras complejas.
+        </p>
+        <div class="project-impact">
+          <div class="impact-item"><div class="impact-dot"></div>Validación automática del formato de archivos al cargarlos</div>
+          <div class="impact-item"><div class="impact-dot"></div>Proceso completo en menos de 10 segundos</div>
+          <div class="impact-item"><div class="impact-dot"></div>Reporte con discrepancias listo para revisión y acción inmediata</div>
+        </div>
+      </div>
+
+      <!-- Conciliación -->
+      <div class="project-card">
+        <div class="project-tags">
+          <span class="project-tag">Conciliación</span>
+          <span class="project-tag">Baplie</span>
+          <span class="project-tag">Shortship</span>
+        </div>
+        <div class="project-title">Sistema de Conciliación Naviera</div>
+        <p class="project-problem">
+          Conciliar el Manifiesto contra el Baplie (plano de estiba) para detectar shortshipments y B/Ls faltantes a bordo era un proceso crítico sin herramienta de apoyo, con riesgo de penalidades operativas.
+        </p>
+        <div class="project-impact">
+          <div class="impact-item"><div class="impact-dot"></div>Cruza Manifiesto, Baplie, Booking y SBL en un solo proceso</div>
+          <div class="impact-item"><div class="impact-dot"></div>Identifica shortshipments: B/Ls con carga parcialmente embarcada</div>
+          <div class="impact-item"><div class="impact-dot"></div>Pestañas separadas por destino: Callao y transbordo</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- STACK -->
+<section id="stack">
+  <div class="container">
+    <div class="section-tag fade-in">Herramientas</div>
+    <h2 class="section-title fade-in">Con qué trabajo.</h2>
+    <p class="section-sub fade-in">Sin equipos de TI, sin licencias caras. Resultados con lo que hay.</p>
+
+    <div class="stack-grid fade-in">
+      <div class="stack-category">
+        <div class="stack-cat-label">Automatización</div>
+        <div class="stack-items">
+          <div class="stack-item">Python — pandas, openpyxl</div>
+          <div class="stack-item">Interfaces con customtkinter</div>
+          <div class="stack-item">Procesamiento por lotes</div>
+          <div class="stack-item">Fuzzy matching</div>
+          <div class="stack-item">Integración con Outlook</div>
+        </div>
+      </div>
+      <div class="stack-category">
+        <div class="stack-cat-label">Datos & Reportes</div>
+        <div class="stack-items">
+          <div class="stack-item">Power BI intermedio</div>
+          <div class="stack-item">Excel avanzado / Power Query</div>
+          <div class="stack-item">Reportes con formato condicional</div>
+          <div class="stack-item">Cruce y conciliación de datos</div>
+          <div class="stack-item">KPIs y dashboards operativos</div>
+        </div>
+      </div>
+      <div class="stack-category">
+        <div class="stack-cat-label">Sistemas Navieros</div>
+        <div class="stack-items">
+          <div class="stack-item">Blueship</div>
+          <div class="stack-item">Citrix — reportes operativos</div>
+          <div class="stack-item">Plataforma MYC</div>
+          <div class="stack-item">Manifiesto / Baplie / VGM</div>
+          <div class="stack-item">SUNAT / VUCE</div>
+        </div>
+      </div>
+      <div class="stack-category">
+        <div class="stack-cat-label">Gestión & Proyectos</div>
+        <div class="stack-items">
+          <div class="stack-item">SAP MM — Expert User</div>
+          <div class="stack-item">Pruebas UAT / CERT</div>
+          <div class="stack-item">Metodologías ágiles</div>
+          <div class="stack-item">Gestión del cambio</div>
+          <div class="stack-item">Documentación de procesos</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section id="experience">
+  <div class="container">
+    <div class="section-tag fade-in">Experiencia</div>
+    <h2 class="section-title fade-in">Dónde he<br>trabajado.</h2>
+
+    <div class="timeline fade-in">
+
+      <div class="timeline-item">
+        <div class="timeline-left">
+          <div class="timeline-period">Jul 2025<br>— Presente</div>
+        </div>
+        <div class="timeline-right">
+          <div class="timeline-dot"></div>
+          <div class="timeline-company">Cosmos Oficial</div>
+          <div class="timeline-role">Analista de Control — Coordinador de Implementación SION</div>
+          <p class="timeline-desc">Enlace principal entre el negocio y el partner tecnológico Baufest para la implementación del Sistema Integrado de Operaciones (SION). Presupuesto: USD 380,000.</p>
+          <div class="timeline-wins">
+            <div class="timeline-win"><span class="win-dot">›</span>Lideré pruebas UAT validando entrega incremental en entorno ágil</div>
+            <div class="timeline-win"><span class="win-dot">›</span>Supervisé el plan de Cut-over hacia producción integrando SAP, SUNAT y VUCE</div>
+            <div class="timeline-win"><span class="win-dot">›</span>Construí ecosistema de 8+ herramientas internas de automatización en Python</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-left">
+          <div class="timeline-period">Nov 2022<br>— Dic 2024</div>
+        </div>
+        <div class="timeline-right">
+          <div class="timeline-dot"></div>
+          <div class="timeline-company">Repsol</div>
+          <div class="timeline-role">Analista de Comercio Internacional</div>
+          <p class="timeline-desc">Gestión de embarques internacionales y cumplimiento aduanero. Diseño de dashboards en Power BI para KPIs logísticos.</p>
+          <div class="timeline-wins">
+            <div class="timeline-win"><span class="win-dot">›</span>Mantuve la certificación SUNAT-OEA sin observaciones en auditorías</div>
+            <div class="timeline-win"><span class="win-dot">›</span>Desarrollé dashboards de KPIs que identificaron cuellos de botella operativos</div>
+            <div class="timeline-win"><span class="win-dot">›</span>Coordiné end-to-end embarques internacionales: DAM, B/L y facturas</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-left">
+          <div class="timeline-period">Ene 2021<br>— Mar 2022</div>
+        </div>
+        <div class="timeline-right">
+          <div class="timeline-dot"></div>
+          <div class="timeline-company">Complejo Agroindustrial Beta</div>
+          <div class="timeline-role">Asistente de Automatización y Trazabilidad</div>
+          <p class="timeline-desc">Implementación del sistema Agritracer y diseño de dashboards de trazabilidad operativa campo-planta.</p>
+          <div class="timeline-wins">
+            <div class="timeline-win"><span class="win-dot">›</span>Automaticé formatos operativos clave alineados a requisitos de exportación</div>
+            <div class="timeline-win"><span class="win-dot">›</span>Revisión cruzada de datos detectando inconsistencias proactivamente</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="container">
+    <div class="contact-inner fade-in">
+      <div class="section-tag" style="justify-content:center">Contacto</div>
+      <h2 class="section-title">¿Hablamos?</h2>
+      <p style="color:var(--text2);font-size:0.95rem;line-height:1.8;margin-top:1rem;">
+        Estoy abierto a oportunidades donde pueda seguir automatizando procesos, liderando implementaciones tecnológicas o gestionando datos en entornos logísticos y de comercio exterior.
+      </p>
+      <a href="mailto:alonsostef2006@gmail.com" class="contact-email">alonsostef2006@gmail.com</a>
+      <div class="contact-links">
+        <a href="https://www.linkedin.com/in/alonsosocial/" target="_blank" class="btn btn-primary">LinkedIn →</a>
+        <a href="mailto:alonsostef2006@gmail.com" class="btn btn-ghost">Enviar correo</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Alonso Peña Anicama · Lima, Perú · Construido con código propio</p>
+</footer>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
