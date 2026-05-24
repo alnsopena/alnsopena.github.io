@@ -699,190 +699,559 @@
 </section>
 
 <!-- PROJECTS -->
+<style>
+  .proj-showcase {
+    display: flex;
+    flex-direction: column;
+    gap: 5rem;
+  }
+  .proj-block {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: start;
+  }
+  .proj-block.reverse { direction: rtl; }
+  .proj-block.reverse > * { direction: ltr; }
+  .proj-info {}
+  .proj-number {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.15em;
+    margin-bottom: 1rem;
+  }
+  .proj-info .project-title {
+    font-family: var(--head);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 1rem;
+    line-height: 1.3;
+  }
+  .proj-info .project-problem {
+    font-size: 0.875rem;
+    color: var(--text2);
+    line-height: 1.8;
+    margin-bottom: 1.25rem;
+  }
+  .proj-info .project-impact { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
+  .proj-info .impact-item { font-size: 0.82rem; color: var(--text2); display: flex; align-items: flex-start; gap: 0.6rem; line-height: 1.5; }
+  .proj-info .impact-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); margin-top: 0.5rem; flex-shrink: 0; }
+
+  /* Mockup tabs */
+  .mockup-tabs { display: flex; gap: 0; margin-bottom: 0; }
+  .mockup-tab {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 0.45rem 1rem;
+    background: var(--bg3);
+    color: var(--text3);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    cursor: pointer;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: all 0.15s;
+  }
+  .mockup-tab:first-child { border-radius: 6px 0 0 0; }
+  .mockup-tab:last-child { border-radius: 0 6px 0 0; }
+  .mockup-tab.active { background: var(--bg2); color: var(--teal); border-color: var(--border2); }
+  .mockup-panel {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 0 6px 6px 6px;
+    overflow: hidden;
+    display: none;
+  }
+  .mockup-panel.active { display: block; }
+
+  /* Window chrome */
+  .win-bar {
+    background: #1a2230;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .win-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .win-dot.r { background: #ff5f57; }
+  .win-dot.y { background: #febc2e; }
+  .win-dot.g { background: #28c840; }
+  .win-title { font-family: var(--mono); font-size: 11px; color: var(--text3); margin-left: 8px; }
+
+  /* App body */
+  .win-body { padding: 16px; }
+  .field-row { margin-bottom: 10px; }
+  .field-label { font-family: var(--mono); font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+  .field-input {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .field-check { color: #28c840; font-size: 12px; }
+  .field-pending { color: #febc2e; font-size: 12px; }
+  .btn-run {
+    background: var(--teal);
+    color: #060a0d;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 4px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    display: inline-block;
+    margin-top: 4px;
+    cursor: default;
+  }
+  .log-box {
+    background: #0a0f14;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px;
+    margin-top: 10px;
+    font-family: var(--mono);
+    font-size: 10px;
+    line-height: 1.7;
+    color: var(--text3);
+  }
+  .log-box .log-ok { color: #28c840; }
+  .log-box .log-warn { color: #febc2e; }
+  .log-box .log-info { color: var(--teal); }
+
+  /* Excel mockup */
+  .xls-tabs { display: flex; gap: 2px; padding: 0 12px; background: #1a2230; }
+  .xls-tab {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 4px 4px 0 0;
+    background: var(--bg3);
+    color: var(--text3);
+    cursor: default;
+    letter-spacing: 0.04em;
+  }
+  .xls-tab.active { background: var(--bg2); color: var(--teal); }
+  .xls-body { padding: 10px 12px; overflow-x: auto; }
+  .xls-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 10px; }
+  .xls-table th {
+    background: #1a2230;
+    color: var(--text3);
+    padding: 5px 8px;
+    text-align: left;
+    border: 1px solid var(--border);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .xls-table td {
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    color: var(--text2);
+    white-space: nowrap;
+  }
+  .xls-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+  .cell-green { background: rgba(40,200,64,0.15) !important; color: #28c840 !important; }
+  .cell-red { background: rgba(255,60,60,0.15) !important; color: #ff5f57 !important; }
+  .cell-yellow { background: rgba(254,188,46,0.15) !important; color: #febc2e !important; }
+  .cell-teal { background: rgba(13,190,140,0.12) !important; color: var(--teal) !important; }
+  .cell-blue { background: rgba(50,120,220,0.15) !important; color: #6ab0ff !important; }
+
+  /* Metric strip */
+  .metric-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    margin-bottom: 10px;
+  }
+  .metric-strip-item {
+    background: #1a2230;
+    padding: 10px;
+    text-align: center;
+  }
+  .metric-strip-num { font-family: var(--head); font-size: 1.4rem; font-weight: 700; color: var(--teal); line-height: 1; }
+  .metric-strip-label { font-family: var(--mono); font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; }
+
+  /* Progress bar */
+  .progress-wrap { margin: 8px 0; }
+  .progress-label { font-family: var(--mono); font-size: 10px; color: var(--text3); display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--teal); border-radius: 3px; transition: width 0.3s; }
+
+  @media (max-width: 900px) {
+    .proj-block { grid-template-columns: 1fr; }
+    .proj-block.reverse { direction: ltr; }
+  }
+</style>
+
 <section id="projects">
   <div class="container">
     <div class="section-tag fade-in">Proyectos</div>
     <h2 class="section-title fade-in">Problemas reales.<br>Soluciones que funcionan.</h2>
     <p class="section-sub fade-in">Cada herramienta nació de un proceso que alguien hacía a mano. Aquí están los números.</p>
 
-    <div class="projects-grid fade-in">
+    <div class="proj-showcase fade-in">
 
-      <!-- FEATURED -->
-      <div class="project-card featured">
-        <div>
-          <div class="project-tags">
+      <!-- ① AUTOMATIZADOR DE RESERVAS -->
+      <div class="proj-block">
+        <div class="proj-info">
+          <div class="proj-number">01 / 08 — Caso destacado</div>
+          <div class="project-tags" style="margin-bottom:1rem;">
             <span class="project-tag highlight">★ Caso de impacto</span>
             <span class="project-tag">Exportación</span>
             <span class="project-tag">Automatización</span>
           </div>
           <div class="project-title">Automatizador de Registro de Embarques</div>
-          <p class="project-problem">
-            El equipo de exportación procesaba manualmente tres reportes operativos dos veces al día para registrar los embarques de clientes. Dos horas por ciclo, todos los días — con alta exposición a errores que generaban retrabajos y retrasos en la atención al cliente.
-          </p>
+          <p class="project-problem">El equipo de exportación procesaba manualmente tres reportes operativos dos veces al día para registrar los embarques de clientes. Dos horas por ciclo, con alta exposición a errores que generaban retrabajos y retrasos en la atención al cliente.</p>
           <div class="project-impact">
             <div class="impact-item"><div class="impact-dot"></div>Consolida automáticamente múltiples fuentes de datos operativos en segundos</div>
             <div class="impact-item"><div class="impact-dot"></div>Identifica clientes nuevos, cancelaciones y cambios de destino sin intervención manual</div>
-            <div class="impact-item"><div class="impact-dot"></div>Genera el reporte final listo para usar — sin pasos intermedios ni revisión adicional</div>
-            <div class="impact-item"><div class="impact-dot"></div>Aprende de corridas anteriores: no repite preguntas ya resueltas por el equipo</div>
+            <div class="impact-item"><div class="impact-dot"></div>Aprende de corridas anteriores: no repite preguntas ya resueltas</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-top:1.5rem;">
+            <div class="mini-metric"><div class="mini-metric-num">2h→5m</div><div class="mini-metric-label">por ciclo</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">9h/sem</div><div class="mini-metric-label">devueltas al equipo</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">100%</div><div class="mini-metric-label">errores eliminados</div></div>
+            <div class="mini-metric"><div class="mini-metric-num">2×/día</div><div class="mini-metric-label">frecuencia</div></div>
           </div>
         </div>
         <div>
-          <div class="project-metric-big">
-            <div class="metric-big-num">−95%</div>
-            <div class="metric-big-label">reducción en tiempo de proceso</div>
+          <div class="mockup-tabs">
+            <div class="mockup-tab active" onclick="showTab(this,'res1','interfaz')">Interfaz</div>
+            <div class="mockup-tab" onclick="showTab(this,'res1','reporte')">Reporte Excel</div>
           </div>
-          <div class="project-mini-metrics">
-            <div class="mini-metric">
-              <div class="mini-metric-num">2h→5m</div>
-              <div class="mini-metric-label">por ciclo</div>
+          <div class="mockup-panel active" id="res1-interfaz">
+            <div class="win-bar">
+              <div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div>
+              <div class="win-title">Automatizador de Reservas v6.1</div>
             </div>
-            <div class="mini-metric">
-              <div class="mini-metric-num">9h/sem</div>
-              <div class="mini-metric-label">devueltas al equipo</div>
+            <div class="win-body">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+                <div class="field-row">
+                  <div class="field-label">Vessel ID</div>
+                  <div class="field-input"><span>VZL-20240</span></div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">Nombre Nave</div>
+                  <div class="field-input"><span>BOX ENDURANCE</span></div>
+                </div>
+              </div>
+              <div class="field-row">
+                <div class="field-label">Loading List</div>
+                <div class="field-input"><span>Loading_BOX_ENDURANCE.xlsx</span><span class="field-check">✔</span></div>
+              </div>
+              <div class="field-row">
+                <div class="field-label">Booking Registration</div>
+                <div class="field-input"><span>Book1_BOX_ENDURANCE.xlsx</span><span class="field-check">✔</span></div>
+              </div>
+              <div class="field-row">
+                <div class="field-label">Matriz List (opcional)</div>
+                <div class="field-input"><span>Matriz_Anterior.xlsx</span><span class="field-check">✔</span></div>
+              </div>
+              <div class="field-row">
+                <div class="field-label">Carpeta de salida</div>
+                <div class="field-input"><span>BOX_ENDURANCE/Cargas_1/</span></div>
+              </div>
+              <div class="btn-run">▶ Ejecutar Proceso &nbsp; Ctrl+Enter</div>
+              <div class="log-box">
+                <div class="log-info">[10:03:01] Iniciando proceso...</div>
+                <div class="log-ok">[10:03:02] Loading List: 148 registros cargados</div>
+                <div class="log-ok">[10:03:02] Book1: 143 bookings encontrados</div>
+                <div class="log-info">[10:03:03] Cruzando RUCs con base de datos...</div>
+                <div class="log-warn">[10:03:03] 2 RUCs con coincidencia ambigua — resolucion requerida</div>
+                <div class="log-ok">[10:03:08] Proceso completado. 141 nuevos para MYC</div>
+              </div>
             </div>
-            <div class="mini-metric">
-              <div class="mini-metric-num">100%</div>
-              <div class="mini-metric-label">errores de cruce eliminados</div>
+          </div>
+          <div class="mockup-panel" id="res1-reporte">
+            <div class="win-bar">
+              <div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div>
+              <div class="win-title">CARGA_BOX_ENDURANCE_Cargas1.xlsx</div>
             </div>
-            <div class="mini-metric">
-              <div class="mini-metric-num">2×/día</div>
-              <div class="mini-metric-label">frecuencia de ejecución</div>
+            <div class="xls-tabs">
+              <div class="xls-tab active">Para MYC</div>
+              <div class="xls-tab">Ya en MYC</div>
+              <div class="xls-tab">Discrepancias</div>
+              <div class="xls-tab">Anular</div>
+            </div>
+            <div class="xls-body">
+              <table class="xls-table">
+                <tr><th>#</th><th>Booking</th><th>Shipper</th><th>RUC</th><th>Destino</th><th>Estado</th></tr>
+                <tr><td>1</td><td>ZIM4401823</td><td>TEXTIL ANDINA SAC</td><td>20501823401</td><td>USNYC</td><td class="cell-green">NUEVO</td></tr>
+                <tr><td>2</td><td>ZIM4401824</td><td>EXPORTA PERU SA</td><td>20304512033</td><td>USMIA</td><td class="cell-green">NUEVO</td></tr>
+                <tr><td>3</td><td>ZIM4401825</td><td>AGRO EXPORT SRL</td><td>20601234567</td><td>ESBCN</td><td class="cell-yellow">REVISAR</td></tr>
+                <tr><td>4</td><td>ZIM4401826</td><td>INDUSTRIAS DEL SUR</td><td>20112233445</td><td>USNYC</td><td class="cell-green">NUEVO</td></tr>
+                <tr><td>5</td><td>ZIM4401827</td><td>PACIFIC TRADE SAC</td><td>20998877665</td><td>CAHFX</td><td class="cell-red">ANULAR</td></tr>
+                <tr><td>6</td><td>ZIM4401828</td><td>QUIMICA LIMA SA</td><td>20456789012</td><td>USNYC</td><td class="cell-green">NUEVO</td></tr>
+              </table>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Pre-asignación -->
-      <div class="project-card">
-        <div class="project-tags">
-          <span class="project-tag">Logística</span>
-          <span class="project-tag">Distribución</span>
-          <span class="project-tag">Reglas de negocio</span>
+      <!-- ② PRE-ASIGNACION -->
+      <div class="proj-block reverse">
+        <div class="proj-info">
+          <div class="proj-number">02 / 08</div>
+          <div class="project-tags" style="margin-bottom:1rem;">
+            <span class="project-tag">Logística</span>
+            <span class="project-tag">Distribución</span>
+            <span class="project-tag">Reglas de negocio</span>
+          </div>
+          <div class="project-title">Motor de Distribución de Contenedores Vacíos</div>
+          <p class="project-problem">Asignar cientos de contenedores vacíos por nave entre múltiples depósitos se hacía a mano, sin garantía de cumplir los acuerdos comerciales ni de respetar la prioridad de clientes estratégicos.</p>
+          <div class="project-impact">
+            <div class="impact-item"><div class="impact-dot"></div>Aplica automáticamente los porcentajes acordados con cada depósito por tipo de contenedor</div>
+            <div class="impact-item"><div class="impact-dot"></div>Prioriza clientes estratégicos antes del reparto general</div>
+            <div class="impact-item"><div class="impact-dot"></div>Genera instrucciones operativas listas para entregar a cada depósito</div>
+            <div class="impact-item"><div class="impact-dot"></div>Permite redistribuir ante cambios sin rehacer todo el proceso</div>
+          </div>
         </div>
-        <div class="project-title">Motor de Distribución de Contenedores Vacíos</div>
-        <p class="project-problem">
-          Asignar cientos de contenedores vacíos por nave entre múltiples depósitos se hacía a mano, sin garantía de cumplir los acuerdos comerciales con cada depósito ni de respetar la prioridad de clientes estratégicos.
-        </p>
-        <div class="project-impact">
-          <div class="impact-item"><div class="impact-dot"></div>Aplica automáticamente los porcentajes acordados con cada depósito por tipo de contenedor</div>
-          <div class="impact-item"><div class="impact-dot"></div>Prioriza clientes estratégicos antes del reparto general — sin intervención manual</div>
-          <div class="impact-item"><div class="impact-dot"></div>Genera instrucciones operativas listas para entregar a cada depósito</div>
-          <div class="impact-item"><div class="impact-dot"></div>Permite actualizar la distribución ante cambios sin rehacer todo el proceso</div>
-        </div>
-      </div>
-
-      <!-- Corte -->
-      <div class="project-card">
-        <div class="project-tags">
-          <span class="project-tag">Control operativo</span>
-          <span class="project-tag">Alertas</span>
-          <span class="project-tag">Seguimiento</span>
-        </div>
-        <div class="project-title">Panel de Control de Devoluciones — Corte Diario y Semanal</div>
-        <p class="project-problem">
-          El equipo verificaba manualmente dos veces al día si las instrucciones de devolución de contenedores se habían ejecutado según lo planificado — sin alertas automáticas cuando algo salía mal o se desviaba del plan.
-        </p>
-        <div class="project-impact">
-          <div class="impact-item"><div class="impact-dot"></div>Genera automáticamente el corte de avance a las 12:00 pm y 5:30 pm</div>
-          <div class="impact-item"><div class="impact-dot"></div>Detecta y prioriza 8 tipos de alerta según gravedad operativa</div>
-          <div class="impact-item"><div class="impact-dot"></div>Reporte semanal con semáforo: verde cuando se cumple lo acordado, rojo cuando hay desvío</div>
-          <div class="impact-item"><div class="impact-dot"></div>Resumen listo para comunicar al equipo con un solo clic</div>
-        </div>
-      </div>
-
-      <!-- Auditoría -->
-      <div class="project-card">
-        <div class="project-tags">
-          <span class="project-tag">Auditoría</span>
-          <span class="project-tag">Cumplimiento</span>
-          <span class="project-tag">Regulatorio</span>
-        </div>
-        <div class="project-title">Auditoría Automatizada de Agentes de Carga</div>
-        <p class="project-problem">
-          Verificar que cada embarque tuviera correctamente identificado a su agente de carga requería revisar uno por uno cientos de registros contra bases de datos regulatorias — con alto riesgo de error y exposición a sanciones.
-        </p>
-        <div class="project-impact">
-          <div class="impact-item"><div class="impact-dot"></div>Audita el 100% de los embarques aplicando reglas según destino (EE.UU., Canadá, Puerto Rico)</div>
-          <div class="impact-item"><div class="impact-dot"></div>Valida automáticamente contra el padrón oficial de operadores autorizados</div>
-          <div class="impact-item"><div class="impact-dot"></div>Resultado claro por embarque: correcto, a corregir, o pendiente de validar con el cliente</div>
-        </div>
-      </div>
-
-      <!-- DMR Finder -->
-      <div class="project-card">
-        <div class="project-tags">
-          <span class="project-tag">Búsqueda inteligente</span>
-          <span class="project-tag">Documentación</span>
-          <span class="project-tag">Multi-archivo</span>
-        </div>
-        <div class="project-title">Buscador de Instrucciones Críticas en Reportes</div>
-        <p class="project-problem">
-          Instrucciones especiales de los clientes — como condiciones de propiedad de la carga o daños reportados — estaban enterradas en comentarios de texto libre dentro de docenas de reportes. Encontrarlas manualmente era lento y arriesgado.
-        </p>
-        <div class="project-impact">
-          <div class="impact-item"><div class="impact-dot"></div>Escanea simultáneamente todos los reportes del período en segundos</div>
-          <div class="impact-item"><div class="impact-dot"></div>Extrae el texto completo de la instrucción, sin truncar ni perder contexto</div>
-          <div class="impact-item"><div class="impact-dot"></div>Genera el correo de comunicación interna listo para enviar al finalizar</div>
-        </div>
-      </div>
-
-      <!-- Discrepancias -->
-      <div class="project-card">
-        <div class="project-tags">
-          <span class="project-tag">Liquidación</span>
-          <span class="project-tag">Discrepancias</span>
-          <span class="project-tag">Auditoría</span>
-        </div>
-        <div class="project-title">Detector de Discrepancias de Embarque</div>
-        <p class="project-problem">
-          Identificar qué contenedores físicamente embarcados no aparecían en los documentos oficiales — o viceversa — era un proceso manual crítico con alto impacto en la liquidación y en las relaciones con el puerto.
-        </p>
-        <div class="project-impact">
-          <div class="impact-item"><div class="impact-dot"></div>Cruza tres fuentes documentales y clasifica cada unidad: conforme, faltante o no documentada</div>
-          <div class="impact-item"><div class="impact-dot"></div>Genera reporte de auditoría completo y reporte limpio listo para enviar</div>
-          <div class="impact-item"><div class="impact-dot"></div>Resalta visualmente las discrepancias para acción inmediata del equipo</div>
-        </div>
-      </div>
-
-      <!-- Demurrage -->
-      <div class="project-card">
-        <div class="project-tags">
-          <span class="project-tag">Sobrestadía</span>
-          <span class="project-tag">Facturación</span>
-          <span class="project-tag">Verificación</span>
-        </div>
-        <div class="project-title">Verificador de Días Libres vs Cobros por Sobrestadía</div>
-        <p class="project-problem">
-          Detectar si los días libres acordados con el cliente coincidían con lo que la línea naviera estaba cobrando por sobrestadía requería cruzar manualmente dos reportes con formatos distintos — con riesgo de pagar de más o cobrar de menos.
-        </p>
-        <div class="project-impact">
-          <div class="impact-item"><div class="impact-dot"></div>Valida automáticamente el formato de cada archivo antes de procesar</div>
-          <div class="impact-item"><div class="impact-dot"></div>Completa el cruce completo en menos de 10 segundos</div>
-          <div class="impact-item"><div class="impact-dot"></div>Lista todas las discrepancias con el detalle necesario para gestionar el reclamo</div>
+        <div>
+          <div class="mockup-tabs">
+            <div class="mockup-tab active" onclick="showTab(this,'pre1','interfaz')">Interfaz</div>
+            <div class="mockup-tab" onclick="showTab(this,'pre1','reporte')">Reporte Excel</div>
+          </div>
+          <div class="mockup-panel active" id="pre1-interfaz">
+            <div class="win-bar">
+              <div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div>
+              <div class="win-title">Pre-asignacion de Contenedores Vacios v15</div>
+            </div>
+            <div class="win-body">
+              <div style="background:var(--teal);padding:6px 12px;margin:-16px -16px 12px;display:flex;align-items:center;gap:8px;">
+                <span style="font-family:var(--mono);font-size:10px;color:#060a0d;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;">NAVE:</span>
+                <span style="font-family:var(--mono);font-size:11px;color:#060a0d;font-weight:500;">NORDIC GRACE&nbsp;&nbsp;&nbsp;</span>
+                <span style="font-family:var(--mono);font-size:10px;color:#060a0d;opacity:0.6;">▶ Asignación &nbsp; ♻ Redistribución &nbsp; ⚙ Config</span>
+              </div>
+              <div class="field-row">
+                <div class="field-label">CDL (Cargo Detail List)</div>
+                <div class="field-input"><span>CDL_NORDIC_GRACE.xlsx</span><span class="field-check">✔</span></div>
+              </div>
+              <div class="field-row">
+                <div class="field-label">Emisiones vigentes</div>
+                <div class="field-input"><span>Emisiones_semana42.xlsx</span><span class="field-check">✔</span></div>
+              </div>
+              <div class="field-row">
+                <div class="field-label">Clientes VIP</div>
+                <div class="field-input"><span>Clientes_Especiales.xlsx</span><span class="field-check">✔</span></div>
+              </div>
+              <div class="field-row">
+                <div class="field-label">Exclusiones (SOC / otros)</div>
+                <div class="field-input"><span style="color:var(--text3)">Opcional — no cargado</span></div>
+              </div>
+              <div class="btn-run">▶ Ejecutar Asignación Nueva</div>
+              <div class="log-box">
+                <div class="log-ok">[09:15:22] CDL: 312 contenedores cargados</div>
+                <div class="log-info">[09:15:22] Filtros aplicados: FDS=PECLL, sin transbordo</div>
+                <div class="log-ok">[09:15:22] Validos para repartir: 287 contenedores</div>
+                <div class="log-info">[09:15:23] VIP procesados: 18 contenedores asignados</div>
+                <div class="log-ok">[09:15:23] Distribucion completada. Reporte generado.</div>
+              </div>
+            </div>
+          </div>
+          <div class="mockup-panel" id="pre1-reporte">
+            <div class="win-bar">
+              <div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div>
+              <div class="win-title">Pre-asignacion_NORDIC_GRACE.xlsx</div>
+            </div>
+            <div class="xls-tabs">
+              <div class="xls-tab active">Resumen Ejecutivo</div>
+              <div class="xls-tab">Asig_DPWL</div>
+              <div class="xls-tab">Asig_CONTRANS</div>
+              <div class="xls-tab">Data Completa</div>
+            </div>
+            <div class="xls-body">
+              <div class="metric-strip">
+                <div class="metric-strip-item"><div class="metric-strip-num">287</div><div class="metric-strip-label">Total asignados</div></div>
+                <div class="metric-strip-item"><div class="metric-strip-num">18</div><div class="metric-strip-label">Clientes VIP</div></div>
+                <div class="metric-strip-item"><div class="metric-strip-num">3</div><div class="metric-strip-label">Alertas</div></div>
+              </div>
+              <div class="progress-wrap">
+                <div class="progress-label"><span>DPWL (40%)</span><span style="color:var(--teal)">115 / 115</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+              </div>
+              <div class="progress-wrap">
+                <div class="progress-label"><span>CONTRANS (35%)</span><span style="color:var(--teal)">100 / 100</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+              </div>
+              <div class="progress-wrap">
+                <div class="progress-label"><span>COSMOS DV (25%)</span><span style="color:var(--teal)">72 / 72</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+              </div>
+              <table class="xls-table" style="margin-top:10px;">
+                <tr><th>Contenedor</th><th>Tipo</th><th>BL</th><th>Cliente</th><th>Depósito</th><th>Estado</th></tr>
+                <tr><td>ABCU1234567</td><td>40HC</td><td>ZIMULMA001</td><td>TEXTIL SA</td><td class="cell-teal">DPWL</td><td class="cell-yellow">VIP</td></tr>
+                <tr><td>TCKU9876543</td><td>20ST</td><td>ZIMULMA002</td><td>AGRO PERU</td><td class="cell-blue">CONTRANS</td><td style="color:var(--text2)">PCT</td></tr>
+                <tr><td>MSCU5551234</td><td>40HC</td><td>ZIMULMA002</td><td>AGRO PERU</td><td class="cell-blue">CONTRANS</td><td style="color:var(--text2)">PCT</td></tr>
+                <tr><td>GESU1122334</td><td>REEFER</td><td>ZIMULMA003</td><td>FRUTAS SRL</td><td class="cell-teal">DPWL</td><td class="cell-red">CONFLICTO</td></tr>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Conciliación -->
-      <div class="project-card">
-        <div class="project-tags">
-          <span class="project-tag">Conciliación</span>
-          <span class="project-tag">Carga marítima</span>
-          <span class="project-tag">Shortship</span>
+      <!-- ③ CORTE DIARIO -->
+      <div class="proj-block">
+        <div class="proj-info">
+          <div class="proj-number">03 / 08</div>
+          <div class="project-tags" style="margin-bottom:1rem;">
+            <span class="project-tag">Control operativo</span>
+            <span class="project-tag">Alertas</span>
+            <span class="project-tag">Seguimiento</span>
+          </div>
+          <div class="project-title">Panel de Control de Devoluciones — Corte Diario y Semanal</div>
+          <p class="project-problem">El equipo verificaba manualmente dos veces al día si las instrucciones de devolución se habían ejecutado según lo planificado, sin alertas automáticas cuando algo salía mal.</p>
+          <div class="project-impact">
+            <div class="impact-item"><div class="impact-dot"></div>Genera el corte de avance automáticamente a las 12:00 pm y 5:30 pm</div>
+            <div class="impact-item"><div class="impact-dot"></div>Detecta y prioriza 8 tipos de alerta según gravedad operativa</div>
+            <div class="impact-item"><div class="impact-dot"></div>Reporte semanal con semáforo: verde cuando se cumple lo acordado, rojo cuando hay desvío</div>
+          </div>
         </div>
-        <div class="project-title">Sistema de Conciliación de Carga Marítima</div>
-        <p class="project-problem">
-          Confirmar que todos los contenedores documentados en el manifiesto realmente estuvieran físicamente a bordo era un proceso crítico sin herramienta de apoyo — un error podía significar penalidades operativas o carga de cliente quedada en tierra.
-        </p>
-        <div class="project-impact">
-          <div class="impact-item"><div class="impact-dot"></div>Concilia automáticamente los documentos oficiales contra la carga física a bordo</div>
-          <div class="impact-item"><div class="impact-dot"></div>Identifica embarques incompletos: B/Ls donde parte de la carga se quedó en tierra</div>
-          <div class="impact-item"><div class="impact-dot"></div>Separa los resultados por tipo de destino para facilitar la gestión por equipo</div>
+        <div>
+          <div class="mockup-tabs">
+            <div class="mockup-tab active" onclick="showTab(this,'cor1','alertas')">Alertas</div>
+            <div class="mockup-tab" onclick="showTab(this,'cor1','semanal')">Comparativo Semanal</div>
+          </div>
+          <div class="mockup-panel active" id="cor1-alertas">
+            <div class="win-bar">
+              <div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div>
+              <div class="win-title">Corte_Diario_12:00_23052026.xlsx — Validacion ATC</div>
+            </div>
+            <div class="xls-tabs">
+              <div class="xls-tab active">Validación ATC</div>
+              <div class="xls-tab">Resumen Ejecutivo</div>
+              <div class="xls-tab">Alertas Depósito</div>
+            </div>
+            <div class="xls-body">
+              <div class="metric-strip">
+                <div class="metric-strip-item"><div class="metric-strip-num" style="color:#ff5f57;">3</div><div class="metric-strip-label">Alertas críticas</div></div>
+                <div class="metric-strip-item"><div class="metric-strip-num" style="color:#febc2e;">7</div><div class="metric-strip-label">Requieren acción</div></div>
+                <div class="metric-strip-item"><div class="metric-strip-num">84%</div><div class="metric-strip-label">Avance emisión</div></div>
+              </div>
+              <table class="xls-table">
+                <tr><th>P.</th><th>Tipo de Alerta</th><th>Contenedor</th><th>Depósito</th><th>Severidad</th></tr>
+                <tr><td>1</td><td>SOC emitido</td><td>ABCU1234567</td><td>DPWL</td><td class="cell-red">CRITICA</td></tr>
+                <tr><td>2</td><td>Sin validar por ATC</td><td>MSCU5551234</td><td>CONTRANS</td><td class="cell-red">ALTA</td></tr>
+                <tr><td>3</td><td>Desvío no justificado</td><td>TCKU9876543</td><td>COSMOS DV</td><td class="cell-red">ALTA</td></tr>
+                <tr><td>4</td><td>Sin asignación</td><td>GESU1122334</td><td>DPWL</td><td class="cell-yellow">MEDIA</td></tr>
+                <tr><td>5</td><td>Supervisor no validó</td><td>CSNU4455667</td><td>CONTRANS</td><td class="cell-yellow">MEDIA</td></tr>
+                <tr><td>6</td><td>Desvío justificado</td><td>HLXU8899001</td><td>DPWL</td><td class="cell-blue">INFO</td></tr>
+              </table>
+            </div>
+          </div>
+          <div class="mockup-panel" id="cor1-semanal">
+            <div class="win-bar">
+              <div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div>
+              <div class="win-title">Corte_Semanal_semana42.xlsx — Comparativo Instruido vs Real</div>
+            </div>
+            <div class="xls-tabs">
+              <div class="xls-tab active">Comparativo</div>
+              <div class="xls-tab">Detalle</div>
+              <div class="xls-tab">Anomalías</div>
+            </div>
+            <div class="xls-body">
+              <table class="xls-table">
+                <tr><th>Depósito</th><th>Categoría</th><th>Instruido</th><th>Real</th><th>Desvío</th><th>Estado</th></tr>
+                <tr><td>DPWL</td><td>40HC</td><td>40%</td><td>41%</td><td>+1%</td><td class="cell-green">OK</td></tr>
+                <tr><td>DPWL</td><td>20ST</td><td>35%</td><td>38%</td><td>+3%</td><td class="cell-green">OK</td></tr>
+                <tr><td>CONTRANS</td><td>40HC</td><td>35%</td><td>52%</td><td>+17%</td><td class="cell-yellow">REVISAR</td></tr>
+                <tr><td>CONTRANS</td><td>REEFER</td><td>50%</td><td>50%</td><td>0%</td><td class="cell-green">OK</td></tr>
+                <tr><td>COSMOS DV</td><td>40HC</td><td>25%</td><td>7%</td><td>-18%</td><td class="cell-yellow">REVISAR</td></tr>
+                <tr><td>COSMOS DV</td><td>20ST</td><td>30%</td><td>5%</td><td>-25%</td><td class="cell-red">DESVIO</td></tr>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
 
-    </div>
+      <!-- RESTO DE PROYECTOS — grid compacto -->
+      <div>
+        <p style="font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2rem;">Otras herramientas del ecosistema</p>
+        <div class="projects-grid" style="border-radius:16px;">
+
+          <div class="project-card">
+            <div class="project-tags"><span class="project-tag">Auditoría</span><span class="project-tag">Cumplimiento</span><span class="project-tag">Regulatorio</span></div>
+            <div class="project-title">Auditoría Automatizada de Agentes de Carga</div>
+            <p class="project-problem">Verificar que cada embarque tuviera correctamente identificado a su agente de carga requería revisar uno por uno cientos de registros contra bases de datos regulatorias.</p>
+            <div class="project-impact">
+              <div class="impact-item"><div class="impact-dot"></div>Audita el 100% de embarques con reglas por destino (EE.UU., Canadá, Puerto Rico)</div>
+              <div class="impact-item"><div class="impact-dot"></div>Valida contra el padrón oficial de operadores autorizados</div>
+              <div class="impact-item"><div class="impact-dot"></div>Resultado por embarque: correcto, a corregir, o pendiente de validar</div>
+            </div>
+          </div>
+
+          <div class="project-card">
+            <div class="project-tags"><span class="project-tag">Búsqueda inteligente</span><span class="project-tag">Multi-archivo</span></div>
+            <div class="project-title">Buscador de Instrucciones Críticas</div>
+            <p class="project-problem">Instrucciones especiales de clientes estaban enterradas en comentarios de texto libre dentro de docenas de reportes. Encontrarlas manualmente era lento y arriesgado.</p>
+            <div class="project-impact">
+              <div class="impact-item"><div class="impact-dot"></div>Escanea simultáneamente todos los reportes del período en segundos</div>
+              <div class="impact-item"><div class="impact-dot"></div>Extrae el texto completo sin truncar ni perder contexto</div>
+              <div class="impact-item"><div class="impact-dot"></div>Genera el correo interno listo para enviar al finalizar</div>
+            </div>
+          </div>
+
+          <div class="project-card">
+            <div class="project-tags"><span class="project-tag">Liquidación</span><span class="project-tag">Discrepancias</span></div>
+            <div class="project-title">Detector de Discrepancias de Embarque</div>
+            <p class="project-problem">Identificar qué contenedores embarcados no aparecían en documentos oficiales — o viceversa — era manual y crítico para la liquidación.</p>
+            <div class="project-impact">
+              <div class="impact-item"><div class="impact-dot"></div>Cruza tres fuentes documentales y clasifica: conforme, faltante o no documentada</div>
+              <div class="impact-item"><div class="impact-dot"></div>Genera reporte de auditoría completo y reporte limpio para enviar</div>
+            </div>
+          </div>
+
+          <div class="project-card">
+            <div class="project-tags"><span class="project-tag">Sobrestadía</span><span class="project-tag">Verificación</span></div>
+            <div class="project-title">Verificador de Días Libres vs Cobros por Sobrestadía</div>
+            <p class="project-problem">Detectar si los días libres acordados coincidían con lo que la línea naviera cobraba requería cruzar manualmente dos reportes con formatos distintos.</p>
+            <div class="project-impact">
+              <div class="impact-item"><div class="impact-dot"></div>Proceso completo en menos de 10 segundos</div>
+              <div class="impact-item"><div class="impact-dot"></div>Lista todas las discrepancias con detalle para gestionar el reclamo</div>
+            </div>
+          </div>
+
+          <div class="project-card">
+            <div class="project-tags"><span class="project-tag">Conciliación</span><span class="project-tag">Carga marítima</span></div>
+            <div class="project-title">Sistema de Conciliación de Carga Marítima</div>
+            <p class="project-problem">Confirmar que todos los contenedores documentados estuvieran físicamente a bordo era crítico — un error podía significar penalidades o carga de cliente quedada en tierra.</p>
+            <div class="project-impact">
+              <div class="impact-item"><div class="impact-dot"></div>Concilia documentos oficiales contra carga física a bordo</div>
+              <div class="impact-item"><div class="impact-dot"></div>Identifica embarques incompletos y los separa por tipo de destino</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- end proj-showcase -->
   </div>
 </section>
+
+<script>
+function showTab(tabEl, groupId, panelName) {
+  const allTabs = tabEl.parentElement.querySelectorAll('.mockup-tab');
+  allTabs.forEach(t => t.classList.remove('active'));
+  tabEl.classList.add('active');
+  const panel = document.getElementById(groupId + '-' + panelName);
+  const allPanels = panel.parentElement.querySelectorAll('.mockup-panel');
+  allPanels.forEach(p => p.classList.remove('active'));
+  panel.classList.add('active');
+}
+</script>
+
+<!-- STACK (continue below, remove old projects section closing tags) -->
+<div style="display:none">
 
 <!-- STACK -->
 <section id="stack">
