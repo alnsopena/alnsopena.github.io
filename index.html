@@ -882,7 +882,7 @@
   </div>
 </section>
 
-<div class="section-divider fade-in" style="padding: 3rem 2rem 0;"><span>&mdash; Proyectos en producci&oacute;n &mdash;</span></div>
+<div class="section-divider" style="padding: 3rem 2rem 0;"><span>&mdash; Proyectos en producci&oacute;n &mdash;</span></div>
 <!-- PROJECTS -->
 <style>
   .company-badge { display:inline-flex;align-items:center;gap:0.5rem;font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;padding:0.3rem 0.85rem;border-radius:100px;margin-bottom:1.5rem; }
@@ -897,8 +897,9 @@
   .proj-filter-btn:hover { border-color:var(--teal);color:var(--teal); }
   .proj-filter-btn.active { background:var(--teal);color:#060a0d;border-color:var(--teal); }
   .featured-block { display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start;margin-bottom:3rem;padding-bottom:3rem;border-bottom:1px solid var(--border); }
-  .featured-block.rev { direction:rtl; }
-  .featured-block.rev > * { direction:ltr; }
+  .featured-block.rev { }
+  .featured-block.rev > .proj-info { order:1; }
+  .featured-block.rev > .mockup-wrap { order:0; }
   .proj-info .project-title { font-family:var(--head);font-size:1.3rem;font-weight:700;color:var(--text);margin-bottom:0.75rem;line-height:1.3; }
   .proj-info .project-problem { font-size:0.875rem;color:var(--text2);line-height:1.8;margin-bottom:1.25rem; }
   .proj-info .project-impact { display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1.25rem; }
@@ -959,9 +960,9 @@
   .pg-card .impact-dot { width:4px;height:4px;border-radius:50%;background:var(--teal);margin-top:0.55rem;flex-shrink:0; }
   @media(max-width:900px) {
     .featured-block { grid-template-columns:1fr !important; }
-    .featured-block.rev { direction:ltr !important; }
+    .featured-block.rev { }
     .proj-grid-2 { grid-template-columns:1fr !important; }
-    .mockup-wrap { min-width:0; overflow:hidden; }
+    .mockup-wrap { min-width:0; overflow:visible; }
     .mockup-panel { overflow-x:auto; }
     .xt-tbl { font-size:9px; }
     .xt-tbl th, .xt-tbl td { padding:3px 5px; }
@@ -986,14 +987,14 @@
     <h2 class="section-title fade-in">Problemas reales.<br>Soluciones que funcionan.</h2>
     <p class="section-sub fade-in">16 herramientas en dos empresas, organizadas por dónde nacieron.</p>
 
-    <div class="proj-filter fade-in">
+    <div class="proj-filter">
       <button class="proj-filter-btn active" onclick="fproj('all',this)">Todos (16)</button>
       <button class="proj-filter-btn" onclick="fproj('cosmos',this)">Cosmos Global Logistics (13)</button>
       <button class="proj-filter-btn" onclick="fproj('repsol',this)">Repsol (3)</button>
     </div>
 
     <!-- ═══ COSMOS ═══ -->
-    <div class="company-group fade-in" data-company="cosmos">
+    <div class="company-group" data-company="cosmos">
       <div class="company-group-header">
         <div>
           <div class="company-badge badge-cosmos">Cosmos Global Logistics</div>
@@ -1449,7 +1450,7 @@
     </div><!-- end cosmos -->
 
     <!-- ═══ REPSOL ═══ -->
-    <div class="company-group fade-in" data-company="repsol">
+    <div class="company-group" data-company="repsol">
       <div class="company-group-header">
         <div>
           <div class="company-badge badge-repsol">Repsol</div>
@@ -1660,7 +1661,7 @@
 
 <!-- EXPERIENCE -->
 
-<div class="section-divider fade-in" style="padding: 3rem 2rem 0;"><span>&mdash; Trayectoria profesional &mdash;</span></div>
+<div class="section-divider" style="padding: 3rem 2rem 0;"><span>&mdash; Trayectoria profesional &mdash;</span></div>
 <section id="experience">
   <div class="container">
     <div class="section-tag fade-in">Experiencia</div>
@@ -1789,7 +1790,7 @@ const io = new IntersectionObserver((entries) => {
     if (dot) setTimeout(() => dot.classList.add('pulsed'), 300);
     io.unobserve(el);
   });
-}, { threshold: 0.08 });
+}, { threshold: 0.01, rootMargin: '50px' });
 
 document.querySelectorAll('.fade-in, .fade-left, .fade-right').forEach(el => io.observe(el));
 
