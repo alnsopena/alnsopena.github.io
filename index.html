@@ -958,9 +958,25 @@
   .pg-card .impact-item { font-size:0.8rem;color:var(--text2);display:flex;align-items:flex-start;gap:0.5rem;line-height:1.5; }
   .pg-card .impact-dot { width:4px;height:4px;border-radius:50%;background:var(--teal);margin-top:0.55rem;flex-shrink:0; }
   @media(max-width:900px) {
-    .featured-block { grid-template-columns:1fr; }
-    .featured-block.rev { direction:ltr; }
-    .proj-grid-2 { grid-template-columns:1fr; }
+    .featured-block { grid-template-columns:1fr !important; }
+    .featured-block.rev { direction:ltr !important; }
+    .proj-grid-2 { grid-template-columns:1fr !important; }
+    .mockup-wrap { min-width:0; overflow:hidden; }
+    .mockup-panel { overflow-x:auto; }
+    .xt-tbl { font-size:9px; }
+    .xt-tbl th, .xt-tbl td { padding:3px 5px; }
+    .win-body { padding:10px; }
+    .fl-val { font-size:10px; }
+    .ms-n { font-size:1.1rem; }
+  }
+  @media(max-width:600px) {
+    .featured-block { gap:1.5rem; }
+    .proj-grid-2 { border-radius:8px; }
+    .mockup-tab { font-size:10px; padding:0.35rem 0.6rem; }
+    .ba-tab { font-size:10px; padding:0.4rem; }
+    .mini-metric-num { font-size:1.1rem; }
+    .impact-band-num { font-size:clamp(2rem,8vw,3rem); }
+    .company-group-title { font-size:1.1rem; }
   }
 </style>
 
