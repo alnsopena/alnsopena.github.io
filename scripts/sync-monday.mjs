@@ -164,7 +164,7 @@ async function fetchSnapshot(token, previous) {
 
   const rawResponse = await client.callTool('all_api_read', {
     query: `query PortfolioRaw($ids: [ID!]!) {
-      items(ids: $ids) {
+      items(ids: $ids, limit: 100) {
         id
         name
         state
