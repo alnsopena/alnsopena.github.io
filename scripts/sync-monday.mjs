@@ -168,7 +168,13 @@ async function fetchSnapshot(token, previous) {
         id
         name
         state
-        description
+        description {
+          id
+          blocks {
+            id
+            content
+          }
+        }
         column_values {
           id
           type
