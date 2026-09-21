@@ -4,7 +4,7 @@ Prototipo local para revisar definiciones; no modifica Cosmos ni Monday.
 
 ## Decisiones aplicadas en esta iteración
 
-- La propuesta oculta Tonelaje, Bandera, Código IMO y Nombre del Capitán; la referencia conserva la réplica del portal actual.
+- El mockup presenta únicamente la propuesta comercial; la réplica visual de referencia no forma parte de esta versión.
 - Observaciones de la PDA: captura en inglés y salida del documento siempre en inglés.
 - Estado principal: **Creado**, **Aprobado** o **Anulado**. El ciclo operativo se muestra como `Creado → Enviado → Validado → Aprobado → Completado`, con la ruta de rechazo `Rechazado → Ajuste → Enviado → Validado → Aprobado → Completado`.
 - La asociación a nave/viaje permanece deshabilitada hasta aprobar la PDA.
@@ -22,11 +22,11 @@ Abrir `index.html` en Chrome (funciona sin internet) o acceder al servidor local
 
 ## Recorrido recomendado
 
-1. Comparar **Actual · referencia** y **Propuesta**. La referencia es una réplica parcial de las pantallas observadas, no un clon del portal entero.
+1. Revisar la **Propuesta** y su flujo de estados de principio a fin.
 2. Abrir **Servicios y cálculos**: verificar navegación y amarradero, cambiar el tratamiento de IGV de la comisión entre incluido y adicional.
 3. Ver **Documento**, alternar Español/English y usar **Imprimir / guardar PDF**. La impresión no modifica el estado de la PDA.
 4. **Nueva PDA / TBN**: guardar incompleta. Cliente provisional, proveedor y particulares no bloquean el borrador.
-5. **PDA Plantilla**: comparar la referencia de 10 registros; en la propuesta revisar configuración, servicios por categoría, combinaciones de contenedores, simulador y validación antes de publicar.
+5. **PDA Plantilla**: revisar configuración, servicios por categoría, combinaciones de contenedores, simulador y validación antes de publicar.
 6. Revisar **Recargos** y usar **Revisar para aprobar**. El cálculo automático y la aprobación son simulaciones locales.
 7. Abrir **12 cambios y validaciones** para las decisiones de la reunión y enlaces a los nueve tickets.
 

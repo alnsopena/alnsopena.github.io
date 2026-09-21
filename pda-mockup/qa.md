@@ -30,7 +30,7 @@ Los datos de las pruebas son simulados. La interfaz marca recomendaciones pendie
 ## Cierre de Plantilla PDA — 21/09/2026
 
 - Inspección de referencia real, solo lectura: búsqueda, alta, consulta `TPL2609000008` y edición.
-- Navegación Chrome del mockup: PDA → PDA Plantilla, Actual · referencia, Propuesta, Servicios y tarifas, Comprobar cálculos y regreso a PDA.
+- Navegación Chrome del mockup: PDA → PDA Plantilla, Propuesta, Servicios y tarifas, Comprobar cálculos y regreso a PDA.
 - Referencia: 10 registros visibles, filtros y detalle con nueve campos obligatorios.
 - Propuesta: nueve obligatorios, campos opcionales, tres categorías, 17 conceptos activos y APN opcional.
 - Contenedores: ocho combinaciones independientes por tamaño, lleno/vacío y carga/descarga.
