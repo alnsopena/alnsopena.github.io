@@ -36,6 +36,8 @@ Los datos de las pruebas son simulados. La interfaz marca recomendaciones pendie
 - Versionado: editar una versión publicada crea un borrador sin reemplazar la publicada; “Crear PDA desde plantilla” genera una PDA nueva en estado Creado y conserva los datos preliminares y servicios.
 - Entrada a PDA Plantillas: la pantalla inicial muestra únicamente las dos tarjetas Liner y Tramp, sin una plantilla seleccionada.
 - Selección: al elegir una tarjeta aparece el detalle de esa plantilla con las acciones “Editar plantilla” y “Crear PDA desde plantilla”; al regresar y entrar nuevamente se restablece el selector inicial.
+- Datos de demostración: el listado PDA muestra cinco escenarios locales —PDA35, Liner con contenedores, Tramp granel sólido, Tramp provisional y PDA anulada—; cada uno abre sus propios datos y servicios.
+- Plantillas iniciales: Liner y Tramp muestran una versión **v1 Publicada** con servicios, tarifas e impuestos de demostración; la acción de crear PDA queda habilitada desde el detalle.
 - Referencia: 10 registros visibles, filtros y detalle con nueve campos obligatorios.
 - Propuesta: nueve obligatorios, campos opcionales, tres categorías, conceptos agrupados y APN opcional.
 - Contenedores: ocho combinaciones independientes por tamaño, lleno/vacío y carga/descarga.
