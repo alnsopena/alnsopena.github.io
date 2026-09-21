@@ -273,6 +273,7 @@ async function prepareSite() {
     if (error?.code !== 'ENOENT') throw error;
   }
   await cp(PORTFOLIO_SOURCE, PORTFOLIO_OUTPUT);
+  await cp(path.join(ROOT, 'pda-mockup'), path.join(OUTPUT, 'pda-mockup'), { recursive: true });
 }
 
 await prepareSite();
