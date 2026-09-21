@@ -46,3 +46,9 @@ Los datos de las pruebas son simulados. La interfaz marca recomendaciones pendie
 
 No se guardó, editó, publicó ni eliminó información en el portal real. Las tarifas, mínimos, recargos, catálogos, permisos y reglas tributarias siguen sujetos a validación funcional y UAT.
 
+## Corrección de nombre al crear desde plantilla — 21/09/2026
+
+- El modal ahora solicita **Nombre de la PDA** y conserva exactamente el valor ingresado como identificador visible.
+- El mismo nombre se utiliza para evitar duplicados; dejó de generarse el identificador automático `PDA-MOCK-<timestamp>`.
+- Flujo verificado en Chrome: `Alonso-2026` se muestra en el encabezado de la PDA creada y queda disponible en el listado local.
+
