@@ -34,6 +34,8 @@ Los datos de las pruebas son simulados. La interfaz marca recomendaciones pendie
 - PDA Plantillas: aparecen exactamente dos bases fijas —PDA Plantilla · Liner y PDA Plantilla · Tramp—; no existe alta de una tercera plantilla.
 - Cambio Liner/Tramp: cada tarjeta mantiene su configuración, servicios y versiones independientes; el nombre, tipo y servicio de la plantilla no son editables.
 - Versionado: editar una versión publicada crea un borrador sin reemplazar la publicada; “Crear PDA desde plantilla” genera una PDA nueva en estado Creado y conserva los datos preliminares y servicios.
+- Entrada a PDA Plantillas: la pantalla inicial muestra únicamente las dos tarjetas Liner y Tramp, sin una plantilla seleccionada.
+- Selección: al elegir una tarjeta aparece el detalle de esa plantilla con las acciones “Editar plantilla” y “Crear PDA desde plantilla”; al regresar y entrar nuevamente se restablece el selector inicial.
 - Referencia: 10 registros visibles, filtros y detalle con nueve campos obligatorios.
 - Propuesta: nueve obligatorios, campos opcionales, tres categorías, conceptos agrupados y APN opcional.
 - Contenedores: ocho combinaciones independientes por tamaño, lleno/vacío y carga/descarga.
