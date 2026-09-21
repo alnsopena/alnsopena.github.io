@@ -9,6 +9,7 @@ on:
       - ".github/workflows/publicar-portafolio.yml"
       - "index.html"
       - "foto.jpg"
+      - "pda-mockup/**"
   schedule:
     - cron: "17 * * * *"
   workflow_dispatch:
