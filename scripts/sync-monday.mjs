@@ -6,6 +6,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUTPUT = path.join(ROOT, '_site');
 const PORTFOLIO_SOURCE = path.join(ROOT, 'portafolio-ejecutivo-it', 'index.html');
 const PORTFOLIO_OUTPUT = path.join(OUTPUT, 'portafolio-ejecutivo-it', 'index.html');
+const PORTFOLIO_ASSETS = path.join(ROOT, 'portafolio-ejecutivo-it', 'assets');
+const CLOSURE_HISTORY_SEED = path.join(ROOT, 'scripts', 'closure-history-seed.json');
 const MCP_URL = 'https://mcp.monday.com/mcp';
 const API_VERSION = '2026-07';
 const BOARD_ID = 18396270726;
@@ -214,8 +216,38 @@ async function fetchSnapshot(token, previous) {
     throw new Error(`Caída anómala de proyectos: ${previous.inventory.projects} a ${items.length}`);
   }
 
+  const extractedAt = new Date().toISOString();
+  const seed = JSON.parse(await readFile(CLOSURE_HISTORY_SEED, 'utf8'));
+  const closureHistory = { ...seed, ...(previous?.closure_history ?? {}) };
+  const previousById = new Map((previous?.items ?? []).map((item) => [String(item.id), item]));
+
+  for (const item of items) {
+    const status = item.column_values?.status;
+    if (status !== 'Cerrado') continue;
+    const real = item.column_values?.date_mm6d8mx;
+    if (real && /^\d{4}-\d{2}-\d{2}/.test(String(real))) {
+      closureHistory[item.id] = {
+        date: String(real).slice(0, 10),
+        year: Number(String(real).slice(0, 4)),
+        source: 'fin_real',
+        project: item.name,
+      };
+      continue;
+    }
+    if (closureHistory[item.id]) continue;
+    const previousItem = previousById.get(item.id);
+    if (previousItem && previousItem.column_values?.status !== 'Cerrado') {
+      closureHistory[item.id] = {
+        year: Number(extractedAt.slice(0, 4)),
+        observed_at: extractedAt,
+        source: 'status_transition_snapshot',
+        project: item.name,
+      };
+    }
+  }
+
   return {
-    extracted_at_utc: new Date().toISOString(),
+    extracted_at_utc: extractedAt,
     board_id: String(BOARD_ID),
     scope: 'Lectura MCP completa: metadatos, proyectos, subelementos, valores tipados, fórmulas, actualizaciones, respuestas y referencias de archivos.',
     decisions: {
@@ -239,6 +271,7 @@ async function fetchSnapshot(token, previous) {
     },
     board: normalizedBoard,
     items,
+    closure_history: closureHistory,
     raw_items: rawItems,
     updates,
   };
@@ -273,6 +306,7 @@ async function prepareSite() {
     if (error?.code !== 'ENOENT') throw error;
   }
   await cp(PORTFOLIO_SOURCE, PORTFOLIO_OUTPUT);
+  await cp(PORTFOLIO_ASSETS, path.join(OUTPUT, 'portafolio-ejecutivo-it', 'assets'), { recursive: true });
   await cp(path.join(ROOT, 'pda-mockup'), path.join(OUTPUT, 'pda-mockup'), { recursive: true });
 }
 

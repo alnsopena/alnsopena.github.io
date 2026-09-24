@@ -6,6 +6,7 @@ on:
     paths:
       - "portafolio-ejecutivo-it/**"
       - "scripts/sync-monday.mjs"
+      - "scripts/closure-history-seed.json"
       - ".github/workflows/publicar-portafolio.yml"
       - "index.html"
       - "foto.jpg"
