@@ -8,6 +8,7 @@ const PORTFOLIO_SOURCE = path.join(ROOT, 'portafolio-ejecutivo-it', 'index.html'
 const PORTFOLIO_OUTPUT = path.join(OUTPUT, 'portafolio-ejecutivo-it', 'index.html');
 const PORTFOLIO_ASSETS = path.join(ROOT, 'portafolio-ejecutivo-it', 'assets');
 const CLOSURE_HISTORY_SEED = path.join(ROOT, 'scripts', 'closure-history-seed.json');
+const WEEKLY_BASELINE = path.join(ROOT, 'scripts', 'weekly-baseline.json');
 const MCP_URL = 'https://mcp.monday.com/mcp';
 const API_VERSION = '2026-07';
 const BOARD_ID = 18396270726;
@@ -218,7 +219,11 @@ async function fetchSnapshot(token, previous) {
 
   const extractedAt = new Date().toISOString();
   const seed = JSON.parse(await readFile(CLOSURE_HISTORY_SEED, 'utf8'));
-  const closureHistory = { ...seed, ...(previous?.closure_history ?? {}) };
+  const weeklyBaseline = JSON.parse(await readFile(WEEKLY_BASELINE, 'utf8'));
+  const closureHistory = { ...(previous?.closure_history ?? {}) };
+  for (const [id, entry] of Object.entries(seed)) {
+    closureHistory[id] = { ...entry, ...(closureHistory[id] ?? {}) };
+  }
   const previousById = new Map((previous?.items ?? []).map((item) => [String(item.id), item]));
 
   for (const item of items) {
@@ -272,6 +277,7 @@ async function fetchSnapshot(token, previous) {
     board: normalizedBoard,
     items,
     closure_history: closureHistory,
+    weekly_baseline: weeklyBaseline,
     raw_items: rawItems,
     updates,
   };

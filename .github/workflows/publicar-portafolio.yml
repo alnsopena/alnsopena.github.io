@@ -16,7 +16,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -35,6 +35,18 @@ jobs:
         env:
           MONDAY_MCP_TOKEN: ${{ secrets.MONDAY_MCP_TOKEN }}
         run: node scripts/sync-monday.mjs
+
+      - name: Actualizar corte ejecutivo semanal
+        if: github.event_name == 'schedule'
+        run: |
+          if [ "$(date -u +%u-%H)" = "1-13" ]; then
+            node scripts/update-weekly-baseline.mjs
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add scripts/weekly-baseline.json
+            git diff --cached --quiet || git commit -m "data: actualizar corte ejecutivo semanal [skip ci]"
+            git push
+          fi
 
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
