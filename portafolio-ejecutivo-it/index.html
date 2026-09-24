@@ -313,8 +313,31 @@
     @media(max-width:760px){.top-actions{width:100%;justify-content:flex-end}.change-grid{grid-template-columns:repeat(2,1fr)}.gap-row{grid-template-columns:1fr}.regularization-intro{align-items:flex-start;flex-direction:column}.module-filters{position:relative;top:auto}.dialog{border-radius:0}.portfolio-owner{width:100%}.portfolio-owner select{flex:1;min-width:0}body.committee-mode .main{padding:24px 16px 50px}}
     @media print{.topbar,.sidebar,.executive-toolbar,.module-filters,.toolbar-button,.clear-filters,.group-toggle{display:none!important}.shell{display:block}.main{padding:0!important;max-width:none!important}.card{box-shadow:none;break-inside:avoid}.chart-card{min-height:230px}.heading{margin-top:0}body{background:#fff}.dialog{display:none!important}}
   </style>
+  <style id="executive-motion-v7">
+    :root{--motion-spring:cubic-bezier(.2,.78,.22,1);--motion-soft:cubic-bezier(.22,.61,.36,1)}
+    .brand-intro{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 44%,#06445a 0,#022c3e 36%,#011c2b 74%,#00131e 100%);pointer-events:none;animation:intro-surface 1.8s var(--motion-soft) both}
+    .brand-intro::before,.brand-intro::after{content:"";position:absolute;left:50%;top:50%;width:min(72vw,760px);aspect-ratio:1;border:1px solid rgba(203,167,133,.22);border-radius:50%;transform:translate(-50%,-50%) scale(.5);animation:intro-ripple 1.25s .18s var(--motion-soft) both}.brand-intro::after{animation-delay:.34s;width:min(54vw,560px);border-color:rgba(255,255,255,.12)}
+    .brand-intro-content{position:relative;z-index:2;display:grid;justify-items:center;gap:22px;width:min(76vw,570px);animation:intro-mark 1.35s var(--motion-spring) both}
+    .brand-intro-logo{width:min(72vw,520px);height:auto;filter:drop-shadow(0 18px 34px rgba(0,0,0,.28))}.brand-intro-title{color:#e7d2bd;font-size:11px;font-weight:800;letter-spacing:.24em;text-transform:uppercase;text-align:center;animation:intro-title 1.2s .18s var(--motion-soft) both}
+    .brand-intro-line{width:min(42vw,220px);height:1px;background:linear-gradient(90deg,transparent,#cba785,transparent);transform-origin:center;animation:intro-line 1.1s .22s var(--motion-spring) both}
+    @keyframes intro-surface{0%,72%{opacity:1;visibility:visible}100%{opacity:0;visibility:hidden}}
+    @keyframes intro-mark{0%{opacity:0;transform:translateY(20px) scale(.9);filter:blur(10px)}45%{opacity:1;filter:blur(0)}78%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-7px) scale(1.025);filter:blur(1px)}}
+    @keyframes intro-title{0%{opacity:0;transform:translateY(8px);letter-spacing:.34em}55%,84%{opacity:1;transform:none;letter-spacing:.24em}100%{opacity:0}}
+    @keyframes intro-line{0%{opacity:0;transform:scaleX(0)}55%,88%{opacity:1;transform:scaleX(1)}100%{opacity:0;transform:scaleX(.72)}}
+    @keyframes intro-ripple{0%{opacity:0;transform:translate(-50%,-50%) scale(.44)}30%{opacity:.8}100%{opacity:0;transform:translate(-50%,-50%) scale(1.08)}}
+    .topbar{animation:page-header-in .55s .62s var(--motion-spring) both}.shell{animation:page-content-in .62s .7s var(--motion-spring) both}
+    @keyframes page-header-in{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:none}}
+    @keyframes page-content-in{from{opacity:0;transform:translateY(15px) scale(.995)}to{opacity:1;transform:none}}
+    .nav button,.secondary-nav button,.quick-chip,.toolbar-button,.group-button,.board-link,.clear-filters,.project-link,.rowbtn{transition:transform .18s var(--motion-spring),background-color .22s ease,border-color .22s ease,box-shadow .22s ease,color .22s ease}.nav button:active,.secondary-nav button:active,.quick-chip:active,.toolbar-button:active,.group-button:active,.board-link:active,.clear-filters:active,.rowbtn:active{transform:scale(.97)}
+    .nav button.active,.secondary-nav button.active{animation:nav-selection .34s var(--motion-spring) both}@keyframes nav-selection{from{transform:translateX(-5px);opacity:.65}to{transform:none;opacity:1}}
+    .card,.rowbtn,.regularization-group{transition:transform .28s var(--motion-spring),box-shadow .28s ease,border-color .22s ease}.card:hover{transform:translateY(-2px);box-shadow:0 20px 44px -30px rgba(2,30,47,.52)}.rowbtn:hover{transform:translateY(-1px)}
+    .chart-bar .fill,.money-row .fill,.progress i{transform-origin:left center}.column-bar{transform-origin:center bottom}.donut{transform-origin:center}.stacked-track span{transform-origin:left center}
+    .dialog[open]{animation:drawer-in .36s var(--motion-spring) both}.dialog[open] .dialog-head{animation:drawer-content-in .42s .05s var(--motion-spring) both}.dialog[open] .dialog-body{animation:drawer-content-in .48s .1s var(--motion-spring) both}@keyframes drawer-content-in{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+    @media(prefers-reduced-motion:reduce){.brand-intro{display:none}.topbar,.shell,.nav button.active,.secondary-nav button.active,.dialog[open],.dialog[open] .dialog-head,.dialog[open] .dialog-body{animation:none!important}.card,.rowbtn,.nav button,.secondary-nav button,.quick-chip,.toolbar-button,.group-button,.board-link,.clear-filters{transition:opacity .16s ease,background-color .16s ease!important;transform:none!important}}
+  </style>
 </head>
 <body>
+  <div class="brand-intro" aria-hidden="true"><div class="brand-intro-content"><img class="brand-intro-logo" src="assets/cosmos-logo-white.png" alt=""><div class="brand-intro-line"></div><div class="brand-intro-title">Portafolio Ejecutivo de Proyectos de IT</div></div></div>
   <header class="topbar"><div class="topinner">
     <div class="brand"><img class="brand-logo" src="assets/cosmos-logo-white.png" alt="COSMOS Global Logistics"><strong class="brand-title">Portafolio Ejecutivo de Proyectos de IT</strong></div>
     <div class="topmeta"><strong id="cut-label">Corte de datos</strong><span>Fuente: monday.com</span></div>
@@ -354,7 +377,10 @@
   const projectButton=i=>'<button class="project-link" onclick="openProject(\''+i.id+'\')">'+esc(i.name)+'</button>';
   function head(k,t,d){return'<div class="heading"><div><span class="kicker">'+esc(k)+'</span><h1>'+esc(t)+'</h1><p>'+esc(d)+'</p></div></div>'}
   function nav(){const hasFinance=D.items.some(i=>[C.budget,C.cost,C.benefits,C.benefitsDone].some(id=>num(i,id)!==null)),primary=views.filter(([id])=>id!=='finanzas'||hasFinance);document.getElementById('nav').innerHTML=primary.map(([id,label])=>'<button class="'+(state.view===id?'active':'')+'" onclick="go(\''+id+'\')">'+label+'</button>').join('');const gapProjects=D.items.filter(i=>regularizationIssues(i).length).length;document.getElementById('secondary-nav').innerHTML='<details '+(state.view==='regularizacion'?'open':'')+'><summary>Gestión PMO</summary><button aria-label="Pendiente de regularizar en monday" class="'+(state.view==='regularizacion'?'active':'')+'" onclick="go(\'regularizacion\')">Pendiente de regularizar <span class="nav-badge">'+gapProjects+'</span></button></details>'}
-  function go(v){state.view=v;syncUrl();nav();render();document.getElementById('main').focus();if(window.scrollTo)window.scrollTo({top:0,behavior:'smooth'})}
+  let moduleMotion=null,moduleMotionTicket=0;
+  function prefersReducedMotion(){try{return typeof window.matchMedia==='function'&&window.matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){return false}}
+  function animateModule(){const main=document.getElementById('main');if(!main||typeof main.animate!=='function'||prefersReducedMotion())return;const ticket=++moduleMotionTicket;if(moduleMotion)moduleMotion.cancel();moduleMotion=main.animate([{opacity:.22,transform:'translateY(14px) scale(.995)'},{opacity:1,transform:'translateY(0) scale(1)'}],{duration:440,easing:'cubic-bezier(.2,.78,.22,1)',fill:'both'});const children=[...main.children].slice(0,9);children.forEach((el,index)=>{if(typeof el.animate!=='function')return;el.animate([{opacity:0,transform:'translateY(18px)'},{opacity:1,transform:'translateY(0)'}],{duration:430,delay:Math.min(index*46,260),easing:'cubic-bezier(.2,.78,.22,1)',fill:'both'})});const visuals=main.querySelectorAll('.chart-bar .fill,.money-row .fill,.progress i,.stacked-track span,.column-bar,.donut');visuals.forEach((el,index)=>{if(typeof el.animate!=='function')return;const vertical=el.classList.contains('column-bar'),donut=el.classList.contains('donut');el.animate(donut?[{opacity:.2,transform:'scale(.82) rotate(-12deg)'},{opacity:1,transform:'scale(1) rotate(0)'}]:vertical?[{transform:'scaleY(0)'},{transform:'scaleY(1)'}]:[{transform:'scaleX(0)'},{transform:'scaleX(1)'}],{duration:520,delay:120+Math.min(index*24,240),easing:'cubic-bezier(.2,.78,.22,1)',fill:'both'})});moduleMotion.finished.catch(()=>{}).then(()=>{if(ticket===moduleMotionTicket)moduleMotion=null})}
+  function go(v){state.view=v;syncUrl();nav();render();animateModule();document.getElementById('main').focus();if(window.scrollTo)window.scrollTo({top:0,behavior:prefersReducedMotion()?'auto':'smooth'})}
 
   function loadPreferences(){try{state.myPm=localStorage.getItem('portfolio-my-pm')||''}catch(e){}try{if(typeof location!=='undefined'&&typeof URLSearchParams!=='undefined'){const q=new URLSearchParams(location.search);['view','search','status','priority','pm','phase','schedule','issue','execPreset','myPm','regSearch','regPm','regCategory','regGroup'].forEach(k=>{if(q.get(k)!==null)state[k]=q.get(k)});if(!['resumen','atencion','portafolio','cronograma','finanzas','regularizacion'].includes(state.view))state.view='resumen'}}catch(e){}}
   function syncUrl(){try{if(typeof location==='undefined'||typeof history==='undefined'||typeof URLSearchParams==='undefined')return;const q=new URLSearchParams();Object.entries(state).forEach(([k,v])=>{if(v&&!(k==='view'&&v==='resumen')&&!(k==='regGroup'&&v==='pm'))q.set(k,v)});const next=location.pathname+(q.toString()?'?'+q.toString():'')+(location.hash||'');history.replaceState(null,'',next)}catch(e){}}
@@ -402,7 +428,7 @@
   document.getElementById('board-link').href=D.board.url;
   document.getElementById('scope').textContent=D.items.filter(active).length+' activos · '+D.items.filter(i=>!active(i)).length+' cerrados · corte '+fmtDT(D.extracted_at_utc)+'.';
   document.getElementById('project-dialog').addEventListener('click',e=>{if(e.target.id==='project-dialog')e.target.close()});
-  nav();render();
+  nav();render();animateModule();
   </script>
   <script id="apple-design-interactions">
     function toggleFullscreen() {
