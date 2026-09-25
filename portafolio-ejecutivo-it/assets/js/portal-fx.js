@@ -30,14 +30,18 @@
       idleFps: 0,
       peekAfter: 9,
       sleepAfter: 75,
-      onCosmoClick: () => ({ text: summary().text, mood: 'happy' }),
-      label: 'Cosmo: ver resumen de la cartera',
+      onCosmoClick: () => { window.toggleChat(); return { mood: 'happy' }; },
+      label: 'Abrir asistente Cosmo',
       announce: false
     });
   } catch (error) {
     console.warn('[cosmos-paper-fx] La capa visual no pudo iniciarse.', error);
     return;
   }
+  // Sin interruptor visible, se recupera una preferencia anterior que lo hubiera apagado.
+  if (!fx.isEnabled()) fx.setEnabled(true);
+  fx.hit.setAttribute('aria-controls', 'project-chat');
+  fx.hit.setAttribute('aria-expanded', 'false');
 
   const emit = (event, data) => {
     try { fx.emit(event, data || {}); }
@@ -111,9 +115,21 @@
   });
 
   const chatOpen = () => !!$('#project-chat:not([hidden])');
-  const updateVisibility = () => fx.setVisible(!document.body.classList.contains('committee-mode') && !chatOpen());
-  after('toggleFullscreen', updateVisibility);
-  after('toggleChat', updateVisibility);
+  const updateVisibility = () => fx.setVisible(!document.body.classList.contains('committee-mode'));
+  after('toggleFullscreen', () => {
+    if (document.body.classList.contains('committee-mode') && chatOpen()) window.toggleChat(false);
+    updateVisibility();
+  });
+  after('toggleChat', () => {
+    const open = chatOpen();
+    if (open && typeof window.closeMore === 'function') window.closeMore();
+    fx.hit.setAttribute('aria-expanded', String(open));
+    fx.hit.setAttribute('aria-label', open ? 'Cerrar asistente Cosmo' : 'Abrir asistente Cosmo');
+    if (!open && document.activeElement?.classList.contains('chat-close')) fx.hit.focus({ preventScroll: true });
+  });
+  after('openMore', () => {
+    if (!$('#more-sheet').hidden && chatOpen()) window.toggleChat(false);
+  });
   document.addEventListener('fullscreenchange', updateVisibility);
   window.addEventListener('beforeprint', () => fx.setVisible(false));
   window.addEventListener('afterprint', updateVisibility);
@@ -128,24 +144,6 @@
     }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   }
 
-  function syncSwitches() {
-    for (const button of [$('#fx-button'), $('#fx-mobile-button')]) {
-      if (!button) continue;
-      button.disabled = false;
-      button.setAttribute('aria-pressed', String(fx.isEnabled()));
-      button.title = fx.isEnabled() ? 'Desactivar animaciones' : 'Activar animaciones';
-    }
-  }
-  document.addEventListener('click', event => {
-    const button = event.target.closest('#fx-button,#fx-mobile-button');
-    if (!button) return;
-    fx.setEnabled(!fx.isEnabled());
-    syncSwitches();
-    if (fx.isEnabled()) { updateVisibility(); emit('wave'); decorate(); }
-    else $$('.cfx-slot').forEach(slot => slot.remove());
-  });
-
-  syncSwitches();
   updateVisibility();
   decorate();
   emit('intro');

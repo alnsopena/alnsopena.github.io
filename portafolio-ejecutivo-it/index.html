@@ -347,14 +347,14 @@
     .milestone-meta{display:block;margin-top:7px;color:#7b8993;font-size:10px}
     .summary-static-row{cursor:default}
     .summary-static-row:hover{border-color:#e1e6ea;background:#fff}
-    .chat-launcher{position:fixed;right:24px;bottom:22px;z-index:80;display:flex;align-items:center;gap:10px;min-height:58px;padding:5px 16px 5px 6px;border:1px solid rgba(255,255,255,.2);border-radius:32px;background:#07394e;color:#fff;box-shadow:0 18px 45px -18px rgba(2,29,42,.75);cursor:pointer;font-weight:800}
-    .chat-launcher img{width:48px;height:48px;object-fit:contain;animation:cosmi-float 3.8s ease-in-out infinite}
-    .chat-launcher small{display:block;margin-top:2px;color:#bfd0d7;font-size:9px;font-weight:600}
-    .project-chat{position:fixed;right:24px;bottom:92px;z-index:90;width:min(410px,calc(100vw - 32px));height:min(650px,calc(100vh - 120px));overflow:hidden;border:1px solid #b9c7ce;border-radius:18px;background:#fff;box-shadow:0 28px 80px -24px rgba(0,27,41,.65)}
+    .chat-fallback{position:fixed;right:22px;bottom:22px;z-index:80;min-height:48px;padding:0 16px;border:1px solid #cba785;border-radius:12px;background:#07394e;color:#fff;box-shadow:0 18px 45px -18px rgba(2,29,42,.75);cursor:pointer;font-weight:800}
+    .chat-fallback[hidden]{display:none}
+    .project-chat{position:fixed;right:22px;bottom:168px;z-index:90;width:min(410px,calc(100vw - 32px));height:min(650px,calc(100vh - 188px));overflow:hidden;border:1px solid #b9c7ce;border-radius:18px;background:#fff;box-shadow:0 28px 80px -24px rgba(0,27,41,.65);transform-origin:90% 100%}
     .project-chat[hidden]{display:none}
+    .project-chat:not([hidden]){animation:chat-reveal .32s cubic-bezier(.2,.8,.2,1) both}
+    @keyframes chat-reveal{from{opacity:0;transform:translateY(18px) scale(.94)}to{opacity:1;transform:none}}
     .chat-shell{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr) auto auto}
     .chat-head{display:flex;align-items:center;gap:12px;padding:14px 15px;background:linear-gradient(115deg,#002f43,#0a4d62);color:#fff}
-    .chat-head img{width:48px;height:48px;object-fit:contain}
     .chat-head strong{display:block;font-size:14px}.chat-head span{display:block;margin-top:2px;color:#c9d7dc;font-size:10px}
     .chat-close{margin-left:auto;width:34px;height:34px;border:1px solid rgba(255,255,255,.24);border-radius:50%;background:transparent;color:#fff;cursor:pointer;font-size:20px}
     .chat-messages{overflow:auto;padding:16px;background:#f5f7f8;scroll-behavior:smooth}
@@ -367,27 +367,18 @@
     .chat-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:11px;border-top:1px solid #e2e7ea;background:#fff}
     .chat-form input{min-width:0;height:42px;border:1px solid #c8d3d9;border-radius:9px;padding:0 11px;color:#17364b}
     .chat-form button{min-width:70px;border:0;border-radius:9px;background:#b68a62;color:#fff;cursor:pointer;font-weight:800}
-    @keyframes cosmi-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
-    @media(max-width:800px){.milestone-list{grid-template-columns:1fr}.milestone-item:nth-last-child(-n+2){border-bottom:1px solid #e4e9ec}.milestone-item:last-child{border-bottom:0}.milestone-head{display:block}.milestone-window{display:block;margin-top:9px}.chat-launcher{right:14px;bottom:14px;padding-right:7px}.chat-launcher>span{display:none}.project-chat{right:8px;bottom:8px;width:calc(100vw - 16px);height:min(720px,calc(100vh - 16px));border-radius:16px}}
-    @media print{.chat-launcher,.project-chat{display:none!important}}
-    @media(prefers-reduced-motion:reduce){.chat-launcher img{animation:none}}
+    @media(max-width:800px){.milestone-list{grid-template-columns:1fr}.milestone-item:nth-last-child(-n+2){border-bottom:1px solid #e4e9ec}.milestone-item:last-child{border-bottom:0}.milestone-head{display:block}.milestone-window{display:block;margin-top:9px}.chat-fallback{right:10px;bottom:calc(78px + env(safe-area-inset-bottom))}.project-chat{right:8px;bottom:calc(182px + env(safe-area-inset-bottom));width:calc(100vw - 16px);height:min(620px,calc(100vh - 202px - env(safe-area-inset-bottom)));border-radius:16px}}
+    @media print{.chat-fallback,.project-chat{display:none!important}}
+    @media(prefers-reduced-motion:reduce){.project-chat:not([hidden]){animation:none}}
   </style>
-  <style id="paper-fx-portal-v11">
-    .fx-header-toggle{gap:8px;white-space:nowrap}
-    .fx-header-toggle::before,.cfx-toggle::before{content:"";width:8px;height:8px;flex:none;border-radius:50%;background:#899aa4;box-shadow:0 0 0 3px rgba(255,255,255,.12)}
-    .fx-header-toggle[aria-pressed="true"]::before,.cfx-toggle[aria-pressed="true"]::before{background:#d4ab7e}
-    .fx-header-toggle:disabled,.cfx-toggle:disabled{opacity:.55;cursor:default}
+  <style id="paper-fx-portal-v12">
     .dialog-head{overflow:hidden}
     .cfx-slot-crane{position:absolute;right:62px;top:0;bottom:0;width:min(230px,38%);pointer-events:none}
     .dialog-head h2,.dialog-head .dialog-meta{display:block;max-width:calc(100% - min(230px,38%) - 8px)}
     .cfx-slot-empty{position:relative;width:100%;max-width:420px;height:112px;margin:0 auto 10px}
     .cfx-slot-calma{position:relative;height:62px;margin:8px 0 10px}
     .mobile-bar,.more-sheet{display:none}
-    .chat-launcher{left:22px;right:auto}
-    .project-chat{left:22px;right:auto}
-    .more-sheet:not([hidden]) ~ .chat-launcher{display:none}
     @media(max-width:800px){
-      .fx-header-toggle{display:none!important}
       .sidebar{display:none}
       .main{padding-bottom:118px}
       .mobile-bar{position:fixed;inset:auto 0 0;z-index:65;display:grid;grid-template-columns:repeat(3,1fr);height:64px;padding:6px max(8px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom));border-top:1px solid #cbd8de;background:#f8fafb;box-shadow:0 -8px 24px rgba(0,35,50,.1)}
@@ -401,18 +392,16 @@
       .sheet-item:last-child{border-bottom:0}
       .cfx-slot-crane{right:54px;top:4px;bottom:auto;height:98px;width:36%}
       .dialog-head h2,.dialog-head .dialog-meta{max-width:calc(100% - 36% - 84px)}
-      .chat-launcher{left:10px;right:auto;bottom:calc(78px + env(safe-area-inset-bottom))}
-      .project-chat{left:8px;right:8px;bottom:calc(72px + env(safe-area-inset-bottom));width:calc(100vw - 16px);height:min(700px,calc(100vh - 88px - env(safe-area-inset-bottom)))}
     }
     body.committee-mode .mobile-bar,body.committee-mode .more-sheet{display:none!important}
-    @media print{.mobile-bar,.more-sheet,.fx-header-toggle{display:none!important}}
+    @media print{.mobile-bar,.more-sheet{display:none!important}}
   </style>
 </head>
 <body>
   <header class="topbar"><div class="topinner">
     <div class="brand"><img class="brand-logo" src="assets/cosmos-logo-white.png" alt="COSMOS Global Logistics"><strong class="brand-title">Portafolio Ejecutivo de Proyectos de IT</strong></div>
     <div class="topmeta"><strong id="cut-label">Corte de datos</strong><span>Fuente: monday.com</span></div>
-    <div class="top-actions"><button id="fx-button" class="board-link fx-header-toggle" type="button" aria-pressed="false" disabled>Animaciones</button><button id="print-button" class="board-link fullscreen-btn" type="button" onclick="printExecutive()">PDF</button>
+    <div class="top-actions"><button id="print-button" class="board-link fullscreen-btn" type="button" onclick="printExecutive()">PDF</button>
     <button id="fullscreen-button" class="board-link fullscreen-btn" type="button" onclick="toggleFullscreen()">Modo comité</button>
     <a id="board-link" class="board-link" target="_blank" rel="noreferrer">Abrir tablero ↗</a></div>
   </div></header>
@@ -432,16 +421,13 @@
       <button type="button" class="sheet-item" onclick="go('cronograma');closeMore()">Cronograma</button>
       <button type="button" class="sheet-item" onclick="go('finanzas');closeMore()">Finanzas y beneficios</button>
       <button type="button" class="sheet-item" onclick="go('regularizacion');closeMore()">Pendiente de regularizar</button>
-      <button type="button" class="sheet-item cfx-toggle" id="fx-mobile-button" aria-pressed="false" disabled>Animaciones</button>
     </div>
   </section>
   <dialog class="dialog" id="project-dialog"><div id="dialog-content"></div></dialog>
-  <button class="chat-launcher" id="chat-launcher" type="button" onclick="toggleChat()" aria-controls="project-chat" aria-expanded="false">
-    <img src="assets/cosmi-mascot.svg" alt=""><span>Pregúntale a Cosmi<small>Asistente del portafolio</small></span>
-  </button>
-  <section class="project-chat" id="project-chat" aria-label="Asistente del portafolio" hidden>
+  <button class="chat-fallback" id="chat-fallback" type="button" onclick="toggleChat()" aria-controls="project-chat" aria-expanded="false" hidden>Abrir asistente</button>
+  <section class="project-chat" id="project-chat" aria-label="Conversar con Cosmo" hidden>
     <div class="chat-shell">
-      <header class="chat-head"><img src="assets/cosmi-mascot.svg" alt="Cosmi"><div><strong>Cosmi</strong><span>Asistente del Portafolio Ejecutivo IT</span></div><button class="chat-close" type="button" onclick="toggleChat(false)" aria-label="Cerrar asistente">×</button></header>
+      <header class="chat-head"><div><strong>Cosmo</strong><span>Asistente del Portafolio Ejecutivo IT</span></div><button class="chat-close" type="button" onclick="toggleChat(false)" aria-label="Cerrar asistente">×</button></header>
       <div class="chat-messages" id="chat-messages" aria-live="polite">
         <div class="chat-message">Hola. Puedo consultar estados, avances, responsables, fechas, riesgos y las últimas actualizaciones registradas en monday.</div>
       </div>
@@ -564,13 +550,14 @@
   function appendChatMessage(role,textValue,options={}){const box=document.getElementById('chat-messages'),message=document.createElement('div');message.className='chat-message'+(role==='user'?' user':'');message.textContent=textValue;if(role!=='user'){const source=document.createElement('span');source.className='chat-source';source.textContent='Fuente: monday · corte '+fmtDT(D.extracted_at_utc);message.appendChild(source);if(options.offerEmail&&options.project){const mail=document.createElement('button');mail.type='button';mail.className='chat-mail';mail.textContent='Enviar consulta al PM asignado ↗';mail.addEventListener('click',()=>prepareProjectEmail(options.project,chatContext.lastQuestion));message.appendChild(mail)}}box.appendChild(message);box.scrollTop=box.scrollHeight}
   function submitChat(event){event?.preventDefault();const input=document.getElementById('chat-input'),question=input.value.trim();if(!question)return;chatContext.lastQuestion=question;appendChatMessage('user',question);input.value='';const answer=answerChat(question);appendChatMessage('assistant',answer.text,answer)}
   function askSuggestion(question){const input=document.getElementById('chat-input');input.value=question;submitChat({preventDefault(){}})}
-  function toggleChat(force){const panel=document.getElementById('project-chat'),launcher=document.getElementById('chat-launcher'),open=typeof force==='boolean'?force:panel.hidden;panel.hidden=!open;launcher.setAttribute('aria-expanded',String(open));if(open)setTimeout(()=>document.getElementById('chat-input').focus(),60)}
+  function toggleChat(force){const panel=document.getElementById('project-chat'),fallback=document.getElementById('chat-fallback'),open=typeof force==='boolean'?force:panel.hidden;panel.hidden=!open;fallback?.setAttribute('aria-expanded',String(open));if(open)setTimeout(()=>document.getElementById('chat-input').focus(),60)}
   function pmDirectoryEntry(project){const pmName=(val(project,C.pm)||'').split(',')[0].trim(),directory=D.people_directory||[],found=directory.find(person=>!person.is_deleted&&normalizeQuery(person.name)===normalizeQuery(pmName));return found||directory.find(person=>normalizeQuery(person.email)==='pierre lozano cosmos com pe')||{name:'Pierre Lozano',email:'pierre.lozano@cosmos.com.pe'}}
   function prepareProjectEmail(project,question){const owner=pmDirectoryEntry(project),cc='pierre.lozano@cosmos.com.pe',subject='[Consulta de proyecto] '+project.name,body='Hola '+(owner.name||'')+',\n\nNo encontramos esta respuesta en el Portafolio Ejecutivo IT:\n\n“'+question+'”\n\nProyecto: '+project.name+'\nPM asignado en monday: '+(val(project,C.pm)||'Sin dato')+'\nCorte consultado: '+fmtDT(D.extracted_at_utc)+'\nProyecto en monday: '+project.url+'\n\nGracias.';window.location.href='mailto:'+encodeURIComponent(owner.email)+'?'+(normalizeQuery(owner.email)!==normalizeQuery(cc)?'cc='+encodeURIComponent(cc)+'&':'')+'subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body)}  document.getElementById('cut-label').textContent='Corte '+fmtDT(D.extracted_at_utc);
   document.getElementById('board-link').href=D.board.url;
   document.getElementById('scope').textContent=D.items.filter(active).length+' activos · '+D.items.filter(i=>!active(i)).length+' cerrados · corte '+fmtDT(D.extracted_at_utc)+'.';
   document.getElementById('project-dialog').addEventListener('click',e=>{if(e.target.id==='project-dialog')e.target.close()});
   nav();render();animateModule();
+  window.addEventListener('load',()=>{if(!window.cosmosFx)document.getElementById('chat-fallback').hidden=false});
   </script>
   <script id="apple-design-interactions">
     function toggleFullscreen() {
@@ -589,7 +576,7 @@
     syncMobileNav();
     new MutationObserver(syncMobileNav).observe(document.getElementById('nav'),{childList:true});
     document.addEventListener('click',event=>{const sheet=document.getElementById('more-sheet');if(sheet&&!sheet.hidden&&!event.target.closest('#more-sheet,#more-button'))closeMore()});
-    document.addEventListener('keydown',event=>{if(event.key==='Escape')closeMore()});
+    document.addEventListener('keydown',event=>{if(event.key==='Escape'){closeMore();if(!document.getElementById('project-chat').hidden)toggleChat(false)}});
     document.addEventListener('fullscreenchange', () => {
       if (!document.fullscreenElement && document.body.classList.contains('committee-mode')) {
         document.body.classList.remove('committee-mode');
