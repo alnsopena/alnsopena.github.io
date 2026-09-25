@@ -315,16 +315,6 @@
   </style>
   <style id="executive-motion-v7">
     :root{--motion-spring:cubic-bezier(.2,.78,.22,1);--motion-soft:cubic-bezier(.22,.61,.36,1)}
-    .brand-intro{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 44%,#06445a 0,#022c3e 36%,#011c2b 74%,#00131e 100%);pointer-events:none;animation:intro-surface 1.8s var(--motion-soft) both}
-    .brand-intro::before,.brand-intro::after{content:"";position:absolute;left:50%;top:50%;width:min(72vw,760px);aspect-ratio:1;border:1px solid rgba(203,167,133,.22);border-radius:50%;transform:translate(-50%,-50%) scale(.5);animation:intro-ripple 1.25s .18s var(--motion-soft) both}.brand-intro::after{animation-delay:.34s;width:min(54vw,560px);border-color:rgba(255,255,255,.12)}
-    .brand-intro-content{position:relative;z-index:2;display:grid;justify-items:center;gap:22px;width:min(76vw,570px);animation:intro-mark 1.35s var(--motion-spring) both}
-    .brand-intro-logo{width:min(72vw,520px);height:auto;filter:drop-shadow(0 18px 34px rgba(0,0,0,.28))}.brand-intro-title{color:#e7d2bd;font-size:11px;font-weight:800;letter-spacing:.24em;text-transform:uppercase;text-align:center;animation:intro-title 1.2s .18s var(--motion-soft) both}
-    .brand-intro-line{width:min(42vw,220px);height:1px;background:linear-gradient(90deg,transparent,#cba785,transparent);transform-origin:center;animation:intro-line 1.1s .22s var(--motion-spring) both}
-    @keyframes intro-surface{0%,72%{opacity:1;visibility:visible}100%{opacity:0;visibility:hidden}}
-    @keyframes intro-mark{0%{opacity:0;transform:translateY(20px) scale(.9);filter:blur(10px)}45%{opacity:1;filter:blur(0)}78%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-7px) scale(1.025);filter:blur(1px)}}
-    @keyframes intro-title{0%{opacity:0;transform:translateY(8px);letter-spacing:.34em}55%,84%{opacity:1;transform:none;letter-spacing:.24em}100%{opacity:0}}
-    @keyframes intro-line{0%{opacity:0;transform:scaleX(0)}55%,88%{opacity:1;transform:scaleX(1)}100%{opacity:0;transform:scaleX(.72)}}
-    @keyframes intro-ripple{0%{opacity:0;transform:translate(-50%,-50%) scale(.44)}30%{opacity:.8}100%{opacity:0;transform:translate(-50%,-50%) scale(1.08)}}
     .topbar{animation:page-header-in .55s .62s var(--motion-spring) both}.shell{animation:page-content-in .62s .7s var(--motion-spring) both}
     @keyframes page-header-in{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:none}}
     @keyframes page-content-in{from{opacity:0;transform:translateY(15px) scale(.995)}to{opacity:1;transform:none}}
@@ -333,20 +323,13 @@
     .card,.rowbtn,.regularization-group{transition:transform .28s var(--motion-spring),box-shadow .28s ease,border-color .22s ease}.card:hover{transform:translateY(-2px);box-shadow:0 20px 44px -30px rgba(2,30,47,.52)}.rowbtn:hover{transform:translateY(-1px)}
     .chart-bar .fill,.money-row .fill,.progress i{transform-origin:left center}.column-bar{transform-origin:center bottom}.donut{transform-origin:center}.stacked-track span{transform-origin:left center}
     .dialog[open]{animation:drawer-in .36s var(--motion-spring) both}.dialog[open] .dialog-head{animation:drawer-content-in .42s .05s var(--motion-spring) both}.dialog[open] .dialog-body{animation:drawer-content-in .48s .1s var(--motion-spring) both}@keyframes drawer-content-in{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
-    @media(prefers-reduced-motion:reduce){.brand-intro{display:none}.topbar,.shell,.nav button.active,.secondary-nav button.active,.dialog[open],.dialog[open] .dialog-head,.dialog[open] .dialog-body{animation:none!important}.card,.rowbtn,.nav button,.secondary-nav button,.quick-chip,.toolbar-button,.group-button,.board-link,.clear-filters{transition:opacity .16s ease,background-color .16s ease!important;transform:none!important}}
+    @media(prefers-reduced-motion:reduce){.topbar,.shell,.nav button.active,.secondary-nav button.active,.dialog[open],.dialog[open] .dialog-head,.dialog[open] .dialog-body{animation:none!important}.card,.rowbtn,.nav button,.secondary-nav button,.quick-chip,.toolbar-button,.group-button,.board-link,.clear-filters{transition:opacity .16s ease,background-color .16s ease!important;transform:none!important}}
   </style>
   <style id="executive-functional-v9">
-    .brand-intro{display:none;animation-duration:.88s}
-    body.show-brand-intro .brand-intro{display:grid}
-    body.show-brand-intro .brand-intro-content{animation-duration:.72s}
-    body.show-brand-intro .brand-intro-title{animation-duration:.72s}
-    body.show-brand-intro .brand-intro-line{animation-duration:.68s}
-    body.show-brand-intro .brand-intro::before,body.show-brand-intro .brand-intro::after{animation-duration:.75s}
     .metric-action{width:100%;color:inherit;text-align:left;font-family:inherit;cursor:pointer}
     .metric-action:focus-visible{outline:3px solid rgba(203,167,133,.7);outline-offset:2px}
     .metric-delta{display:block;margin-top:7px;color:#45687b;font-size:10px;font-weight:800}
     .kpi-primary .metric-delta{color:#ddc5ad}
-    @media(prefers-reduced-motion:reduce){body.show-brand-intro .brand-intro{display:none}}
   </style>
   <style id="summary-assistant-v10">
     .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
@@ -389,14 +372,46 @@
     @media print{.chat-launcher,.project-chat{display:none!important}}
     @media(prefers-reduced-motion:reduce){.chat-launcher img{animation:none}}
   </style>
+  <style id="paper-fx-portal-v11">
+    .fx-header-toggle{gap:8px;white-space:nowrap}
+    .fx-header-toggle::before,.cfx-toggle::before{content:"";width:8px;height:8px;flex:none;border-radius:50%;background:#899aa4;box-shadow:0 0 0 3px rgba(255,255,255,.12)}
+    .fx-header-toggle[aria-pressed="true"]::before,.cfx-toggle[aria-pressed="true"]::before{background:#d4ab7e}
+    .fx-header-toggle:disabled,.cfx-toggle:disabled{opacity:.55;cursor:default}
+    .dialog-head{overflow:hidden}
+    .cfx-slot-crane{position:absolute;right:62px;top:0;bottom:0;width:min(230px,38%);pointer-events:none}
+    .dialog-head h2,.dialog-head .dialog-meta{display:block;max-width:calc(100% - min(230px,38%) - 8px)}
+    .cfx-slot-empty{position:relative;width:100%;max-width:420px;height:112px;margin:0 auto 10px}
+    .cfx-slot-calma{position:relative;height:62px;margin:8px 0 10px}
+    .mobile-bar,.more-sheet{display:none}
+    .chat-launcher{left:22px;right:auto}
+    .project-chat{left:22px;right:auto}
+    @media(max-width:800px){
+      .fx-header-toggle{display:none!important}
+      .sidebar{display:none}
+      .main{padding-bottom:118px}
+      .mobile-bar{position:fixed;inset:auto 0 0;z-index:65;display:grid;grid-template-columns:repeat(3,1fr);height:64px;padding:6px max(8px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom));border-top:1px solid #cbd8de;background:#f8fafb;box-shadow:0 -8px 24px rgba(0,35,50,.1)}
+      .mobile-bar button{border:0;border-radius:9px;background:transparent;color:#536b78;font-size:12px;font-weight:800;cursor:pointer}
+      .mobile-bar button[aria-current="page"],.mobile-bar button[aria-expanded="true"]{background:#07394e;color:#fff}
+      .more-sheet:not([hidden]){position:fixed;left:8px;right:8px;bottom:calc(72px + env(safe-area-inset-bottom));z-index:75;display:block;max-height:min(70vh,540px);overflow:auto;border:1px solid #bacbd3;border-radius:16px;background:#fff;box-shadow:0 24px 60px -25px rgba(0,32,47,.55)}
+      .more-sheet-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e3e9ec;color:#183b4d}
+      .more-sheet-head button{width:32px;height:32px;border:0;border-radius:50%;background:#eff3f5;color:#16384b;font-size:20px}
+      .sheet-list{display:grid;padding:6px}
+      .sheet-item{display:flex;align-items:center;gap:9px;width:100%;min-height:48px;padding:10px 12px;border:0;border-bottom:1px solid #e7ecef;background:#fff;color:#26495b;text-align:left;font-weight:750;cursor:pointer}
+      .sheet-item:last-child{border-bottom:0}
+      .cfx-slot-crane{right:54px;top:4px;bottom:auto;height:98px;width:36%}
+      .dialog-head h2,.dialog-head .dialog-meta{max-width:60%}
+      .chat-launcher{left:10px;right:auto;bottom:calc(78px + env(safe-area-inset-bottom))}
+      .project-chat{left:8px;right:8px;bottom:calc(72px + env(safe-area-inset-bottom));width:calc(100vw - 16px);height:min(700px,calc(100vh - 88px - env(safe-area-inset-bottom)))}
+    }
+    body.committee-mode .mobile-bar,body.committee-mode .more-sheet{display:none!important}
+    @media print{.mobile-bar,.more-sheet,.fx-header-toggle{display:none!important}}
+  </style>
 </head>
 <body>
-  <script id="brand-intro-bootstrap">try{if(!sessionStorage.getItem('cosmos-intro-seen')){document.body.classList.add('show-brand-intro');sessionStorage.setItem('cosmos-intro-seen','1')}}catch(e){document.body.classList.add('show-brand-intro')}</script>
-  <div class="brand-intro" aria-hidden="true"><div class="brand-intro-content"><img class="brand-intro-logo" src="assets/cosmos-logo-white.png" alt=""><div class="brand-intro-line"></div><div class="brand-intro-title">Portafolio Ejecutivo de Proyectos de IT</div></div></div>
   <header class="topbar"><div class="topinner">
     <div class="brand"><img class="brand-logo" src="assets/cosmos-logo-white.png" alt="COSMOS Global Logistics"><strong class="brand-title">Portafolio Ejecutivo de Proyectos de IT</strong></div>
     <div class="topmeta"><strong id="cut-label">Corte de datos</strong><span>Fuente: monday.com</span></div>
-    <div class="top-actions"><button id="print-button" class="board-link fullscreen-btn" type="button" onclick="printExecutive()">PDF</button>
+    <div class="top-actions"><button id="fx-button" class="board-link fx-header-toggle" type="button" aria-pressed="false" disabled>Animaciones</button><button id="print-button" class="board-link fullscreen-btn" type="button" onclick="printExecutive()">PDF</button>
     <button id="fullscreen-button" class="board-link fullscreen-btn" type="button" onclick="toggleFullscreen()">Modo comité</button>
     <a id="board-link" class="board-link" target="_blank" rel="noreferrer">Abrir tablero ↗</a></div>
   </div></header>
@@ -404,6 +419,21 @@
     <aside class="sidebar"><nav class="nav" aria-label="Navegación principal" id="nav"></nav><div id="secondary-nav" class="secondary-nav"></div><div class="scope"><strong>Estado de la cartera</strong><span id="scope"></span></div></aside>
     <main class="main" id="main" tabindex="-1"></main>
   </div>
+  <nav class="mobile-bar" id="mobile-bar" aria-label="Navegación móvil">
+    <button type="button" data-mobile-view="resumen" onclick="go('resumen')">Resumen</button>
+    <button type="button" data-mobile-view="portafolio" onclick="go('portafolio')">Portafolio</button>
+    <button type="button" id="more-button" aria-controls="more-sheet" aria-expanded="false" onclick="openMore()">Más</button>
+  </nav>
+  <section class="more-sheet" id="more-sheet" aria-label="Más opciones" hidden>
+    <div class="more-sheet-head"><strong>Más opciones</strong><button type="button" onclick="closeMore()" aria-label="Cerrar más opciones">×</button></div>
+    <div class="sheet-list">
+      <button type="button" class="sheet-item" onclick="go('atencion');closeMore()">Riesgos y decisiones</button>
+      <button type="button" class="sheet-item" onclick="go('cronograma');closeMore()">Cronograma</button>
+      <button type="button" class="sheet-item" onclick="go('finanzas');closeMore()">Finanzas y beneficios</button>
+      <button type="button" class="sheet-item" onclick="go('regularizacion');closeMore()">Pendiente de regularizar</button>
+      <button type="button" class="sheet-item cfx-toggle" id="fx-mobile-button" aria-pressed="false" disabled>Animaciones</button>
+    </div>
+  </section>
   <dialog class="dialog" id="project-dialog"><div id="dialog-content"></div></dialog>
   <button class="chat-launcher" id="chat-launcher" type="button" onclick="toggleChat()" aria-controls="project-chat" aria-expanded="false">
     <img src="assets/cosmi-mascot.svg" alt=""><span>Pregúntale a Cosmi<small>Asistente del portafolio</small></span>
@@ -552,8 +582,13 @@
       if (button) button.textContent = entering ? 'Salir de modo comité' : 'Modo comité';
     }
     function printExecutive(){window.print()}
-    const brandIntro=document.querySelector('.brand-intro');
-    if(brandIntro&&document.body.classList.contains('show-brand-intro'))brandIntro.addEventListener('animationend',()=>{document.body.classList.remove('show-brand-intro');brandIntro.remove()},{once:true});
+    function closeMore(){const sheet=document.getElementById('more-sheet'),button=document.getElementById('more-button');if(!sheet||!button)return;sheet.hidden=true;button.setAttribute('aria-expanded','false')}
+    function openMore(){const sheet=document.getElementById('more-sheet'),button=document.getElementById('more-button');if(!sheet||!button)return;const open=sheet.hidden;sheet.hidden=!open;button.setAttribute('aria-expanded',String(open))}
+    function syncMobileNav(){document.querySelectorAll('[data-mobile-view]').forEach(button=>{if(button.dataset.mobileView===state.view)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current')})}
+    syncMobileNav();
+    new MutationObserver(syncMobileNav).observe(document.getElementById('nav'),{childList:true});
+    document.addEventListener('click',event=>{const sheet=document.getElementById('more-sheet');if(sheet&&!sheet.hidden&&!event.target.closest('#more-sheet,#more-button'))closeMore()});
+    document.addEventListener('keydown',event=>{if(event.key==='Escape')closeMore()});
     document.addEventListener('fullscreenchange', () => {
       if (!document.fullscreenElement && document.body.classList.contains('committee-mode')) {
         document.body.classList.remove('committee-mode');
@@ -562,5 +597,7 @@
       }
     });
   </script>
+  <script src="assets/js/cosmos-paper-fx.min.js" defer></script>
+  <script src="assets/js/portal-fx.js" defer></script>
 </body>
 </html>

@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hoja de Personajes COSMOS Paper</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Gruppo&display=swap">
+<style>
+:root{--bg:#F5EFE4;--card:#FFF8EC;--line:#E0D5C3;--ink:#162631;--text-2:#3B5261;--text-3:#5B6B74;--accent:#003D53;--sand:#CBA785;--sand-ink:#7F5F45;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#01131D;--card:#072230;--line:#15374A;--ink:#E9EFF2;--text-2:#B3C2CA;--text-3:#93A6B0;--accent:#7FB6CC;--sand-ink:#D8B999;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#01131D;--card:#072230;--line:#15374A;--ink:#E9EFF2;--text-2:#B3C2CA;--text-3:#93A6B0;--accent:#7FB6CC;--sand-ink:#D8B999;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.6 Figtree,"Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:24px}
+header.top{padding-block:40px 8px}
+.eyebrow{font-family:Gruppo,Figtree,sans-serif;font-size:18px;letter-spacing:.3em;text-transform:uppercase;color:var(--sand-ink)}
+h1{margin:6px 0 10px;font-size:clamp(32px,4.4vw,52px);line-height:1.02;letter-spacing:-.025em;font-weight:800;text-wrap:balance}
+.lead{max-width:68ch;margin:0;color:var(--text-2);font-size:16.5px}
+section{padding-top:44px}
+h2{margin:0 0 4px;font-size:24px;letter-spacing:-.01em}
+h2 small{display:block;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--sand-ink);margin-bottom:4px}
+.note{margin:0 0 16px;color:var(--text-3);max-width:70ch}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:20px;align-items:center;margin-top:18px}
+.stage{background:var(--card);border:1.5px solid var(--line);border-radius:18px;box-shadow:4px 5px 0 rgba(22,38,49,.08);overflow:hidden}
+.stage canvas{display:block;width:100%}
+.rules{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.rules li{padding:12px 14px;background:var(--card);border:1.5px solid var(--line);border-radius:14px}
+.rules b{display:block;font-size:14px}
+.rules span{color:var(--text-3);font-size:14px}
+.grid{display:grid;gap:12px}
+.moods{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
+.tile{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:10px 12px 12px;box-shadow:3px 4px 0 rgba(22,38,49,.06)}
+.tile canvas{display:block;width:100%;height:auto}
+.tile b{display:block;font-size:14px}
+.tile span{display:block;font-size:12.5px;color:var(--text-3);line-height:1.4}
+.swatches{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.sw{border-radius:14px;overflow:hidden;border:1.5px solid var(--line);background:var(--card)}
+.sw i{display:block;height:54px}
+.sw p{margin:0;padding:8px 10px;font-size:12.5px;color:var(--text-2);line-height:1.35}
+.sw p b{display:block;color:var(--ink);font-size:13px}
+.tablewrap{overflow-x:auto;border:1.5px solid var(--line);border-radius:16px;background:var(--card)}
+table{width:100%;border-collapse:collapse;min-width:720px;font-size:14px}
+th{text-align:left;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);padding:10px 14px;border-bottom:1.5px solid var(--line)}
+td{padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--text-2)}
+tr:last-child td{border-bottom:0}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.86em;color:var(--ink)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+footer{margin:48px 0 40px;padding-top:14px;border-top:1.5px solid var(--line);color:var(--text-3);font-size:13px}
+@media (max-width:860px){.hero,.two{grid-template-columns:1fr}.wrap{padding-inline:16px}}
+</style>
+</head>
+<body>
+<header class="top wrap">
+  <div class="eyebrow">COSMOS · Paper FX</div>
+  <h1>Cosmo y el muelle de papel</h1>
+  <p class="lead">Hoja de personajes y reglas de estilo de la capa animada del Portafolio Ejecutivo de IT. Todo lo que ves aquí se dibuja en vivo con el mismo motor que usa el portal: Canvas 2D, sin imágenes ni librerías.</p>
+</header>
+<main class="wrap">
+  <div class="hero">
+    <div class="stage"><canvas id="hero" data-h="360"></canvas></div>
+    <ul class="rules">
+      <li><b>Papel pintado, no 3D</b><span>Lavado plano con un charco de luz arriba y pigmento asentado abajo. Grano de papel dentro de cada forma.</span></li>
+      <li><b>Tinta que respira</b><span>El contorno se redibuja 12 veces por segundo con otro trazo, como animación hecha a mano. El relleno se mueve menos que la línea.</span></li>
+      <li><b>Sombra de papel recortado</b><span>Cada pieza proyecta una sombra corta abajo a la derecha. En modo oscuro gana un borde crema.</span></li>
+      <li><b>Marca antes que decoración</b><span>Navy de COSMOS en el cuerpo, arena en los rieles, y el isotipo tri-onda convertido en mar.</span></li>
+      <li><b>Reacciona y se asienta</b><span>Anticipa, se aplasta, rebota y vuelve a reposo. Nunca bloquea la lectura ni repite en bucle sin motivo.</span></li>
+    </ul>
+  </div>
+
+  <section>
+    <h2><small>Protagonista</small>Cosmo, el contenedor guía</h2>
+    <p class="note">Un contenedor de 20 pies con placa-cara de embarque. Cuerpo 11u × 6u, placa 6,1u × 3,85u, patas de 1,85u, brazos-fideo de 3,3u. En el portal mide 84 px de ancho (58 px en móvil).</p>
+    <div class="grid moods" id="moods"></div>
+  </section>
+
+  <section>
+    <h2><small>Movimiento</small>Acciones</h2>
+    <p class="note">Cada acción es una función pura del tiempo: se puede pausar, adelantar o dibujar en su pose final cuando el usuario pide menos movimiento.</p>
+    <div class="grid moods" id="actions"></div>
+  </section>
+
+  <section>
+    <h2><small>Elenco de apoyo</small>El puerto</h2>
+    <p class="note">Mini contenedores con el color de cada estatus, la grúa pórtico que entrega la ficha de un proyecto y el buque que trae a Cosmo en la bienvenida.</p>
+    <div class="two">
+      <div class="stage"><canvas id="troupe" data-h="250"></canvas></div>
+      <div class="stage"><canvas id="crane" data-h="250"></canvas></div>
+    </div>
+    <div class="stage" style="margin-top:16px"><canvas id="sea" data-h="230"></canvas></div>
+  </section>
+
+  <section>
+    <h2><small>Color</small>Paleta</h2>
+    <p class="note">Marca intacta; los tonos del puerto se derivan de ella. Los colores por estatus son los mismos del portal v8.</p>
+    <div class="grid swatches" id="swatches"></div>
+  </section>
+
+  <section>
+    <h2><small>Interacción</small>Qué hace la web, qué hace Cosmo</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>En el portal</th><th>Evento</th><th>Reacción</th></tr></thead>
+      <tbody>
+        <tr><td>Primera visita de la sesión</td><td><code>intro</code></td><td>El papel sube, llega el buque, Cosmo salta a su muelle. 3 s, no bloquea, se salta con clic o tecla.</td></tr>
+        <tr><td>Cambiar de módulo</td><td><code>view</code></td><td>Asiente y sonríe.</td></tr>
+        <tr><td>Aplicar un filtro o una leyenda</td><td><code>filter</code></td><td>Saca la lupa; un mini contenedor del color filtrado salta al muelle.</td></tr>
+        <tr><td>Limpiar filtros</td><td><code>filter:clear</code></td><td>Se sacude y vuelan papelitos desde la barra de filtros.</td></tr>
+        <tr><td>Sin resultados</td><td><code>empty</code></td><td>Viñeta: revisa un pallet vacío con la lupa y se encoge de hombros.</td></tr>
+        <tr><td>Abrir la ficha de un proyecto</td><td><code>project</code></td><td>Viñeta: la grúa baja un contenedor del color del estatus al encabezado.</td></tr>
+        <tr><td>Hay bloqueos o riesgos</td><td><code>alert</code> / <code>status</code></td><td>Bandera roja con "!" o ámbar con gota de sudor.</td></tr>
+        <tr><td>Copiar vista u otra acción lista</td><td><code>success</code></td><td>Sella el aire y deja un sello de visto bueno.</td></tr>
+        <tr><td>Clic en "Ejecutados"</td><td><code>celebrate</code></td><td>Lluvia de mini contenedores y ojos de estrella.</td></tr>
+        <tr><td>Sin cambios semanales</td><td>viñeta <code>calma</code></td><td>Un buque flota en mar tranquilo.</td></tr>
+        <tr><td>Cursor, scroll, inactividad</td><td>automático</td><td>Sigue el cursor con la mirada, se agarra si el scroll es brusco, se asoma a los 9 s y duerme a los 75 s.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+  <footer>COSMOS Paper FX 1.0 · Estilo inspirado en la animación pintada de PDoomVideo (J. Heibel), reinterpretado para COSMOS con código propio.</footer>
+</main>
+<script src="dist/cosmos-paper-fx.js"></script>
+<script>
+(function () {
+  const D = CosmosFx.draw, P = D.PAL, reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isDark = () => { const a = document.documentElement.getAttribute('data-theme'); return a ? a === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; };
+  const tiles = [];
+  function tile(parent, title, desc, draw, h = 150) {
+    const d = document.createElement('div'); d.className = 'tile';
+    d.innerHTML = '<canvas></canvas><b>' + title + '</b><span>' + desc + '</span>'; parent.appendChild(d);
+    tiles.push({ cv: d.querySelector('canvas'), draw, h, seed: tiles.length + 3 });
+  }
+  function stage(id, draw) { const cv = document.getElementById(id); tiles.push({ cv, draw, h: +cv.dataset.h, seed: tiles.length + 7 }); }
+  function fit(o) {
+    const w = o.cv.clientWidth || 200, dpr = Math.min(2, devicePixelRatio || 1);
+    if (o.w !== w) { o.w = w; o.cv.width = w * dpr; o.cv.height = o.h * dpr; o.cv.style.height = o.h + 'px'; o.ctx = o.cv.getContext('2d'); o.ctx.setTransform(dpr, 0, 0, dpr, 0, 0); o.pen = new D.Pen(o.ctx, { seed: o.seed }); }
+  }
+  const MOODS = [
+    ['normal', 'Reposo', 'Mira el cursor y parpadea.'], ['happy', 'Contento', 'Al cambiar de módulo o saludar.'], ['focus', 'Concentrado', 'Mientras filtras.'],
+    ['worried', 'Preocupado', 'Hay proyectos con riesgo.'], ['alarm', 'Alerta', 'Hay un bloqueo.'], ['doubt', 'Duda', 'Sin resultados.'],
+    ['proud', 'Orgulloso', 'Celebra lo ejecutado.'], ['done', 'Listo', 'Acción completada.'], ['sleepy', 'Dormido', 'Tras 75 s sin actividad.'], ['love', 'Cariño', 'Al hacerle clic.']
+  ];
+  const moodsEl = document.getElementById('moods');
+  MOODS.forEach(([m, t, d]) => tile(moodsEl, t, d, (p, w, h, T) => {
+    const M = D.MOODS[m], u = Math.min(11, w / 17), x = w / 2 - u, y = h - 18;
+    D.cosmo(p, x, y, u, Object.assign({ t: T, dy: -.1 * Math.sin(T * 2.1) }, M));
+    D.emote(p, x + 5.6 * u, y - 9 * u, u, M.emote, 1, T);
+  }));
+  const ACTS = [['hop', 'Salto', 'Anticipa, sube, aterriza.'], ['wave', 'Saludo', 'Al pasar el mouse.'], ['search', 'Lupa', 'Filtrar.'], ['stamp', 'Sello', 'Acción lista.'],
+    ['flag', 'Bandera', 'Riesgo o bloqueo.'], ['shrug', 'Hombros', 'Sin resultados.'], ['cheer', 'Festejo', 'Celebrar.'], ['shake', 'Sacudida', 'Limpiar filtros.'], ['hold', 'Agarrarse', 'Scroll brusco.']];
+  const actEl = document.getElementById('actions');
+  ACTS.forEach(([a, t, d]) => tile(actEl, t, d, (p, w, h, T) => {
+    const A = D.ACTIONS[a], lt = reduce ? A.dur * .5 : (T % (A.dur + .7)), f = A.f(Math.min(lt, A.dur)), u = Math.min(10, w / 18), x = w / 2 - 2 * u, y = h - 18;
+    const o = Object.assign({ t: T }, D.MOODS.normal, f);
+    if (f.prop === 'lupa') { o.propR = (pp, hx, hy, uu, s) => D.PROPS.lupa(pp, hx, hy, uu, s, T); Object.assign(o, { eyes: 'narrow', brows: 'focus', mouth: 'flat' }); }
+    if (f.prop === 'sello') o.propR = D.PROPS.sello; if (f.prop === 'flag') o.propR = D.PROPS.bandera(P.danger);
+    if (a === 'cheer') Object.assign(o, D.MOODS.proud); if (a === 'wave') Object.assign(o, D.MOODS.happy, { aR: f.aR, aL: f.aL });
+    D.cosmo(p, x + (o.dx || 0) * u, y, u, Object.assign(o, { dx: 0 }));
+    if (a === 'stamp' && lt > .55 && lt < 1.6) D.stampMark(p, x - 9 * u, y - 3 * u, u * .8, Math.min(1, (lt - .55) / .15), 1);
+  }));
+  stage('hero', (p, w, h, T) => {
+    D.waves(p, 0, w, h * .72, h * .3, T, 1, [0]);
+    const L = Math.min(360, w * .5); D.ship(p, w * .42 + Math.sin(T * .6) * 8, h * .8 + Math.sin(T * 2) * 2, L, { rot: Math.sin(T * 1.4) * .015 });
+    D.waves(p, 0, w, h * .72, h * .3, T, 1, [1, 2]);
+    const u = Math.min(15, w / 34), x = w * .78, y = h * .64, lt = T % 4;
+    p.shape([[x - 7 * u, y], [x + 7 * u, y], [x + 7.4 * u, h + 4], [x - 7.4 * u, h + 4]], { unit: u * .55, fill: P.paperDk, pool: P.cream, sw: .9 });
+    const f = lt < 1.4 ? D.ACTIONS.wave.f(lt) : lt < 2.1 ? D.ACTIONS.hop.f(lt - 1.4) : {};
+    D.cosmo(p, x, y, u, Object.assign({ t: T, dy: -.1 * Math.sin(T * 2.1) }, D.MOODS.happy, f, { lookX: -.6 }));
+    D.gull(p, w * .2 + Math.sin(T * .5) * 30, h * .2, 12, T * 2); D.gull(p, w * .28 + Math.sin(T * .5 + 1) * 30, h * .13, 9, T * 2 + .4);
+  });
+  stage('troupe', (p, w, h, T) => {
+    const cols = [['Cerrado', P.ok], ['En Proceso', P.navy3], ['Planificado', P.sand], ['Propuesto', P.violet]];
+    const u = Math.min(11, w / 30);
+    cols.forEach(([n, c], i) => {
+      const x = w * (.14 + i * .24), hop = reduce ? 0 : Math.max(0, Math.sin(T * 3 - i * .8)) * -1.2;
+      D.box(p, x, h - 58, u, { col: c, dy: hop, eyes: hop < -.8 ? 'arc' : 'dot', lookX: .4 });
+      p.ctx.fillStyle = getComputedStyle(document.body).color; p.ctx.font = '600 12px Figtree, sans-serif'; p.ctx.textAlign = 'center'; p.ctx.fillText(n, x, h - 30);
+    });
+  });
+  stage('crane', (p, w, h, T) => {
+    const lt = reduce ? 1.4 : T % 3.2, ch = h * .9, gy = h - 10, bu = h * .05, boomY = gy - ch * .8;
+    const land = gy - 3.6 * bu - boomY - ch * .035, cable = Math.max(ch * .1, ch * .14 + (land - ch * .14) * Math.min(1, lt / 1.1));
+    const hk = D.crane(p, w * .82, gy, ch, { trolleyX: w * .38, cable, boomLeft: w * .1 });
+    const landed = lt >= 1.1; D.box(p, w * .38, landed ? gy : hk.hookY + 3.6 * bu, bu, { col: P.violet, sq: landed ? .25 * Math.max(0, 1 - (lt - 1.1) * 3) : 0, eyes: landed ? 'arc' : 'dot', noShadow: !landed });
+  });
+  stage('sea', (p, w, h, T) => {
+    D.waves(p, 0, w, h * .3, h * .45, T, 1);
+    p.ctx.fillStyle = '#FFF8EC'; p.ctx.font = '600 13px Figtree, sans-serif'; p.ctx.textAlign = 'left';
+    p.ctx.fillText('El mar es el isotipo de COSMOS: tres franjas, de clara a profunda.', 18, h - 18);
+  });
+  const SW = [['Navy COSMOS', P.navy, 'Header, casco del buque'], ['Navy 700', P.navy3, 'Cuerpo de Cosmo · En Proceso'], ['Arena', P.sand, 'Rieles, grúa · Planificado'], ['Arena oscura', P.sandDk, 'Celosía y sombras cálidas'],
+    ['Papel', P.paper, 'Fondo de escenas'], ['Crema', P.cream, 'Placa-cara, manos'], ['Tinta', P.ink, 'Contornos'], ['Mar 1 · 2 · 3', P.sea2, 'Olas tri-onda'],
+    ['Verde', P.ok, 'Cerrado · En fecha'], ['Ámbar', P.warn, 'Riesgo · Forecast retrasado'], ['Rojo', P.danger, 'Bloqueo · Vencido'], ['Violeta', P.violet, 'Propuesto'], ['Óxido', P.rust, 'Sello de visto bueno']];
+  document.getElementById('swatches').innerHTML = SW.map(([n, c, u]) => '<div class="sw"><i style="background:' + c + '"></i><p><b>' + n + '</b>' + c.toUpperCase() + ' · ' + u + '</p></div>').join('');
+
+  let last = 0;
+  function frame(ts) {
+    const T = ts / 1000, dark = isDark();
+    if (ts - last > 1000 / 24 || !last) {
+      last = ts;
+      for (const o of tiles) { fit(o); o.ctx.clearRect(0, 0, o.w, o.h); o.pen.onDark = dark; o.pen.frame(T, reduce); o.draw(o.pen, o.w, o.h, reduce ? 1.2 : T); }
+    }
+    if (!reduce) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  addEventListener('resize', () => { tiles.forEach(o => o.w = 0); if (reduce) requestAnimationFrame(frame); });
+})();
+</script>
+</body>
+</html>
