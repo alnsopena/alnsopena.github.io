@@ -194,6 +194,43 @@ async function fetchSnapshot(token, previous) {
     throw new Error(`Lectura tipada incompleta: ${rawItems.length}/${ids.length} elementos`);
   }
 
+  const personIds = new Set();
+  for (const item of rawItems) {
+    for (const column of item.column_values ?? []) {
+      if (column.type !== 'people' || !column.value) continue;
+      try {
+        const parsed = JSON.parse(column.value);
+        for (const person of parsed.personsAndTeams ?? []) {
+          if (person.kind === 'person' && person.id) personIds.add(String(person.id));
+        }
+      } catch {
+        // Un valor de personas incompleto no debe impedir la actualización del portal.
+      }
+    }
+  }
+  let peopleDirectory = previous?.people_directory ?? [];
+  if (personIds.size) {
+    try {
+      const peopleResponse = await client.callTool('all_api_read', {
+        query: `query PortfolioPeople($ids: [ID!]!) {
+          users(ids: $ids) { id name email is_deleted }
+        }`,
+        variables: JSON.stringify({ ids: [...personIds] }),
+      });
+      const users = peopleResponse.data?.users ?? peopleResponse.users ?? [];
+      if (users.length) {
+        peopleDirectory = users.map((user) => ({
+          id: String(user.id),
+          name: user.name,
+          email: user.email,
+          is_deleted: Boolean(user.is_deleted),
+        }));
+      }
+    } catch (error) {
+      console.warn(`No se pudo actualizar el directorio de responsables: ${error.message}`);
+    }
+  }
+
   const itemIds = new Set(ids);
   const linkedUpdates = updates.filter((update) => update.item_id && itemIds.has(update.item_id));
   const assetIds = new Set(
@@ -275,6 +312,7 @@ async function fetchSnapshot(token, previous) {
       assetsUnique: assetIds.size,
     },
     board: normalizedBoard,
+    people_directory: peopleDirectory,
     items,
     closure_history: closureHistory,
     weekly_baseline: weeklyBaseline,
