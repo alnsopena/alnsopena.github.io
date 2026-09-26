@@ -69,6 +69,11 @@ assert.equal(risk.filters.search, cosmos.name);
 const action = guide.answer({ type: 'answer', topic: 'project-action', id: labor.id });
 assert.match(action.text, /pendiente de firma/);
 assert.equal(action.module, 'portafolio');
+assert.equal(action.openProjectId, labor.id);
+
+const closure = guide.answer({ type: 'answer', topic: 'project-closure', id: closed.id });
+assert.equal(closure.module, 'portafolio');
+assert.equal(closure.openProjectId, closed.id);
 
 const update = guide.answer({ type: 'answer', topic: 'project-update', id: cosmos.id });
 assert.equal(update.openProjectId, cosmos.id);

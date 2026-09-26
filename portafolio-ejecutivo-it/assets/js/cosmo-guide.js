@@ -87,18 +87,19 @@
       const lines = ['Riesgo / bloqueo: ' + (risk || 'Sin evaluar')];
       if (val(item, 'action')) lines.push('Acción o decisión requerida: ' + h.shortAnswer(val(item, 'action'), 320));
       const attention = h.attentionReasons(item).length > 0;
-      answer = reply(item.name + ' · riesgos y acciones', lines.join('\n'), attention ? 'atencion' : 'portafolio', { search: item.name }, { source: 'Riesgo / Bloqueo y Acción / decisión requerida', offerEmail: !risk || risk === 'Sin evaluar', project: item });
+      answer = reply(item.name + ' · riesgos y acciones', lines.join('\n'), attention ? 'atencion' : 'portafolio', { search: item.name }, { source: 'Riesgo / Bloqueo y Acción / decisión requerida', offerEmail: !risk || risk === 'Sin evaluar', project: item, ...(!attention ? { openProjectId: item.id } : {}) });
     } else if (page.topic === 'project-action') {
       const lines = ['Acción o decisión requerida: ' + h.shortAnswer(val(item, 'action'), 360)];
       if (val(item, 'actionOwner')) lines.push('Responsable registrado: ' + val(item, 'actionOwner'));
       if (val(item, 'actionDate')) lines.push('Fecha compromiso: ' + h.fmtDate(val(item, 'actionDate')));
       if (val(item, 'actionStatus')) lines.push('Estado: ' + val(item, 'actionStatus'));
-      answer = reply(item.name + ' · decisión requerida', lines.join('\n'), h.attentionReasons(item).length ? 'atencion' : 'portafolio', { search: item.name }, { source: 'Acción / decisión requerida' });
+      const attention = h.attentionReasons(item).length > 0;
+      answer = reply(item.name + ' · decisión requerida', lines.join('\n'), attention ? 'atencion' : 'portafolio', { search: item.name }, { source: 'Acción / decisión requerida', ...(!attention ? { openProjectId: item.id } : {}) });
     } else if (page.topic === 'project-dates') {
       const closure = !active(item) ? h.closureLabel(item) : 'Aún no cerrado';
-      answer = reply(item.name + ' · fechas', 'Inicio: ' + h.fmtDate(val(item, 'start')) + '\nFin Plan: ' + h.fmtDate(val(item, 'plan')) + '\nForecast: ' + h.fmtDate(val(item, 'forecast')) + '\nCierre efectivo: ' + closure, active(item) ? 'cronograma' : 'portafolio', { search: item.name }, { source: 'Inicio, Fin Plan, Forecast y Fin Real / bitácora' });
+      answer = reply(item.name + ' · fechas', 'Inicio: ' + h.fmtDate(val(item, 'start')) + '\nFin Plan: ' + h.fmtDate(val(item, 'plan')) + '\nForecast: ' + h.fmtDate(val(item, 'forecast')) + '\nCierre efectivo: ' + closure, active(item) ? 'cronograma' : 'portafolio', { search: item.name }, { source: 'Inicio, Fin Plan, Forecast y Fin Real / bitácora', ...(!active(item) ? { openProjectId: item.id } : {}) });
     } else if (page.topic === 'project-closure') {
-      answer = reply(item.name + ' · cierre', 'Estatus: ' + status + '\nCierre efectivo: ' + h.closureLabel(item) + '\nEvidencia: ' + h.closureSourceLabel(item), 'portafolio', { search: item.name, status: 'Cerrado' }, { source: 'Estatus, Fin Real y bitácora', offerEmail: !h.closureInfo(item), project: item });
+      answer = reply(item.name + ' · cierre', 'Estatus: ' + status + '\nCierre efectivo: ' + h.closureLabel(item) + '\nEvidencia: ' + h.closureSourceLabel(item), 'portafolio', { search: item.name, status: 'Cerrado' }, { source: 'Estatus, Fin Real y bitácora', offerEmail: !h.closureInfo(item), project: item, openProjectId: item.id });
     } else if (page.topic === 'project-finances') {
       const fields = [['Presupuesto aprobado', 'budget'], ['Costo proyectado', 'cost'], ['Beneficios comprometidos', 'benefits'], ['Beneficios logrados', 'benefitsDone']];
       answer = reply(item.name + ' · finanzas', fields.map(([label, key]) => label + ': ' + (num(item, key) === null ? 'Sin dato' : 'USD ' + h.fmtNum(num(item, key)))).join('\n'), 'finanzas', { search: item.name }, { source: 'campos financieros ejecutivos' });
