@@ -349,11 +349,12 @@
     .summary-static-row:hover{border-color:#e1e6ea;background:#fff}
     .chat-fallback{position:fixed;right:22px;bottom:22px;z-index:80;min-height:48px;padding:0 16px;border:1px solid #cba785;border-radius:12px;background:#07394e;color:#fff;box-shadow:0 18px 45px -18px rgba(2,29,42,.75);cursor:pointer;font-weight:800}
     .chat-fallback[hidden]{display:none}
-    .project-chat{position:fixed;right:22px;bottom:168px;z-index:90;width:min(410px,calc(100vw - 32px));height:min(520px,calc(100vh - 188px));overflow:hidden;border:1px solid #b9c7ce;border-radius:18px;background:#fff;box-shadow:0 28px 80px -24px rgba(0,27,41,.65);transform-origin:90% 100%}
+    .project-chat{position:fixed;right:22px;bottom:168px;z-index:90;width:min(410px,calc(100vw - 32px));height:min(360px,calc(100vh - 188px));overflow:hidden;border:1px solid #b9c7ce;border-radius:18px;background:#fff;box-shadow:0 28px 80px -24px rgba(0,27,41,.65);transform-origin:90% 100%}
     .project-chat[hidden]{display:none}
     .project-chat:not([hidden]){animation:chat-reveal .32s cubic-bezier(.2,.8,.2,1) both}
     @keyframes chat-reveal{from{opacity:0;transform:translateY(18px) scale(.94)}to{opacity:1;transform:none}}
     .chat-shell{height:100%;display:grid;grid-template-rows:auto auto minmax(0,1fr)}
+    .project-chat.list-view{height:min(520px,calc(100vh - 188px))}
     .project-chat.answer-view{height:min(450px,calc(100vh - 188px))}
     .project-chat.answer-view .chat-shell{grid-template-rows:auto minmax(0,1fr) auto}
     .chat-head{display:flex;align-items:center;gap:12px;padding:14px 15px;background:linear-gradient(115deg,#002f43,#0a4d62);color:#fff}
@@ -383,7 +384,7 @@
     .chat-guide-empty{margin:0;color:#5d7180;font-size:11px;line-height:1.5}
     .dialog-updates{display:grid;gap:10px}.dialog-update{padding:11px 0;border-bottom:1px solid #e5ebee}.dialog-update:last-child{border-bottom:0}.dialog-update time{display:block;margin-bottom:4px;color:#637b87;font-size:11px;font-weight:800}.dialog-update p{margin:0;color:#344b5a;font-size:12px;line-height:1.5;white-space:pre-line}
     .chat-message strong.chat-answer-title{display:block;margin-bottom:7px;color:#0b4155;font-size:12px}
-    @media(max-width:800px){.milestone-list{grid-template-columns:1fr}.milestone-item:nth-last-child(-n+2){border-bottom:1px solid #e4e9ec}.milestone-item:last-child{border-bottom:0}.milestone-head{display:block}.milestone-window{display:block;margin-top:9px}.chat-fallback{right:10px;bottom:calc(78px + env(safe-area-inset-bottom))}.project-chat{right:8px;bottom:calc(182px + env(safe-area-inset-bottom));width:calc(100vw - 16px);height:min(500px,calc(100vh - 202px - env(safe-area-inset-bottom)));border-radius:16px}.project-chat.answer-view{height:min(460px,calc(100vh - 202px - env(safe-area-inset-bottom)))}}
+    @media(max-width:800px){.milestone-list{grid-template-columns:1fr}.milestone-item:nth-last-child(-n+2){border-bottom:1px solid #e4e9ec}.milestone-item:last-child{border-bottom:0}.milestone-head{display:block}.milestone-window{display:block;margin-top:9px}.chat-fallback{right:10px;bottom:calc(78px + env(safe-area-inset-bottom))}.project-chat{right:8px;bottom:calc(182px + env(safe-area-inset-bottom));width:calc(100vw - 16px);height:min(360px,calc(100vh - 202px - env(safe-area-inset-bottom)));border-radius:16px}.project-chat.list-view{height:min(500px,calc(100vh - 202px - env(safe-area-inset-bottom)))}.project-chat.answer-view{height:min(460px,calc(100vh - 202px - env(safe-area-inset-bottom)))}}
     @media print{.chat-fallback,.project-chat{display:none!important}}
     @media(prefers-reduced-motion:reduce){.project-chat:not([hidden]){animation:none}}
   </style>
@@ -583,6 +584,7 @@
     if(!cosmoGuide){const error=document.createElement('p');error.className='chat-guide-empty';error.textContent='Las opciones de Cosmo no están disponibles en este momento. El resto del portal sigue funcionando.';box.appendChild(error);back.disabled=true;home.hidden=true;return}
     const page=chatCurrent(),answer=page.type==='answer'?cosmoGuide.answer(page):null;
     document.getElementById('project-chat').classList.toggle('answer-view',!!answer);
+    document.getElementById('project-chat').classList.toggle('list-view',page.type==='project-list');
     back.disabled=chatPath.length===1;home.hidden=chatPath.length===1;location.textContent=answer?.title||cosmoGuide.title(page);
     if(answer){box.appendChild(chatAnswerCard(answer));const hint=document.createElement('p');hint.className='chat-guide-empty';hint.textContent='Usa «Atrás» para elegir otro tema o «Inicio» para empezar de nuevo.';box.appendChild(hint)}
     else{const prompt=document.createElement('p');prompt.className='chat-guide-empty';prompt.textContent=page.type==='home'?'Elige qué quieres revisar. Las respuestas salen del corte de monday.':page.type==='project-groups'?'Elige el estado para encontrar un proyecto.':page.type==='project-list'?'Selecciona un proyecto.':page.type==='project'?'Elige un tema de este proyecto. Solo aparecen los temas con datos aplicables.':'Elige el tema que quieres consultar.';box.appendChild(prompt)}
