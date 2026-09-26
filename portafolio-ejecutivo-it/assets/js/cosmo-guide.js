@@ -23,7 +23,7 @@
 
   function projectTopics(item) {
     const topics = [option('Estado y avance', { type: 'answer', topic: 'project-status', id: item.id })];
-    if (h.projectUpdateEntries(item).length) topics.push(option('Actividad reciente', { type: 'answer', topic: 'project-update', id: item.id }));
+    if (h.projectUpdateEntries(item).length) topics.push(option('Última actualización', { type: 'answer', topic: 'project-update', id: item.id }));
     if (h.weeklyMilestones([item]).length) topics.push(option('Hitos de la semana', { type: 'answer', topic: 'project-hits', id: item.id }));
     if (active(item) && (val(item, 'risk') || val(item, 'action'))) topics.push(option('Riesgos y acciones', { type: 'answer', topic: 'project-risk', id: item.id }));
     if (val(item, 'action')) topics.push(option('Decisión requerida', { type: 'answer', topic: 'project-action', id: item.id }));
@@ -77,7 +77,7 @@
       answer = reply(item.name + ' · estado y avance', lines.join('\n'), link.module, link.filters, { source: 'Estatus, % Avance, Fase, Situación y Fin Plan' });
     } else if (page.topic === 'project-update') {
       const entry = h.projectUpdateEntries(item)[0];
-      answer = reply(item.name + ' · actividad reciente', 'Registro del ' + h.fmtDate(entry.date) + (entry.author ? ' · ' + entry.author : '') + '\n' + h.shortAnswer(entry.text, 410), link.module, link.filters, { source: 'bitácora del proyecto', openProjectId: item.id });
+      answer = reply(item.name + ' · última actualización', 'Registro del ' + h.fmtDate(entry.date) + (entry.author ? ' · ' + entry.author : '') + '\n' + h.shortAnswer(entry.text, 410) + (new Date(entry.date) < weeksAgo ? '\nNo hay registros de este proyecto en los últimos siete días.' : ''), link.module, link.filters, { source: 'bitácora del proyecto', openProjectId: item.id });
     } else if (page.topic === 'project-hits') {
       const hits = h.weeklyMilestones([item]);
       const inSummary = h.weeklyMilestones(D.items).some(hit => String(hit.project.id) === String(item.id));

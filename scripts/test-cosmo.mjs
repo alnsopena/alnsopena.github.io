@@ -46,6 +46,7 @@ assert.ok(options({ type: 'project-list', status: 'En Proceso' }).some(x => x.pa
 assert.ok(options({ type: 'project-list', status: 'Cerrado' }).some(x => x.page.id === closed.id));
 
 const cosmosTopics = options({ type: 'project', id: cosmos.id }).map(x => x.page.topic);
+assert.ok(options({ type: 'project', id: cosmos.id }).some(x => x.label === 'Última actualización'));
 assert.ok(cosmosTopics.includes('project-status'));
 assert.ok(cosmosTopics.includes('project-risk'));
 assert.ok(cosmosTopics.includes('project-update'));
@@ -72,6 +73,7 @@ assert.equal(action.module, 'portafolio');
 const update = guide.answer({ type: 'answer', topic: 'project-update', id: cosmos.id });
 assert.equal(update.openProjectId, cosmos.id);
 assert.ok(update.source.includes('bitácora'));
+assert.match(update.text, /No hay registros de este proyecto en los últimos siete días/);
 
 const hits = answer('weekly-hits');
 assert.equal(hits.module, 'resumen');
