@@ -8,9 +8,9 @@
   'use strict';
   const cfg = Object.assign({
     puerto: true,          // Puerto de la cartera en Resumen
-    aduanaResumen: true,   // Aduana compacta en Resumen
+    aduanaResumen: false,  // Aduana compacta retirada del Resumen ejecutivo
     aduanaPmo: true,       // Aduana por PM en Regularización (vista PMO)
-    toolbar: true,         // botones Parte semanal / Escuchar resumen / Sonido en la barra superior
+    toolbar: true,         // Parte semanal y Comité guiado en la barra superior
     botadura: true,        // celebración de proyectos cerrados nuevos al abrir el portal
     muelle: true,          // G · Mi muelle: recibimiento personal en Resumen
     comite: true,          // H · Comité guiado (botón en la barra y en modo comité)
@@ -51,55 +51,36 @@
 .pav-side .pav-tool:hover{background:#f3f6f7}
 .pav-side .pav-tool[aria-pressed=true]{background:var(--sand);border-color:var(--sand);color:#021e2f}
 @media(max-width:800px){.pav-tool .pav-t{display:none}.pav-tool{min-height:36px;width:38px;justify-content:center;padding:0}.pav-head{flex-direction:column}.pav-foot{flex-direction:column;align-items:flex-start}}
-@media(min-width:1241px) and (max-width:1560px){#pav-voz .pav-t,#pav-sonido .pav-t{display:none}#pav-voz,#pav-sonido{padding:0 11px}}
 body.committee-mode .pav-tools .pav-tool:not(#pav-comite){display:none}
 body.committee-mode #pav-comite{background:var(--sand);border-color:var(--sand);color:#021e2f}
 body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
 .pav-muelle-slot{margin:0 0 18px}
+.cfx-muelle{grid-template-columns:minmax(0,1fr)!important}.cfx-muelle .cfx-mu-cosmo{display:none!important}.cfx-muelle .cfx-mu-list,.cfx-muelle .cfx-mu-actions{grid-column:1}
 @media print{.pav-tools,.pav-card,.pav-muelle-slot{display:none}}`;
   const st = document.createElement('style'); st.id = 'pmo-av-style'; st.textContent = css; document.head.appendChild(st);
 
   const ICON = {
     parte: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 9.5l4 2.5-4 2.5z" fill="currentColor"/></svg>',
-    voz: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h2M8 8v8M12 5v14M16 8v8M20 11v2"/></svg>',
-    stop: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6.5" y="6.5" width="11" height="11" rx="2"/></svg>',
-    sonOn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 010 6M18.5 6.5a7.5 7.5 0 010 11"/></svg>',
-    sonOff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>',
     comite: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M10 8.5l4 1.5-4 1.5z"/></svg>',
     tv: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="12" rx="2"/><path d="M8 21h8M9 2.5l3 2.5 3-2.5"/></svg>',
     pulso: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l2.5-6 4 12 2.5-6H21"/></svg>'
   };
 
   // ------------------------------------------------------------------ barra superior
-  let bVoz, bSon;
   function toolbar() {
     const host = $('.top-actions'); if (!host || $('.pav-tools')) return;
     const box = document.createElement('div'); box.className = 'pav-tools';
     const mk = (id, icon, text, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'pav-tool'; b.id = id; b.innerHTML = icon + '<span class="pav-t">' + text + '</span>'; b.setAttribute('aria-label', text); b.title = text; b.addEventListener('click', safe(fn, text)); box.appendChild(b); return b; };
     mk('pav-parte', ICON.parte, 'Parte semanal', openParte);
-    bVoz = mk('pav-voz', ICON.voz, 'Escuchar resumen', toggleVoz);
-    bSon = mk('pav-sonido', ICON.sonOff, 'Sonido', () => fx.sound.setEnabled(!fx.sound.enabled));
-    bSon.setAttribute('aria-pressed', 'false');
     if (cfg.comite && fx.comite) mk('pav-comite', ICON.comite, 'Comité guiado', openComite);
     // En pantallas medianas la barra superior no tiene espacio: los botones pasan al menú lateral.
     const mq = matchMedia('(min-width:801px) and (max-width:1240px)'), side = $('.sidebar .scope');
     const place = () => { const inSide = mq.matches && side && !document.body.classList.contains('committee-mode'); box.classList.toggle('pav-side', !!inSide); if (inSide) side.before(box); else host.prepend(box); };
     place(); mq.addEventListener ? mq.addEventListener('change', place) : mq.addListener(place);
     new MutationObserver(place).observe(document.body, { attributes: true, attributeFilter: ['class'] });
-    fx.sound.onChange(syncSon); syncSon();
-  }
-  function syncSon() {
-    if (!bSon) return; const on = !!fx.sound.enabled;
-    bSon.setAttribute('aria-pressed', String(on)); bSon.innerHTML = (on ? ICON.sonOn : ICON.sonOff) + '<span class="pav-t">Sonido</span>';
-    bSon.setAttribute('aria-label', on ? 'Sonido activado. Desactivar' : 'Sonido desactivado. Activar'); bSon.title = on ? 'Desactivar sonido' : 'Activar sonido';
-  }
-  function setVoz(on) { if (!bVoz) return; bVoz.setAttribute('aria-pressed', String(on)); bVoz.innerHTML = (on ? ICON.stop : ICON.voz) + '<span class="pav-t">' + (on ? 'Detener' : 'Escuchar resumen') + '</span>'; bVoz.setAttribute('aria-label', on ? 'Detener resumen hablado' : 'Escuchar resumen'); }
-  function toggleVoz() {
-    if (fx.voice.speaking) { fx.voice.stop(); setVoz(false); return; }
-    setVoz(true); fx.voice.speak(CosmosFx.briefing(getData()), { onEnd: () => setVoz(false) });
+    if (fx.sound && !fx.sound.enabled) fx.sound.setEnabled(true);
   }
   function openParte() {
-    if (fx.voice.speaking) { fx.voice.stop(); setVoz(false); }
     if (typeof window.toggleChat === 'function' && $('#project-chat:not([hidden])')) window.toggleChat(false);
     const back = document.activeElement;
     fx.parte(getData(), { logo: cfg.logo, url: cfg.url }).then(() => back && back.focus && back.focus({ preventScroll: true }));
@@ -107,7 +88,6 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
 
   // ------------------------------------------------------------------ H · comité guiado
   function openComite() {
-    if (fx.voice.speaking) { fx.voice.stop(); setVoz(false); }
     if (typeof window.toggleChat === 'function' && $('#project-chat:not([hidden])')) window.toggleChat(false);
     fx.comite(getData(), {});
   }
@@ -127,7 +107,7 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
     c.innerHTML = '<div class="pav-head"><div><h2 class="section-title">' + title + '</h2><p>' + text + '</p></div>' + (btn || '') + '</div><div class="pav-slot"></div>';
     return c;
   }
-  let puerto = null, muelle = null;
+  let puerto = null, muelle = null, muelleObserver = null;
   const mineFilter = person => person ? (p => person.ids.includes(p.id)) : null;
   function setPuertoFilter(person) {
     if (!puerto || !puerto.el.isConnected) return; puerto.o.filter = mineFilter(person); puerto.update(getData());
@@ -136,12 +116,17 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
     const d = getData(), kpis = main.querySelector('.grid.kpis');
     if (cfg.muelle && fx.muelle && kpis && !main.querySelector('.pav-muelle-slot')) {
       const slot = document.createElement('div'); slot.className = 'pav-muelle-slot'; kpis.before(slot);
+      const removeCopyLink = () => slot.querySelectorAll('.cfx-mu-actions button[data-a="link"]').forEach(button => button.remove());
+      if (muelleObserver) muelleObserver.disconnect();
+      muelleObserver = new MutationObserver(removeCopyLink);
+      muelleObserver.observe(slot, { childList: true, subtree: true });
       muelle = fx.muelle(slot, d, {
         cardClass: 'card pad', onSelect: open,
         onFilter: person => setPuertoFilter(person),
         onPortfolio: person => { const pms = {}; d.projects.filter(p => person.ids.includes(p.id) && p.pm && p.pm.includes(person.name)).forEach(p => pms[p.pm] = (pms[p.pm] || 0) + 1); const pm = Object.keys(pms).sort((a, b) => pms[b] - pms[a])[0] || person.name; window.goFiltered('portafolio', { pm }); },
         onChange: person => { if (person && puerto && puerto.el.isConnected) { puerto.o.filter = muelle.onlyMine ? mineFilter(person) : null; puerto.update(d); person.ids.forEach((id, k) => setTimeout(() => puerto.highlight(id), 900 + k * 180)); } }
       });
+      removeCopyLink();
     }
     if (cfg.puerto && kpis && !main.querySelector('.pav-puerto')) {
       const c = card('pav-puerto', 'Puerto de la cartera',
@@ -182,7 +167,7 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
   function mount() {
     const main = $('#main'), view = (g('state') || {}).view || 'resumen'; if (!main) return;
     if (view === 'resumen') mountResumen(main);
-    else if (view === 'regularizacion') mountRegularizacion(main);
+    else { if (muelleObserver) { muelleObserver.disconnect(); muelleObserver = null; } if (view === 'regularizacion') mountRegularizacion(main); }
   }
   const after = (name, fn) => { const o = window[name]; if (typeof o !== 'function') return; window[name] = function () { const r = o.apply(this, arguments); safe(fn, name)(); return r; }; };
   after('render', mount);
