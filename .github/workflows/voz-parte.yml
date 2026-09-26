@@ -1,0 +1,96 @@
+# Copiar a .github/workflows/voz-parte.yml en el repo alnsopena/alnsopena.github.io
+# Genera la voz Paloma del parte cada vez que cambia el portal (nuevo corte) y guarda los MP3 en el repo.
+# Secretos necesarios (Settings > Secrets and variables > Actions): AZURE_SPEECH_KEY y AZURE_SPEECH_REGION (ej. eastus)
+name: Voz del parte (Paloma)
+
+on:
+  workflow_run:
+    workflows: ['Publicar Portafolio Ejecutivo IT']
+    types: [completed]
+    branches: [main]
+  # El corte se publica cada hora con otra Action. Los push hechos con GITHUB_TOKEN no disparan esta Action,
+  # por eso también corre cada hora (minuto 20). Si no hay frases nuevas, no llama a Azure ni hace commit.
+  schedule:
+    - cron: '20 * * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Regenerar todas las frases (por ejemplo, si cambias la voz o la pronunciación)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: voz-parte
+  cancel-in-progress: false
+
+jobs:
+  voz:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Comprobar configuración de voz
+        id: config
+        env:
+          AZURE_SPEECH_KEY: ${{ secrets.AZURE_SPEECH_KEY }}
+          AZURE_SPEECH_REGION: ${{ secrets.AZURE_SPEECH_REGION }}
+        run: |
+          if [ -n "$AZURE_SPEECH_KEY" ] && [ -n "$AZURE_SPEECH_REGION" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Sin secretos de Azure: se conserva la voz del navegador."
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.config.outputs.enabled == 'true'
+
+      - uses: actions/setup-node@v4
+        if: steps.config.outputs.enabled == 'true'
+        with:
+          node-version: 20
+
+      - name: Instalar navegador sin ventana
+        if: steps.config.outputs.enabled == 'true'
+        run: |
+          npm i --no-save playwright@1
+          npx playwright install --with-deps chromium
+
+      - name: Leer el corte publicado
+        if: steps.config.outputs.enabled == 'true'
+        run: curl --fail --silent --show-error --retry 3 "https://alnsopena.github.io/portafolio-ejecutivo-it/?voz=${GITHUB_RUN_ID}" --output portafolio-ejecutivo-it/index.html
+
+      - name: Generar audios
+        if: steps.config.outputs.enabled == 'true'
+        env:
+          AZURE_SPEECH_KEY: ${{ secrets.AZURE_SPEECH_KEY }}
+          AZURE_SPEECH_REGION: ${{ secrets.AZURE_SPEECH_REGION }}
+        run: |
+          node tools/voz/generar-voz.mjs \
+            --portal portafolio-ejecutivo-it/index.html \
+            --out portafolio-ejecutivo-it/assets/voz ${{ inputs.force && '--force' || '' }}
+
+      - name: Guardar en el repo
+        if: steps.config.outputs.enabled == 'true'
+        run: |
+          git restore -- portafolio-ejecutivo-it/index.html
+          git config user.name "voz-parte[bot]"
+          git config user.email "voz-parte@users.noreply.github.com"
+          git add portafolio-ejecutivo-it/assets/voz
+          if git diff --cached --quiet; then echo "Sin cambios de voz"; exit 0; fi
+          git commit -m "Voz del parte: audios del corte actual"
+          git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
+          git push
+          echo "changed=1" >> "$GITHUB_OUTPUT"
+        id: guardar
+
+      # Por si GitHub Pages no se reconstruye solo con el push anterior
+      - name: Pedir reconstrucción de GitHub Pages
+        if: steps.guardar.outputs.changed == '1'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds"
