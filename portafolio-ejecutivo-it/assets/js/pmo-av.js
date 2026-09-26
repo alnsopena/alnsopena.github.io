@@ -12,7 +12,7 @@
     aduanaPmo: true,       // Aduana por PM en Regularización (vista PMO)
     toolbar: true,         // Parte semanal y Comité guiado en la barra superior
     botadura: true,        // celebración de proyectos cerrados nuevos al abrir el portal
-    muelle: true,          // G · Mi muelle: recibimiento personal en Resumen
+    muelle: true,          // Mi muelle como módulo independiente
     comite: true,          // H · Comité guiado (botón en la barra y en modo comité)
     pantalla: true,        // I · Pantalla de oficina: se abre con …/portafolio-ejecutivo-it/#pantalla
     logo: 'assets/cosmos-logo-white.png',
@@ -55,7 +55,7 @@ body.committee-mode .pav-tools .pav-tool:not(#pav-comite){display:none}
 body.committee-mode #pav-comite{background:var(--sand);border-color:var(--sand);color:#021e2f}
 body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
 .pav-muelle-slot{margin:0 0 18px}
-.cfx-muelle{grid-template-columns:minmax(0,1fr)!important}.cfx-muelle .cfx-mu-cosmo{display:none!important}.cfx-muelle .cfx-mu-list,.cfx-muelle .cfx-mu-actions{grid-column:1}
+.cfx-muelle{grid-template-columns:minmax(0,1fr)!important}.cfx-muelle .cfx-mu-cosmo{display:none!important}.cfx-muelle .cfx-mu-list,.cfx-muelle .cfx-mu-actions{grid-column:1}.cfx-muelle label[for="cfx-mu-alias"],.cfx-muelle #cfx-mu-alias{display:none!important}
 @media print{.pav-tools,.pav-card,.pav-muelle-slot{display:none}}`;
   const st = document.createElement('style'); st.id = 'pmo-av-style'; st.textContent = css; document.head.appendChild(st);
 
@@ -71,11 +71,11 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
     const host = $('.top-actions'); if (!host || $('.pav-tools')) return;
     const box = document.createElement('div'); box.className = 'pav-tools';
     const mk = (id, icon, text, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'pav-tool'; b.id = id; b.innerHTML = icon + '<span class="pav-t">' + text + '</span>'; b.setAttribute('aria-label', text); b.title = text; b.addEventListener('click', safe(fn, text)); box.appendChild(b); return b; };
-    mk('pav-parte', ICON.parte, 'Parte semanal', openParte);
+    mk('pav-parte', ICON.parte, 'Resumen semanal', openParte);
     if (cfg.comite && fx.comite) mk('pav-comite', ICON.comite, 'Comité guiado', openComite);
     // En pantallas medianas la barra superior no tiene espacio: los botones pasan al menú lateral.
     const mq = matchMedia('(min-width:801px) and (max-width:1240px)'), side = $('.sidebar .scope');
-    const place = () => { const inSide = mq.matches && side && !document.body.classList.contains('committee-mode'); box.classList.toggle('pav-side', !!inSide); if (inSide) side.before(box); else host.prepend(box); };
+    const place = () => { const inSide = mq.matches && side && !document.body.classList.contains('committee-mode') && !document.body.classList.contains('nav-collapsed'); box.classList.toggle('pav-side', !!inSide); if (inSide) side.before(box); else host.prepend(box); };
     place(); mq.addEventListener ? mq.addEventListener('change', place) : mq.addListener(place);
     new MutationObserver(place).observe(document.body, { attributes: true, attributeFilter: ['class'] });
     if (fx.sound && !fx.sound.enabled) fx.sound.setEnabled(true);
@@ -83,7 +83,7 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
   function openParte() {
     if (typeof window.toggleChat === 'function' && $('#project-chat:not([hidden])')) window.toggleChat(false);
     const back = document.activeElement;
-    fx.parte(getData(), { logo: cfg.logo, url: cfg.url }).then(() => back && back.focus && back.focus({ preventScroll: true }));
+    fx.parte(getData(), { logo: cfg.logo, url: cfg.url, voice: true }).then(() => back && back.focus && back.focus({ preventScroll: true }));
   }
 
   // ------------------------------------------------------------------ H · comité guiado
@@ -112,28 +112,61 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
   function setPuertoFilter(person) {
     if (!puerto || !puerto.el.isConnected) return; puerto.o.filter = mineFilter(person); puerto.update(getData());
   }
-  function mountResumen(main) {
-    const d = getData(), kpis = main.querySelector('.grid.kpis');
-    if (cfg.muelle && fx.muelle && kpis && !main.querySelector('.pav-muelle-slot')) {
-      const slot = document.createElement('div'); slot.className = 'pav-muelle-slot'; kpis.before(slot);
-      const removeCopyLink = () => slot.querySelectorAll('.cfx-mu-actions button[data-a="link"]').forEach(button => button.remove());
-      if (muelleObserver) muelleObserver.disconnect();
-      muelleObserver = new MutationObserver(removeCopyLink);
-      muelleObserver.observe(slot, { childList: true, subtree: true });
-      muelle = fx.muelle(slot, d, {
+  function clearMuelleAlias() {
+    try {
+      const key = (fx.o && fx.o.storageKey || 'cosmos-fx') + '-muelle';
+      const prefs = JSON.parse(localStorage.getItem(key) || '{}');
+      if ('alias' in prefs) { delete prefs.alias; localStorage.setItem(key, JSON.stringify(prefs)); }
+    } catch (_) { /* almacenamiento opcional del navegador */ }
+  }
+  const personKey = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().replace(/ /g, '.');
+  function selectedMuelleOnly() { try { return !!JSON.parse(localStorage.getItem((fx.o && fx.o.storageKey || 'cosmos-fx') + '-muelle') || '{}').only; } catch (_) { return false; } }
+  function selectedMuellePerson(d) {
+    try {
+      const prefs = JSON.parse(localStorage.getItem((fx.o && fx.o.storageKey || 'cosmos-fx') + '-muelle') || '{}');
+      if (!prefs.who) return null;
+      const people = new Map();
+      const add = (name, role, id) => {
+        String(name || '').split(/\s*,\s*/).filter(Boolean).forEach(label => {
+          const key = personKey(label); if (!key || !id) return;
+          const person = people.get(key) || { key, name: label, roles: new Set(), ids: new Set() };
+          person.roles.add(role); person.ids.add(String(id)); people.set(key, person);
+        });
+      };
+      d.projects.forEach(project => { add(project.sponsorName, 'sponsor', project.id); add(project.pm, 'pm', project.id); });
+      (d.contributors || []).forEach(person => (person.ids || []).forEach(id => add(person.name, 'contributor', id)));
+      const person = people.get(prefs.who);
+      return person ? { ...person, roles: [...person.roles], ids: [...person.ids] } : null;
+    } catch (_) { return null; }
+  }
+  function mountMuelleCard(slot, d) {
+    if (!cfg.muelle || !fx.muelle || !slot || slot.dataset.mounted === 'true') return;
+    slot.dataset.mounted = 'true';
+    clearMuelleAlias();
+    const removeCopyLink = () => slot.querySelectorAll('.cfx-mu-actions button[data-a="link"]').forEach(button => button.remove());
+    if (muelleObserver) muelleObserver.disconnect();
+    muelleObserver = new MutationObserver(removeCopyLink);
+    muelleObserver.observe(slot, { childList: true, subtree: true });
+    muelle = fx.muelle(slot, d, {
         cardClass: 'card pad', onSelect: open,
         onFilter: person => setPuertoFilter(person),
         onPortfolio: person => { const pms = {}; d.projects.filter(p => person.ids.includes(p.id) && p.pm && p.pm.includes(person.name)).forEach(p => pms[p.pm] = (pms[p.pm] || 0) + 1); const pm = Object.keys(pms).sort((a, b) => pms[b] - pms[a])[0] || person.name; window.goFiltered('portafolio', { pm }); },
         onChange: person => { if (person && puerto && puerto.el.isConnected) { puerto.o.filter = muelle.onlyMine ? mineFilter(person) : null; puerto.update(d); person.ids.forEach((id, k) => setTimeout(() => puerto.highlight(id), 900 + k * 180)); } }
       });
-      removeCopyLink();
-    }
+    removeCopyLink();
+  }
+  function mountMuellePage(main) {
+    const slot = main.querySelector('#pav-personal-dock');
+    if (slot) mountMuelleCard(slot, getData());
+  }
+  function mountResumen(main) {
+    const d = getData(), kpis = main.querySelector('.grid.kpis');
     if (cfg.puerto && kpis && !main.querySelector('.pav-puerto')) {
       const c = card('pav-puerto', 'Puerto de la cartera',
         'Cada contenedor es un proyecto activo, atracado en su fase. Pasa el cursor o toca uno para ver el detalle.',
         '<button type="button" class="pav-btn" data-pav="pulso">' + ICON.pulso + 'Escuchar el pulso</button>');
       kpis.after(c);
-      const person = muelle && muelle.person, pu = puerto = fx.puerto(c.querySelector('.pav-slot'), d, { onSelect: open, filter: person && muelle.onlyMine ? mineFilter(person) : null });
+      const person = selectedMuellePerson(d), onlyMine = selectedMuelleOnly(), pu = puerto = fx.puerto(c.querySelector('.pav-slot'), d, { onSelect: open, filter: person && onlyMine ? mineFilter(person) : null });
       if (person) person.ids.forEach((id, k) => setTimeout(() => pu.highlight(id), 1400 + k * 180));
       const b = c.querySelector('[data-pav=pulso]');
       b.addEventListener('click', safe(() => { b.disabled = true; pu.pulse({ force: true, onEnd: () => { b.disabled = false; } }); }, 'pulso'));
@@ -166,8 +199,8 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
   }
   function mount() {
     const main = $('#main'), view = (g('state') || {}).view || 'resumen'; if (!main) return;
-    if (view === 'resumen') mountResumen(main);
-    else { if (muelleObserver) { muelleObserver.disconnect(); muelleObserver = null; } if (view === 'regularizacion') mountRegularizacion(main); }
+    if (view === 'muelle') mountMuellePage(main);
+    else { if (muelleObserver) { muelleObserver.disconnect(); muelleObserver = null; } if (view === 'resumen') mountResumen(main); else if (view === 'regularizacion') mountRegularizacion(main); }
   }
   const after = (name, fn) => { const o = window[name]; if (typeof o !== 'function') return; window[name] = function () { const r = o.apply(this, arguments); safe(fn, name)(); return r; }; };
   after('render', mount);

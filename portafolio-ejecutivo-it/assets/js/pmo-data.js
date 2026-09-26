@@ -42,6 +42,29 @@
         issues: issues.map(x => ({ category: x.category, field: x.field, critical: !!x.critical }))
       };
     });
+    const projectByItemId = new Map();
+    D.items.forEach(item => {
+      projectByItemId.set(String(item.id), String(item.id));
+      (item.subitems || []).forEach(sub => projectByItemId.set(String(sub.id), String(item.id)));
+    });
+    const contributorMap = new Map();
+    const addContributor = (name, itemId) => {
+      const projectId = projectByItemId.get(String(itemId || ''));
+      const cleanName = String(name || '').trim();
+      if (!projectId || !cleanName || /miembro eliminado/i.test(cleanName)) return;
+      const key = cleanName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+      if (!key) return;
+      const person = contributorMap.get(key) || { name: cleanName, ids: new Set() };
+      person.ids.add(projectId);
+      contributorMap.set(key, person);
+    };
+    (D.updates || []).forEach(update => {
+      addContributor(update.creator && update.creator.name, update.item_id);
+      (update.replies || []).forEach(reply => addContributor(reply.creator && reply.creator.name, update.item_id));
+    });
+    const contributors = [...contributorMap.values()]
+      .map(person => ({ name: person.name, ids: [...person.ids] }))
+      .sort((a, b) => a.name.localeCompare(b.name, 'es'));
     const act = projects.filter(p => p.active);
     // fases en el orden del tablero de monday
     const phaseMap = {}; act.forEach(p => { phaseMap[p.phase] = (phaseMap[p.phase] || 0) + 1; });
@@ -81,7 +104,7 @@
         risk: act.filter(p => p.risk === 'risk').length, block: act.filter(p => p.risk === 'block').length,
         attention: decisions.length, noForecast: act.filter(p => p.noForecast).length
       },
-      phases, projects, decisions, upcoming, milestones, closedThisWeek, aduana,
+      phases, projects, decisions, upcoming, milestones, closedThisWeek, aduana, contributors,
       baseline: call('baselineSummary', D.items), boardUrl: D.board && D.board.url
     };
   }
