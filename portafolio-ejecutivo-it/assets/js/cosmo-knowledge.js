@@ -29,7 +29,7 @@
   const isBlocked = item => { const r = norm(value(item, 'risk')); return r.includes('bloqueo') && !r.includes('sin bloqueo'); };
   const isRisk = item => { const r = norm(value(item, 'risk')); return r.includes('riesgo') || r.includes('alerta'); };
   const projectWords = new Set(['proyecto', 'proyectos', 'portal', 'cosmos', 'mejoras', 'servicio', 'servicios', 'de', 'del', 'la', 'el', 'los', 'las', 'y', 'en', 'para', 'it', 'tecnologica', 'tecnologico', 'automaticas', 'automatica']);
-  const questionWords = new Set(['que', 'cual', 'cuales', 'como', 'cuando', 'quien', 'quienes', 'donde', 'dime', 'muestrame', 'informame', 'tiene', 'tienen', 'esta', 'estan', 'sobre', 'por', 'con', 'sin', 'al', 'un', 'una', 'es', 'son', 'hay', 'hay', 'estado', 'estatus', 'situacion', 'fase', 'avance', 'avances', 'riesgo', 'riesgos', 'bloqueo', 'bloqueos', 'fecha', 'fechas', 'cierre', 'cerrado', 'cerrados', 'responsable', 'pm', 'sponsor', 'prioridad', 'proveedor', 'hito', 'hitos', 'actualizacion', 'actualizaciones', 'ultima', 'ultimo', 'ultimos', 'reciente', 'semana', 'mes', 'ano', 'trimestre', 'fin', 'plan', 'forecast', 'presupuesto', 'costo', 'beneficio', 'beneficios', 'decision', 'accion', 'acciones', 'pendiente', 'pendientes', 'proyecto', 'proyectos', 'portafolio', 'cartera']);
+  const questionWords = new Set(['que','cual','cuales','como','cuando','quien','quienes','donde','dime','muestrame','informame','tiene','tienen','esta','estan','sobre','por','con','sin','al','un','una','es','son','hay','estado','estatus','situacion','fase','avance','avances','riesgo','riesgos','bloqueo','bloqueos','fecha','fechas','cierre','cerrado','cerrados','responsable','pm','sponsor','prioridad','proveedor','hito','hitos','actualizacion','actualizaciones','ultima','ultimo','ultimos','reciente','semana','mes','ano','trimestre','fin','plan','forecast','presupuesto','costo','beneficio','beneficios','decision','accion','acciones','pendiente','pendientes','proyecto','proyectos','portafolio','cartera','capex','opex','desviacion','finanzas','ejecutado','ejecutada','comprometido','comprometida','proyectados','proyectadas','anual']);
   const normalizedNames = D.items.map(item => ({ item, name: norm(item.name), tokens: [...new Set(words(item.name).filter(w => w.length >= 3 && !projectWords.has(w)))] }));
   const uniqueToken = new Map();
   normalizedNames.forEach(row => row.tokens.forEach(token => uniqueToken.set(token, (uniqueToken.get(token) || 0) + 1)));
@@ -95,8 +95,8 @@
       if (!action) return missing(project, 'Acción / decisión requerida');
       const parts = ['Acción / decisión requerida para ' + project.name + ': ' + h.shortAnswer(action, 430)];
       if (value(project, 'actionOwner')) parts.push('Responsable: ' + value(project, 'actionOwner'));
-      if (value(project, 'actionDate')) parts.push('Compromiso: ' + date(project, 'actionDate'));
-      if (value(project, 'actionStatus')) parts.push('Estado: ' + value(project, 'actionStatus'));
+
+
       return result(parts.join('\n'), project);
     }
     if (has(q, /\b(sponsor|patrocinador|patrocina)\b/)) return value(project, 'sponsor') ? result('El sponsor de ' + project.name + ' es ' + value(project, 'sponsor') + '.', project) : missing(project, 'Sponsor');
@@ -109,10 +109,11 @@
       return result('Riesgo / bloqueo de ' + project.name + ': ' + risk + (action ? '\nAcción o decisión requerida: ' + h.shortAnswer(action, 300) : ''), project);
     }
     if (has(q, /\b(presupuesto|costo|coste|cuesta|finanzas?|capex|opex|beneficios?|inversion)\b/)) {
-      const fields = [['Presupuesto aprobado', 'budget'], ['Costo proyectado', 'cost'], ['Beneficios comprometidos', 'benefits'], ['Beneficios logrados', 'benefitsDone']];
-      if (fields.every(([, key]) => number(project, key) === null)) return result('Los campos financieros ejecutivos de ' + project.name + ' no están registrados en monday en este corte.', project, true);
-      const requested = has(q, /\b(presupuesto)\b/) ? fields.slice(0, 1) : has(q, /\b(costo|coste|cuesta)\b/) ? fields.slice(1, 2) : has(q, /\b(beneficio|beneficios)\b/) ? fields.slice(2) : fields;
-      return result(project.name + '\n' + requested.map(([label, key]) => label + ': ' + money(project, key)).join('\n'), project, requested.some(([, key]) => number(project, key) === null));
+      const fields = [['CAPEX', 'capex'], ['CAPEX Comprometido', 'capexCommitted'], ['CAPEX Ejecutado', 'capexExecuted'], ['OPEX Anual', 'opexAnnual'], ['Desviación Presup.', 'budgetDeviation'], ['Beneficios proyectados', 'benefitsProjected']];
+      if (has(q, /\b(beneficios? logrados?)\b/)) return result('Monday ya no registra beneficios logrados. Beneficios proyectados: ' + money(project, 'benefitsProjected') + '.', project, number(project, 'benefitsProjected') === null);
+      if (fields.every(([, key]) => number(project, key) === null)) return result('Los campos financieros vigentes de ' + project.name + ' no tienen datos en este corte.', project, true);
+      const requested = /\bbeneficios? proyectados?\b/.test(q) ? [fields[5]] : /capex ejecutado/.test(q) ? [fields[2]] : /capex comprometido/.test(q) ? [fields[1]] : /\bopex\b/.test(q) ? [fields[3]] : /desviacion presup/.test(q) ? [fields[4]] : /\bcapex\b/.test(q) ? fields.slice(0, 3) : /\bbeneficios?\b/.test(q) ? [fields[5]] : fields;
+      return result(project.name + (has(q, /\b(presupuesto|costo|coste|cuesta)\b/) ? '\nMonday muestra conceptos financieros por separado; no registra un total de Presupuesto aprobado ni de Costo proyectado.' : '') + '\n' + requested.map(([label, key]) => label + ': ' + money(project, key)).join('\n'), project, requested.some(([, key]) => number(project, key) === null));
     }
     if (has(q, /\b(fin real|cierre efectivo|fecha de cierre|cuando cerro|cuando se cerro|despleg|produccion|ejecutado)\b/)) {
       if (value(project, 'status') !== 'Cerrado') return result(project.name + ' figura como ' + (value(project, 'status') || 'sin estado') + ' en monday; no hay un cierre efectivo confirmado.', project);
@@ -121,13 +122,13 @@
       const when = closure.date ? h.fmtDate(closure.date) : closure.year ? 'año ' + closure.year + (closure.quarter ? ', trimestre ' + closure.quarter : '') : 'Sin dato';
       return result('El cierre efectivo de ' + project.name + ' está registrado como ' + when + '. Fuente: ' + h.closureSourceLabel(project) + '.', project);
     }
-    if (has(q, /\b(forecast|proyeccion de fin|fecha estimada|fin estimado)\b/)) return value(project, 'forecast') ? result('El Forecast de ' + project.name + ' es ' + date(project, 'forecast') + '.', project) : missing(project, 'Forecast');
+    if (has(q, /\b(forecast|proyeccion de fin|fecha estimada|fin estimado)\b/)) return result('Fin Forecast ya no forma parte del seguimiento actual en Monday. Fin Plan de ' + project.name + ': ' + date(project, 'plan') + '. Cierre efectivo: ' + h.closureLabel(project) + '.', project);
     if (has(q, /\b(fin plan|fecha planificada|fecha comprometida|plazo|cuando termina|cuando acaba|cuando finaliza|para cuando)\b/)) return value(project, 'plan') ? result('El Fin Plan de ' + project.name + ' es ' + date(project, 'plan') + '. ' + (h.past(value(project, 'plan')) && h.active(project) ? 'La fecha está vencida en el corte actual.' : ''), project) : missing(project, 'Fin Plan');
     if (has(q, /\b(inicio|empezo|comenzo|arranco)\b/)) return value(project, 'start') ? result('El inicio de ' + project.name + ' es ' + date(project, 'start') + '.', project) : missing(project, 'Inicio');
-    if (has(q, /\b(fechas?|cronograma|calendario)\b/)) return result(project.name + '\nInicio: ' + date(project, 'start') + '\nFin Plan: ' + date(project, 'plan') + '\nForecast: ' + date(project, 'forecast') + '\nCierre efectivo: ' + h.closureLabel(project) + ' (' + h.closureSourceLabel(project) + ').', project);
+    if (has(q, /\b(fechas?|cronograma|calendario)\b/)) return result(project.name + '\nInicio: ' + date(project, 'start') + '\nFin Plan: ' + date(project, 'plan') + '\nCierre efectivo: ' + h.closureLabel(project) + ' (' + h.closureSourceLabel(project) + ').', project);
     if (has(q, /\b(fase|etapa)\b/)) return value(project, 'phase') ? result('La fase actual de ' + project.name + ' es ' + value(project, 'phase') + '.', project) : missing(project, 'Fase actual');
     if (has(q, /\b(porcentaje|%|avance|progreso|cuanto lleva)\b/)) return number(project, 'progress') === null ? missing(project, '% Avance') : result('El avance registrado de ' + project.name + ' es ' + number(project, 'progress') + '%.', project);
-    if (has(q, /\b(situacion|estado|estatus|como va|como esta|en que va|que tal va|que pasa con|resumen|hablame)\b/) || q === norm(project.name)) return result(h.projectSummary(project), project);
+    if (has(q, /\b(situacion|estado|estatus|como va|como esta|en que va|que tal va|que pasa con|resumen|hablame)\b/) || q === norm(project.name)) { const summary = h.projectSummary(project), situation = value(project, 'situation'); return result(situation && !String(summary).includes(situation) ? summary + '\nSituación informada: ' + h.shortAnswer(situation, 260) : summary, project); }
     const topicHint = has(q, /\b(sobre|respecto|que pasa|que ocurrio|detalle)\b/);
     if (topicHint) return updateAnswer(project, q);
     return result('No encontré un dato verificable para esa pregunta sobre ' + project.name + '. Puedes preguntarme por estado, avance, fase, PM, fechas, riesgos, acciones o bitácora.', project, true);
@@ -160,14 +161,14 @@
       return result('Hay ' + gaps.length + ' proyectos con campos pendientes de regularizar' + qualifier + '. Total de valores pendientes: ' + gaps.reduce((n, x) => n + x.issues.length, 0) + '.\n' + listing(gaps, x => x.item.name + ' · ' + x.issues.length + ' campo(s)', 8));
     }
     if (has(q, /\b(presupuesto|costo|coste|cuesta|finanzas|beneficios)\b/)) {
-      const known = rows.filter(i => ['budget', 'cost', 'benefits', 'benefitsDone'].some(key => number(i, key) !== null));
+      const known = rows.filter(i => ['capex', 'capexCommitted', 'capexExecuted', 'opexAnnual', 'budgetDeviation', 'benefitsProjected'].some(key => number(i, key) !== null));
       return result(known.length ? known.length + ' proyecto(s) tienen algún dato financiero ejecutivo registrado. Pídeme uno por nombre para ver el detalle.' : 'Ninguno de los ' + rows.length + ' proyectos consultados tiene campos financieros ejecutivos registrados en este corte.');
     }
     if (has(q, /\b(ultimos|recientes|semana|hitos)\b/)) {
       const hits = h.weeklyMilestones(rows);
       return result(hits.length ? 'Hitos verificados en los últimos siete días:\n' + hits.map(hit => '• ' + hit.project.name + ' (' + h.fmtDate(hit.date) + '): ' + h.shortAnswer(hit.text, 160)).join('\n') : 'No hay hitos recientes con evidencia suficiente para mostrarlos como logro.');
     }
-    if (has(q, /\b(vencidos|atrasados|retrasados|fuera de plazo)\b/)) { rows = rows.filter(i => h.active(i) && ['Vencido', 'Forecast retrasado'].includes(h.scheduleBucket(i))); qualifier = ' con plazo vencido o Forecast retrasado' + qualifier; }
+    if (has(q, /\b(vencidos|atrasados|retrasados|fuera de plazo)\b/)) { rows = rows.filter(i => h.active(i) && h.scheduleBucket(i) === 'Fin Plan vencido'); qualifier = ' con Fin Plan vencido' + qualifier; }
     if (pm || rows !== items || has(q, /\b(cuantos|cuantas|listar|lista|cuales|muestra|proyectos)\b/)) {
       return result('Hay ' + rows.length + ' proyecto(s)' + qualifier + (rows.length ? ':\n' + listing(rows, i => i.name + ' · ' + (value(i, 'status') || 'Sin estado') + (pm ? '' : ' · ' + (value(i, 'pm') || 'PM sin dato'))) : '.'));
     }

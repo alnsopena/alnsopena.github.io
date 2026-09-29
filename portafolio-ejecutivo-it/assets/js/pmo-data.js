@@ -26,17 +26,18 @@
     const isBlock = r => r.startsWith('Bloqueo:');
     const projects = D.items.map(i => {
       const reasons = active(i) ? (call('attentionReasons', i) || []) : [];
-      const plan = val(i, C.plan), forecast = val(i, C.forecast), closure = call('closureInfo', i);
+      const plan = val(i, C.plan), closure = call('closureInfo', i);
       const issues = call('regularizationIssues', i) || [];
       const pm = val(i, C.pm) || '';
       return {
         id: String(i.id), name: i.name, url: i.url, status: val(i, C.status) || 'Sin estatus', active: active(i),
         phase: val(i, C.phase) || 'Sin fase', pm, pmFirst: firstPm(pm), pmColor: pm && has('pmColor') ? call('pmColor', firstPm(pm)) : null,
         sponsor: val(i, C.sponsor) || '', sponsorName: personFromEmail(val(i, C.sponsor)), priority: val(i, C.priority) || '',
-        progress: num(i, C.progress), plan, planLabel: dLabel(plan), forecast, forecastLabel: dLabel(forecast),
-        schedule: active(i) ? call('scheduleBucket', i) : null, noForecast: active(i) && !forecast,
+        progress: num(i, C.progress), plan, planLabel: dLabel(plan),
+        schedule: active(i) ? call('scheduleBucket', i) : null, noFinPlan: active(i) && !plan,
+        financials: { capex: num(i, C.capex), capexCommitted: num(i, C.capexCommitted), capexExecuted: num(i, C.capexExecuted), opexAnnual: num(i, C.opexAnnual), budgetDeviation: num(i, C.budgetDeviation), benefitsProjected: num(i, C.benefitsProjected) },
         risk: reasons.some(isBlock) ? 'block' : reasons.some(r => r.startsWith('Riesgo:')) ? 'risk' : reasons.length ? 'late' : null,
-        reasons, action: val(i, C.action) || '', actionOwner: val(i, C.actionOwner) || '', actionDate: val(i, C.actionDate) || '',
+        reasons, action: val(i, C.action) || '', actionOwner: val(i, C.actionOwner) || '',
         provider: val(i, C.provider) || '', type: val(i, C.type) || '', situation: C.situation ? (val(i, C.situation) || '') : '',
         closedAt: closure && closure.date ? closure.date : null, closedYear: closure ? closure.year : null,
         issues: issues.map(x => ({ category: x.category, field: x.field, critical: !!x.critical }))
@@ -73,7 +74,7 @@
     // decisiones: proyectos activos con motivos de atención (misma regla del portal)
     const decisions = act.filter(p => p.reasons.length).map(p => ({
       projectId: p.id, project: p.name, level: p.risk, reasons: p.reasons, action: p.action, owner: p.actionOwner, pm: p.pmFirst,
-      date: p.actionDate, dateLabel: dLabel(p.actionDate), dateSpoken: dSpoken(p.actionDate)
+      date: null, dateLabel: '', dateSpoken: ''
     })).sort((a, b) => ({ block: 0, late: 1, risk: 2 }[a.level] ?? 3) - ({ block: 0, late: 1, risk: 2 }[b.level] ?? 3));
     const upcoming = act.filter(p => p.plan).sort((a, b) => a.plan.localeCompare(b.plan)).slice(0, 5)
       .map(p => ({ projectId: p.id, project: p.name, pm: p.pmFirst, pmColor: p.pmColor, date: p.plan, dateLabel: p.planLabel, dateSpoken: dSpoken(p.plan) }));
@@ -102,7 +103,7 @@
       totals: {
         total: projects.length, active: act.length, closedYear, year,
         risk: act.filter(p => p.risk === 'risk').length, block: act.filter(p => p.risk === 'block').length,
-        attention: decisions.length, noForecast: act.filter(p => p.noForecast).length
+        attention: decisions.length, noFinPlan: act.filter(p => p.noFinPlan).length
       },
       phases, projects, decisions, upcoming, milestones, closedThisWeek, aduana, contributors,
       baseline: call('baselineSummary', D.items), boardUrl: D.board && D.board.url

@@ -27,9 +27,9 @@
     if (h.weeklyMilestones([item]).length) topics.push(option('Hitos de la semana', { type: 'answer', topic: 'project-hits', id: item.id }));
     if (active(item) && (val(item, 'risk') || val(item, 'action'))) topics.push(option('Riesgos y acciones', { type: 'answer', topic: 'project-risk', id: item.id }));
     if (val(item, 'action')) topics.push(option('Decisión requerida', { type: 'answer', topic: 'project-action', id: item.id }));
-    if (val(item, 'start') || val(item, 'plan') || val(item, 'forecast') || val(item, 'real')) topics.push(option('Fechas y compromisos', { type: 'answer', topic: 'project-dates', id: item.id }));
+    if (val(item, 'start') || val(item, 'plan') || val(item, 'real')) topics.push(option('Fechas y compromisos', { type: 'answer', topic: 'project-dates', id: item.id }));
     if (!active(item)) topics.push(option('Cierre verificado', { type: 'answer', topic: 'project-closure', id: item.id }));
-    if (['budget', 'cost', 'benefits', 'benefitsDone'].some(key => num(item, key) !== null)) topics.push(option('Finanzas y beneficios', { type: 'answer', topic: 'project-finances', id: item.id }));
+    topics.push(option('Finanzas y beneficios', { type: 'answer', topic: 'project-finances', id: item.id }));
     return topics;
   }
 
@@ -72,7 +72,7 @@
     if (page.topic === 'project-status') {
       const lines = ['Estatus: ' + status, 'Avance registrado: ' + (progress === null ? 'Sin dato' : progress + '%')];
       if (val(item, 'phase')) lines.push('Fase: ' + val(item, 'phase'));
-      if (val(item, 'situation')) lines.push('Situación registrada: ' + h.shortAnswer(val(item, 'situation'), 260));
+      if (val(item, 'situation')) lines.push('Situación informada: ' + h.shortAnswer(val(item, 'situation'), 260));
       if (val(item, 'plan')) lines.push('Fin Plan: ' + h.fmtDate(val(item, 'plan')));
       answer = reply(item.name + ' · estado y avance', lines.join('\n'), link.module, link.filters, { source: 'Estatus, % Avance, Fase, Situación y Fin Plan' });
     } else if (page.topic === 'project-update') {
@@ -91,18 +91,18 @@
     } else if (page.topic === 'project-action') {
       const lines = ['Acción o decisión requerida: ' + h.shortAnswer(val(item, 'action'), 360)];
       if (val(item, 'actionOwner')) lines.push('Responsable registrado: ' + val(item, 'actionOwner'));
-      if (val(item, 'actionDate')) lines.push('Fecha compromiso: ' + h.fmtDate(val(item, 'actionDate')));
-      if (val(item, 'actionStatus')) lines.push('Estado: ' + val(item, 'actionStatus'));
+
+
       const attention = h.attentionReasons(item).length > 0;
       answer = reply(item.name + ' · decisión requerida', lines.join('\n'), attention ? 'atencion' : 'portafolio', { search: item.name }, { source: 'Acción / decisión requerida', ...(!attention ? { openProjectId: item.id } : {}) });
     } else if (page.topic === 'project-dates') {
       const closure = !active(item) ? h.closureLabel(item) : 'Aún no cerrado';
-      answer = reply(item.name + ' · fechas', 'Inicio: ' + h.fmtDate(val(item, 'start')) + '\nFin Plan: ' + h.fmtDate(val(item, 'plan')) + '\nForecast: ' + h.fmtDate(val(item, 'forecast')) + '\nCierre efectivo: ' + closure, active(item) ? 'cronograma' : 'portafolio', { search: item.name }, { source: 'Inicio, Fin Plan, Forecast y Fin Real / bitácora', ...(!active(item) ? { openProjectId: item.id } : {}) });
+      answer = reply(item.name + ' · fechas', 'Inicio: ' + h.fmtDate(val(item, 'start')) + '\nFin Plan: ' + h.fmtDate(val(item, 'plan')) + '\nCierre efectivo: ' + closure, active(item) ? 'cronograma' : 'portafolio', { search: item.name }, { source: 'Inicio, Fin Plan y Fin Real / bitácora', ...(!active(item) ? { openProjectId: item.id } : {}) });
     } else if (page.topic === 'project-closure') {
       answer = reply(item.name + ' · cierre', 'Estatus: ' + status + '\nCierre efectivo: ' + h.closureLabel(item) + '\nEvidencia: ' + h.closureSourceLabel(item), 'portafolio', { search: item.name, status: 'Cerrado' }, { source: 'Estatus, Fin Real y bitácora', offerEmail: !h.closureInfo(item), project: item, openProjectId: item.id });
     } else if (page.topic === 'project-finances') {
-      const fields = [['Presupuesto aprobado', 'budget'], ['Costo proyectado', 'cost'], ['Beneficios comprometidos', 'benefits'], ['Beneficios logrados', 'benefitsDone']];
-      answer = reply(item.name + ' · finanzas', fields.map(([label, key]) => label + ': ' + (num(item, key) === null ? 'Sin dato' : 'USD ' + h.fmtNum(num(item, key)))).join('\n'), 'finanzas', { search: item.name }, { source: 'campos financieros ejecutivos' });
+      const fields = [['CAPEX', 'capex'], ['CAPEX Comprometido', 'capexCommitted'], ['CAPEX Ejecutado', 'capexExecuted'], ['OPEX Anual', 'opexAnnual'], ['Desviación Presup.', 'budgetDeviation'], ['Beneficios proyectados', 'benefitsProjected']];
+      answer = reply(item.name + ' · finanzas', fields.map(([label, key]) => label + ': ' + (num(item, key) === null ? 'Sin dato' : '$ ' + h.fmtNum(num(item, key)))).join('\n'), 'finanzas', { search: item.name }, { source: 'campos financieros vigentes en monday' });
     }
     return answer;
   }
