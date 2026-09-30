@@ -17,9 +17,13 @@
       button { border: 0; padding: 16px 24px; background: #123850; color: white; font: 700 15px Arial,sans-serif; cursor: pointer; }
       button:hover, button:focus-visible { background: #116e86; }
       button:disabled { opacity: .6; cursor: wait; }
+      button.secondary { padding: 12px 0; background: transparent; color: #126987; text-decoration: underline; text-underline-offset: 3px; }
+      button.secondary:disabled { opacity: .6; }
       .status { min-height: 3em; margin: 16px 0; line-height: 1.5; }
       .status[data-state="error"] { color: #9a342d; }
       .status[data-state="success"] { color: #165b48; }
+      .ready { display: block; margin: 0 0 20px; font-weight: 700; }
+      [hidden] { display: none !important; }
       .links { display: flex; flex-wrap: wrap; gap: 12px 26px; }
       a { color: #126987; text-underline-offset: 3px; }
       p.small { color: #536a77; font-size: 14px; line-height: 1.5; }
@@ -29,39 +33,102 @@
     <main>
       <span class="brand">COSMOS · Gestión PMO</span>
       <h1>PPT semanal</h1>
-      <p class="intro">Solicita un borrador nuevo con el corte actual de monday. La PPT se genera en GitHub y se entrega en <strong>Borradores automáticos</strong>; PMO revisa y guarda la versión aprobada en <strong>Estatus semanal</strong>.</p>
+      <p class="intro">Solicita un borrador nuevo con el corte actual de monday. La PPT se genera automáticamente y se entrega en <strong>Borradores automáticos</strong>; PMO revisa y guarda la versión aprobada en <strong>Estatus semanal</strong>.</p>
       <div class="rule"></div>
       <button id="request" type="button">Generar nuevo borrador</button>
       <p id="status" class="status" role="status" aria-live="polite"></p>
+      <a id="ready" class="ready" target="_blank" rel="noopener noreferrer" hidden></a>
+      <button id="check" class="secondary" type="button" hidden>Comprobar estado ahora</button>
       <div class="links">
         <a href="https://drive.google.com/drive/folders/1GP2-M5Uc_BQCy4YsST0joWoqRhwFjoVD" target="_blank" rel="noopener noreferrer">Abrir borradores ↗</a>
         <a href="https://drive.google.com/drive/folders/12eFLOouq6IvpvJ37wkNXYX0BHQilHyiD" target="_blank" rel="noopener noreferrer">Abrir finales ↗</a>
       </div>
-      <p class="small">La solicitud inicia el proceso; no significa que la PPT ya esté lista. Consulta el estado en GitHub Actions y espera la entrega en Drive.</p>
+      <p class="small">El enlace directo aparecerá cuando se confirme que el archivo de esta solicitud está en Drive. Puedes volver a esta página para consultar el avance.</p>
     </main>
     <script>
       const button = document.getElementById('request');
       const status = document.getElementById('status');
-      function show(message, state, runUrl) {
-        status.replaceChildren();
+      const check = document.getElementById('check');
+      const ready = document.getElementById('ready');
+      let requestId = null;
+      let timer = null;
+      let failures = 0;
+      const pollMs = 15000;
+
+      function show(message, state, fileUrl, fileName) {
+        status.textContent = message;
         status.dataset.state = state;
-        status.append(document.createTextNode(message));
-        if (runUrl && /^https:\/\/github\.com\/alnsopena\/alnsopena\.github\.io\/actions\//.test(runUrl)) {
-          const link = document.createElement('a');
-          link.href = runUrl;
-          link.target = '_blank';
-          link.rel = 'noopener noreferrer';
-          link.textContent = ' Ver ejecución ↗';
-          status.append(link);
+        ready.hidden = true;
+        ready.removeAttribute('href');
+        ready.textContent = '';
+        if (state === 'success' &&
+            /^https:\/\/drive\.google\.com\/file\/d\/[A-Za-z0-9_-]+\/view$/.test(fileUrl || '')) {
+          ready.href = fileUrl;
+          ready.textContent = 'Abrir ' + (fileName || 'borrador') + ' ↗';
+          ready.hidden = false;
         }
       }
+
+      function schedule() {
+        clearTimeout(timer);
+        timer = setTimeout(refresh, pollMs);
+      }
+
+      function refresh() {
+        if (!requestId) return;
+        clearTimeout(timer);
+        check.hidden = false;
+        check.disabled = true;
+        google.script.run
+          .withSuccessHandler((result) => {
+            check.disabled = false;
+            if (!result || !result.ok) {
+              show(result?.message || 'No se encontró esta solicitud. Recarga la página.', 'error');
+              requestId = null;
+              check.hidden = true;
+              button.disabled = false;
+              return;
+            }
+            const phase = result.phase;
+            const terminal = ['ready', 'failed', 'delayed'].includes(phase);
+            show(result.message || 'Comprobando el estado…',
+              phase === 'ready' ? 'success' : phase === 'failed' ? 'error' : 'pending',
+              phase === 'ready' ? result.fileUrl : null, result.fileName);
+            button.disabled = !terminal;
+            check.hidden = phase === 'ready' || phase === 'failed';
+            if (phase === 'error') {
+              failures += 1;
+              if (failures < 5) schedule();
+            } else {
+              failures = 0;
+              if (!terminal) schedule();
+            }
+          })
+          .withFailureHandler(() => {
+            check.disabled = false;
+            failures += 1;
+            show('No se pudo consultar el avance. Puedes comprobarlo de nuevo.', 'error');
+            if (failures < 5) schedule();
+          })
+          .getDraftStatus(requestId);
+      }
+
       button.addEventListener('click', () => {
+        clearTimeout(timer);
         button.disabled = true;
+        check.hidden = true;
         show('Enviando solicitud…', 'pending');
         google.script.run
           .withSuccessHandler((result) => {
-            button.disabled = false;
-            show(result.message || 'Respuesta inesperada.', result.ok ? 'success' : 'error', result.runUrl);
+            if (!result?.ok || !result.requestId) {
+              button.disabled = false;
+              show(result?.message || 'No se pudo enviar la solicitud.', 'error');
+              return;
+            }
+            requestId = result.requestId;
+            failures = 0;
+            show(result.message || 'Solicitud aceptada. Comprobando avance…', 'pending');
+            refresh();
           })
           .withFailureHandler(() => {
             button.disabled = false;
@@ -69,6 +136,29 @@
           })
           .requestDraft();
       });
+      check.addEventListener('click', refresh);
+      button.disabled = true;
+      show('Buscando solicitudes recientes…', 'pending');
+      google.script.run
+        .withSuccessHandler((result) => {
+          if (!result?.ok) {
+            button.disabled = false;
+            show(result?.message || 'No se pudo consultar la solicitud reciente.', 'error');
+            return;
+          }
+          requestId = result.requestId || null;
+          if (requestId) {
+            refresh();
+          } else {
+            button.disabled = false;
+            show('Puedes solicitar un borrador nuevo.', 'pending');
+          }
+        })
+        .withFailureHandler(() => {
+          button.disabled = false;
+          show('No se pudo consultar la solicitud reciente. Recarga la página.', 'error');
+        })
+        .getLatestDraftRequest();
     </script>
   </body>
 </html>

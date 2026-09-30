@@ -1,4 +1,5 @@
 name: Publicar Portafolio Ejecutivo IT
+run-name: ${{ github.event_name == 'workflow_dispatch' && inputs.request_id != '' && format('PMO PPT {0}', inputs.request_id) || github.workflow }}
 
 on:
   push:
@@ -23,6 +24,11 @@ on:
         type: boolean
         required: true
         default: true
+      request_id:
+        description: "Identificador de solicitud del portal PMO"
+        type: string
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -49,7 +55,7 @@ jobs:
 
       - name: Probar reglas de datos y portal
         run: |
-          node --test scripts/weekly-data.test.mjs scripts/encrypt-weekly-ppt.test.mjs scripts/deliver-weekly-ppt-cloud.test.mjs scripts/publish-weekly-ppt-pull.test.mjs scripts/write-ppt-config.test.mjs
+          node --test scripts/weekly-data.test.mjs scripts/encrypt-weekly-ppt.test.mjs scripts/deliver-weekly-ppt-cloud.test.mjs scripts/publish-weekly-ppt-pull.test.mjs scripts/write-ppt-config.test.mjs tools/weekly-ppt/apps-script-pull/test-pull.mjs tools/weekly-ppt/apps-script-dispatch/test-dispatch.mjs
           node scripts/test-cosmo.mjs
 
       - name: Verificar conexión de monday

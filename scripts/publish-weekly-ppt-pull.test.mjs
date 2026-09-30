@@ -63,7 +63,7 @@ async function receiver(bundle, key = KEY) {
         const file = { id: `file_${files.length + 1}`, name: metadata.name,
           size: String(content.length), parents: metadata.parents,
           md5Checksum: createHash('md5').update(content).digest('hex'),
-          appProperties: metadata.appProperties, content };
+          appProperties: metadata.appProperties, properties: metadata.properties, content };
         files.push(file);
         return file;
       },

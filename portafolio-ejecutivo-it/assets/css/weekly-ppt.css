@@ -42,10 +42,15 @@
   background: #16364d;
   color: #fff;
   font-weight: 750;
+  font-family: inherit;
+  font-size: inherit;
   text-decoration: none;
+  border: 0;
+  cursor: pointer;
 }
 
 .ppt-action:hover { background: #25516d; }
+.ppt-action:disabled { opacity: .52; cursor: not-allowed; }
 .ppt-action-secondary { background: #e9eff2; color: #17334a; }
 .ppt-action-secondary:hover { background: #dce7ed; }
 .ppt-step small { display: block; margin-top: 12px; color: var(--muted); line-height: 1.5; }

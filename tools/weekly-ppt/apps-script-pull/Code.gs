@@ -93,7 +93,7 @@ function pullListDraftFiles_(extraQuery, pageSize) {
   }
   const options = {
     q: "'" + PPT_PULL.folderId + "' in parents and trashed = false and " + extraQuery,
-    fields: 'nextPageToken,incompleteSearch,files(id,name,size,md5Checksum,parents,appProperties)',
+    fields: 'nextPageToken,incompleteSearch,files(id,name,size,md5Checksum,parents,appProperties,properties)',
     pageSize: pageSize,
     supportsAllDrives: true,
     includeItemsFromAllDrives: true,
@@ -119,6 +119,26 @@ function pullCheckFile_(file, manifest, md5) {
       (md5 && file.md5Checksum !== md5)) {
     pullFail_('PULL_STORAGE_VERIFICATION_FAILED');
   }
+}
+
+/** El otro proyecto Apps Script solo puede leer properties, no appProperties. */
+function pullMarkDelivery_(file, manifest, runKey) {
+  if (file.properties?.pmoRunKey && file.properties.pmoRunKey !== runKey) {
+    pullFail_('PULL_DUPLICATE_RUN_CONFLICT');
+  }
+  if (file.properties?.pmoRunKey === runKey &&
+      file.properties?.pmoSha256 === manifest.sha256) return file;
+  const updated = Drive.Files.update({
+    properties: { pmoRunKey: runKey, pmoSha256: manifest.sha256 },
+  }, file.id, null, {
+    fields: 'id,name,size,md5Checksum,parents,properties', supportsAllDrives: true,
+  });
+  pullCheckFile_(updated, manifest, file.md5Checksum);
+  if (updated.properties?.pmoRunKey !== runKey ||
+      updated.properties?.pmoSha256 !== manifest.sha256) {
+    pullFail_('PULL_STORAGE_VERIFICATION_FAILED');
+  }
+  return updated;
 }
 
 function pullDecrypt_(manifest, key) {
@@ -189,6 +209,7 @@ function pullLatestWeeklyPpt() {
       pullCheckFile_(existing, manifest, existing.appProperties?.pmoMd5);
       if (existing.appProperties?.pmoSha256 !== manifest.sha256 ||
           !existing.appProperties?.pmoMd5) pullFail_('PULL_DUPLICATE_RUN_CONFLICT');
+      pullMarkDelivery_(existing, manifest, runKey);
       return { ok: true, duplicate: true, fileId: existing.id, runKey: runKey };
     }
     const decoded = pullDecrypt_(manifest, key);
@@ -198,6 +219,7 @@ function pullLatestWeeklyPpt() {
     });
     if (matching) {
       pullCheckFile_(matching, manifest, decoded.md5);
+      pullMarkDelivery_(matching, manifest, runKey);
       return { ok: true, duplicate: true, fileId: matching.id, runKey: runKey };
     }
     if (sameName.length) pullFail_('PULL_NAME_CONFLICT');
@@ -211,6 +233,7 @@ function pullLatestWeeklyPpt() {
         pmoSha256: manifest.sha256,
         pmoMd5: decoded.md5,
       },
+      properties: { pmoRunKey: runKey, pmoSha256: manifest.sha256 },
     }, blob, {
       fields: 'id', supportsAllDrives: true,
     });
@@ -218,11 +241,13 @@ function pullLatestWeeklyPpt() {
       pullFail_('PULL_STORAGE_VERIFICATION_FAILED');
     }
     const stored = Drive.Files.get(created.id, {
-      fields: 'id,name,size,md5Checksum,parents,appProperties', supportsAllDrives: true,
+      fields: 'id,name,size,md5Checksum,parents,appProperties,properties', supportsAllDrives: true,
     });
     pullCheckFile_(stored, manifest, decoded.md5);
     if (stored.appProperties?.pmoRunKey !== runKey ||
-        stored.appProperties?.pmoSha256 !== manifest.sha256) {
+        stored.appProperties?.pmoSha256 !== manifest.sha256 ||
+        stored.properties?.pmoRunKey !== runKey ||
+        stored.properties?.pmoSha256 !== manifest.sha256) {
       pullFail_('PULL_STORAGE_VERIFICATION_FAILED');
     }
     return { ok: true, duplicate: false, fileId: stored.id, runKey: runKey };
