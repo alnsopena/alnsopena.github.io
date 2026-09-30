@@ -1,5 +1,7 @@
 {
-  "extracted_at_utc": "2026-09-24T22:30:23.894Z",
+  "week_key": "2026-09-28",
+  "cut_id": "18396270726:2026-09-30T02:35:25.326Z",
+  "extracted_at_utc": "2026-09-30T02:35:25.326Z",
   "items": [
     {
       "id": "11041978965",
@@ -11,10 +13,9 @@
         "color_mm6kg2n5": "Pruebas UAT",
         "numeric_mkzrc075": "65",
         "date_mkzrb4nr": "2027-01-18",
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": "Bloqueo crítico",
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": "29/09: No se ha implementado el pipeline en un nuevo ambiente de pruebas para Singulartech"
       }
     },
     {
@@ -27,10 +28,9 @@
         "color_mm6kg2n5": "Evaluación",
         "numeric_mkzrc075": "35",
         "date_mkzrb4nr": "2026-12-28",
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": "Sin bloqueo",
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": "29/09: No se ha firmado el contrato marco. Retraso en el inicio del proyecto fase 2"
       }
     },
     {
@@ -43,10 +43,9 @@
         "color_mm6kg2n5": "Planificación",
         "numeric_mkzrc075": "8",
         "date_mkzrb4nr": "2027-08-31",
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": "Sin evaluar",
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": null
       }
     },
     {
@@ -59,10 +58,9 @@
         "color_mm6kg2n5": "Planificación",
         "numeric_mkzrc075": "40",
         "date_mkzrb4nr": "2026-10-16",
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": "Sin evaluar",
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": null
       }
     },
     {
@@ -72,13 +70,12 @@
         "status": "Cerrado",
         "color_mkzzg1vp": "High",
         "multiple_person_mm087pe3": "Carlos Caycho Martinez",
-        "color_mm6kg2n5": null,
+        "color_mm6kg2n5": "Cierre",
         "numeric_mkzrc075": "100",
         "date_mkzrb4nr": "2026-03-27",
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": null,
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": null
       }
     },
     {
@@ -88,13 +85,12 @@
         "status": "Cerrado",
         "color_mkzzg1vp": "High",
         "multiple_person_mm087pe3": "Carlos Caycho Martinez",
-        "color_mm6kg2n5": null,
+        "color_mm6kg2n5": "Cierre",
         "numeric_mkzrc075": "100",
         "date_mkzrb4nr": "2026-03-27",
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": null,
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": null
       }
     },
     {
@@ -104,13 +100,12 @@
         "status": "Cerrado",
         "color_mkzzg1vp": "Critical ⚠️️",
         "multiple_person_mm087pe3": "Carlos Caycho Martinez",
-        "color_mm6kg2n5": null,
+        "color_mm6kg2n5": "Cierre",
         "numeric_mkzrc075": "100",
         "date_mkzrb4nr": "2026-06-09",
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": null,
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": null
       }
     },
     {
@@ -120,13 +115,12 @@
         "status": "Cerrado",
         "color_mkzzg1vp": "Critical ⚠️️",
         "multiple_person_mm087pe3": "Carlos Caycho Martinez",
-        "color_mm6kg2n5": null,
+        "color_mm6kg2n5": "Cierre",
         "numeric_mkzrc075": "99",
         "date_mkzrb4nr": null,
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": null,
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": null
       }
     },
     {
@@ -136,13 +130,12 @@
         "status": "Cerrado",
         "color_mkzzg1vp": "Critical ⚠️️",
         "multiple_person_mm087pe3": "Juan Pablo Arbulú",
-        "color_mm6kg2n5": "Estabilización",
+        "color_mm6kg2n5": "Cierre",
         "numeric_mkzrc075": "100",
         "date_mkzrb4nr": "2026-08-31",
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": "2026-09-21",
         "color_mm6zdfgs": "Sin bloqueo",
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": "29/09: Atención de maneral manual las facturas cuando estás deben ir por el portal"
       }
     },
     {
@@ -152,13 +145,12 @@
         "status": "Cerrado",
         "color_mkzzg1vp": "High",
         "multiple_person_mm087pe3": "Juan Pablo Arbulú",
-        "color_mm6kg2n5": null,
+        "color_mm6kg2n5": "Cierre",
         "numeric_mkzrc075": "100",
         "date_mkzrb4nr": "2026-06-19",
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": null,
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": null
       }
     },
     {
@@ -168,13 +160,12 @@
         "status": "Cerrado",
         "color_mkzzg1vp": "Critical ⚠️️",
         "multiple_person_mm087pe3": "Juan Pablo Arbulú",
-        "color_mm6kg2n5": null,
+        "color_mm6kg2n5": "Cierre",
         "numeric_mkzrc075": "100",
         "date_mkzrb4nr": "2026-01-21",
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": null,
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": null
       }
     },
     {
@@ -187,10 +178,9 @@
         "color_mm6kg2n5": "Planificación",
         "numeric_mkzrc075": "30",
         "date_mkzrb4nr": "2026-10-15",
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": "Riesgo / Alerta",
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": "29/09: Sin respuesta por parte del proveedor desde 08/09"
       }
     },
     {
@@ -203,10 +193,9 @@
         "color_mm6kg2n5": null,
         "numeric_mkzrc075": "10",
         "date_mkzrb4nr": "2026-11-17",
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": "Sin evaluar",
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": "Reunión de definición con Procesos"
       }
     },
     {
@@ -219,10 +208,9 @@
         "color_mm6kg2n5": "Propuesta",
         "numeric_mkzrc075": "10",
         "date_mkzrb4nr": "2027-01-11",
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": "Sin bloqueo",
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": "29/09: Sin aprobación de los cambios a la última modificación del proceso"
       }
     },
     {
@@ -232,13 +220,12 @@
         "status": "Cerrado",
         "color_mkzzg1vp": "High",
         "multiple_person_mm087pe3": "Miembro eliminado",
-        "color_mm6kg2n5": null,
+        "color_mm6kg2n5": "Cierre",
         "numeric_mkzrc075": "100",
         "date_mkzrb4nr": "2026-03-20",
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": null,
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": null
       }
     },
     {
@@ -248,13 +235,12 @@
         "status": "Cerrado",
         "color_mkzzg1vp": "Critical ⚠️️",
         "multiple_person_mm087pe3": "Miembro eliminado",
-        "color_mm6kg2n5": null,
+        "color_mm6kg2n5": "Cierre",
         "numeric_mkzrc075": "100",
         "date_mkzrb4nr": "2026-03-20",
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": null,
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": null
       }
     },
     {
@@ -264,13 +250,12 @@
         "status": "Cerrado",
         "color_mkzzg1vp": "High",
         "multiple_person_mm087pe3": "Milagros Cheel",
-        "color_mm6kg2n5": null,
+        "color_mm6kg2n5": "Cierre",
         "numeric_mkzrc075": "100",
         "date_mkzrb4nr": "2026-03-13",
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": null,
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": null
       }
     },
     {
@@ -280,13 +265,12 @@
         "status": "Cerrado",
         "color_mkzzg1vp": "Critical ⚠️️",
         "multiple_person_mm087pe3": "Milagros Cheel",
-        "color_mm6kg2n5": null,
+        "color_mm6kg2n5": "Cierre",
         "numeric_mkzrc075": "100",
         "date_mkzrb4nr": "2026-01-09",
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": null,
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": null
       }
     },
     {
@@ -296,13 +280,12 @@
         "status": "Cerrado",
         "color_mkzzg1vp": "Critical ⚠️️",
         "multiple_person_mm087pe3": "Milagros Cheel",
-        "color_mm6kg2n5": null,
+        "color_mm6kg2n5": "Cierre",
         "numeric_mkzrc075": "100",
         "date_mkzrb4nr": "2026-03-13",
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": null,
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": null
       }
     },
     {
@@ -312,13 +295,12 @@
         "status": "Planificado",
         "color_mkzzg1vp": "Critical ⚠️️",
         "multiple_person_mm087pe3": "Pierre Lozano",
-        "color_mm6kg2n5": null,
+        "color_mm6kg2n5": "Planificación",
         "numeric_mkzrc075": "0",
         "date_mkzrb4nr": null,
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": null,
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": null
       }
     },
     {
@@ -328,13 +310,12 @@
         "status": "Planificado",
         "color_mkzzg1vp": "Critical ⚠️️",
         "multiple_person_mm087pe3": "Pierre Lozano",
-        "color_mm6kg2n5": null,
+        "color_mm6kg2n5": "Planificación",
         "numeric_mkzrc075": "0",
         "date_mkzrb4nr": null,
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": null,
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": null
       }
     },
     {
@@ -344,13 +325,12 @@
         "status": "En Proceso",
         "color_mkzzg1vp": "High",
         "multiple_person_mm087pe3": "Valeria Hermoza",
-        "color_mm6kg2n5": "Ejecución",
+        "color_mm6kg2n5": "Pruebas UAT",
         "numeric_mkzrc075": "91",
         "date_mkzrb4nr": "2026-10-06",
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": "Sin bloqueo",
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": "29/09: no se ha cerrado el universo de pruebas funcionales"
       }
     },
     {
@@ -360,13 +340,12 @@
         "status": "En Proceso",
         "color_mkzzg1vp": "Critical ⚠️️",
         "multiple_person_mm087pe3": "Valeria Hermoza",
-        "color_mm6kg2n5": "Ejecución",
-        "numeric_mkzrc075": "91",
+        "color_mm6kg2n5": "Pruebas UAT",
+        "numeric_mkzrc075": "93",
         "date_mkzrb4nr": "2026-09-30",
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": "Riesgo / Alerta",
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": null
       }
     },
     {
@@ -379,10 +358,9 @@
         "color_mm6kg2n5": "Propuesta",
         "numeric_mkzrc075": "0",
         "date_mkzrb4nr": "2027-02-15",
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": "Riesgo / Alerta",
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": "Sin riesgos"
       }
     },
     {
@@ -395,10 +373,9 @@
         "color_mm6kg2n5": "Propuesta",
         "numeric_mkzrc075": "0",
         "date_mkzrb4nr": "2027-01-11",
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": "Sin bloqueo",
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": "Sin riesgos"
       }
     },
     {
@@ -408,13 +385,12 @@
         "status": "Planificado",
         "color_mkzzg1vp": "Critical ⚠️️",
         "multiple_person_mm087pe3": "Valeria Hermoza",
-        "color_mm6kg2n5": null,
+        "color_mm6kg2n5": "Planificación",
         "numeric_mkzrc075": "0",
         "date_mkzrb4nr": null,
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": null,
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": null
       }
     },
     {
@@ -424,13 +400,12 @@
         "status": "Cerrado",
         "color_mkzzg1vp": "High",
         "multiple_person_mm087pe3": "Walter Gonzales",
-        "color_mm6kg2n5": "Ejecución",
+        "color_mm6kg2n5": "Cierre",
         "numeric_mkzrc075": "69",
         "date_mkzrb4nr": "2026-09-30",
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": "Sin evaluar",
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": null
       }
     },
     {
@@ -443,10 +418,9 @@
         "color_mm6kg2n5": "Propuesta",
         "numeric_mkzrc075": "12",
         "date_mkzrb4nr": "2026-11-20",
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": "Sin bloqueo",
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": "29/09: aprobación adicional de las actas de conformidad de servicio para los servicios de transporte"
       }
     },
     {
@@ -456,13 +430,12 @@
         "status": "Cerrado",
         "color_mkzzg1vp": "Critical ⚠️️",
         "multiple_person_mm087pe3": "Walter Gonzales",
-        "color_mm6kg2n5": null,
+        "color_mm6kg2n5": "Cierre",
         "numeric_mkzrc075": "100",
         "date_mkzrb4nr": "2026-02-24",
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": null,
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": null
       }
     },
     {
@@ -475,10 +448,9 @@
         "color_mm6kg2n5": "Evaluación",
         "numeric_mkzrc075": "4",
         "date_mkzrb4nr": "2026-12-04",
-        "date_mm6zv2hs": null,
         "date_mm6d8mx": null,
         "color_mm6zdfgs": "Sin bloqueo",
-        "color_mm6zq06e": null
+        "text_mm7fvxjn": "Sin riesgos"
       }
     }
   ]
