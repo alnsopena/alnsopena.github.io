@@ -1,4 +1,8 @@
-# Receptor cloud de borradores PPT
+# Receptor POST legado — no desplegar
+
+El Workspace corporativo solo ofrece **Solo yo** o **Cualquier usuario de Andino** para el acceso a web apps. GitHub Actions no tiene sesión Google y no puede llamar este receptor, que requería **Anyone / ANYONE_ANONYMOUS**. El workflow dejó de usarlo. Use el nuevo [proyecto de consulta programada](../apps-script-pull/README.md), que se ejecuta dentro de la cuenta corporativa y descarga el asset cifrado de Pages. La información que sigue describe el diseño antiguo y queda solo como referencia histórica; no configure `PPT_DELIVERY_WEBAPP_URL` ni `PPT_DELIVERY_HMAC_SECRET` para activarlo.
+
+## Diseño archivado
 
 Este código está **listo para desplegar**, pero no está desplegado. La cuenta Google que publique el web app debe poder crear archivos en la unidad compartida de COSMOS. El receptor solo escribe en [`Estatus semanal/Borradores automáticos`](https://drive.google.com/drive/folders/1GP2-M5Uc_BQCy4YsST0joWoqRhwFjoVD); las PPT revisadas por PMO permanecen en la [carpeta original `Estatus semanal`](https://drive.google.com/drive/folders/12eFLOouq6IvpvJ37wkNXYX0BHQilHyiD).
 

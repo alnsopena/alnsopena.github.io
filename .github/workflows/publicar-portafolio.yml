@@ -49,7 +49,7 @@ jobs:
 
       - name: Probar reglas de datos y portal
         run: |
-          node --test scripts/weekly-data.test.mjs scripts/encrypt-weekly-ppt.test.mjs scripts/deliver-weekly-ppt-cloud.test.mjs scripts/write-ppt-config.test.mjs
+          node --test scripts/weekly-data.test.mjs scripts/encrypt-weekly-ppt.test.mjs scripts/deliver-weekly-ppt-cloud.test.mjs scripts/publish-weekly-ppt-pull.test.mjs scripts/write-ppt-config.test.mjs
           node scripts/test-cosmo.mjs
 
       - name: Verificar conexión de monday
@@ -128,23 +128,31 @@ jobs:
           compression-level: 0
           overwrite: true
 
-      - name: Entregar borrador directamente a Drive si el puente está configurado
+      - name: Publicar borrador cifrado para consulta privada desde Apps Script
         if: steps.weekly.outputs.generate == 'true'
         env:
-          PPT_DELIVERY_WEBAPP_URL: ${{ secrets.PPT_DELIVERY_WEBAPP_URL }}
-          PPT_DELIVERY_HMAC_SECRET: ${{ secrets.PPT_DELIVERY_HMAC_SECRET }}
+          PPT_PULL_KEY_B64: ${{ secrets.PPT_PULL_KEY_B64 }}
         run: |
-          if [ -z "$PPT_DELIVERY_WEBAPP_URL" ] || [ -z "$PPT_DELIVERY_HMAC_SECRET" ]; then
-            echo "Entrega cloud pendiente de configuración; el artefacto cifrado continúa disponible."
+          if [ -z "$PPT_PULL_KEY_B64" ]; then
+            echo "Consulta privada pendiente de configuración; el artefacto CMS continúa disponible."
             exit 0
           fi
-          node scripts/deliver-weekly-ppt-cloud.mjs --input "$(cat _build/weekly-ppt/latest-path.txt)"
+          node scripts/publish-weekly-ppt-pull.mjs --input "$(cat _build/weekly-ppt/latest-path.txt)"
+          git add -A -- portafolio-ejecutivo-it/assets/weekly-ppt-pull
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "data: publicar borrador PPT cifrado [skip ci]"
+            git push origin HEAD:main
+          fi
+          rm -rf _site/portafolio-ejecutivo-it/assets/weekly-ppt-pull
+          cp -a portafolio-ejecutivo-it/assets/weekly-ppt-pull _site/portafolio-ejecutivo-it/assets/
 
       - name: Generar configuración pública de acceso a PPT
         if: always() && steps.sync.outcome == 'success'
         env:
-          PPT_DELIVERY_WEBAPP_URL: ${{ secrets.PPT_DELIVERY_WEBAPP_URL }}
-          PPT_DELIVERY_HMAC_SECRET: ${{ secrets.PPT_DELIVERY_HMAC_SECRET }}
+          PPT_PULL_KEY_B64: ${{ secrets.PPT_PULL_KEY_B64 }}
+          COSMOS_PPT_PULL_VERIFIED: ${{ vars.COSMOS_PPT_PULL_VERIFIED }}
           COSMOS_PPT_DISPATCH_URL: ${{ vars.COSMOS_PPT_DISPATCH_URL }}
         run: node scripts/write-ppt-config.mjs --output _site/portafolio-ejecutivo-it/assets/ppt-config.json
 

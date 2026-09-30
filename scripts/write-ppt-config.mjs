@@ -2,19 +2,20 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validateAppsScriptUrl } from './deliver-weekly-ppt-cloud.mjs';
+import { parsePullKey } from './publish-weekly-ppt-pull.mjs';
 
-export function makePptConfig({ deliveryUrl, deliverySecret, dispatchUrl }) {
+export function makePptConfig({ pullKey, pullVerified, dispatchUrl }) {
   let delivery = 'local';
-  if (deliveryUrl?.trim() && deliverySecret?.length >= 32) {
+  if (pullVerified === 'true') {
     try {
-      validateAppsScriptUrl(deliveryUrl.trim());
+      parsePullKey(pullKey);
       delivery = 'cloud';
     } catch {
-      // Publicar modo local cuando el endpoint de entrega no sea válido.
+      // Una confirmación manual sin la clave activa no habilita el aviso cloud.
     }
   }
   let dispatch_url = null;
-  if (delivery === 'cloud' && dispatchUrl?.trim()) {
+  if (dispatchUrl?.trim()) {
     try {
       dispatch_url = validateAppsScriptUrl(dispatchUrl.trim());
     } catch {
@@ -26,8 +27,8 @@ export function makePptConfig({ deliveryUrl, deliverySecret, dispatchUrl }) {
 
 export async function writePptConfig(output, env = process.env) {
   const config = makePptConfig({
-    deliveryUrl: env.PPT_DELIVERY_WEBAPP_URL,
-    deliverySecret: env.PPT_DELIVERY_HMAC_SECRET,
+    pullKey: env.PPT_PULL_KEY_B64,
+    pullVerified: env.COSMOS_PPT_PULL_VERIFIED,
     dispatchUrl: env.COSMOS_PPT_DISPATCH_URL,
   });
   await mkdir(path.dirname(output), { recursive: true });
