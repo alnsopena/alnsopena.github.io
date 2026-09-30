@@ -49,7 +49,7 @@ jobs:
 
       - name: Probar reglas de datos y portal
         run: |
-          node --test scripts/weekly-data.test.mjs scripts/upload-weekly-ppt-drive.test.mjs
+          node --test scripts/weekly-data.test.mjs scripts/encrypt-weekly-ppt.test.mjs
           node scripts/test-cosmo.mjs
 
       - name: Verificar conexión de monday
@@ -109,18 +109,24 @@ jobs:
         if: steps.weekly.outputs.generate == 'true'
         run: node scripts/generate-weekly-ppt.mjs --input _build/weekly-cut.json --output-dir _build/weekly-ppt
 
-      - name: Guardar borrador en la unidad compartida
+      - name: Cifrar borrador para entrega en Drive
         if: steps.weekly.outputs.generate == 'true'
-        env:
-          GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON }}
-          GOOGLE_DRIVE_WEEKLY_FOLDER_ID: 12eFLOouq6IvpvJ37wkNXYX0BHQilHyiD
+        id: encrypted_ppt
         run: |
-          if [ -z "$GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON" ]; then
-            echo "Entrega a Drive omitida: falta GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON. El borrador solo existe en este runner temporal."
-            echo "La PPT se generó, pero falta configurar la cuenta técnica de Drive en GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON." >> "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
-          node scripts/upload-weekly-ppt-drive.mjs "$(cat _build/weekly-ppt/latest-path.txt)"
+          encrypted_path="$(node scripts/encrypt-weekly-ppt.mjs --input "$(cat _build/weekly-ppt/latest-path.txt)" --certificate tools/weekly-ppt/delivery-certificate.pem --output-dir _build/weekly-ppt/encrypted)"
+          echo "path=$encrypted_path" >> "$GITHUB_OUTPUT"
+          echo "Borrador cifrado para entrega local: $(basename "$encrypted_path")" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Conservar borrador cifrado para sincronización local
+        if: steps.weekly.outputs.generate == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-ppt-encrypted
+          path: ${{ steps.encrypted_ppt.outputs.path }}
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 0
+          overwrite: true
 
       - name: Configurar GitHub Pages
         if: always() && steps.sync.outcome == 'success'
