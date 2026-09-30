@@ -3,10 +3,28 @@ import { readFile, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { makePptConfig, writePptConfig } from './write-ppt-config.mjs';
+import { makePptConfig, validatePptDispatchUrl, writePptConfig } from './write-ppt-config.mjs';
 
 const validUrl = 'https://script.google.com/macros/s/AKfycbx123/exec';
+const corporateUrl = 'https://script.google.com/a/macros/cosmos.com.pe/s/AKfycbwBaq-LaF3dw4rR1D4sOqe6mfN08BkUnlcMsGfTNUxR1sp7JBlJkxKQjMWcJALXE7Jv8g/exec';
 const pullKey = Buffer.alloc(32, 7).toString('base64');
+
+test('acepta el despliegue estándar y el corporativo de Cosmos solamente', () => {
+  assert.equal(validatePptDispatchUrl(validUrl), validUrl);
+  assert.equal(validatePptDispatchUrl(corporateUrl), corporateUrl);
+  assert.deepEqual(makePptConfig({ dispatchUrl: corporateUrl }),
+    { delivery: 'local', dispatch_url: corporateUrl });
+  for (const invalid of [
+    'https://script.google.com/a/macros/otro.com.pe/s/AKfycbx123/exec',
+    'https://script.google.com.evil.example/macros/s/AKfycbx123/exec',
+    'http://script.google.com/macros/s/AKfycbx123/exec',
+    'https://script.google.com/a/macros/cosmos.com.pe/s/AKfycbx123/exec?mode=unsafe',
+    'https://script.google.com/a/macros/cosmos.com.pe/s/AKfycbx123/dev',
+  ]) {
+    assert.deepEqual(makePptConfig({ dispatchUrl: invalid }),
+      { delivery: 'local', dispatch_url: null }, invalid);
+  }
+});
 
 test('config público anuncia cloud solo tras verificación real y no publica la clave', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'cosmos-ppt-config-'));

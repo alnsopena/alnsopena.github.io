@@ -233,8 +233,10 @@ test('manifest, UI y scopes mantienen el acceso en servidor', () => {
   const manifest = JSON.parse(readFileSync(new URL('./appsscript.json', import.meta.url), 'utf8'));
   const html = readFileSync(new URL('./Index.html', import.meta.url), 'utf8');
   assert.equal(manifest.timeZone, 'America/Lima');
-  assert.ok(manifest.oauthScopes.includes('https://www.googleapis.com/auth/drive.readonly'));
+  assert.ok(manifest.oauthScopes.includes('https://www.googleapis.com/auth/drive.metadata.readonly'));
+  assert.ok(!manifest.oauthScopes.includes('https://www.googleapis.com/auth/drive.readonly'));
   assert.equal(manifest.dependencies.enabledAdvancedServices[0].serviceId, 'drive');
+  assert.deepEqual(manifest.webapp, { executeAs: 'USER_DEPLOYING', access: 'DOMAIN' });
   assert.match(html, /getDraftStatus/);
   assert.match(html, /getLatestDraftRequest/);
   assert.match(html, /1GP2-M5Uc_BQCy4YsST0joWoqRhwFjoVD/);

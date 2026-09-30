@@ -1,8 +1,17 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { validateAppsScriptUrl } from './deliver-weekly-ppt-cloud.mjs';
 import { parsePullKey } from './publish-weekly-ppt-pull.mjs';
+
+export function validatePptDispatchUrl(value) {
+  const url = new URL(value);
+  if (url.protocol !== 'https:' || url.hostname !== 'script.google.com' || url.port ||
+      url.username || url.password || url.search || url.hash ||
+      !/^\/(?:macros\/s|a\/macros\/cosmos\.com\.pe\/s)\/[A-Za-z0-9_-]+\/exec$/.test(url.pathname)) {
+    throw new Error('La URL de despacho no es un despliegue HTTPS /exec válido.');
+  }
+  return url.href;
+}
 
 export function makePptConfig({ pullKey, pullVerified, dispatchUrl }) {
   let delivery = 'local';
@@ -17,7 +26,7 @@ export function makePptConfig({ pullKey, pullVerified, dispatchUrl }) {
   let dispatch_url = null;
   if (dispatchUrl?.trim()) {
     try {
-      dispatch_url = validateAppsScriptUrl(dispatchUrl.trim());
+      dispatch_url = validatePptDispatchUrl(dispatchUrl.trim());
     } catch {
       // Un enlace mal configurado no debe llegar a la web pública.
     }
