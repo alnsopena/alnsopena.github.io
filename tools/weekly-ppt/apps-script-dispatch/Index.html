@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <base target="_top">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>COSMOS · PPT semanal</title>
+    <style>
+      :root { color-scheme: light; font-family: Arial, sans-serif; color: #18344a; background: #f5f7f6; }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; }
+      main { max-width: 860px; padding: clamp(24px, 5vw, 64px); margin: auto; }
+      .brand { display: block; font-size: 13px; font-weight: 700; letter-spacing: .18em; color: #116e86; text-transform: uppercase; }
+      h1 { font-size: clamp(30px, 5vw, 54px); letter-spacing: -.04em; line-height: 1.05; margin: 18px 0; }
+      .intro { max-width: 55ch; font-size: 17px; line-height: 1.5; }
+      .rule { border-top: 1px solid #b8cbd1; margin: 32px 0; }
+      button { border: 0; padding: 16px 24px; background: #123850; color: white; font: 700 15px Arial,sans-serif; cursor: pointer; }
+      button:hover, button:focus-visible { background: #116e86; }
+      button:disabled { opacity: .6; cursor: wait; }
+      .status { min-height: 3em; margin: 16px 0; line-height: 1.5; }
+      .status[data-state="error"] { color: #9a342d; }
+      .status[data-state="success"] { color: #165b48; }
+      .links { display: flex; flex-wrap: wrap; gap: 12px 26px; }
+      a { color: #126987; text-underline-offset: 3px; }
+      p.small { color: #536a77; font-size: 14px; line-height: 1.5; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <span class="brand">COSMOS · Gestión PMO</span>
+      <h1>PPT semanal</h1>
+      <p class="intro">Solicita un borrador nuevo con el corte actual de monday. La PPT se genera en GitHub y se entrega en <strong>Borradores automáticos</strong>; PMO revisa y guarda la versión aprobada en <strong>Estatus semanal</strong>.</p>
+      <div class="rule"></div>
+      <button id="request" type="button">Generar nuevo borrador</button>
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+      <div class="links">
+        <a href="https://drive.google.com/drive/folders/1GP2-M5Uc_BQCy4YsST0joWoqRhwFjoVD" target="_blank" rel="noopener noreferrer">Abrir borradores ↗</a>
+        <a href="https://drive.google.com/drive/folders/12eFLOouq6IvpvJ37wkNXYX0BHQilHyiD" target="_blank" rel="noopener noreferrer">Abrir finales ↗</a>
+      </div>
+      <p class="small">La solicitud inicia el proceso; no significa que la PPT ya esté lista. Consulta el estado en GitHub Actions y espera la entrega en Drive.</p>
+    </main>
+    <script>
+      const button = document.getElementById('request');
+      const status = document.getElementById('status');
+      function show(message, state, runUrl) {
+        status.replaceChildren();
+        status.dataset.state = state;
+        status.append(document.createTextNode(message));
+        if (runUrl && /^https:\/\/github\.com\/alnsopena\/alnsopena\.github\.io\/actions\//.test(runUrl)) {
+          const link = document.createElement('a');
+          link.href = runUrl;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.textContent = ' Ver ejecución ↗';
+          status.append(link);
+        }
+      }
+      button.addEventListener('click', () => {
+        button.disabled = true;
+        show('Enviando solicitud…', 'pending');
+        google.script.run
+          .withSuccessHandler((result) => {
+            button.disabled = false;
+            show(result.message || 'Respuesta inesperada.', result.ok ? 'success' : 'error', result.runUrl);
+          })
+          .withFailureHandler(() => {
+            button.disabled = false;
+            show('No se pudo enviar la solicitud. Recarga la página e intenta de nuevo.', 'error');
+          })
+          .requestDraft();
+      });
+    </script>
+  </body>
+</html>

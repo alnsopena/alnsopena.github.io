@@ -49,7 +49,7 @@ jobs:
 
       - name: Probar reglas de datos y portal
         run: |
-          node --test scripts/weekly-data.test.mjs scripts/encrypt-weekly-ppt.test.mjs
+          node --test scripts/weekly-data.test.mjs scripts/encrypt-weekly-ppt.test.mjs scripts/deliver-weekly-ppt-cloud.test.mjs scripts/write-ppt-config.test.mjs
           node scripts/test-cosmo.mjs
 
       - name: Verificar conexión de monday
@@ -127,6 +127,26 @@ jobs:
           retention-days: 90
           compression-level: 0
           overwrite: true
+
+      - name: Entregar borrador directamente a Drive si el puente está configurado
+        if: steps.weekly.outputs.generate == 'true'
+        env:
+          PPT_DELIVERY_WEBAPP_URL: ${{ secrets.PPT_DELIVERY_WEBAPP_URL }}
+          PPT_DELIVERY_HMAC_SECRET: ${{ secrets.PPT_DELIVERY_HMAC_SECRET }}
+        run: |
+          if [ -z "$PPT_DELIVERY_WEBAPP_URL" ] || [ -z "$PPT_DELIVERY_HMAC_SECRET" ]; then
+            echo "Entrega cloud pendiente de configuración; el artefacto cifrado continúa disponible."
+            exit 0
+          fi
+          node scripts/deliver-weekly-ppt-cloud.mjs --input "$(cat _build/weekly-ppt/latest-path.txt)"
+
+      - name: Generar configuración pública de acceso a PPT
+        if: always() && steps.sync.outcome == 'success'
+        env:
+          PPT_DELIVERY_WEBAPP_URL: ${{ secrets.PPT_DELIVERY_WEBAPP_URL }}
+          PPT_DELIVERY_HMAC_SECRET: ${{ secrets.PPT_DELIVERY_HMAC_SECRET }}
+          COSMOS_PPT_DISPATCH_URL: ${{ vars.COSMOS_PPT_DISPATCH_URL }}
+        run: node scripts/write-ppt-config.mjs --output _site/portafolio-ejecutivo-it/assets/ppt-config.json
 
       - name: Configurar GitHub Pages
         if: always() && steps.sync.outcome == 'success'
