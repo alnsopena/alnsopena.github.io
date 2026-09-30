@@ -1,6 +1,7 @@
-import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { appendFile, cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { buildWeeklyCut, businessWeek, getActivityPages } from './weekly-data.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUTPUT = path.join(ROOT, '_site');
@@ -9,6 +10,7 @@ const PORTFOLIO_OUTPUT = path.join(OUTPUT, 'portafolio-ejecutivo-it', 'index.htm
 const PORTFOLIO_ASSETS = path.join(ROOT, 'portafolio-ejecutivo-it', 'assets');
 const CLOSURE_HISTORY_SEED = path.join(ROOT, 'scripts', 'closure-history-seed.json');
 const WEEKLY_BASELINE = path.join(ROOT, 'scripts', 'weekly-baseline.json');
+const PRIVATE_WEEKLY_CUT = path.join(ROOT, '_build', 'weekly-cut.json');
 const MCP_URL = 'https://mcp.monday.com/mcp';
 const API_VERSION = '2026-07';
 const BOARD_ID = 18396270726;
@@ -288,7 +290,8 @@ async function fetchSnapshot(token, previous) {
     }
   }
 
-  return {
+  const snapshot = {
+    cut_id: `${BOARD_ID}:${extractedAt}`,
     extracted_at_utc: extractedAt,
     board_id: String(BOARD_ID),
     scope: 'Lectura MCP completa: metadatos, proyectos, subelementos, valores tipados, fórmulas, actualizaciones, respuestas y referencias de archivos.',
@@ -319,6 +322,7 @@ async function fetchSnapshot(token, previous) {
     raw_items: rawItems,
     updates,
   };
+  return { snapshot, client };
 }
 
 function readEmbeddedSnapshot(html) {
@@ -360,10 +364,37 @@ const previous = readEmbeddedSnapshot(currentHtml);
 const token = process.env.MONDAY_MCP_TOKEN?.trim();
 
 if (!token) {
+  await rm(PRIVATE_WEEKLY_CUT, { force: true });
   console.log(`Portal preparado con el último corte disponible: ${previous.extracted_at_utc}`);
 } else {
-  const snapshot = await fetchSnapshot(token, previous);
+  const includeWeeklyActivity = process.env.GENERATE_WEEKLY_PPT === '1';
+  const { snapshot, client } = await fetchSnapshot(token, previous);
   await writeFile(PORTFOLIO_OUTPUT, replaceEmbeddedSnapshot(currentHtml, snapshot), 'utf8');
+  await rm(PRIVATE_WEEKLY_CUT, { force: true });
+  if (includeWeeklyActivity) {
+    try {
+      const reportingStart = businessWeek(snapshot.extracted_at_utc).reporting_week.start_at_utc;
+      const [mainActivity, subitemActivity] = await Promise.all([
+        getActivityPages(client, BOARD_ID, reportingStart, snapshot.extracted_at_utc),
+        getActivityPages(client, SUBITEM_BOARD_ID, reportingStart, snapshot.extracted_at_utc),
+      ]);
+      const weeklyCut = buildWeeklyCut(snapshot, [...mainActivity, ...subitemActivity], snapshot.weekly_baseline);
+      await mkdir(path.dirname(PRIVATE_WEEKLY_CUT), { recursive: true });
+      await writeFile(PRIVATE_WEEKLY_CUT, `${JSON.stringify(weeklyCut, null, 2)}\n`, 'utf8');
+      console.log(`Bitácora semanal completa: ${weeklyCut.inventory.activity_total} eventos; corte privado ${weeklyCut.cut_id}.`);
+    } catch (error) {
+      await rm(PRIVATE_WEEKLY_CUT, { force: true });
+      const message = `La web se actualizó, pero la PPT semanal no puede generarse: lectura de bitácora incompleta (${error.message}).`;
+      console.error(message);
+      if (process.env.GITHUB_STEP_SUMMARY) {
+        try {
+          await appendFile(process.env.GITHUB_STEP_SUMMARY, `\n⚠️ ${message}\n`, 'utf8');
+        } catch (summaryError) {
+          console.warn(`No se pudo escribir el resumen de Actions: ${summaryError.message}`);
+        }
+      }
+    }
+  }
   console.log(
     `Corte actualizado: ${snapshot.inventory.projects} proyectos, ${snapshot.inventory.subitems} subelementos y ${snapshot.inventory.updates} actualizaciones.`,
   );

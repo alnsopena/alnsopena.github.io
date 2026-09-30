@@ -29,7 +29,7 @@
     if (val(item, 'action')) topics.push(option('Decisión requerida', { type: 'answer', topic: 'project-action', id: item.id }));
     if (val(item, 'start') || val(item, 'plan') || val(item, 'real')) topics.push(option('Fechas y compromisos', { type: 'answer', topic: 'project-dates', id: item.id }));
     if (!active(item)) topics.push(option('Cierre verificado', { type: 'answer', topic: 'project-closure', id: item.id }));
-    topics.push(option('Finanzas y beneficios', { type: 'answer', topic: 'project-finances', id: item.id }));
+    topics.push(option('Finanzas', { type: 'answer', topic: 'project-finances', id: item.id }));
     return topics;
   }
 
@@ -90,9 +90,6 @@
       answer = reply(item.name + ' · riesgos y acciones', lines.join('\n'), attention ? 'atencion' : 'portafolio', { search: item.name }, { source: 'Riesgo / Bloqueo y Acción / decisión requerida', offerEmail: !risk || risk === 'Sin evaluar', project: item, ...(!attention ? { openProjectId: item.id } : {}) });
     } else if (page.topic === 'project-action') {
       const lines = ['Acción o decisión requerida: ' + h.shortAnswer(val(item, 'action'), 360)];
-      if (val(item, 'actionOwner')) lines.push('Responsable registrado: ' + val(item, 'actionOwner'));
-
-
       const attention = h.attentionReasons(item).length > 0;
       answer = reply(item.name + ' · decisión requerida', lines.join('\n'), attention ? 'atencion' : 'portafolio', { search: item.name }, { source: 'Acción / decisión requerida', ...(!attention ? { openProjectId: item.id } : {}) });
     } else if (page.topic === 'project-dates') {
@@ -101,8 +98,10 @@
     } else if (page.topic === 'project-closure') {
       answer = reply(item.name + ' · cierre', 'Estatus: ' + status + '\nCierre efectivo: ' + h.closureLabel(item) + '\nEvidencia: ' + h.closureSourceLabel(item), 'portafolio', { search: item.name, status: 'Cerrado' }, { source: 'Estatus, Fin Real y bitácora', offerEmail: !h.closureInfo(item), project: item, openProjectId: item.id });
     } else if (page.topic === 'project-finances') {
-      const fields = [['CAPEX', 'capex'], ['CAPEX Comprometido', 'capexCommitted'], ['CAPEX Ejecutado', 'capexExecuted'], ['OPEX Anual', 'opexAnnual'], ['Desviación Presup.', 'budgetDeviation'], ['Beneficios proyectados', 'benefitsProjected']];
-      answer = reply(item.name + ' · finanzas', fields.map(([label, key]) => label + ': ' + (num(item, key) === null ? 'Sin dato' : '$ ' + h.fmtNum(num(item, key)))).join('\n'), 'finanzas', { search: item.name }, { source: 'campos financieros vigentes en monday' });
+      const fields = [['CAPEX', 'capex'], ['CAPEX Comprometido', 'capexCommitted'], ['CAPEX Ejecutado', 'capexExecuted'], ['OPEX Anual', 'opexAnnual'], ['Desviación Presup.', 'budgetDeviation']]
+        .filter(([, key]) => D.board.columns.some(column => column.id === C[key]));
+      const values = fields.map(([label, key]) => label + ': ' + (num(item, key) === null ? 'Sin dato' : h.fmtNum(num(item, key)))).join('\n');
+      answer = reply(item.name + ' · finanzas', (values || 'Sin campos financieros vigentes.') + '\nMoneda no identificada en monday.', 'finanzas', { search: item.name }, { source: 'campos financieros vigentes en monday' });
     }
     return answer;
   }

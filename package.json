@@ -1,0 +1,11 @@
+{
+  "name": "cosmos-portafolio-ejecutivo-it",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "weekly-ppt": "node scripts/generate-weekly-ppt.mjs --input _build/weekly-cut.json --output-dir _build/weekly-ppt"
+  },
+  "dependencies": {
+    "pptxgenjs": "4.0.1"
+  }
+}

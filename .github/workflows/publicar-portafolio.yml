@@ -5,15 +5,24 @@ on:
     branches: [main]
     paths:
       - "portafolio-ejecutivo-it/**"
-      - "scripts/sync-monday.mjs"
-      - "scripts/closure-history-seed.json"
+      - "scripts/**"
+      - "tools/weekly-ppt/**"
+      - "package.json"
+      - "package-lock.json"
       - ".github/workflows/publicar-portafolio.yml"
       - "index.html"
       - "foto.jpg"
       - "pda-mockup/**"
   schedule:
     - cron: "17 * * * *"
+    - cron: "0 14 * * 1" # Lunes 09:00, America/Lima. GitHub puede iniciar con retraso.
   workflow_dispatch:
+    inputs:
+      generate_ppt:
+        description: "Generar otro borrador semanal con el corte actual de monday"
+        type: boolean
+        required: true
+        default: true
 
 permissions:
   contents: write
@@ -22,41 +31,109 @@ permissions:
 
 concurrency:
   group: github-pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      site_ready: ${{ steps.pages_artifact.outcome }}
     steps:
       - name: Descargar sitio
         uses: actions/checkout@v4
 
-      - name: Preparar corte del portafolio
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Probar reglas de datos y portal
+        run: |
+          node --test scripts/weekly-data.test.mjs scripts/upload-weekly-ppt-drive.test.mjs
+          node scripts/test-cosmo.mjs
+
+      - name: Verificar conexión de monday
         env:
           MONDAY_MCP_TOKEN: ${{ secrets.MONDAY_MCP_TOKEN }}
-        run: node scripts/sync-monday.mjs
-
-      - name: Actualizar corte ejecutivo semanal
-        if: github.event_name == 'schedule'
         run: |
-          if [ "$(date -u +%u-%H)" = "1-13" ]; then
-            node scripts/update-weekly-baseline.mjs
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add scripts/weekly-baseline.json
-            git diff --cached --quiet || git commit -m "data: actualizar corte ejecutivo semanal [skip ci]"
-            git push
+          if [ -z "$MONDAY_MCP_TOKEN" ]; then
+            echo "Falta MONDAY_MCP_TOKEN. Se detiene la publicación para no presentar un corte antiguo como actual."
+            exit 1
           fi
 
+      - name: Decidir si generar PPT semanal
+        id: weekly
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          SCHEDULE: ${{ github.event.schedule }}
+          GENERATE_INPUT: ${{ inputs.generate_ppt }}
+        run: |
+          if [[ "$EVENT_NAME" == "schedule" && "$SCHEDULE" == "0 14 * * 1" ]] || [[ "$EVENT_NAME" == "workflow_dispatch" && "$GENERATE_INPUT" == "true" ]]; then
+            echo "generate=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "generate=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Preparar corte único de monday y sitio
+        id: sync
+        env:
+          MONDAY_MCP_TOKEN: ${{ secrets.MONDAY_MCP_TOKEN }}
+          GENERATE_WEEKLY_PPT: ${{ steps.weekly.outputs.generate == 'true' && '1' || '0' }}
+        run: node scripts/sync-monday.mjs
+
+      - name: Conservar corte y comparación semanal
+        if: steps.sync.outcome == 'success'
+        run: node scripts/update-weekly-baseline.mjs
+
+      - name: Guardar referencia semanal cuando cambie
+        if: steps.sync.outcome == 'success'
+        run: |
+          git add -A scripts/weekly-baseline.json
+          if [ -d scripts/weekly-archive ]; then git add -A scripts/weekly-archive; fi
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "data: actualizar corte ejecutivo semanal [skip ci]"
+            git push origin HEAD:main
+          fi
+
+      - name: Instalar generador PowerPoint
+        if: steps.weekly.outputs.generate == 'true'
+        run: npm ci --ignore-scripts
+
+      - name: Probar generador PowerPoint
+        if: steps.weekly.outputs.generate == 'true'
+        run: node --test scripts/generate-weekly-ppt.test.mjs
+
+      - name: Generar borrador editable con el mismo corte
+        if: steps.weekly.outputs.generate == 'true'
+        run: node scripts/generate-weekly-ppt.mjs --input _build/weekly-cut.json --output-dir _build/weekly-ppt
+
+      - name: Guardar borrador en la unidad compartida
+        if: steps.weekly.outputs.generate == 'true'
+        env:
+          GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_DRIVE_WEEKLY_FOLDER_ID: 12eFLOouq6IvpvJ37wkNXYX0BHQilHyiD
+        run: |
+          if [ -z "$GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON" ]; then
+            echo "La PPT se generó, pero falta configurar la cuenta técnica de Drive en GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          node scripts/upload-weekly-ppt-drive.mjs "$(cat _build/weekly-ppt/latest-path.txt)"
+
       - name: Configurar GitHub Pages
+        if: always() && steps.sync.outcome == 'success'
         uses: actions/configure-pages@v5
 
-      - name: Empaquetar sitio
+      - name: Empaquetar solo el sitio público
+        id: pages_artifact
+        if: always() && steps.sync.outcome == 'success'
         uses: actions/upload-pages-artifact@v4
         with:
           path: _site
 
   deploy:
+    if: always() && needs.build.outputs.site_ready == 'success'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

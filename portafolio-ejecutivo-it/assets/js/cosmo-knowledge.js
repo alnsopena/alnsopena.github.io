@@ -24,7 +24,7 @@
   const value = (item, key) => h.val(item, C[key]);
   const number = (item, key) => h.num(item, C[key]);
   const date = (item, key) => h.fmtDate(value(item, key));
-  const money = (item, key) => number(item, key) === null ? 'Sin dato' : 'USD ' + h.fmtNum(number(item, key));
+  const money = (item, key) => number(item, key) === null ? 'Sin dato' : h.fmtNum(number(item, key));
   const latest = item => h.projectUpdateEntries(item)[0];
   const isBlocked = item => { const r = norm(value(item, 'risk')); return r.includes('bloqueo') && !r.includes('sin bloqueo'); };
   const isRisk = item => { const r = norm(value(item, 'risk')); return r.includes('riesgo') || r.includes('alerta'); };
@@ -93,11 +93,7 @@
     if (has(q, /\b(hitos?|bitacora|actualizacion|actualizaciones|novedad|novedades|ultima noticia|ultimo movimiento|que paso|que se hizo)\b/) || has(q, /\b(avance reciente|avances recientes)\b/)) return updateAnswer(project, q);
     if (has(q, /\b(accion|acciones|decision|decisiones|compromiso de accion|que se requiere)\b/)) {
       if (!action) return missing(project, 'Acción / decisión requerida');
-      const parts = ['Acción / decisión requerida para ' + project.name + ': ' + h.shortAnswer(action, 430)];
-      if (value(project, 'actionOwner')) parts.push('Responsable: ' + value(project, 'actionOwner'));
-
-
-      return result(parts.join('\n'), project);
+      return result('Acción / decisión requerida para ' + project.name + ': ' + h.shortAnswer(action, 430), project);
     }
     if (has(q, /\b(sponsor|patrocinador|patrocina)\b/)) return value(project, 'sponsor') ? result('El sponsor de ' + project.name + ' es ' + value(project, 'sponsor') + '.', project) : missing(project, 'Sponsor');
     if (has(q, /\b(pm|project manager|lider|lidera|encargad[oa]|responsable|quien lo lleva|quien lleva)\b/)) return value(project, 'pm') ? result('El PM asignado a ' + project.name + ' es ' + value(project, 'pm') + '.', project) : missing(project, 'PM');
@@ -109,11 +105,12 @@
       return result('Riesgo / bloqueo de ' + project.name + ': ' + risk + (action ? '\nAcción o decisión requerida: ' + h.shortAnswer(action, 300) : ''), project);
     }
     if (has(q, /\b(presupuesto|costo|coste|cuesta|finanzas?|capex|opex|beneficios?|inversion)\b/)) {
-      const fields = [['CAPEX', 'capex'], ['CAPEX Comprometido', 'capexCommitted'], ['CAPEX Ejecutado', 'capexExecuted'], ['OPEX Anual', 'opexAnnual'], ['Desviación Presup.', 'budgetDeviation'], ['Beneficios proyectados', 'benefitsProjected']];
-      if (has(q, /\b(beneficios? logrados?)\b/)) return result('Monday ya no registra beneficios logrados. Beneficios proyectados: ' + money(project, 'benefitsProjected') + '.', project, number(project, 'benefitsProjected') === null);
+      if (has(q, /\bbeneficios?\b/)) return result('El tablero actual no ofrece una cifra verificable de beneficios para ' + project.name + '.', project, true);
+      const fields = [['CAPEX', 'capex'], ['CAPEX Comprometido', 'capexCommitted'], ['CAPEX Ejecutado', 'capexExecuted'], ['OPEX Anual', 'opexAnnual'], ['Desviación Presup.', 'budgetDeviation']]
+        .filter(([, key]) => D.board.columns.some(column => column.id === C[key]));
       if (fields.every(([, key]) => number(project, key) === null)) return result('Los campos financieros vigentes de ' + project.name + ' no tienen datos en este corte.', project, true);
-      const requested = /\bbeneficios? proyectados?\b/.test(q) ? [fields[5]] : /capex ejecutado/.test(q) ? [fields[2]] : /capex comprometido/.test(q) ? [fields[1]] : /\bopex\b/.test(q) ? [fields[3]] : /desviacion presup/.test(q) ? [fields[4]] : /\bcapex\b/.test(q) ? fields.slice(0, 3) : /\bbeneficios?\b/.test(q) ? [fields[5]] : fields;
-      return result(project.name + (has(q, /\b(presupuesto|costo|coste|cuesta)\b/) ? '\nMonday muestra conceptos financieros por separado; no registra un total de Presupuesto aprobado ni de Costo proyectado.' : '') + '\n' + requested.map(([label, key]) => label + ': ' + money(project, key)).join('\n'), project, requested.some(([, key]) => number(project, key) === null));
+      const requested = /capex ejecutado/.test(q) ? fields.filter(([, key]) => key === 'capexExecuted') : /capex comprometido/.test(q) ? fields.filter(([, key]) => key === 'capexCommitted') : /\bopex\b/.test(q) ? fields.filter(([, key]) => key === 'opexAnnual') : /desviacion presup/.test(q) ? fields.filter(([, key]) => key === 'budgetDeviation') : /\bcapex\b/.test(q) ? fields.filter(([, key]) => ['capex', 'capexCommitted', 'capexExecuted'].includes(key)) : fields;
+      return result(project.name + (has(q, /\b(presupuesto|costo|coste|cuesta)\b/) ? '\nMonday muestra conceptos financieros por separado; no registra un total de presupuesto.' : '') + '\n' + requested.map(([label, key]) => label + ': ' + money(project, key)).join('\n') + '\nMoneda no identificada en monday; estos importes no se suman.', project, requested.some(([, key]) => number(project, key) === null));
     }
     if (has(q, /\b(fin real|cierre efectivo|fecha de cierre|cuando cerro|cuando se cerro|despleg|produccion|ejecutado)\b/)) {
       if (value(project, 'status') !== 'Cerrado') return result(project.name + ' figura como ' + (value(project, 'status') || 'sin estado') + ' en monday; no hay un cierre efectivo confirmado.', project);
@@ -161,7 +158,8 @@
       return result('Hay ' + gaps.length + ' proyectos con campos pendientes de regularizar' + qualifier + '. Total de valores pendientes: ' + gaps.reduce((n, x) => n + x.issues.length, 0) + '.\n' + listing(gaps, x => x.item.name + ' · ' + x.issues.length + ' campo(s)', 8));
     }
     if (has(q, /\b(presupuesto|costo|coste|cuesta|finanzas|beneficios)\b/)) {
-      const known = rows.filter(i => ['capex', 'capexCommitted', 'capexExecuted', 'opexAnnual', 'budgetDeviation', 'benefitsProjected'].some(key => number(i, key) !== null));
+      if (has(q, /\bbeneficios?\b/)) return result('El tablero actual no ofrece una cifra verificable de beneficios para esta cartera.');
+      const known = rows.filter(i => ['capex', 'capexCommitted', 'capexExecuted', 'opexAnnual', 'budgetDeviation'].some(key => number(i, key) !== null));
       return result(known.length ? known.length + ' proyecto(s) tienen algún dato financiero ejecutivo registrado. Pídeme uno por nombre para ver el detalle.' : 'Ninguno de los ' + rows.length + ' proyectos consultados tiene campos financieros ejecutivos registrados en este corte.');
     }
     if (has(q, /\b(ultimos|recientes|semana|hitos)\b/)) {
