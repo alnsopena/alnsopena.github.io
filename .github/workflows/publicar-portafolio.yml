@@ -116,6 +116,7 @@ jobs:
           GOOGLE_DRIVE_WEEKLY_FOLDER_ID: 12eFLOouq6IvpvJ37wkNXYX0BHQilHyiD
         run: |
           if [ -z "$GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON" ]; then
+            echo "Entrega a Drive omitida: falta GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON. El borrador solo existe en este runner temporal."
             echo "La PPT se generó, pero falta configurar la cuenta técnica de Drive en GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON." >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi

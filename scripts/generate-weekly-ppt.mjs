@@ -80,6 +80,14 @@ function formatCut(iso) {
   return new Intl.DateTimeFormat('es-PE', { timeZone: 'America/Lima', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).format(date).replace(/\./g, '');
 }
 
+function reportingRange(cut) {
+  const start = Date.parse(cut.reporting_week?.start_at_utc ?? '');
+  const end = Date.parse(cut.reporting_week?.end_at_utc ?? '');
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return 'Periodo sin definir';
+  const format = new Intl.DateTimeFormat('es-PE', { timeZone: 'America/Lima', day: '2-digit', month: 'short', year: 'numeric' });
+  return `${format.format(new Date(start)).replace(/\./g, '')} – ${format.format(new Date(end - 1)).replace(/\./g, '')}`;
+}
+
 function inReportingWeek(iso, cut) {
   const start = Date.parse(cut.reporting_week?.start_at_utc ?? cut.week?.start_at_utc ?? '');
   const end = Date.parse(cut.reporting_week?.end_at_utc ?? cut.week?.end_at_utc ?? '');
@@ -97,7 +105,8 @@ function activityLabel(event, cols) {
   const field = [...cols.entries()].find(([, id]) => id === String(event.column_id))?.[0] ?? '';
   const before = plain(event.before_text);
   const after = plain(event.after_text);
-  if (!after || before === after) return '';
+  // A first value can be a historical backfill; do not present it as weekly progress.
+  if (!before || !after || before === after) return '';
   const labels = new Map([
     ['estatus', 'Estado'], ['estado', 'Estado'], ['fase actual', 'Fase'], ['fase', 'Fase'],
     [' avance', 'Avance'], ['avance', 'Avance'], ['fin plan', 'Fin planificado'],
@@ -107,19 +116,19 @@ function activityLabel(event, cols) {
   const label = labels.get(field);
   if (!label) return '';
   if (label === 'Situación' || label === 'Decisión requerida') return `${label} actualizada`;
-  return `${label}: ${excerpt(before || 'sin dato previo', 36)} → ${excerpt(after, 55)}`;
+  return `${label}: ${excerpt(before, 36)} → ${excerpt(after, 55)}`;
 }
 
 function weeklyEvents(item, cut, cols) {
   return (cut.activity?.events ?? []).filter((event) => String(event.item_id) === String(item.id) && inReportingWeek(event.at_utc, cut))
-    .map((event) => ({ at: event.at_utc, text: activityLabel(event, cols) }))
+    .map((event) => ({ at: event.at_utc, text: activityLabel(event, cols), source: 'field' }))
     .filter((entry) => entry.text)
     .sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
 }
 
 function projectMovements(item, cut, cols) {
   const events = weeklyEvents(item, cut, cols);
-  const posts = weeklyUpdates(item, cut).map((update) => ({ at: update.created_at, text: excerpt(update.text_body, 150) }))
+  const posts = weeklyUpdates(item, cut).map((update) => ({ at: update.created_at, text: excerpt(update.text_body, 150), source: 'update' }))
     .filter((entry) => entry.text);
   return [...events, ...posts].sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
 }
@@ -237,6 +246,7 @@ function cover(pptx, cut, reviewed) {
   line(slide, 2.07, 1.96, 8.22, 1.96, C.sand, 1.2);
   addText(slide, 'Seguimiento semanal', { x: .83, y: 2.05, w: 7.7, h: .85 }, { size: 36, color: C.white, bold: true });
   addText(slide, 'Estado de la cartera y decisiones para revisión ejecutiva', { x: .83, y: 3.43, w: 7.45, h: .52 }, { size: 17, color: 'D5E2E6' });
+  addText(slide, `SEMANA REVISADA  ${reportingRange(cut).toUpperCase()}`, { x: .83, y: 4.18, w: 7.45, h: .3 }, { size: 12, color: C.sand, bold: true });
   rect(slide, .73, 4.77, .08, .47, C.sand);
   addText(slide, reviewed ? 'BORRADOR · SELECCIÓN REVISADA POR PMO' : 'BORRADOR · SELECCIÓN POR VALIDAR EN PMO', { x: 1.08, y: 4.87, w: 6.9, h: .28 }, { size: 11, color: C.white, bold: true });
   addText(slide, `CORTE ${formatCut(cut.extracted_at_utc).toUpperCase()}`, { x: 9.63, y: 6.48, w: 3.0, h: .3 }, { size: 11, color: C.navy, bold: true });
@@ -262,10 +272,18 @@ function summary(pptx, cut, allData, selected, cols, reviewed) {
     addText(slide, metric.value, { x, y: 1.37, w: 1.4, h: .76 }, { size: 35, color: C.teal, bold: true });
     addText(slide, metric.label, { x, y: 2.12, w: 2.75, h: .45 }, { size: 13, color: C.muted });
   });
-  section(slide, 'ACTUALIZACIONES REGISTRADAS EN LA SEMANA', .75, 2.95, 11.8);
-  const items = active.flatMap(({ item }) => projectMovements(item, cut, cols).slice(0, 2)
-    .map((movement) => ({ project: item.name, ...movement })))
-    .sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
+  section(slide, `ACTUALIZACIONES · ${reportingRange(cut).toUpperCase()}`, .75, 2.95, 11.8);
+  const closures = allData.filter(({ data }) => statusIsClosed(data.status) && data.actualFinish &&
+    inReportingWeek(`${data.actualFinish}T12:00:00Z`, cut))
+    .map(({ item, data }) => ({ project: item.name, at: `${data.actualFinish}T12:00:00Z`,
+      text: `Cierre registrado · Fin Real ${formatDate(data.actualFinish)}` }));
+  const activeMovements = active.flatMap(({ item }) => projectMovements(item, cut, cols).slice(0, 2)
+    .map((movement) => ({ project: item.name, ...movement })));
+  // Cierres y avances escritos por PMO son los hitos; cambios de campo completan espacios libres.
+  const highlightRank = (entry) => entry.source === 'update' ? 2 :
+    /^Riesgo:.*→ (Riesgo|Bloqueo)/i.test(entry.text) ? 1 : 0;
+  activeMovements.sort((a, b) => highlightRank(b) - highlightRank(a) || Date.parse(b.at) - Date.parse(a.at));
+  const items = [...closures.sort((a, b) => Date.parse(b.at) - Date.parse(a.at)), ...activeMovements];
   const distinct = [];
   for (const item of items) {
     if (distinct.some((entry) => entry.project === item.project)) continue;
@@ -313,7 +331,9 @@ function projectSlide(pptx, cut, item, number, cols) {
   const missing = [];
   if (!data.pm) missing.push('PM');
   if (!data.phase) missing.push('Fase');
-  if (!data.plannedFinish) missing.push('Fin Plan');
+  if (statusIsClosed(data.status) ? !data.actualFinish : !data.plannedFinish) {
+    missing.push(statusIsClosed(data.status) ? 'Fin Real' : 'Fin Plan');
+  }
   if (!data.situation) missing.push('Situación');
   if (!data.risk) missing.push('Riesgo / Bloqueo');
   addText(slide, 'ESTADO', { x: .75, y: 1.31, w: 1.45, h: .23 }, { size: 10, color: C.muted, bold: true });
@@ -323,8 +343,9 @@ function projectSlide(pptx, cut, item, number, cols) {
   addText(slide, 'AVANCE', { x: 5.03, y: 1.31, w: 1.15, h: .23 }, { size: 10, color: C.muted, bold: true });
   const numericProgress = Number.parseFloat(data.progress.replace(',', '.'));
   addText(slide, Number.isFinite(numericProgress) ? `${numericProgress}%` : 'Sin registro', { x: 5.03, y: 1.57, w: 1.52, h: .41 }, { size: 17, color: C.teal, bold: true });
-  addText(slide, 'FIN PLAN', { x: 6.74, y: 1.31, w: 1.4, h: .23 }, { size: 10, color: C.muted, bold: true });
-  addText(slide, formatDate(data.plannedFinish) || 'Sin registro', { x: 6.74, y: 1.57, w: 1.5, h: .41 }, { size: 16, color: C.navy, bold: true });
+  const closed = statusIsClosed(data.status);
+  addText(slide, closed ? 'FIN REAL' : 'FIN PLAN', { x: 6.74, y: 1.31, w: 1.4, h: .23 }, { size: 10, color: C.muted, bold: true });
+  addText(slide, formatDate(closed ? data.actualFinish : data.plannedFinish) || 'Sin registro', { x: 6.74, y: 1.57, w: 1.5, h: .41 }, { size: 16, color: C.navy, bold: true });
   addText(slide, 'PM', { x: 9.04, y: 1.31, w: .8, h: .23 }, { size: 10, color: C.muted, bold: true });
   addText(slide, excerpt(data.pm || 'Sin registro', 29), { x: 9.04, y: 1.57, w: 3.3, h: .41 }, { size: 15, color: C.navy, bold: true });
   line(slide, .75, 2.11, 12.55, 2.11, C.line, .7);
@@ -334,7 +355,7 @@ function projectSlide(pptx, cut, item, number, cols) {
   }
   section(slide, 'SITUACIÓN REGISTRADA', .75, 2.54, 7.55);
   addText(slide, excerpt(data.situation || 'No hay situación registrada en monday.', 245), { x: .75, y: 2.97, w: 7.45, h: .89 }, { size: 18, color: C.ink });
-  section(slide, 'MOVIMIENTOS DE LA SEMANA', .75, 4.13, 7.55);
+  section(slide, `MOVIMIENTOS · ${reportingRange(cut).toUpperCase()}`, .75, 4.13, 7.55);
   const movements = projectMovements(item, cut, cols).slice(0, 3);
   if (!movements.length) {
     addText(slide, 'Sin movimientos registrados en este corte.', { x: .75, y: 4.52, w: 7.4, h: .43 }, { size: 14, color: C.muted });
@@ -359,6 +380,7 @@ function projectSlide(pptx, cut, item, number, cols) {
     `Situación íntegra: ${data.situation || 'Sin registro'}`,
     `Riesgo: ${data.risk || 'Sin registro'}`,
     `Acción o decisión: ${data.decision || 'Sin registro'}`,
+    `Fin Plan: ${data.plannedFinish || 'Sin registro'}. Fin Real: ${data.actualFinish || 'Sin registro'}.`,
     ...weeklyUpdates(item, cut).map((update) => `Actualización ${update.created_at}: ${plain(update.text_body)}`),
     ...(missing.length ? [`Campos por completar: ${missing.join(', ')}`] : []),
   ].join('\n'));
@@ -397,7 +419,8 @@ export async function generateWeeklyPpt(options = {}) {
   if (!cut.board?.columns?.length) throw new Error('El corte no contiene el esquema actual de columnas de monday');
   const cols = columns(cut);
   const selected = chooseProjects(cut, config, cols);
-  const reviewed = Boolean(config.reviewed_reporting_week && config.reviewed_reporting_week === cut.reporting_week?.key);
+  const reviewed = Boolean(config.reviewed_reporting_week && config.reviewed_reporting_week === cut.reporting_week?.key
+    && config.reviewed_cut_id && config.reviewed_cut_id === cut.cut_id);
   const allData = cut.projects.map((item) => ({ item, data: fields(item, cols) }));
   const pptx = new pptxgen();
   pptx.layout = 'LAYOUT_WIDE';

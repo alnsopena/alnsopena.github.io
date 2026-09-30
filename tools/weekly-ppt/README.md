@@ -9,10 +9,11 @@ Edite `selection.json` antes de regenerar:
 - `pinned_project_ids`: proyectos que PMO decide incluir, en orden. Use los IDs de monday, no nombres.
 - `excluded_project_ids`: proyectos que PMO decide omitir de las sugerencias automáticas.
 - `maximum_projects`: tope de fichas. Los proyectos fijados tienen precedencia.
-- `reviewed_reporting_week`: lunes de la semana de logros revisada por PMO en formato `AAAA-MM-DD`, por ejemplo `2026-09-21`. Si está vacío o no coincide, la PPT indica que la selección es sugerida y está pendiente de revisión.
+- `reviewed_reporting_week`: lunes de la semana de logros revisada por PMO en formato `AAAA-MM-DD`, por ejemplo `2026-09-21`.
+- `reviewed_cut_id`: ID exacto del corte aprobado, disponible en `latest-qa.json`. Ambos valores deben coincidir con el corte; una extracción posterior vuelve a marcar la selección como pendiente de revisión.
 - `include_recently_closed`: permite incluir cierres de la semana si el tablero registra Fin Real dentro del corte.
 
-Cuando no hay suficientes proyectos fijados, el generador sugiere activos según bloqueo/riesgo, decisión registrada, fin próximo y actividad reciente. La selección nunca se atribuye a una aprobación humana sin `reviewed_reporting_week` coincidente. La PPT usa solamente campos que existen en el esquema actual de monday y evita totales financieros mientras el tablero no registre moneda por proyecto.
+Cuando no hay suficientes proyectos fijados, el generador sugiere activos según bloqueo/riesgo, decisión registrada, fin próximo y actividad reciente. La selección nunca se atribuye a una aprobación humana sin semana e ID de corte coincidentes. La PPT usa solamente campos que existen en el esquema actual de monday y evita totales financieros mientras el tablero no registre moneda por proyecto.
 
 ## Ejecución
 

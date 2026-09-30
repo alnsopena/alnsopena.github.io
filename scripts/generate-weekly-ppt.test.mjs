@@ -30,22 +30,29 @@ test('genera borradores editables distintos y conserva la selección PMO sin toc
         { id: '222', name: 'Proyecto Beta', column_values: { status: 'Cerrado' }, updates: [] },
       ],
       activity: { coverage: { complete: true }, events: [{ item_id: '111', at_utc: '2026-09-24T21:00:00Z',
-        column_id: 'status', before_text: 'Planificado', after_text: 'En Proceso', classification: 'backfill' }] },
+        column_id: 'status', before_text: '', after_text: 'En Proceso', classification: 'business_change' }] },
     };
     await writeFile(input, JSON.stringify(cut));
     await writeFile(config, JSON.stringify({ maximum_projects: 3, pinned_project_ids: ['111'],
-      excluded_project_ids: [], reviewed_reporting_week: '2026-09-21', include_recently_closed: false }));
+      excluded_project_ids: [], reviewed_reporting_week: '2026-09-21',
+      reviewed_cut_id: cut.cut_id, include_recently_closed: false }));
     const first = await generateWeeklyPpt({ input, outputDir, config });
     const second = await generateWeeklyPpt({ input, outputDir, config });
     assert.equal(first.selection_reviewed_by_pmo, true);
     assert.equal(first.slide_count, 4);
     assert.deepEqual(first.projects.map((project) => project.id), ['111']);
+    assert.equal(first.projects[0].movements, 1, 'la carga inicial no se debe mostrar como avance semanal');
     assert.notEqual(first.output, second.output);
     assert.match(first.output, /Borrador_20260929_0905/);
     assert.ok((await stat(first.output)).size > 10000);
     assert.equal((await readFile(first.output)).subarray(0, 2).toString(), 'PK');
     assert.equal((await readFile(path.join(outputDir, 'latest-path.txt'), 'utf8')).trim(), second.output);
     assert.equal(JSON.parse(await readFile(path.join(outputDir, 'latest-qa.json'), 'utf8')).cut_id, cut.cut_id);
+    const changed = { ...cut, extracted_at_utc: '2026-09-29T14:06:00.000Z',
+      cut_id: '18396270726:2026-09-29T14:06:00.000Z' };
+    await writeFile(input, JSON.stringify(changed));
+    const regenerated = await generateWeeklyPpt({ input, outputDir, config });
+    assert.equal(regenerated.selection_reviewed_by_pmo, false, 'un corte nuevo requiere otra revisión PMO');
   } finally {
     await rm(directory, { recursive: true, force: true });
   }

@@ -19,6 +19,8 @@ test('sube un borrador nuevo solo a Borradores automáticos de la unidad compart
     privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
     publicKeyEncoding: { type: 'spki', format: 'pem' } });
   const originalFetch = globalThis.fetch;
+  const originalLog = console.log;
+  const logMessages = [];
   const previousAccount = process.env.GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON;
   const calls = [];
   process.env.GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON = JSON.stringify({
@@ -53,9 +55,12 @@ test('sube un borrador nuevo solo a Borradores automáticos de la unidad compart
       parents: [DRAFT_ID], webViewLink: 'https://drive.google.com/file/d/uploaded123/view' });
   };
   try {
+    console.log = (...parts) => logMessages.push(parts.join(' '));
     await upload(filePath, ROOT_ID);
     assert.equal(calls.length, 5);
+    assert.match(logMessages.join('\n'), /Borrador guardado en Drive/);
   } finally {
+    console.log = originalLog;
     globalThis.fetch = originalFetch;
     if (previousAccount === undefined) delete process.env.GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON;
     else process.env.GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON = previousAccount;
