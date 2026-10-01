@@ -464,10 +464,12 @@
     .refresh-data.is-loading .refresh-icon{animation:data-refresh-spin .8s linear infinite}
     .refresh-data[data-state="success"]{border-color:rgba(139,190,158,.72);color:#d3eddb}
     .refresh-data[data-state="error"]{border-color:rgba(229,198,167,.72);color:#f0d3b7}
-    .refresh-status{max-width:260px;color:#dce4e9;font-size:11px;line-height:1.35}
+    .top-actions{position:relative}
+    .refresh-status{position:absolute;right:0;top:calc(100% + 8px);z-index:20;width:max-content;max-width:min(340px,calc(100vw - 28px));padding:9px 12px;border:1px solid #c5d8d6;border-radius:6px;background:#fff;box-shadow:0 8px 24px rgba(8,34,48,.14);color:#24475d;font-size:11px;line-height:1.35;pointer-events:none}
+    .refresh-status[data-state="error"]{border-color:#d9bba5}
     .refresh-status[hidden]{display:none}
     @keyframes data-refresh-spin{to{transform:rotate(360deg)}}
-    @media(max-width:760px){.top-actions{width:100%;justify-content:space-between}.refresh-status{max-width:calc(100vw - 190px)}}
+    @media(max-width:760px){.top-actions{width:100%;justify-content:space-between}}
     @media(prefers-reduced-motion:reduce){.refresh-data,.refresh-icon{transition:none!important;animation:none!important}}
   </style>
   <style id="paper-fx-escenas-layout">
