@@ -69,10 +69,14 @@
   function updateAnswer(project, q) {
     const entries = h.projectUpdateEntries(project);
     if (!entries.length) return result('No hay actualizaciones de bitácora asociadas a ' + project.name + ' en este corte.', project, true);
-    if (has(q, /\b(esta semana|ultimos 7 dias|hitos? recientes?|hitos? de la semana)\b/)) {
+    if (has(q, /\bultimos 7 dias\b/)) {
       const cutoff = new Date(new Date(D.extracted_at_utc).getTime() - 7 * 86400000);
-      const hits = entries.filter(entry => new Date(entry.date) >= cutoff).map(entry => ({ entry, milestone: h.milestoneSentence(entry.text) })).filter(x => x.milestone).slice(0, 3);
-      return hits.length ? result('Hitos verificados de ' + project.name + ' en los últimos siete días:\n' + hits.map(x => '• ' + h.fmtDate(x.entry.date) + ': ' + x.milestone.text).join('\n'), project) : result('No hay hitos de ' + project.name + ' con evidencia suficiente en la bitácora de los últimos siete días.', project);
+      const latest = entries.find(entry => new Date(entry.date) >= cutoff);
+      return latest ? result('Última actualización de ' + project.name + ' en los últimos siete días (' + h.fmtDate(latest.date) + '):\n' + h.shortAnswer(latest.text, 480), project) : result('No hay comentarios de bitácora de ' + project.name + ' en los últimos siete días.', project);
+    }
+    if (has(q, /\b(esta semana|hitos? recientes?|hitos? de la semana|actualizaciones de esta semana)\b/)) {
+      const latest = h.weeklyMilestones([project])[0];
+      return latest ? result('Última actualización de ' + project.name + ' esta semana (' + h.fmtDate(latest.date) + '):\n' + h.shortAnswer(latest.text, 480), project) : result('No hay comentarios de bitácora de ' + project.name + ' registrados esta semana.', project);
     }
     const topic = words(q).filter(w => w.length >= 4 && !questionWords.has(w) && !projectWords.has(w) && !words(project.name).includes(w) && !['bitacora', 'registro', 'detalle', 'paso', 'pasado', 'ocurrio', 'ocurre', 'dijo', 'dice', 'ultima', 'ultimas', 'ultimo'].includes(w));
     if (topic.length && has(q, /\b(sobre|respecto|bitacora|mencion|dijo|paso|ocurrio|detalle|actualizacion|ultima|ultimo)\b/)) {
@@ -164,20 +168,20 @@
     }
     if (has(q, /\b(ultimos|recientes|semana|hitos)\b/)) {
       const hits = h.weeklyMilestones(rows);
-      return result(hits.length ? 'Hitos verificados en los últimos siete días:\n' + hits.map(hit => '• ' + hit.project.name + ' (' + h.fmtDate(hit.date) + '): ' + h.shortAnswer(hit.text, 160)).join('\n') : 'No hay hitos recientes con evidencia suficiente para mostrarlos como logro.');
+      return result(hits.length ? 'Actualizaciones de esta semana:\n' + listing(hits, hit => hit.project.name + ' (' + h.fmtDate(hit.date) + '): ' + h.shortAnswer(hit.text, 160), 5) : 'Aún no hay comentarios de bitácora registrados esta semana.');
     }
     if (has(q, /\b(vencidos|atrasados|retrasados|fuera de plazo)\b/)) { rows = rows.filter(i => h.active(i) && h.scheduleBucket(i) === 'Fin Plan vencido'); qualifier = ' con Fin Plan vencido' + qualifier; }
     if (pm || rows !== items || has(q, /\b(cuantos|cuantas|listar|lista|cuales|muestra|proyectos)\b/)) {
       return result('Hay ' + rows.length + ' proyecto(s)' + qualifier + (rows.length ? ':\n' + listing(rows, i => i.name + ' · ' + (value(i, 'status') || 'Sin estado') + (pm ? '' : ' · ' + (value(i, 'pm') || 'PM sin dato'))) : '.'));
     }
     if (has(q, /\b(total|resumen|cartera|portafolio|estado)\b/)) return result('El portafolio tiene ' + items.length + ' proyectos: ' + activeItems.length + ' no cerrados y ' + closed.length + ' cerrados. De los no cerrados, ' + activeItems.filter(isRisk).length + ' tienen riesgo o alerta y ' + activeItems.filter(isBlocked).length + ' tienen bloqueo registrado.');
-    return result('Puedo consultar proyectos, responsables, fechas, avances, riesgos, decisiones, hitos y la bitácora de monday. Indica un proyecto o pregunta por la cartera.');
+    return result('Puedo consultar proyectos, responsables, fechas, avances, riesgos, decisiones y actualizaciones de la bitácora de monday. Indica un proyecto o pregunta por la cartera.');
   }
 
   function answer(question, context) {
     const q = canonical(question), found = findProject(question);
     if (found.ambiguous) return result('Hay varios proyectos que coinciden. ¿A cuál te refieres?\n' + listing(found.ambiguous, i => i.name, 4));
-    const portfolio = has(q, /\b(portafolio|cartera|proyectos|iniciativas|hitos de la semana)\b/);
+    const portfolio = has(q, /\b(portafolio|cartera|proyectos|iniciativas|hitos de la semana|actualizaciones de esta semana)\b/);
     let project = found.project;
     if (!project && !portfolio && context.project) project = D.items.find(i => String(i.id) === String(context.project));
     if (project) { context.project = String(project.id); return projectAnswer(project, question); }

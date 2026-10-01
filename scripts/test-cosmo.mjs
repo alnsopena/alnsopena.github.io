@@ -19,7 +19,7 @@ assert.ok(start >= 0 && end > start, 'Deben existir las funciones base del porta
 const mainEnd = html.indexOf('  </script>', end);
 assert.ok(mainEnd > end);
 new vm.Script(html.slice(start, mainEnd));
-const script = html.slice(start, end) + '\n globalThis.guideTest={C,val,num,fmtDate,fmtNum,renderFinanzas,renderAtencion,regularizationIssues,projectUpdateEntries,shortAnswer,weeklyMilestones,attentionReasons,closureInfo,closureLabel,closureSourceLabel,past};';
+const script = html.slice(start, end) + '\n globalThis.guideTest={C,val,num,fmtDate,fmtNum,renderFinanzas,renderAtencion,regularizationIssues,projectUpdateEntries,shortAnswer,weeklyMilestones,weeklyCard,weekStartLima,attentionReasons,closureInfo,closureLabel,closureSourceLabel,past};';
 const context = {
   document: { getElementById: id => id === 'snapshot' ? { textContent: snapshot[1] } : null },
   localStorage: { getItem: () => null, setItem: () => {} },
@@ -39,8 +39,8 @@ const financialProject = D.items.find(item => [h.C.capex, h.C.capexCommitted, h.
 assert.ok(cosmos && withAction && closed && financialProject, 'El corte debe incluir proyectos para los casos funcionales');
 
 const home = options({ type: 'home' });
-assert.equal(home.length, 5);
-assert.ok(home.some(x => x.label === 'Hitos logrados esta semana'));
+assert.equal(home.length, 4);
+assert.ok(home.some(x => x.label === 'Actualizaciones de esta semana'));
 assert.ok(home.some(x => x.page.type === 'project-groups'));
 assert.ok(!home.some(x => /PM|escribir/i.test(x.label)), 'No debe existir una ruta por PM ni redacción libre');
 assert.ok(!html.includes('id="chat-input"'), 'La caja de texto debe desaparecer');
@@ -123,4 +123,19 @@ assert.equal(avContext.read().cut, 'corte-2', 'El resumen audiovisual debe usar 
 assert.ok(html.includes('function chatGoBack()'));
 assert.ok(html.includes('function chatGoHome()'));
 assert.ok(html.includes('function chatOpenModule(answer)'));
+const fixtureProject = { id: 'fixture-1', name: 'Proyecto prueba', subitems: [{ id: 'fixture-sub' }], column_values: {} };
+const fixtureOld = { id: 'fixture-2', name: 'Proyecto sin comentario semanal', subitems: [], column_values: {} };
+context.syntheticCut = {
+  ...D, extracted_at_utc: '2026-10-01T12:00:00Z', items: [fixtureProject, fixtureOld], updates: [
+    { item_id: 'fixture-1', created_at: '2026-09-28T05:00:00Z', text_body: 'Se aprobó un hito.', creator: { name: 'PM' }, replies: [{ created_at: '2026-10-01T11:00:00Z', text_body: 'Queda pendiente una validación.', creator: { name: 'Equipo' } }] },
+    { item_id: 'fixture-sub', created_at: '2026-09-30T10:00:00Z', text_body: 'Se completó un despliegue.', creator: { name: 'PM' }, replies: [] },
+    { item_id: 'fixture-2', created_at: '2026-09-28T04:59:00Z', text_body: 'Comentario anterior a esta semana.', creator: { name: 'PM' }, replies: [] },
+  ]
+};
+vm.runInNewContext('D=syntheticCut', context);
+const weekly = h.weeklyMilestones(context.syntheticCut.items);
+assert.equal(weekly.length, 1, 'Una entrada por proyecto y solo desde el lunes de Lima');
+assert.equal(weekly[0].text, 'Queda pendiente una validación.', 'Debe prevalecer el comentario más reciente, aunque no sea un logro');
+assert.equal(weekly[0].author, 'Equipo', 'También cuentan las respuestas de la bitácora');
+assert.match(h.weeklyCard(context.syntheticCut.items), /Actualizaciones de esta semana/);
 console.log('Cosmo guiado y finanzas: rutas, campos vigentes, importes sin moneda supuesta y enlaces verificados.');

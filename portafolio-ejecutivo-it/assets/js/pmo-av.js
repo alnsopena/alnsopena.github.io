@@ -197,7 +197,7 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
     fx.aduana(c.querySelector('.pav-slot'), d, { onSelect: open });
     if (cfg.pantalla && fx.pantalla) {
       const f = document.createElement('div'); f.className = 'pav-foot';
-      f.innerHTML = '<span>Pantalla de oficina: el Puerto, los logros y los cierres en bucle para una TV, con código QR al portal.</span><a class="pav-link" target="_blank" rel="noreferrer" href="' + cfg.fullUrl + '#pantalla">Abrir pantalla de oficina</a>';
+      f.innerHTML = '<span>Pantalla de oficina: el Puerto, las actualizaciones y los cierres en bucle para una TV, con código QR al portal.</span><a class="pav-link" target="_blank" rel="noreferrer" href="' + cfg.fullUrl + '#pantalla">Abrir pantalla de oficina</a>';
       c.appendChild(f);
     }
   }

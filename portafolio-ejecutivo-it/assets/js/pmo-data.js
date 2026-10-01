@@ -22,7 +22,7 @@
   function build() {
     const G = (0, eval)('({D, C, val, num, active})');   // constantes del script principal del portal
     const { D, C, val, num, active } = G;
-    const now = new Date(D.extracted_at_utc), year = now.getFullYear(), weekStart = new Date(now.getTime() - 7 * 86400000);
+    const now = new Date(D.extracted_at_utc), year = now.getFullYear(), weekStart = call('weekStartLima', D.extracted_at_utc) || new Date(now.getTime() - 7 * 86400000);
     const isBlock = r => r.startsWith('Bloqueo:');
     const projects = D.items.map(i => {
       const reasons = active(i) ? (call('attentionReasons', i) || []) : [];
@@ -78,7 +78,7 @@
     })).sort((a, b) => ({ block: 0, late: 1, risk: 2 }[a.level] ?? 3) - ({ block: 0, late: 1, risk: 2 }[b.level] ?? 3));
     const upcoming = act.filter(p => p.plan).sort((a, b) => a.plan.localeCompare(b.plan)).slice(0, 5)
       .map(p => ({ projectId: p.id, project: p.name, pm: p.pmFirst, pmColor: p.pmColor, date: p.plan, dateLabel: p.planLabel, dateSpoken: dSpoken(p.plan) }));
-    const milestones = (call('weeklyMilestones', D.items) || []).map(m => ({ projectId: String(m.project.id), project: m.project.name, text: m.text, date: m.date, dateLabel: dLabel(m.date), author: m.author, pm: firstPm(val(m.project, C.pm)) }));
+    const milestones = (call('weeklyMilestones', D.items) || []).map(m => ({ projectId: String(m.project.id), project: m.project.name, text: call('shortAnswer', m.text, 180) || m.text, date: m.date, dateLabel: dLabel(m.date), author: m.author, pm: firstPm(val(m.project, C.pm)) }));
     const closedThisWeek = projects.filter(p => p.closedAt && new Date(p.closedAt + 'T12:00:00-05:00') >= weekStart && new Date(p.closedAt + 'T12:00:00-05:00') <= now);
     // aduana: un proyecto queda "despachado" cuando no tiene pendientes críticos en monday
     const groups = {};

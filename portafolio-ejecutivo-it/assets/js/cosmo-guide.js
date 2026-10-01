@@ -10,7 +10,6 @@
   const compact = (rows, format, limit = 6) => rows.slice(0, limit).map(item => '• ' + format(item)).join('\n') + (rows.length > limit ? '\n• y ' + (rows.length - limit) + ' más en el módulo.' : '');
   const option = (label, page) => ({ label, page });
   const reply = (title, text, module, filters = {}, extra = {}) => ({ title, text, module, filters, ...extra });
-  const weeksAgo = new Date(new Date(D.extracted_at_utc).getTime() - 7 * 86400000);
   const projectLink = item => ({ module: 'portafolio', filters: { search: item.name } });
   const statusOptions = [
     ['En Proceso', 'En proceso'],
@@ -24,7 +23,6 @@
   function projectTopics(item) {
     const topics = [option('Estado y avance', { type: 'answer', topic: 'project-status', id: item.id })];
     if (h.projectUpdateEntries(item).length) topics.push(option('Última actualización', { type: 'answer', topic: 'project-update', id: item.id }));
-    if (h.weeklyMilestones([item]).length) topics.push(option('Hitos de la semana', { type: 'answer', topic: 'project-hits', id: item.id }));
     if (active(item) && (val(item, 'risk') || val(item, 'action'))) topics.push(option('Riesgos y acciones', { type: 'answer', topic: 'project-risk', id: item.id }));
     if (val(item, 'action')) topics.push(option('Decisión requerida', { type: 'answer', topic: 'project-action', id: item.id }));
     if (val(item, 'start') || val(item, 'plan') || val(item, 'real')) topics.push(option('Fechas y compromisos', { type: 'answer', topic: 'project-dates', id: item.id }));
@@ -35,8 +33,7 @@
 
   function options(page) {
     if (page.type === 'home') return [
-      option('Hitos logrados esta semana', { type: 'answer', topic: 'weekly-hits' }),
-      option('Actividad reciente', { type: 'answer', topic: 'recent-activity' }),
+      option('Actualizaciones de esta semana', { type: 'answer', topic: 'weekly-hits' }),
       option('Estado del portafolio', { type: 'portfolio' }),
       option('Asuntos para decidir', { type: 'attention' }),
       option('Consultar un proyecto', { type: 'project-groups' }),
@@ -77,11 +74,11 @@
       answer = reply(item.name + ' · estado y avance', lines.join('\n'), link.module, link.filters, { source: 'Estatus, % Avance, Fase, Situación y Fin Plan' });
     } else if (page.topic === 'project-update') {
       const entry = h.projectUpdateEntries(item)[0];
-      answer = reply(item.name + ' · última actualización', 'Registro del ' + h.fmtDate(entry.date) + (entry.author ? ' · ' + entry.author : '') + '\n' + h.shortAnswer(entry.text, 410) + (new Date(entry.date) < weeksAgo ? '\nNo hay registros de este proyecto en los últimos siete días.' : ''), link.module, link.filters, { source: 'bitácora del proyecto', openProjectId: item.id });
+      answer = reply(item.name + ' · última actualización', 'Registro del ' + h.fmtDate(entry.date) + (entry.author ? ' · ' + entry.author : '') + '\n' + h.shortAnswer(entry.text, 410) + (!h.weeklyMilestones([item]).length ? '\nNo hay registros de este proyecto esta semana.' : ''), link.module, link.filters, { source: 'bitácora del proyecto', openProjectId: item.id });
     } else if (page.topic === 'project-hits') {
       const hits = h.weeklyMilestones([item]);
       const inSummary = h.weeklyMilestones(D.items).some(hit => String(hit.project.id) === String(item.id));
-      answer = reply(item.name + ' · hitos de la semana', hits.map(hit => '• ' + h.fmtDate(hit.date) + ': ' + hit.text).join('\n'), inSummary ? 'resumen' : 'portafolio', inSummary ? {} : { search: item.name }, { source: 'bitácora y cierre verificado', ...(inSummary ? { scrollTarget: '.milestone-board' } : { openProjectId: item.id }) });
+      answer = reply(item.name + ' · actualización de esta semana', hits.map(hit => '• ' + h.fmtDate(hit.date) + ': ' + h.shortAnswer(hit.text, 410)).join('\n'), inSummary ? 'resumen' : 'portafolio', inSummary ? {} : { search: item.name }, { source: 'último comentario de bitácora de la semana', ...(inSummary ? { scrollTarget: '.milestone-board' } : { openProjectId: item.id }) });
     } else if (page.topic === 'project-risk') {
       const risk = val(item, 'risk');
       const lines = ['Riesgo / bloqueo: ' + (risk || 'Sin evaluar')];
@@ -111,11 +108,11 @@
     const activeItems = D.items.filter(active), closed = D.items.filter(item => !active(item));
     if (page.topic === 'weekly-hits') {
       const hits = h.weeklyMilestones(D.items);
-      return reply('Hitos logrados esta semana', hits.length ? hits.map(hit => '• ' + h.fmtDate(hit.date) + ' · ' + hit.project.name + ': ' + h.shortAnswer(hit.text, 170)).join('\n') : 'No hay hitos con evidencia suficiente en los últimos siete días.', 'resumen', {}, { source: 'bitácora y cierres verificados; ventana móvil de siete días', scrollTarget: '.milestone-board' });
+      return reply('Actualizaciones de esta semana', hits.length ? compact(hits, hit => h.fmtDate(hit.date) + ' · ' + hit.project.name + ': ' + h.shortAnswer(hit.text, 170), 5) : 'Aún no hay comentarios de bitácora registrados esta semana.', 'resumen', {}, { source: 'último comentario de cada proyecto desde el lunes · corte publicado de monday', scrollTarget: '.milestone-board' });
     }
     if (page.topic === 'recent-activity') {
-      const entries = activeItems.map(item => ({ item, entry: h.projectUpdateEntries(item)[0] })).filter(x => x.entry && new Date(x.entry.date) >= weeksAgo).sort((a, b) => new Date(b.entry.date) - new Date(a.entry.date));
-      return reply('Actividad registrada esta semana', entries.length ? compact(entries, x => h.fmtDate(x.entry.date) + ' · ' + x.item.name + ': ' + h.shortAnswer(x.entry.text, 125), 4) : 'No hay actualizaciones de proyectos activos registradas en los últimos siete días.', 'portafolio', {}, { source: 'bitácora de proyectos activos; últimos siete días' });
+      const entries = h.weeklyMilestones(activeItems);
+      return reply('Actualizaciones de esta semana', entries.length ? compact(entries, x => h.fmtDate(x.date) + ' · ' + x.project.name + ': ' + h.shortAnswer(x.text, 125), 4) : 'Aún no hay comentarios de proyectos activos registrados esta semana.', 'resumen', {}, { source: 'último comentario de cada proyecto activo desde el lunes', scrollTarget: '.milestone-board' });
     }
     if (page.topic === 'portfolio-status') return reply('Estado del portafolio', D.items.length + ' proyectos: ' + activeItems.length + ' no cerrados (' + activeItems.filter(item => val(item, 'status') === 'En Proceso').length + ' en proceso y ' + activeItems.filter(item => val(item, 'status') === 'Planificado').length + ' planificados) y ' + closed.length + ' cerrados.', 'portafolio', {}, { source: 'Estatus de los proyectos' });
     const status = { 'portfolio-in-process': 'En Proceso', 'portfolio-planned': 'Planificado', 'portfolio-closed': 'Cerrado' }[page.topic];
