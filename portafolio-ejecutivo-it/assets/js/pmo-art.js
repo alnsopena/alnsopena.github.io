@@ -10,7 +10,7 @@
  */
 (function () {
   'use strict';
-  const cfg = Object.assign({ muelle: true, atencion: true, portafolio: true, cronograma: true, finanzas: true, cardClass: 'card pad' }, window.PMO_ART || {});
+  const cfg = Object.assign({ muelle: true, atencion: true, portafolio: true, cronograma: true, finanzas: false, cardClass: 'card pad' }, window.PMO_ART || {});
   if (cfg.off) return;
   const fx = window.cosmosFx;
   if (!fx || typeof fx.despacho !== 'function' || typeof fx.faro !== 'function' || !window.PMOData) { console.warn('[pmo-art] Falta cosmos-paper-fx 2.5 o PMOData; se omiten las escenas de módulo.'); return; }
