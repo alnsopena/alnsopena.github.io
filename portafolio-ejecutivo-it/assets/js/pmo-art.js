@@ -166,7 +166,7 @@
       '<div class="pav-fin-stage pav-scene-stage"><div class="pav-fin-crane" aria-hidden="true"><i class="mast"></i><i class="arm"></i><i class="cable"></i><i class="sack"></i></div><div class="pav-fin-jars">' +
       f.fields.map(x => '<button type="button" class="pav-fin-jar" aria-label="' + esc(x.label + ': ' + x.count + ' de ' + f.total + ' proyectos con dato') + '" title="' + esc(x.label + ': ' + x.count + ' de ' + f.total) + '">' +
         '<div class="pav-fin-glass" style="--level:' + (f.total ? Math.round(x.count / f.total * 100) : 0) + '%;--fill-color:' + x.color + '"><i class="pav-fin-fill"></i><strong>' + x.count + '<small> / ' + f.total + '</small></strong></div><span>' + esc(x.label) + '</span></button>').join('') +
-      '</div></div><div class="pav-scene-legend"><span>' + I.coins('#E3BE62', '#9C7A2E') + 'Nivel = proyectos con dato</span><span class="pav-scene-note">' + esc(h.note) + '</span></div>';
+      '</div></div>';
     slot.appendChild(box);
     box.querySelectorAll('[data-act]').forEach(button => button.addEventListener('click', () => { const action = acts[Number(button.dataset.act)]; if (action && action.onClick) action.onClick(button); }));
     const jars = [...box.querySelectorAll('.pav-fin-jar')], rows = [...document.querySelectorAll('#main .executive-table tbody tr')], num = g('num');
@@ -252,10 +252,6 @@
 .pav-scene-ghost:focus-visible{outline:3px solid #CBA785;outline-offset:2px}
 .pav-scene-ghost[aria-pressed="true"]{background:#003d53;border-color:#003d53;color:#fff}
 .pav-scene-cta{display:inline-flex;align-items:center;min-height:34px;color:#244a60;font-size:12px;font-weight:700;text-decoration-thickness:1px;text-underline-offset:3px}
-.pav-scene-legend{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin-top:14px}
-.pav-scene-legend>span:first-child{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto}
-.pav-scene-legend>span:first-child svg{display:block;width:18px;height:14px;max-width:18px;max-height:14px;flex:0 0 18px}
-.pav-scene-note{margin-left:auto;text-align:right;max-width:min(720px,65%)}
 .pav-fin-stage{position:relative;min-height:305px;padding:80px 16px 18px;background:linear-gradient(150deg,#f4efe5,#e9ddca);border:1px solid #d4c2a9}
 .pav-fin-jars{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:end;gap:14px;height:206px;position:relative;z-index:1}
 .pav-fin-jar{min-width:0;display:grid;justify-items:center;align-content:end;gap:7px;text-align:center;font:700 12px/1.2 Figtree,'Segoe UI',sans-serif;color:#17354a;border:0;background:transparent;cursor:pointer}
@@ -277,7 +273,7 @@
 @keyframes pav-fin-load{0%,100%{transform:translateY(-4px)}50%{transform:translateY(13px)}}
 @keyframes pav-fin-shimmer{to{background-position:28px 0}}
 @media(max-width:680px){.pav-fin-jars{grid-template-columns:repeat(3,minmax(0,1fr));height:auto;row-gap:18px}.pav-fin-stage{padding-top:82px}.pav-fin-glass{height:126px}}
-@media(max-width:420px){.pav-fin-jars{grid-template-columns:repeat(2,minmax(0,1fr))}.pav-fin-crane{transform:scale(.8);transform-origin:left top}.pav-scene-note{margin-left:0;max-width:none;text-align:left}}
+@media(max-width:420px){.pav-fin-jars{grid-template-columns:repeat(2,minmax(0,1fr))}.pav-fin-crane{transform:scale(.8);transform-origin:left top}}
 @media(prefers-reduced-motion:reduce){.pav-fin-crane .cable,.pav-fin-crane .sack,.pav-fin-fill:after{animation:none!important}}
 @media print{.pav-charts-classic[hidden]{display:grid!important}.pav-fin-stage{display:none}}`;
   document.head.appendChild(css);
