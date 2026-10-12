@@ -1,7 +1,7 @@
 {
-  "week_key": "2026-10-05",
-  "cut_id": "18396270726:2026-10-05T18:27:45.076Z",
-  "extracted_at_utc": "2026-10-05T18:27:45.076Z",
+  "week_key": "2026-10-12",
+  "cut_id": "18396270726:2026-10-12T15:24:17.143Z",
+  "extracted_at_utc": "2026-10-12T15:24:17.143Z",
   "items": [
     {
       "id": "11041978965",
@@ -29,8 +29,8 @@
         "numeric_mkzrc075": "35",
         "date_mkzrb4nr": "2026-12-28",
         "date_mm6d8mx": null,
-        "color_mm6zdfgs": "Sin bloqueo",
-        "text_mm7fvxjn": "29/09: No se ha firmado el contrato marco. Retraso en el inicio del proyecto fase 2"
+        "color_mm6zdfgs": "Riesgo / Alerta",
+        "text_mm7fvxjn": "07/10: Contrato CT0150 con conformidad de Legal y TI (01/10) y RRHH (06/10). Pendiente de firma y generacion de OC; el inicio del proyecto sigue desplazado."
       }
     },
     {
@@ -341,7 +341,7 @@
         "color_mkzzg1vp": "Critical ⚠️️",
         "multiple_person_mm087pe3": "Valeria Hermoza",
         "color_mm6kg2n5": "Pruebas UAT",
-        "numeric_mkzrc075": "93",
+        "numeric_mkzrc075": "95",
         "date_mkzrb4nr": "2026-09-30",
         "date_mm6d8mx": null,
         "color_mm6zdfgs": "Riesgo / Alerta",
@@ -416,7 +416,7 @@
         "color_mkzzg1vp": "Critical ⚠️️",
         "multiple_person_mm087pe3": "Walter Gonzales",
         "color_mm6kg2n5": "Propuesta",
-        "numeric_mkzrc075": "12",
+        "numeric_mkzrc075": "23",
         "date_mkzrb4nr": "2026-11-20",
         "date_mm6d8mx": null,
         "color_mm6zdfgs": "Sin bloqueo",
@@ -446,7 +446,7 @@
         "color_mkzzg1vp": "Critical ⚠️️",
         "multiple_person_mm087pe3": "Walter Gonzales",
         "color_mm6kg2n5": "Evaluación",
-        "numeric_mkzrc075": "4",
+        "numeric_mkzrc075": "0",
         "date_mkzrb4nr": "2026-12-04",
         "date_mm6d8mx": null,
         "color_mm6zdfgs": "Sin bloqueo",
