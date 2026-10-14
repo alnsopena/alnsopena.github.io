@@ -44,6 +44,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       site_ready: ${{ steps.pages_artifact.outcome }}
+      cut: ${{ steps.sync.outputs.cut }}
+      updates_digest: ${{ steps.sync.outputs.updates_digest }}
     steps:
       - name: Descargar sitio
         uses: actions/checkout@v4
@@ -55,7 +57,7 @@ jobs:
 
       - name: Probar reglas de datos y portal
         run: |
-          node --test scripts/weekly-data.test.mjs scripts/encrypt-weekly-ppt.test.mjs scripts/deliver-weekly-ppt-cloud.test.mjs scripts/publish-weekly-ppt-pull.test.mjs scripts/write-ppt-config.test.mjs tools/weekly-ppt/apps-script-pull/test-pull.mjs tools/weekly-ppt/apps-script-dispatch/test-dispatch.mjs
+          node --test scripts/monday-api-read.test.mjs scripts/verify-portfolio-published.test.mjs scripts/weekly-data.test.mjs scripts/encrypt-weekly-ppt.test.mjs scripts/deliver-weekly-ppt-cloud.test.mjs scripts/publish-weekly-ppt-pull.test.mjs scripts/write-ppt-config.test.mjs tools/weekly-ppt/apps-script-pull/test-pull.mjs tools/weekly-ppt/apps-script-dispatch/test-dispatch.mjs
           node scripts/test-cosmo.mjs
 
       - name: Verificar conexión de monday
@@ -184,3 +186,14 @@ jobs:
       - name: Publicar en GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Descargar verificación
+        uses: actions/checkout@v4
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verificar corte y comentarios en la web publicada
+        env:
+          EXPECTED_CUT: ${{ needs.build.outputs.cut }}
+          EXPECTED_UPDATES_DIGEST: ${{ needs.build.outputs.updates_digest }}
+        run: node scripts/verify-portfolio-published.mjs

@@ -2,6 +2,8 @@ import { appendFile, cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildWeeklyCut, businessWeek, getActivityPages } from './weekly-data.mjs';
+import { getAllUpdates, fetchWithRetry } from './monday-api-read.mjs';
+import { updatesDigest } from './verify-portfolio-published.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUTPUT = path.join(ROOT, '_site');
@@ -37,7 +39,7 @@ class MondayMcpClient {
   }
 
   async post(body) {
-    const response = await fetch(MCP_URL, {
+    const response = await fetchWithRetry(MCP_URL, {
       method: 'POST',
       headers: this.headers(),
       body: JSON.stringify(body),
@@ -124,30 +126,6 @@ async function getAllItems(client) {
     cursor = result.pagination.nextCursor;
   }
   throw new Error('Paginación de proyectos excedió el límite de seguridad');
-}
-
-async function getAllUpdates(client, boardId) {
-  const updates = [];
-  const limit = 100;
-  for (let page = 1; page <= 100; page += 1) {
-    const result = await client.callTool('get_updates', {
-      objectId: String(boardId),
-      objectType: 'Board',
-      includeItemUpdates: true,
-      includeReplies: true,
-      includeAssets: true,
-      limit,
-      page,
-    });
-    const current = (result.updates ?? []).map((update) => ({
-      ...update,
-      id: String(update.id),
-      item_id: update.item_id == null ? null : String(update.item_id),
-    }));
-    updates.push(...current);
-    if (current.length < limit || result.pagination?.count === 0) return updates;
-  }
-  throw new Error(`Paginación de actualizaciones ${boardId} excedió el límite de seguridad`);
 }
 
 async function fetchSnapshot(token, previous) {
@@ -370,6 +348,9 @@ if (!token) {
   const includeWeeklyActivity = process.env.GENERATE_WEEKLY_PPT === '1';
   const { snapshot, client } = await fetchSnapshot(token, previous);
   await writeFile(PORTFOLIO_OUTPUT, replaceEmbeddedSnapshot(currentHtml, snapshot), 'utf8');
+  if (process.env.GITHUB_OUTPUT) {
+    await appendFile(process.env.GITHUB_OUTPUT, `cut=${snapshot.extracted_at_utc}\nupdates_digest=${updatesDigest(snapshot)}\n`);
+  }
   await rm(PRIVATE_WEEKLY_CUT, { force: true });
   if (includeWeeklyActivity) {
     try {

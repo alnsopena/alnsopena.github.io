@@ -19,7 +19,7 @@ assert.ok(start >= 0 && end > start, 'Deben existir las funciones base del porta
 const mainEnd = html.indexOf('  </script>', end);
 assert.ok(mainEnd > end);
 new vm.Script(html.slice(start, mainEnd));
-const script = html.slice(start, end) + '\n globalThis.guideTest={C,val,num,fmtDate,fmtNum,renderFinanzas,renderAtencion,regularizationIssues,projectUpdateEntries,shortAnswer,weeklyMilestones,weeklyCard,weekStartLima,attentionReasons,closureInfo,closureLabel,closureSourceLabel,past};';
+const script = html.slice(start, end) + '\n globalThis.guideTest={C,val,num,fmtDate,fmtNum,renderFinanzas,renderAtencion,regularizationIssues,projectUpdateEntries,shortAnswer,weeklyMilestones,weeklyCard,weekStartLima,cutIsStale,attentionReasons,closureInfo,closureLabel,closureSourceLabel,past};';
 const context = {
   document: { getElementById: id => id === 'snapshot' ? { textContent: snapshot[1] } : null },
   localStorage: { getItem: () => null, setItem: () => {} },
@@ -138,4 +138,7 @@ assert.equal(weekly.length, 1, 'Una entrada por proyecto y solo desde el lunes d
 assert.equal(weekly[0].text, 'Queda pendiente una validación.', 'Debe prevalecer el comentario más reciente, aunque no sea un logro');
 assert.equal(weekly[0].author, 'Equipo', 'También cuentan las respuestas de la bitácora');
 assert.match(h.weeklyCard(context.syntheticCut.items), /Actualizaciones de esta semana/);
+assert.equal(h.cutIsStale('2026-10-14T12:00:00Z', Date.parse('2026-10-14T13:00:00Z')), false);
+assert.equal(h.cutIsStale('2026-10-13T11:47:50Z', Date.parse('2026-10-14T13:00:00Z')), true, 'Un corte antiguo no debe anunciar Datos al día');
+assert.equal(h.cutIsStale('invalid', Date.now()), true);
 console.log('Cosmo guiado y finanzas: rutas, campos vigentes, importes sin moneda supuesta y enlaces verificados.');
