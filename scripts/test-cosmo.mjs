@@ -19,7 +19,7 @@ assert.ok(start >= 0 && end > start, 'Deben existir las funciones base del porta
 const mainEnd = html.indexOf('  </script>', end);
 assert.ok(mainEnd > end);
 new vm.Script(html.slice(start, mainEnd));
-const script = html.slice(start, end) + '\n globalThis.guideTest={C,val,num,fmtDate,fmtNum,renderFinanzas,renderAtencion,regularizationIssues,projectUpdateEntries,shortAnswer,weeklyMilestones,weeklyCard,weekStartLima,cutIsStale,attentionReasons,closureInfo,closureLabel,closureSourceLabel,past};';
+const script = html.slice(start, end) + '\n globalThis.guideTest={C,val,num,fmtDate,fmtNum,go,nav,render,refreshMondayData,financeAmountChart,financeExecutionChart,renderFinanzas,renderAtencion,regularizationIssues,projectUpdateEntries,shortAnswer,weeklyMilestones,weeklyCard,weekStartLima,cutIsStale,attentionReasons,closureInfo,closureLabel,closureSourceLabel,past};';
 const context = {
   document: { getElementById: id => id === 'snapshot' ? { textContent: snapshot[1] } : null },
   localStorage: { getItem: () => null, setItem: () => {} },
@@ -99,6 +99,8 @@ assert.equal(blocks.filters.issue, 'Bloqueos');
 
 const finance = h.renderFinanzas();
 assert.match(finance, /Moneda pendiente de identificar/);
+for (const title of ['CAPEX por proyecto', 'Ejecución y compromiso CAPEX', 'OPEX anual por proyecto', 'Desviación presupuestal']) assert.ok(finance.includes(title));
+assert.doesNotMatch(finance, /Campos financieros con dato|Importes registrados por proyecto|<table/);
 assert.doesNotMatch(finance, /Beneficios proyectados|\$\s*\d|USD\s*\d/);
 assert.doesNotMatch(h.renderAtencion(), /<span>Responsable<\/span>/);
 assert.ok(D.items.every(item => h.regularizationIssues(item).every(issue => !/Beneficios proyectados|Responsable acción/.test(issue.field))));
@@ -119,6 +121,14 @@ vm.runInContext('let D={extracted_at_utc:"corte-1"};\n' + avSource.slice(avStart
 assert.equal(avContext.read().cut, 'corte-1');
 avContext.setCut('corte-2');
 assert.equal(avContext.read().cut, 'corte-2', 'El resumen audiovisual debe usar el nuevo corte después de Actualizar datos');
+const artSource = fs.readFileSync(new URL('../portafolio-ejecutivo-it/assets/js/pmo-art.js', import.meta.url), 'utf8');
+const artStart = artSource.indexOf('  const g = '), artEnd = artSource.indexOf('  const plural = ', artStart);
+assert.ok(artStart >= 0 && artEnd > artStart);
+const artContext = vm.createContext({ window: {}, PMOData: { build: () => ({ cut: vm.runInContext('D.extracted_at_utc', artContext) }) } });
+vm.runInContext('let D={extracted_at_utc:"corte-1"};\n' + artSource.slice(artStart, artEnd) + '\nglobalThis.read=getData;globalThis.setCut=x=>D={extracted_at_utc:x};', artContext);
+assert.equal(artContext.read().cut, 'corte-1');
+artContext.setCut('corte-2');
+assert.equal(artContext.read().cut, 'corte-2', 'Las escenas de Riesgos, Portafolio y Cronograma deben usar el nuevo corte');
 
 assert.ok(html.includes('function chatGoBack()'));
 assert.ok(html.includes('function chatGoHome()'));
@@ -141,4 +151,71 @@ assert.match(h.weeklyCard(context.syntheticCut.items), /Actualizaciones de esta 
 assert.equal(h.cutIsStale('2026-10-14T12:00:00Z', Date.parse('2026-10-14T13:00:00Z')), false);
 assert.equal(h.cutIsStale('2026-10-13T11:47:50Z', Date.parse('2026-10-14T13:00:00Z')), true, 'Un corte antiguo no debe anunciar Datos al día');
 assert.equal(h.cutIsStale('invalid', Date.now()), true);
-console.log('Cosmo guiado y finanzas: rutas, campos vigentes, importes sin moneda supuesta y enlaces verificados.');
+
+// Exercise the actual manual refresh, then render each module from its new cut.
+// This also checks that an open project sheet and Cosmo use the same replacement.
+const elements = new Map();
+const element = id => {
+  if (!elements.has(id)) elements.set(id, { innerHTML: '', textContent: '', hidden: false, disabled: false, dataset: {}, classList: { add() {}, remove() {} }, setAttribute() {}, focus() {}, close() { this.open = false; } });
+  return elements.get(id);
+};
+context.document = { getElementById: element, querySelector: () => element('scope') };
+context.window = { location: { href: 'https://alnsopena.github.io/portafolio-ejecutivo-it/?view=finanzas' }, dispatchEvent() {} };
+context.URL = URL;
+context.CustomEvent = class { constructor(type, options) { this.type = type; this.detail = options.detail; } };
+context.innerWidth = 390;
+context.createCosmoGuide = createGuide;
+context.chatPath = [{ type: 'home' }];
+context.cosmoGuide = null;
+context.baseSnapshot = structuredClone(D);
+const latest = structuredClone(D);
+latest.extracted_at_utc = new Date().toISOString();
+const latestConnect = latest.items.find(item => item.id === cosmos.id);
+Object.assign(latestConnect.column_values, {
+  [h.C.capex]: '999999', [h.C.capexExecuted]: '12345', [h.C.capexCommitted]: '54321',
+  [h.C.opexAnnual]: '34567', [h.C.budgetDeviation]: '9876', [h.C.progress]: '97',
+  [h.C.risk]: 'Riesgo / Alerta', [h.C.action]: 'Decisión renovada para comité',
+  [h.C.phase]: 'Ejecución', [h.C.plan]: '2099-12-31',
+});
+latest.updates.unshift({ id: 'refresh-test', item_id: cosmos.id, text_body: 'Comentario nuevo del corte actualizado.', created_at: latest.extracted_at_utc, creator: { name: 'Pierre Lozano' }, replies: [] });
+context.fetch = async url => String(url).includes('ppt-config.json') ? { ok: false } : { ok: true, text: async () => '<script type="application/json" id="snapshot">' + JSON.stringify(latest) + '</script>' };
+context.DOMParser = class { parseFromString() { return { getElementById: () => ({ textContent: JSON.stringify(latest) }) }; } };
+element('project-dialog').open = true;
+element('project-dialog').dataset.projectId = cosmos.id;
+vm.runInNewContext('D=baseSnapshot;state={...state,view:"finanzas",search:"",status:"",priority:"",pm:"",phase:"",schedule:"",issue:""}', context);
+await h.refreshMondayData();
+assert.ok(element('main').innerHTML.includes(h.fmtNum(999999)), 'The visible finance charts must use the new amount');
+assert.ok(element('dialog-content').innerHTML.includes('97%') && element('dialog-content').innerHTML.includes(h.fmtNum(999999)), 'The open project sheet must update as well');
+assert.ok(context.cosmoGuide.answer({ type: 'answer', topic: 'project-finances', id: cosmos.id }).text.includes(h.fmtNum(999999)), 'Cosmo must answer from the new cut');
+assert.equal(h.projectUpdateEntries(latestConnect)[0].text, 'Comentario nuevo del corte actualizado.');
+assert.equal(element('refresh-data-button').disabled, false);
+assert.equal(element('refresh-data-button').dataset.state, 'success');
+assert.equal(element('secondary-nav').hidden, true);
+assert.equal(element('ppt-mobile-entry').hidden, false);
+assert.equal(element('pmo-mobile-entry').hidden, true);
+assert.ok(element('nav').innerHTML.includes('PPT semanal'));
+
+const dataSource = fs.readFileSync(new URL('../portafolio-ejecutivo-it/assets/js/pmo-data.js', import.meta.url), 'utf8');
+vm.runInNewContext(dataSource, context);
+const audiovisual = context.window.PMOData.build();
+assert.equal(audiovisual.cut, latest.extracted_at_utc);
+assert.equal(audiovisual.projects.find(p => p.id === cosmos.id).financials.capex, 999999, 'Mi muelle and the visual adapters must receive the new project values');
+assert.ok(audiovisual.milestones.some(m => m.projectId === cosmos.id && m.text.includes('Comentario nuevo')));
+
+h.go('resumen');
+assert.ok(element('main').innerHTML.includes('Comentario nuevo del corte actualizado.'));
+h.go('atencion');
+assert.ok(element('main').innerHTML.includes('Decisión renovada para comité'));
+h.go('portafolio');
+assert.ok(element('port-body').innerHTML.includes('97%'));
+h.go('cronograma');
+assert.ok(element('main').innerHTML.includes(h.fmtDate('2099-12-31')));
+h.go('ppt');
+assert.ok(element('main').innerHTML.includes('PPT semanal'), 'PPT must be accessible without unlocking regularization');
+h.go('regularizacion');
+assert.ok(element('main').innerHTML.includes('PPT semanal'), 'Regularization must remain locked');
+
+const emptyExecution = h.financeExecutionChart([{ id: 'zero', name: 'No baseline', column_values: { [h.C.capex]: '0', [h.C.capexExecuted]: '0' } }]);
+assert.doesNotMatch(emptyExecution, /NaN|Infinity/);
+assert.match(emptyExecution, /Sin CAPEX y ejecución comparables/);
+console.log('Portal: Finanzas visuales, PPT visible y actualización integral de módulos, ficha, Cosmo y datos audiovisuales verificados.');

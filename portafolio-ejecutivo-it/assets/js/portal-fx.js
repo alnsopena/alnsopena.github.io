@@ -131,6 +131,7 @@
     if (!$('#more-sheet').hidden && chatOpen()) window.toggleChat(false);
   });
   document.addEventListener('fullscreenchange', updateVisibility);
+  window.addEventListener('portfolio:data-updated', () => emit('status', summary()));
   window.addEventListener('beforeprint', () => fx.setVisible(false));
   window.addEventListener('afterprint', updateVisibility);
 
