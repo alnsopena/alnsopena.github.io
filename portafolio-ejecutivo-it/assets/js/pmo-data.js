@@ -35,7 +35,7 @@
         sponsor: val(i, C.sponsor) || '', sponsorName: personFromEmail(val(i, C.sponsor)), priority: val(i, C.priority) || '',
         progress: num(i, C.progress), plan, planLabel: dLabel(plan),
         schedule: active(i) ? call('scheduleBucket', i) : null, noFinPlan: active(i) && !plan,
-        financials: { capex: num(i, C.capex), capexCommitted: num(i, C.capexCommitted), capexExecuted: num(i, C.capexExecuted), opexAnnual: num(i, C.opexAnnual), budgetDeviation: num(i, C.budgetDeviation) },
+         financials: (() => { const f = call('financeInfo', i); return f ? { capex: f.capex, capexCommitted: f.capexCommitted, capexExecuted: f.capexExecuted, capexRegistered: f.registered, opexAnnual: f.opexAnnual, budgetDeviation: f.excess, currency: f.currency, taxBasis: f.taxBasis } : { capex: num(i, C.capex), capexCommitted: num(i, C.capexCommitted), capexExecuted: num(i, C.capexExecuted), opexAnnual: num(i, C.opexAnnual), budgetDeviation: num(i, C.budgetDeviation) }; })(),
         risk: reasons.some(isBlock) ? 'block' : reasons.some(r => r.startsWith('Riesgo:')) ? 'risk' : reasons.length ? 'late' : null,
         reasons, action: val(i, C.action) || '',
         provider: val(i, C.provider) || '', type: val(i, C.type) || '', situation: C.situation ? (val(i, C.situation) || '') : '',

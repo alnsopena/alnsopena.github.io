@@ -124,14 +124,14 @@
   function finCoverage(items) {
     const C = g('C'), num = g('num'), hasColumn = g('hasColumn');
     const fields = [
-      ['CAPEX', C.capex, '#CBA785'], ['CAPEX comprometido', C.capexCommitted, '#8FAFBF'],
-      ['CAPEX ejecutado', C.capexExecuted, '#BDA558'], ['OPEX anual', C.opexAnnual, '#8BA0AA'],
-      ['Desviación presup.', C.budgetDeviation, '#9A7B68']
+      ['Presupuesto CAPEX', C.capex, '#CBA785'], ['CAPEX pendiente de pago', C.capexCommitted, '#8FAFBF'],
+      ['CAPEX pagado', C.capexExecuted, '#BDA558'], ['OPEX anual previsto', C.opexAnnual, '#8BA0AA'],
+      ['Exceso CAPEX', C.budgetDeviation, '#9A7B68']
     ].filter(([, id]) => id && hasColumn(id)).map(([label, id, color]) => ({ label, id, count: items.filter(i => num(i, id) !== null).length, color }));
     return { fields, total: items.length };
   }
   function headFinanzas(f) {
-    const capex = f.fields.find(x => x.label === 'CAPEX'), d = getData();
+    const capex = f.fields.find(x => x.label === 'Presupuesto CAPEX'), d = getData();
     return {
       title: 'Los frascos del registro financiero',
       sub: 'Cada frasco muestra cuántos proyectos tienen el campo completo en monday. Los importes se consultan por proyecto.',

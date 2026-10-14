@@ -95,10 +95,13 @@
     } else if (page.topic === 'project-closure') {
       answer = reply(item.name + ' · cierre', 'Estatus: ' + status + '\nCierre efectivo: ' + h.closureLabel(item) + '\nEvidencia: ' + h.closureSourceLabel(item), 'portafolio', { search: item.name, status: 'Cerrado' }, { source: 'Estatus, Fin Real y bitácora', offerEmail: !h.closureInfo(item), project: item, openProjectId: item.id });
     } else if (page.topic === 'project-finances') {
-      const fields = [['CAPEX', 'capex'], ['CAPEX Comprometido', 'capexCommitted'], ['CAPEX Ejecutado', 'capexExecuted'], ['OPEX Anual', 'opexAnnual'], ['Desviación Presup.', 'budgetDeviation']]
-        .filter(([, key]) => D.board.columns.some(column => column.id === C[key]));
-      const values = fields.map(([label, key]) => label + ': ' + (num(item, key) === null ? 'Sin dato' : h.fmtNum(num(item, key)))).join('\n');
-      answer = reply(item.name + ' · finanzas', (values || 'Sin campos financieros vigentes.') + '\nMoneda no identificada en monday.', 'finanzas', { search: item.name }, { source: 'campos financieros vigentes en monday' });
+      const f = h.financeInfo(item);
+      const values = [
+        ['Presupuesto CAPEX original', f.capex], ['CAPEX pagado', f.capexExecuted],
+        ['CAPEX pendiente de pago', f.capexCommitted], ['CAPEX registrado', f.registered],
+        ['Exceso CAPEX registrado', f.excess], ['OPEX anual previsto', f.opexAnnual],
+      ].map(([label, amount]) => label + ': ' + h.financeMoney(item, amount)).join('\n');
+      answer = reply(item.name + ' · finanzas', values + '\n' + (f.currency ? 'Moneda: ' + f.currency : 'Moneda por confirmar') + '\n' + (f.taxBasis || 'IGV por confirmar'), 'finanzas', { search: item.name }, { source: 'campos financieros de monday; CAPEX registrado = pagado + pendiente, sin OPEX' });
     }
     return answer;
   }

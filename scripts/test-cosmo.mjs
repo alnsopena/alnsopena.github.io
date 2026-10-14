@@ -9,6 +9,7 @@ const loadFactory = name => {
 };
 const createGuide = loadFactory('cosmo-guide.js');
 const createKnowledge = loadFactory('cosmo-knowledge.js');
+const financeModel = loadFactory('finance-model.js');
 const html = fs.readFileSync(new URL('../portafolio-ejecutivo-it/index.html', import.meta.url), 'utf8');
 const snapshot = html.match(/<script type="application\/json" id="snapshot">([\s\S]*?)<\/script>/);
 assert.ok(snapshot, 'Debe existir un corte de monday');
@@ -19,12 +20,13 @@ assert.ok(start >= 0 && end > start, 'Deben existir las funciones base del porta
 const mainEnd = html.indexOf('  </script>', end);
 assert.ok(mainEnd > end);
 new vm.Script(html.slice(start, mainEnd));
-const script = html.slice(start, end) + '\n globalThis.guideTest={C,val,num,fmtDate,fmtNum,go,nav,render,refreshMondayData,financeAmountChart,financeExecutionChart,renderFinanzas,renderAtencion,regularizationIssues,projectUpdateEntries,shortAnswer,weeklyMilestones,weeklyCard,weekStartLima,cutIsStale,attentionReasons,closureInfo,closureLabel,closureSourceLabel,past};';
+const script = html.slice(start, end) + '\n globalThis.guideTest={C,val,num,fmtDate,fmtNum,financeInfo,financeMoney,go,nav,render,refreshMondayData,financeAmountChart,financeExecutionChart,financeExcessChart,renderFinanzas,renderAtencion,regularizationIssues,projectUpdateEntries,shortAnswer,weeklyMilestones,weeklyCard,weekStartLima,cutIsStale,attentionReasons,closureInfo,closureLabel,closureSourceLabel,past};';
 const context = {
   document: { getElementById: id => id === 'snapshot' ? { textContent: snapshot[1] } : null },
   localStorage: { getItem: () => null, setItem: () => {} },
   location: { search: '', pathname: '/', hash: '' },
   URLSearchParams, Intl, Date, Set, Map, Number, String, Object, Array,
+  PMOFinance: financeModel,
 };
 vm.runInNewContext(script, context);
 const h = context.guideTest;
@@ -98,18 +100,18 @@ assert.equal(blocks.module, 'atencion');
 assert.equal(blocks.filters.issue, 'Bloqueos');
 
 const finance = h.renderFinanzas();
-assert.match(finance, /Moneda pendiente de identificar/);
-for (const title of ['CAPEX por proyecto', 'Ejecución y compromiso CAPEX', 'OPEX anual por proyecto', 'Desviación presupuestal']) assert.ok(finance.includes(title));
+assert.match(finance, /Moneda por confirmar/);
+for (const title of ['Presupuesto CAPEX original', 'CAPEX registrado', 'OPEX anual previsto', 'Exceso CAPEX registrado']) assert.ok(finance.includes(title));
 assert.doesNotMatch(finance, /Campos financieros con dato|Importes registrados por proyecto|<table/);
 assert.doesNotMatch(finance, /Beneficios proyectados|\$\s*\d|USD\s*\d/);
 assert.doesNotMatch(h.renderAtencion(), /<span>Responsable<\/span>/);
 assert.ok(D.items.every(item => h.regularizationIssues(item).every(issue => !/Beneficios proyectados|Responsable acción/.test(issue.field))));
 const guidedFinance = guide.answer({ type: 'answer', topic: 'project-finances', id: financialProject.id });
-assert.match(guidedFinance.text, /Moneda no identificada/);
+assert.match(guidedFinance.text, /Moneda por confirmar/);
 assert.doesNotMatch(guidedFinance.text, /Beneficios proyectados|\$\s*\d|USD\s*\d/);
 const knowledge = createKnowledge(D, h.C, h);
 const freeFinance = knowledge.projectAnswer(financialProject, 'cuanto cuesta');
-assert.match(freeFinance.text, /Moneda no identificada/);
+assert.match(freeFinance.text, /Moneda por confirmar/);
 assert.doesNotMatch(freeFinance.text, /Beneficios proyectados|\$\s*\d|USD\s*\d/);
 assert.match(knowledge.projectAnswer(financialProject, 'beneficios').text, /no ofrece una cifra verificable/);
 
@@ -152,6 +154,36 @@ assert.equal(h.cutIsStale('2026-10-14T12:00:00Z', Date.parse('2026-10-14T13:00:0
 assert.equal(h.cutIsStale('2026-10-13T11:47:50Z', Date.parse('2026-10-14T13:00:00Z')), true, 'Un corte antiguo no debe anunciar Datos al día');
 assert.equal(h.cutIsStale('invalid', Date.now()), true);
 
+// The same rules must work across currencies, confirmed zeros and missing amounts.
+context.originalFinanceSnapshot = structuredClone(D);
+context.mixedFinanceSnapshot = structuredClone(D);
+for (const [id, title] of [[h.C.currency, 'Moneda'], [h.C.taxBasis, 'IGV en importes']]) {
+  context.mixedFinanceSnapshot.board.columns.push({ id, title, type: 'status' });
+}
+const financialFixture = (id, name, values) => ({ id, name, column_values: {
+  [h.C.status]: 'En Proceso', [h.C.pm]: 'Alonso Pena', ...values,
+} });
+context.mixedFinanceSnapshot.items = [
+  financialFixture('usd', 'Proyecto USD', { [h.C.capex]: '500', [h.C.capexExecuted]: '400', [h.C.capexCommitted]: '200', [h.C.opexAnnual]: '0', [h.C.currency]: 'USD', [h.C.taxBasis]: 'Sin IGV' }),
+  financialFixture('pen', 'Proyecto PEN', { [h.C.capex]: '500', [h.C.capexExecuted]: '100', [h.C.capexCommitted]: '200', [h.C.opexAnnual]: '0', [h.C.currency]: 'PEN', [h.C.taxBasis]: 'Con IGV' }),
+  financialFixture('zero', 'Cero confirmado', { [h.C.capex]: '500', [h.C.capexExecuted]: '0', [h.C.capexCommitted]: '0', [h.C.opexAnnual]: '0' }),
+  financialFixture('missing', 'Pendiente de completar', { [h.C.capex]: '200', [h.C.currency]: 'USD' }),
+];
+vm.runInNewContext('D=mixedFinanceSnapshot;state.financeCurrency="";', context);
+const mixed = h.renderFinanzas();
+assert.match(mixed, /US\$ 500/);
+assert.match(mixed, /S\/ 500/);
+assert.doesNotMatch(mixed, /US\$ 1,000|S\/ 1,000/, 'Never aggregate USD and PEN');
+assert.equal(h.financeInfo(context.mixedFinanceSnapshot.items[2]).registered, 0);
+assert.equal(h.financeInfo(context.mixedFinanceSnapshot.items[3]).registered, null);
+assert.ok(h.regularizationIssues(context.mixedFinanceSnapshot.items[2]).some(issue => /moneda/.test(issue.field)));
+assert.ok(h.regularizationIssues(context.mixedFinanceSnapshot.items[2]).some(issue => /IGV/.test(issue.field)));
+assert.ok(!h.regularizationIssues(context.mixedFinanceSnapshot.items[2]).some(issue => /CAPEX pagado|CAPEX pendiente/.test(issue.field)), 'Confirmed zero is not missing');
+vm.runInNewContext('state.financeCurrency="PEN";', context);
+assert.match(h.renderFinanzas(), /S\/ 500/);
+assert.doesNotMatch(h.renderFinanzas(), /US\$/);
+vm.runInNewContext('D=originalFinanceSnapshot;state.financeCurrency="";', context);
+
 // Exercise the actual manual refresh, then render each module from its new cut.
 // This also checks that an open project sheet and Cosmo use the same replacement.
 const elements = new Map();
@@ -174,6 +206,7 @@ const latestConnect = latest.items.find(item => item.id === cosmos.id);
 Object.assign(latestConnect.column_values, {
   [h.C.capex]: '999999', [h.C.capexExecuted]: '12345', [h.C.capexCommitted]: '54321',
   [h.C.opexAnnual]: '34567', [h.C.budgetDeviation]: '9876', [h.C.progress]: '97',
+  [h.C.currency]: 'USD', [h.C.taxBasis]: 'Sin IGV',
   [h.C.risk]: 'Riesgo / Alerta', [h.C.action]: 'Decisión renovada para comité',
   [h.C.phase]: 'Ejecución', [h.C.plan]: '2099-12-31',
 });
@@ -185,6 +218,8 @@ element('project-dialog').dataset.projectId = cosmos.id;
 vm.runInNewContext('D=baseSnapshot;state={...state,view:"finanzas",search:"",status:"",priority:"",pm:"",phase:"",schedule:"",issue:""}', context);
 await h.refreshMondayData();
 assert.ok(element('main').innerHTML.includes(h.fmtNum(999999)), 'The visible finance charts must use the new amount');
+assert.ok(element('main').innerHTML.includes('US$ ' + h.fmtNum(66666)), 'Registered CAPEX is recomputed from the new paid and outstanding inputs');
+assert.doesNotMatch(element('main').innerHTML, /9,876/, 'The view must not trust an inconsistent formula or historical manual deviation');
 assert.ok(element('dialog-content').innerHTML.includes('97%') && element('dialog-content').innerHTML.includes(h.fmtNum(999999)), 'The open project sheet must update as well');
 assert.ok(context.cosmoGuide.answer({ type: 'answer', topic: 'project-finances', id: cosmos.id }).text.includes(h.fmtNum(999999)), 'Cosmo must answer from the new cut');
 assert.equal(h.projectUpdateEntries(latestConnect)[0].text, 'Comentario nuevo del corte actualizado.');
@@ -217,5 +252,5 @@ assert.ok(element('main').innerHTML.includes('PPT semanal'), 'Regularization mus
 
 const emptyExecution = h.financeExecutionChart([{ id: 'zero', name: 'No baseline', column_values: { [h.C.capex]: '0', [h.C.capexExecuted]: '0' } }]);
 assert.doesNotMatch(emptyExecution, /NaN|Infinity/);
-assert.match(emptyExecution, /Sin CAPEX y ejecución comparables/);
-console.log('Portal: Finanzas visuales, PPT visible y actualización integral de módulos, ficha, Cosmo y datos audiovisuales verificados.');
+assert.match(emptyExecution, /Falta confirmar CAPEX pagado o pendiente/);
+console.log('Portal: Finanzas estandarizadas, monedas separadas, PPT visible y actualización integral de módulos, ficha, Cosmo y datos audiovisuales verificados.');

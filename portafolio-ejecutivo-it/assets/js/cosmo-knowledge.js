@@ -110,11 +110,11 @@
     }
     if (has(q, /\b(presupuesto|costo|coste|cuesta|finanzas?|capex|opex|beneficios?|inversion)\b/)) {
       if (has(q, /\bbeneficios?\b/)) return result('El tablero actual no ofrece una cifra verificable de beneficios para ' + project.name + '.', project, true);
-      const fields = [['CAPEX', 'capex'], ['CAPEX Comprometido', 'capexCommitted'], ['CAPEX Ejecutado', 'capexExecuted'], ['OPEX Anual', 'opexAnnual'], ['Desviación Presup.', 'budgetDeviation']]
-        .filter(([, key]) => D.board.columns.some(column => column.id === C[key]));
-      if (fields.every(([, key]) => number(project, key) === null)) return result('Los campos financieros vigentes de ' + project.name + ' no tienen datos en este corte.', project, true);
-      const requested = /capex ejecutado/.test(q) ? fields.filter(([, key]) => key === 'capexExecuted') : /capex comprometido/.test(q) ? fields.filter(([, key]) => key === 'capexCommitted') : /\bopex\b/.test(q) ? fields.filter(([, key]) => key === 'opexAnnual') : /desviacion presup/.test(q) ? fields.filter(([, key]) => key === 'budgetDeviation') : /\bcapex\b/.test(q) ? fields.filter(([, key]) => ['capex', 'capexCommitted', 'capexExecuted'].includes(key)) : fields;
-      return result(project.name + (has(q, /\b(presupuesto|costo|coste|cuesta)\b/) ? '\nMonday muestra conceptos financieros por separado; no registra un total de presupuesto.' : '') + '\n' + requested.map(([label, key]) => label + ': ' + money(project, key)).join('\n') + '\nMoneda no identificada en monday; estos importes no se suman.', project, requested.some(([, key]) => number(project, key) === null));
+      const f = h.financeInfo(project);
+      const fields = [['Presupuesto CAPEX original', 'capex'], ['CAPEX pagado', 'capexExecuted'], ['CAPEX pendiente de pago', 'capexCommitted'], ['CAPEX registrado', 'registered'], ['Exceso CAPEX registrado', 'excess'], ['OPEX anual previsto', 'opexAnnual']];
+      if (['capex', 'capexCommitted', 'capexExecuted', 'opexAnnual'].every(key => f[key] === null)) return result('Los campos financieros de ' + project.name + ' no tienen datos en este corte.', project, true);
+      const requested = /capex (ejecutado|pagado)/.test(q) ? fields.filter(([, key]) => key === 'capexExecuted') : /capex (comprometido|pendiente)/.test(q) ? fields.filter(([, key]) => key === 'capexCommitted') : /\bopex\b/.test(q) ? fields.filter(([, key]) => key === 'opexAnnual') : /desviacion|exceso/.test(q) ? fields.filter(([, key]) => key === 'excess') : fields;
+      return result(project.name + '\n' + requested.map(([label, key]) => label + ': ' + h.financeMoney(project, f[key])).join('\n') + '\n' + (f.currency ? 'Moneda: ' + f.currency : 'Moneda por confirmar') + '\n' + (f.taxBasis || 'IGV por confirmar'), project, requested.some(([, key]) => f[key] === null));
     }
     if (has(q, /\b(fin real|cierre efectivo|fecha de cierre|cuando cerro|cuando se cerro|despleg|produccion|ejecutado)\b/)) {
       if (value(project, 'status') !== 'Cerrado') return result(project.name + ' figura como ' + (value(project, 'status') || 'sin estado') + ' en monday; no hay un cierre efectivo confirmado.', project);
