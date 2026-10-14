@@ -13,6 +13,8 @@ Todos los proyectos usan los mismos campos del tablero de portafolio. La vista *
 
 Cada semana el PM revisa principalmente pagado y pendiente. Al pagar una factura, aumenta pagado y reduce pendiente por el mismo importe. Ambos campos deben contener el dato confirmado; un vacío no equivale a cero.
 
+Cuando los cuatro importes están confirmados en cero, no se exige regularizar moneda o IGV para un proyecto sin gastos. Si aparece un importe distinto de cero, esas confirmaciones pasan a ser necesarias.
+
 **CAPEX registrado** se calcula como pagado + pendiente. **Exceso CAPEX** es el importe positivo por encima del presupuesto original. Estos campos no requieren carga manual. El presupuesto aún no registrado no se presenta como ahorro, y el CAPEX registrado no es una previsión del costo final.
 
 La desviación manual anterior se conserva como referencia y queda oculta en esta vista. Sus diferencias se muestran en Pendiente de regularizar para revisar el sustento, sin sobrescribir importes.

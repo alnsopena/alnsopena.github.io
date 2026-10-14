@@ -704,8 +704,9 @@
       .forEach(([label,id])=>{if(missing(id))add('Finanzas',label)});
     if(hasFinancialData(i)){
       const f=financeInfo(i);
-      if(hasColumn(C.currency)&&!f.currency)add('Finanzas','Confirmar moneda (USD o PEN)');
-      if(hasColumn(C.taxBasis)&&!f.taxBasis)add('Finanzas','Confirmar IGV en importes');
+      const hasAmounts=[f.capex,f.capexExecuted,f.capexCommitted,f.opexAnnual].some(amount=>amount!==null&&amount!==0);
+      if(hasAmounts&&hasColumn(C.currency)&&!f.currency)add('Finanzas','Confirmar moneda (USD o PEN)');
+      if(hasAmounts&&hasColumn(C.taxBasis)&&!f.taxBasis)add('Finanzas','Confirmar IGV en importes');
       f.invalidFields.forEach(key=>add('Finanzas','Corregir importe negativo: '+({capex:'presupuesto',capexExecuted:'pagado',capexCommitted:'pendiente',opexAnnual:'OPEX'}[key]),true));
       if(f.legacyDeviation!==null&&f.excess!==null&&Math.abs(f.legacyDeviation-f.excess)>.01)add('Finanzas','Revisar desviación anterior');
     }

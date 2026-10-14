@@ -179,6 +179,8 @@ assert.equal(h.financeInfo(context.mixedFinanceSnapshot.items[3]).registered, nu
 assert.ok(h.regularizationIssues(context.mixedFinanceSnapshot.items[2]).some(issue => /moneda/.test(issue.field)));
 assert.ok(h.regularizationIssues(context.mixedFinanceSnapshot.items[2]).some(issue => /IGV/.test(issue.field)));
 assert.ok(!h.regularizationIssues(context.mixedFinanceSnapshot.items[2]).some(issue => /CAPEX pagado|CAPEX pendiente/.test(issue.field)), 'Confirmed zero is not missing');
+const noExpense = financialFixture('internal', 'Sin gasto confirmado', { [h.C.capex]: '0', [h.C.capexExecuted]: '0', [h.C.capexCommitted]: '0', [h.C.opexAnnual]: '0' });
+assert.ok(!h.regularizationIssues(noExpense).some(issue => issue.category === 'Finanzas'), 'All confirmed zeros must not require currency or tax work with no amounts');
 vm.runInNewContext('state.financeCurrency="PEN";', context);
 assert.match(h.renderFinanzas(), /S\/ 500/);
 assert.doesNotMatch(h.renderFinanzas(), /US\$/);
