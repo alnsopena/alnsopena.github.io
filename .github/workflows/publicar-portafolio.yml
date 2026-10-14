@@ -44,6 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       site_ready: ${{ steps.pages_artifact.outcome }}
+      pages_artifact_name: github-pages-${{ github.run_attempt }}
       cut: ${{ steps.sync.outputs.cut }}
       updates_digest: ${{ steps.sync.outputs.updates_digest }}
     steps:
@@ -173,6 +174,7 @@ jobs:
         if: always() && steps.sync.outcome == 'success'
         uses: actions/upload-pages-artifact@v4
         with:
+          name: github-pages-${{ github.run_attempt }}
           path: _site
 
   deploy:
@@ -186,6 +188,8 @@ jobs:
       - name: Publicar en GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: ${{ needs.build.outputs.pages_artifact_name }}
       - name: Descargar verificación
         uses: actions/checkout@v4
       - name: Preparar Node.js
