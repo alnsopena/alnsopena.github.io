@@ -64,10 +64,7 @@
   function viewItems(view) {
     const D = g('D'), st = g('state') || {}, nq = g('normalizeQuery') || (s => String(s || '').toLowerCase()), acf = g('applyCommonFilters'), ar = g('attentionReasons'), sb = g('scheduleBucket'), act = g('active');
     const search = i => !st.search || nq(i.name).includes(nq(st.search));
-    if (view === 'atencion') {
-      const issue = i => !st.issue || (st.issue === 'Bloqueos' && ar(i).some(x => x.startsWith('Bloqueo:'))) || (st.issue === 'Riesgos' && ar(i).some(x => x.startsWith('Riesgo:'))) || (st.issue === 'Plazos vencidos' && ar(i).includes('Fin Plan vencido'));
-      return acf(D.items.filter(i => ar(i).length), { priority: true, pm: true }).filter(search).filter(issue);
-    }
+    if (view === 'atencion') return g('filteredAttentionItems')();
     if (view === 'portafolio') return g('filtered')();
     if (view === 'cronograma') return acf(D.items.filter(act), { pm: true, phase: true }).filter(search).filter(i => !st.schedule || sb(i) === st.schedule);
     if (view === 'finanzas') return acf(D.items.filter(g('hasFinancialData')), { status: true, priority: true, pm: true }).filter(search);
@@ -237,7 +234,7 @@
     const o = { cardClass: cfg.cardClass, onSelect: open };
     const mark = h => { if (filteredView) { h.pills = [{ text: 'Vista filtrada' }].concat(h.pills || []); if (h.empty && !items.length) h.msg = h.empty; } const t = toggleBtn(view, pl.charts); if (t) h.actions = [t]; return h; };
     let h;
-    if (view === 'atencion') { const ps = toProjects(items); h = mark(headAtencion(ps, items)); const dossiers = ps.map(p => Object.assign({}, p, { actionOwner: p.action || '' })); current = fx.despacho(pl.slot, { items: dossiers }, Object.assign(o, { head: h })); }
+    if (view === 'atencion') { const ps = toProjects(items); h = mark(headAtencion(ps, items)); const dossiers = ps.map(p => Object.assign({}, p, { actionOwner: [p.action, p.mitigationOwner ? 'Responsable: ' + p.mitigationOwner : 'Sin responsable'].filter(Boolean).join(' · ') })); current = fx.despacho(pl.slot, { items: dossiers }, Object.assign(o, { head: h })); }
     else if (view === 'portafolio') { const ps = toProjects(items); h = mark(headPortafolio(ps)); const phases = g('orderedPhases') ? g('orderedPhases')({}).map(r => r[0]) : getData().phases;
       current = fx.carta(pl.slot, { items: ps, phases }, Object.assign(o, { head: h, onPM: grp => { const cnt = {}; grp.list.forEach(p => cnt[p.pm] = (cnt[p.pm] || 0) + 1); const pm = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0]; if (pm && typeof window.setFilter === 'function') window.setFilter('pm', pm); } })); }
     else if (view === 'cronograma') { const ps = toProjects(items), today = todayLima(); h = mark(headCronograma(ps, today)); current = fx.arribos(pl.slot, { items: ps, today }, Object.assign(o, { head: h })); }

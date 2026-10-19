@@ -20,7 +20,7 @@ assert.ok(start >= 0 && end > start, 'Deben existir las funciones base del porta
 const mainEnd = html.indexOf('  </script>', end);
 assert.ok(mainEnd > end);
 new vm.Script(html.slice(start, mainEnd));
-const script = html.slice(start, end) + '\n globalThis.guideTest={C,val,num,progressInfo,progressPercent,progressDelta,progressSummary,portTable,renderCronograma,fmtDate,fmtNum,financeInfo,financeMoney,go,nav,render,refreshMondayData,financeAmountChart,financeExecutionChart,financeExcessChart,renderFinanzas,renderAtencion,regularizationIssues,projectUpdateEntries,shortAnswer,weeklyMilestones,weeklyCard,weekStartLima,cutIsStale,attentionReasons,closureInfo,closureLabel,closureSourceLabel,past};';
+const script = html.slice(start, end) + '\n globalThis.guideTest={C,val,num,riskInfo,riskDetails,hasReportedRisk,filteredAttentionItems,clearFilters,goFiltered,progressInfo,progressPercent,progressDelta,progressSummary,portTable,renderCronograma,fmtDate,fmtNum,financeInfo,financeMoney,go,nav,render,refreshMondayData,financeAmountChart,financeExecutionChart,financeExcessChart,renderFinanzas,renderAtencion,regularizationIssues,projectUpdateEntries,shortAnswer,weeklyMilestones,weeklyCard,weekStartLima,cutIsStale,attentionReasons,closureInfo,closureLabel,closureSourceLabel,past};';
 const context = {
   document: { getElementById: id => id === 'snapshot' ? { textContent: snapshot[1] } : null },
   localStorage: { getItem: () => null, setItem: () => {} },
@@ -280,4 +280,69 @@ assert.ok(element('main').innerHTML.includes('PPT semanal'), 'Regularization mus
 const emptyExecution = h.financeExecutionChart([{ id: 'zero', name: 'No baseline', column_values: { [h.C.capex]: '0', [h.C.capexExecuted]: '0' } }]);
 assert.doesNotMatch(emptyExecution, /NaN|Infinity/);
 assert.match(emptyExecution, /Falta confirmar CAPEX pagado o pendiente/);
+// Risk workflow: do not infer mitigation ownership from the PM, or require it for closed/no-risk projects.
+context.riskCut = structuredClone(latest);
+for (const [id,title,type] of [[h.C.riskType,'Tipo de riesgo','status'],[h.C.mitigationOwner,'Responsable de mitigación','people']]) {
+  context.riskCut.board.columns.push({id,title,type});
+}
+const riskFixture=(id,values)=>({id,name:'Riesgo '+id,updated_at:latest.extracted_at_utc,subitems:[],column_values:{[h.C.status]:'En Proceso',[h.C.risk]:'Riesgo / Alerta',[h.C.pm]:'Alonso Pena',[h.C.plan]:'2099-12-31',...values}});
+context.riskCut.items=[
+  riskFixture('operativo',{[h.C.riskType]:'Operativo',[h.C.mitigationOwner]:'Juan Pablo Arbulú',[h.C.situation]:'Servicio interrumpido',[h.C.action]:'Restaurar el servicio'}),
+  riskFixture('gestion',{[h.C.riskType]:'Gestión',[h.C.mitigationOwner]:'Valeria Hermoza',[h.C.risk]:'Bloqueo crítico',[h.C.action]:'Obtener aprobación'}),
+  riskFixture('pendiente',{}),
+  riskFixture('plazo',{[h.C.risk]:'Sin bloqueo',[h.C.plan]:'2020-01-01'}),
+  riskFixture('cerrado',{[h.C.status]:'Cerrado'}),
+];
+vm.runInNewContext('D=riskCut;state={...state,view:"atencion",riskType:"",mitigationOwner:"",pm:"",priority:"",search:"",issue:""}',context);
+const riskIds=()=>Array.from(h.filteredAttentionItems(),i=>i.id);
+assert.equal(riskIds().length,4);
+const pending=context.riskCut.items[2],dueOnly=context.riskCut.items[3];
+assert.equal(h.riskInfo(pending).owner,null,'The PM is not a fallback mitigation owner');
+assert.match(h.riskDetails(pending),/Pendiente de clasificar/);
+assert.match(h.riskDetails(pending),/Sin responsable/);
+for(const field of ['Tipo de riesgo','Responsable de mitigación','Acción / decisión']) {
+  assert.ok(h.regularizationIssues(pending).some(x=>x.field===field&&x.critical));
+  assert.ok(!h.regularizationIssues(dueOnly).some(x=>x.field===field));
+  assert.ok(!h.regularizationIssues(context.riskCut.items[4]).some(x=>x.field===field));
+}
+assert.ok(!h.regularizationIssues(context.riskCut.items[0]).some(x=>['Tipo de riesgo','Responsable de mitigación','Acción / decisión'].includes(x.field)));
+const riskGuide=createGuide(context.riskCut,h.C,h);
+const riskAnswer=riskGuide.answer({type:'answer',topic:'project-risk',id:'operativo'});
+assert.match(riskAnswer.text,/Tipo de riesgo: Operativo/);
+assert.match(riskAnswer.text,/Responsable de mitigación: Juan Pablo Arbulú/);
+assert.match(riskAnswer.text,/Servicio interrumpido/);
+assert.match(riskGuide.answer({type:'answer',topic:'project-risk',id:'pendiente'}).text,/Sin responsable/);
+vm.runInNewContext('state.riskType="Operativo"',context);
+assert.deepEqual(riskIds(),['operativo']);
+vm.runInNewContext('state.mitigationOwner="Valeria Hermoza"',context);
+assert.deepEqual(riskIds(),[],'Type and owner filters intersect');
+vm.runInNewContext('state.riskType="Gestión"',context);
+assert.deepEqual(riskIds(),['gestion']);
+vm.runInNewContext('state.riskType="Pendiente de clasificar";state.mitigationOwner="Sin responsable"',context);
+assert.deepEqual(riskIds(),['pendiente'],'Overdue without a risk and closed projects are excluded from missing-risk filters');
+const viewItemsStart=artSource.indexOf('  function viewItems(view)'),viewItemsEnd=artSource.indexOf('  const toProjects',viewItemsStart);
+vm.runInNewContext('const g=name=>eval(name);'+artSource.slice(viewItemsStart,viewItemsEnd)+';globalThis.artFiltered=viewItems;',context);
+assert.deepEqual(Array.from(context.artFiltered('atencion'),i=>i.id),riskIds(),'Diagram and cards share the same risk filters');
+h.clearFilters();
+assert.equal(riskIds().length,4);
+h.goFiltered('atencion',{riskType:'Operativo'});
+assert.deepEqual(riskIds(),['operativo']);
+h.goFiltered('atencion',{mitigationOwner:'Valeria Hermoza'});
+assert.deepEqual(riskIds(),['gestion'],'Navigation resets a previous risk type filter');
+const escaped=h.riskDetails(riskFixture('xss',{[h.C.situation]:'<img src=x onerror=alert(1)>',[h.C.mitigationOwner]:'<b>owner</b>'}));
+assert.doesNotMatch(escaped,/<img|<b>/);
+assert.match(escaped,/&lt;img/);
+// Refresh updates the open sheet, Cosmo and adapters without reload.
+const riskLatest=structuredClone(context.riskCut);
+riskLatest.extracted_at_utc=new Date(Date.now()+1000).toISOString();
+riskLatest.items[0].column_values[h.C.riskType]='Gestión';
+riskLatest.items[0].column_values[h.C.mitigationOwner]='Walter Gonzales';
+context.DOMParser=class{parseFromString(){return{getElementById:()=>({textContent:JSON.stringify(riskLatest)})}}};
+element('project-dialog').open=true;element('project-dialog').dataset.projectId='operativo';
+await h.refreshMondayData();
+assert.match(element('dialog-content').innerHTML,/Walter Gonzales/);
+assert.match(context.cosmoGuide.answer({type:'answer',topic:'project-risk',id:'operativo'}).text,/Tipo de riesgo: Gestión/);
+const updatedRiskData=context.window.PMOData.build();
+assert.equal(updatedRiskData.projects.find(p=>p.id==='operativo').mitigationOwner,'Walter Gonzales');
+assert.equal(updatedRiskData.decisions.find(p=>p.projectId==='operativo').owner,'Walter Gonzales');
 console.log('Portal: Finanzas estandarizadas, monedas separadas, PPT visible y actualización integral de módulos, ficha, Cosmo y datos audiovisuales verificados.');
