@@ -82,12 +82,12 @@
       answer = reply(item.name + ' · actualización de esta semana', hits.map(hit => '• ' + h.fmtDate(hit.date) + ': ' + h.shortAnswer(hit.text, 410)).join('\n'), inSummary ? 'resumen' : 'portafolio', inSummary ? {} : { search: item.name }, { source: 'último comentario de bitácora de la semana', ...(inSummary ? { scrollTarget: '.milestone-board' } : { openProjectId: item.id }) });
     } else if (page.topic === 'project-risk') {
       const risk = val(item, 'risk');
-      const lines = ['Riesgo / bloqueo: ' + (risk || 'Sin evaluar')];
-      if (val(item, 'action')) lines.push('Acción o decisión requerida: ' + h.shortAnswer(val(item, 'action'), 320));
+      const r=h.riskInfo(item);
+      const lines = ['Riesgo / bloqueo: ' + (risk || 'Sin evaluar'), 'Tipo de riesgo: ' + (r.type || 'Pendiente de clasificar'), 'Riesgo registrado: ' + (r.description ? h.shortAnswer(r.description,320) : 'Sin descripción registrada'), 'Acción o decisión requerida: ' + (r.action ? h.shortAnswer(r.action,320) : 'Sin acción registrada'), 'Responsable de mitigación: ' + (r.owner || 'Sin responsable')];
       const attention = h.attentionReasons(item).length > 0;
-      answer = reply(item.name + ' · riesgos y acciones', lines.join('\n'), attention ? 'atencion' : 'portafolio', { search: item.name }, { source: 'Riesgo / Bloqueo y Acción / decisión requerida', offerEmail: !risk || risk === 'Sin evaluar', project: item, ...(!attention ? { openProjectId: item.id } : {}) });
+      answer = reply(item.name + ' · riesgos y acciones', lines.join('\n'), attention ? 'atencion' : 'portafolio', { search: item.name }, { source: 'Riesgo / Bloqueo, Riesgos, Tipo de riesgo, Acción / decisión requerida y Responsable de mitigación', offerEmail: !risk || risk === 'Sin evaluar', project: item, ...(!attention ? { openProjectId: item.id } : {}) });
     } else if (page.topic === 'project-action') {
-      const lines = ['Acción o decisión requerida: ' + h.shortAnswer(val(item, 'action'), 360)];
+      const lines = ['Acción o decisión requerida: ' + h.shortAnswer(val(item, 'action'), 360), 'Responsable de mitigación: ' + (val(item, 'mitigationOwner') || 'Sin responsable')];
       const attention = h.attentionReasons(item).length > 0;
       answer = reply(item.name + ' · decisión requerida', lines.join('\n'), attention ? 'atencion' : 'portafolio', { search: item.name }, { source: 'Acción / decisión requerida', ...(!attention ? { openProjectId: item.id } : {}) });
     } else if (page.topic === 'project-dates') {

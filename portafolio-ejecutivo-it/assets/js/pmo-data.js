@@ -37,7 +37,7 @@
         schedule: active(i) ? call('scheduleBucket', i) : null, noFinPlan: active(i) && !plan,
          financials: (() => { const f = call('financeInfo', i); return f ? { capex: f.capex, capexCommitted: f.capexCommitted, capexExecuted: f.capexExecuted, capexRegistered: f.registered, opexAnnual: f.opexAnnual, budgetDeviation: f.excess, currency: f.currency, taxBasis: f.taxBasis } : { capex: num(i, C.capex), capexCommitted: num(i, C.capexCommitted), capexExecuted: num(i, C.capexExecuted), opexAnnual: num(i, C.opexAnnual), budgetDeviation: num(i, C.budgetDeviation) }; })(),
         risk: reasons.some(isBlock) ? 'block' : reasons.some(r => r.startsWith('Riesgo:')) ? 'risk' : reasons.length ? 'late' : null,
-        reasons, action: val(i, C.action) || '',
+        reasons, action: val(i, C.action) || '', riskType: val(i, C.riskType) || '', mitigationOwner: val(i, C.mitigationOwner) || '',
         provider: val(i, C.provider) || '', type: val(i, C.type) || '', situation: C.situation ? (val(i, C.situation) || '') : '',
         closedAt: closure && closure.date ? closure.date : null, closedYear: closure ? closure.year : null,
         issues: issues.map(x => ({ category: x.category, field: x.field, critical: !!x.critical }))
@@ -73,7 +73,7 @@
     if (phaseMap['Sin fase'] && !phases.includes('Sin fase')) phases = ['Sin fase', ...phases];
     // decisiones: proyectos activos con motivos de atención (misma regla del portal)
     const decisions = act.filter(p => p.reasons.length).map(p => ({
-      projectId: p.id, project: p.name, level: p.risk, reasons: p.reasons, action: p.action, owner: '', pm: p.pmFirst,
+      projectId: p.id, project: p.name, level: p.risk, reasons: p.reasons, action: p.action, owner: p.mitigationOwner, riskType: p.riskType, pm: p.pmFirst,
       date: null, dateLabel: '', dateSpoken: ''
     })).sort((a, b) => ({ block: 0, late: 1, risk: 2 }[a.level] ?? 3) - ({ block: 0, late: 1, risk: 2 }[b.level] ?? 3));
     const upcoming = act.filter(p => p.plan).sort((a, b) => a.plan.localeCompare(b.plan)).slice(0, 5)
