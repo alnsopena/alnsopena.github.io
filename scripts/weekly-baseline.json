@@ -1,7 +1,7 @@
 {
-  "week_key": "2026-10-12",
-  "cut_id": "18396270726:2026-10-12T15:24:17.143Z",
-  "extracted_at_utc": "2026-10-12T15:24:17.143Z",
+  "week_key": "2026-10-19",
+  "cut_id": "18396270726:2026-10-19T17:21:33.775Z",
+  "extracted_at_utc": "2026-10-19T17:21:33.775Z",
   "items": [
     {
       "id": "11041978965",
@@ -14,8 +14,8 @@
         "numeric_mkzrc075": "65",
         "date_mkzrb4nr": "2027-01-18",
         "date_mm6d8mx": null,
-        "color_mm6zdfgs": "Bloqueo crítico",
-        "text_mm7fvxjn": "29/09: No se ha implementado el pipeline en un nuevo ambiente de pruebas para Singulartech"
+        "color_mm6zdfgs": "Riesgo / Alerta",
+        "text_mm7fvxjn": "Contrato con Singulartech pendiente de firma."
       }
     },
     {
@@ -25,12 +25,12 @@
         "status": "En Proceso",
         "color_mkzzg1vp": "Critical ⚠️️",
         "multiple_person_mm087pe3": "Alonso Pena",
-        "color_mm6kg2n5": "Evaluación",
+        "color_mm6kg2n5": "Ejecución",
         "numeric_mkzrc075": "35",
-        "date_mkzrb4nr": "2026-12-28",
+        "date_mkzrb4nr": "2027-02-05",
         "date_mm6d8mx": null,
         "color_mm6zdfgs": "Riesgo / Alerta",
-        "text_mm7fvxjn": "07/10: Contrato CT0150 con conformidad de Legal y TI (01/10) y RRHH (06/10). Pendiente de firma y generacion de OC; el inicio del proyecto sigue desplazado."
+        "text_mm7fvxjn": "15/10: Contrato CT0150 firmado (13/10) y kick off realizado (15/10). Riesgos: estabilización de Paita cruza feriados (21/12 al 01/01); plan total de 16 semanas vs 12 del contrato; OC pendiente."
       }
     },
     {
@@ -190,7 +190,7 @@
         "status": "En Proceso",
         "color_mkzzg1vp": "Critical ⚠️️",
         "multiple_person_mm087pe3": "Juan Pablo Arbulú",
-        "color_mm6kg2n5": null,
+        "color_mm6kg2n5": "Evaluación",
         "numeric_mkzrc075": "10",
         "date_mkzrb4nr": "2026-11-17",
         "date_mm6d8mx": null,
@@ -340,7 +340,7 @@
         "status": "En Proceso",
         "color_mkzzg1vp": "Critical ⚠️️",
         "multiple_person_mm087pe3": "Valeria Hermoza",
-        "color_mm6kg2n5": "Pruebas UAT",
+        "color_mm6kg2n5": "Despliegue",
         "numeric_mkzrc075": "95",
         "date_mkzrb4nr": "2026-09-30",
         "date_mm6d8mx": null,
