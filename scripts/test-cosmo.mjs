@@ -20,7 +20,7 @@ assert.ok(start >= 0 && end > start, 'Deben existir las funciones base del porta
 const mainEnd = html.indexOf('  </script>', end);
 assert.ok(mainEnd > end);
 new vm.Script(html.slice(start, mainEnd));
-const script = html.slice(start, end) + '\n globalThis.guideTest={C,val,num,filtered,setPortfolioScope,portfolioScopeBar,riskInfo,riskDetails,hasReportedRisk,filteredAttentionItems,clearFilters,goFiltered,progressInfo,progressPercent,progressDelta,progressSummary,portTable,renderCronograma,fmtDate,fmtNum,financeInfo,financeMoney,go,nav,render,refreshMondayData,financeAmountChart,financeExecutionChart,financeExcessChart,renderFinanzas,renderAtencion,regularizationIssues,projectUpdateEntries,shortAnswer,weeklyMilestones,weeklyCard,weekStartLima,cutIsStale,attentionReasons,closureInfo,closureLabel,closureSourceLabel,past};';
+const script = html.slice(start, end) + '\n globalThis.guideTest={C,val,num,auditSummary,auditGroupMatch,setAuditFilter,projectAuditMarkup,boardAuditIssues,milestoneValue,fieldValue,portfolioBaseItems,filtered,setPortfolioScope,portfolioScopeBar,riskInfo,riskDetails,hasReportedRisk,filteredAttentionItems,clearFilters,goFiltered,progressInfo,progressPercent,progressDelta,progressSummary,portTable,renderCronograma,fmtDate,fmtNum,financeInfo,financeMoney,go,nav,render,refreshMondayData,financeAmountChart,financeExecutionChart,financeExcessChart,renderFinanzas,renderAtencion,regularizationIssues,projectUpdateEntries,shortAnswer,weeklyMilestones,weeklyCard,weekStartLima,cutIsStale,attentionReasons,closureInfo,closureLabel,closureSourceLabel,past};';
 const context = {
   document: { getElementById: id => id === 'snapshot' ? { textContent: snapshot[1] } : null },
   localStorage: { getItem: () => null, setItem: () => {} },
@@ -378,4 +378,66 @@ h.setPortfolioScope('active');assert.equal(portfolioIds().length,0,'Search and P
 h.clearFilters();assert.equal(portfolioIds().length,3);
 h.setPortfolioScope('active');h.goFiltered('portafolio',{status:'Cerrado'});
 assert.deepEqual(portfolioIds(),['closed'],'Navigation from a closed-project KPI resets the active scope');
+// Audit checks diagnose source data without changing project status, dates or owners.
+context.qualityCut=structuredClone(riskLatest);
+context.qualityCut.items=[
+ riskFixture('risk-empty',{[h.C.situation]:null}),
+ riskFixture('deleted-pm',{[h.C.pm]:'Miembro eliminado',[h.C.risk]:'Sin bloqueo'}),
+ riskFixture('date-order',{[h.C.start]:'2026-10-20',[h.C.plan]:'2026-10-19',[h.C.real]:'2026-10-18',[h.C.risk]:'Sin bloqueo'}),
+ riskFixture('invalid-date',{[h.C.start]:'2026-02-30',[h.C.risk]:'Sin bloqueo'}),
+ riskFixture('valid',{[h.C.priority]:'High',[h.C.sponsor]:'Sponsor',[h.C.progress]:0,[h.C.progressPlan]:0,[h.C.risk]:'Sin bloqueo',[h.C.phase]:'Ejecución',[h.C.start]:'2026-10-01',[h.C.plan]:'2026-10-31',[h.C.capex]:0,[h.C.capexExecuted]:0,[h.C.capexCommitted]:0,[h.C.opexAnnual]:0}),
+];
+context.qualityCut.items.forEach(i=>{if(!(h.C.start in i.column_values))i.column_values[h.C.start]='2026-10-01'});
+context.qualityCut.items[0].column_values[h.C.riskType]='Gestión';
+vm.runInNewContext('D=qualityCut;state={...state,view:"portafolio",portfolioScope:"all",auditFilter:"",status:"",priority:"",pm:"",search:""}',context);
+assert.ok(h.regularizationIssues(context.qualityCut.items[0]).some(x=>x.field==='Descripción del riesgo'));
+assert.ok(h.regularizationIssues(context.qualityCut.items[1]).some(x=>x.field==='PM no vigente (miembro eliminado)'));
+const dateIssues=h.regularizationIssues(context.qualityCut.items[2]);
+assert.ok(dateIssues.some(x=>x.field==='Inicio posterior a Fin Plan'));
+assert.ok(dateIssues.some(x=>x.field==='Fin Real anterior a Inicio'));
+assert.ok(h.regularizationIssues(context.qualityCut.items[3]).some(x=>x.field==='Revisar fecha inválida: Inicio'));
+assert.equal(h.regularizationIssues(context.qualityCut.items[4]).length,0);
+const beforeQuality=JSON.stringify(context.qualityCut);
+h.setAuditFilter('Con pendientes');
+assert.deepEqual(portfolioIds(),['risk-empty','deleted-pm','date-order','invalid-date']);
+assert.deepEqual(Array.from(context.artFiltered('portafolio'),i=>i.id),portfolioIds());
+h.setAuditFilter('Fechas');
+assert.deepEqual(portfolioIds(),['date-order','invalid-date']);
+h.setAuditFilter('Responsables');
+assert.deepEqual(portfolioIds(),['risk-empty','deleted-pm']);
+const qualitySummary=h.auditSummary(context.qualityCut.items);
+assert.equal(qualitySummary.find(x=>x.label==='Fechas').count,2,'Count projects, not the number of invalid date pairs');
+assert.match(h.projectAuditMarkup(context.qualityCut.items[2]),/Inicio posterior a Fin Plan/);
+assert.equal(JSON.stringify(context.qualityCut),beforeQuality,'Audit rendering cannot alter source data');
+h.clearFilters();assert.equal(portfolioIds().length,5);
+h.setAuditFilter('Riesgos');h.goFiltered('portafolio',{status:'Cerrado'});
+assert.equal(vm.runInNewContext('state.auditFilter',context),'','KPI navigation resets the quality filter');
+// Missing formula references are a board configuration issue, not thirty duplicated item issues.
+context.milestoneCut=structuredClone(context.qualityCut);
+context.milestoneCut.board.columns=context.milestoneCut.board.columns.filter(c=>![h.C.milestonesCommitted,h.C.milestonesOnTime,h.C.milestonesRate].includes(c.id));
+context.milestoneCut.board.columns.push({id:h.C.milestonesRate,title:'% Hitos en fecha',type:'formula',settings:{formula:'ROUND(({'+h.C.milestonesOnTime+'}/{'+h.C.milestonesCommitted+'})*100,1)'}});
+vm.runInNewContext('D=milestoneCut',context);
+const milestoneItem={column_values:{[h.C.milestonesRate]:'0'}};
+assert.equal(h.boardAuditIssues().length,1);
+assert.equal(h.milestoneValue(milestoneItem),'No calculable','A broken formula must not be presented as zero');
+assert.equal(h.fieldValue(milestoneItem,{id:h.C.milestonesRate,type:'formula'}),'No calculable');
+context.milestoneCut.board.columns.push({id:h.C.milestonesCommitted,title:'Comprometidos',type:'numbers'},{id:h.C.milestonesOnTime,title:'Cumplidos',type:'numbers'});
+assert.equal(h.boardAuditIssues().length,0);
+assert.equal(h.milestoneValue(milestoneItem),'0%','Zero is valid when dependencies exist');
+assert.equal(h.milestoneValue({column_values:{[h.C.milestonesRate]:''}}),'No calculable');
+assert.equal(h.milestoneValue({column_values:{[h.C.milestonesRate]:'#ERROR'}}),'No calculable');
+// Optional private fixture checks the current connected board without committing its data.
+if(process.env.PMO_AUDIT_FIXTURE){
+ const fixture=JSON.parse(fs.readFileSync(process.env.PMO_AUDIT_FIXTURE,'utf8').replace(/^\uFEFF/,''));
+ context.connectedAuditCut={...D,board:fixture.board,items:fixture.items};
+ vm.runInNewContext('D=connectedAuditCut;state={...state,view:"portafolio",portfolioScope:"all",auditFilter:"",status:"",priority:"",pm:"",search:""}',context);
+ const snapshotBefore=JSON.stringify(context.connectedAuditCut);
+ h.go('portafolio');
+ assert.ok(element('main').innerHTML.includes('Datos por revisar en Monday'));
+ assert.equal(h.boardAuditIssues().length,1);
+ console.log('Auditoría del tablero actual:',JSON.stringify({projects:fixture.items.length,groups:Array.from(h.auditSummary(fixture.items)),schemaIssues:h.boardAuditIssues().length}));
+ for(const group of ['Con pendientes',...['Avance','Riesgos','Responsables','Fechas','Cierre']]){h.setAuditFilter(group);assert.deepEqual(Array.from(context.artFiltered('portafolio'),i=>i.id),portfolioIds())}
+ h.clearFilters();
+ assert.equal(JSON.stringify(context.connectedAuditCut),snapshotBefore);
+}
 console.log('Portal: Finanzas estandarizadas, monedas separadas, PPT visible y actualización integral de módulos, ficha, Cosmo y datos audiovisuales verificados.');

@@ -230,7 +230,7 @@
     if (view === 'muelle') return mountMuelle(main);
     if (!['atencion', 'portafolio', 'cronograma', 'finanzas'].includes(view)) return;
     const items = viewItems(view), pl = place(main, view); if (!pl) return;
-    const st = g('state') || {}, filteredView = ['search', 'status', 'priority', 'pm', 'phase', 'schedule', 'issue'].some(k => st[k]);
+    const st = g('state') || {}, filteredView = ['search', 'status', 'priority', 'pm', 'phase', 'schedule', 'issue', 'riskType', 'mitigationOwner', 'auditFilter'].some(k => st[k]) || (view === 'portafolio' && ['active','closed'].includes(st.portfolioScope));
     const o = { cardClass: cfg.cardClass, onSelect: open };
     const mark = h => { if (filteredView) { h.pills = [{ text: 'Vista filtrada' }].concat(h.pills || []); if (h.empty && !items.length) h.msg = h.empty; } const t = toggleBtn(view, pl.charts); if (t) h.actions = [t]; return h; };
     let h;
