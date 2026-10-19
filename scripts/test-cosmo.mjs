@@ -20,7 +20,7 @@ assert.ok(start >= 0 && end > start, 'Deben existir las funciones base del porta
 const mainEnd = html.indexOf('  </script>', end);
 assert.ok(mainEnd > end);
 new vm.Script(html.slice(start, mainEnd));
-const script = html.slice(start, end) + '\n globalThis.guideTest={C,val,num,auditSummary,auditGroupMatch,setAuditFilter,projectAuditMarkup,boardAuditIssues,milestoneValue,fieldValue,portfolioBaseItems,filtered,setPortfolioScope,portfolioScopeBar,riskInfo,riskDetails,hasReportedRisk,filteredAttentionItems,clearFilters,goFiltered,progressInfo,progressPercent,progressDelta,progressSummary,portTable,renderCronograma,fmtDate,fmtNum,financeInfo,financeMoney,go,nav,render,refreshMondayData,financeAmountChart,financeExecutionChart,financeExcessChart,renderFinanzas,renderAtencion,regularizationIssues,projectUpdateEntries,shortAnswer,weeklyMilestones,weeklyCard,weekStartLima,cutIsStale,attentionReasons,closureInfo,closureLabel,closureSourceLabel,past};';
+const script = html.slice(start, end) + '\n globalThis.guideTest={initiativeClass,initiativeItems,scopedSnapshot,setInitiativeScope,initiativeSelector,renderResumen,openProject,C,val,num,auditSummary,auditGroupMatch,setAuditFilter,projectAuditMarkup,boardAuditIssues,milestoneValue,fieldValue,portfolioBaseItems,filtered,setPortfolioScope,portfolioScopeBar,riskInfo,riskDetails,hasReportedRisk,filteredAttentionItems,clearFilters,goFiltered,progressInfo,progressPercent,progressDelta,progressSummary,portTable,renderCronograma,fmtDate,fmtNum,financeInfo,financeMoney,go,nav,render,refreshMondayData,financeAmountChart,financeExecutionChart,financeExcessChart,renderFinanzas,renderAtencion,regularizationIssues,projectUpdateEntries,shortAnswer,weeklyMilestones,weeklyCard,weekStartLima,cutIsStale,attentionReasons,closureInfo,closureLabel,closureSourceLabel,past};';
 const context = {
   document: { getElementById: id => id === 'snapshot' ? { textContent: snapshot[1] } : null },
   localStorage: { getItem: () => null, setItem: () => {} },
@@ -148,6 +148,11 @@ vm.runInContext('let D={extracted_at_utc:"corte-1"};\n' + artSource.slice(artSta
 assert.equal(artContext.read().cut, 'corte-1');
 artContext.setCut('corte-2');
 assert.equal(artContext.read().cut, 'corte-2', 'Las escenas de Riesgos, Portafolio y Cronograma deben usar el nuevo corte');
+for(const cachedContext of [avContext,artContext]){
+  const prior=cachedContext.read();
+  vm.runInContext('let state={initiativeScope:"quick-wins"}',cachedContext);
+  assert.notEqual(cachedContext.read(),prior,'Cambiar la clase de iniciativa debe invalidar la caché audiovisual');
+}
 
 assert.ok(html.includes('function chatGoBack()'));
 assert.ok(html.includes('function chatGoHome()'));
@@ -441,3 +446,49 @@ if(process.env.PMO_AUDIT_FIXTURE){
  assert.equal(JSON.stringify(context.connectedAuditCut),snapshotBefore);
 }
 console.log('Portal: Finanzas estandarizadas, monedas separadas, PPT visible y actualización integral de módulos, ficha, Cosmo y datos audiovisuales verificados.');
+
+// Initiative scope applies to KPIs, cards, diagrams and Cosmo without altering the cut.
+context.initiativeCut=structuredClone(D);
+context.initiativeCut.board.columns.push({id:h.C.initiativeClass,title:'Clase de iniciativa',type:'status'},{id:'qw-history-budget',title:'QW origen · Capex aprobado',type:'numbers'});
+context.initiativeCut.items=[
+ {id:'legacy-project',name:'Proyecto anterior',subitems:[],column_values:{[h.C.status]:'En Proceso',[h.C.progress]:'0'}},
+ {id:'new-project',name:'Proyecto clasificado',subitems:[],column_values:{[h.C.initiativeClass]:'Proyecto',[h.C.status]:'Cerrado',[h.C.progress]:'100'}},
+ {id:'quick-win',name:'Quick win migrado',subitems:[],column_values:{[h.C.initiativeClass]:'Quick win',[h.C.status]:'En Proceso',[h.C.progress]:'30','qw-history-budget':'99999'}},
+];
+context.initiativeCut.updates=[{item_id:'quick-win',text_body:'Se completó una entrega',created_at:context.initiativeCut.extracted_at_utc}];
+vm.runInNewContext('D=initiativeCut;state={...state,view:"resumen",initiativeScope:"all",portfolioScope:"all",auditFilter:"",status:"",priority:"",pm:"",search:""}',context);
+const initiativeBefore=JSON.stringify(context.initiativeCut);
+assert.equal(h.initiativeItems().length,3);
+assert.equal(h.val({column_values:{[h.C.pm]:{personsAndTeams:[]}}},h.C.pm),null,'An empty people object is missing, never [object Object]');
+h.setInitiativeScope('quick-wins');
+assert.deepEqual(Array.from(h.initiativeItems(),i=>i.id),['quick-win']);
+assert.deepEqual(Array.from(context.window.PMOData.build().projects,i=>i.id),['quick-win']);
+assert.equal(context.window.PMOData.build().milestones.length,1);
+assert.deepEqual(portfolioIds(),['quick-win']);
+assert.deepEqual(Array.from(context.artFiltered('portafolio'),i=>i.id),['quick-win']);
+assert.match(h.renderResumen(),/Iniciativas activas/);
+assert.doesNotMatch(h.renderFinanzas(),/99,999/,'Original QW amounts must not enter homologated finances');
+assert.equal(context.cosmoGuide.options({type:'project-groups'}).reduce((sum,x)=>sum+Number(x.label.match(/\d+$/)?.[0]||0),0),1);
+h.setPortfolioScope('closed');assert.equal(portfolioIds().length,0);
+h.setInitiativeScope('projects');
+assert.deepEqual(portfolioIds(),['legacy-project','new-project']);
+assert.equal(context.window.PMOData.build().milestones.length,0,'QW activity must not leak into project-only summaries');
+assert.equal(context.window.PMOData.build().totals.total,2);
+assert.equal(context.cosmoGuide.options({type:'project-groups'}).reduce((sum,x)=>sum+Number(x.label.match(/\d+$/)?.[0]||0),0),2);
+h.setInitiativeScope('all');assert.equal(portfolioIds().length,3);
+assert.equal(JSON.stringify(context.initiativeCut),initiativeBefore);
+if(process.env.PMO_AUDIT_FIXTURE){
+ context.migratedCut={...D,...JSON.parse(fs.readFileSync(process.env.PMO_AUDIT_FIXTURE,'utf8').replace(/^\uFEFF/,''))};
+ vm.runInNewContext('D=migratedCut;state.initiativeScope="all"',context);
+ assert.equal(h.initiativeItems().length,52);
+ h.setInitiativeScope('projects');assert.equal(h.initiativeItems().length,30);
+ h.setInitiativeScope('quick-wins');assert.equal(h.initiativeItems().length,22);
+ assert.equal(h.initiativeItems().filter(i=>h.val(i,h.C.status)==='Cerrado').length,13);
+ assert.equal(context.window.PMOData.build().totals.total,22);
+ h.openProject('12005154883',true);
+ assert.match(element('dialog-content').innerHTML,/Datos originales de Quick Wins/);
+ assert.match(element('dialog-content').innerHTML,/480/);
+ assert.match(element('dialog-content').innerHTML,/No se suman a los indicadores financieros/);
+ h.setInitiativeScope('all');
+}
+console.log('Quick wins: scope, audiovisual totals, Cosmo, preserved history and financial isolation verified.');

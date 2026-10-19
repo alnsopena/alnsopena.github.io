@@ -28,10 +28,10 @@
   const $ = s => document.querySelector(s);
   const g = name => { try { return (0, eval)(name); } catch (e) { return undefined; } };   // variables `let` del portal
   const safe = (fn, label) => function () { try { return fn.apply(this, arguments); } catch (e) { console.warn('[pmo-av] ' + label + ' omitido.', e); } };
-  let data = null, snapshot = null;
+  let data = null, snapshot = null, initiativeScope = null;
   const getData = () => {
-    const current = g('D');
-    if (!data || current !== snapshot) { data = PMOData.build(); snapshot = current; }
+    const current = g('D'), scope = (g('state') || {}).initiativeScope || 'all';
+    if (!data || current !== snapshot || scope !== initiativeScope) { data = PMOData.build(); snapshot = current; initiativeScope = scope; }
     return data;
   };
 
