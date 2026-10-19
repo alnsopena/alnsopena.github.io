@@ -67,11 +67,12 @@
     const status = val(item, 'status') || 'Sin dato', progress = num(item, 'progress');
     let answer, link = projectLink(item);
     if (page.topic === 'project-status') {
-      const lines = ['Estatus: ' + status, 'Avance registrado: ' + (progress === null ? 'Sin dato' : progress + '%')];
+      const p = h.progressInfo(item);
+      const lines = ['Estatus: ' + status, 'Avance real: ' + h.progressPercent(p.real), 'Avance planificado: ' + h.progressPercent(p.planned), 'Diferencia (real − plan): ' + h.progressDelta(p.delta)];
       if (val(item, 'phase')) lines.push('Fase: ' + val(item, 'phase'));
       if (val(item, 'situation')) lines.push('Situación informada: ' + h.shortAnswer(val(item, 'situation'), 260));
       if (val(item, 'plan')) lines.push('Fin Plan: ' + h.fmtDate(val(item, 'plan')));
-      answer = reply(item.name + ' · estado y avance', lines.join('\n'), link.module, link.filters, { source: 'Estatus, % Avance, Fase, Situación y Fin Plan' });
+      answer = reply(item.name + ' · estado y avance', lines.join('\n'), link.module, link.filters, { source: 'Estatus, % Avance Real, % Avance Plan, Fase, Situación y Fin Plan' });
     } else if (page.topic === 'project-update') {
       const entry = h.projectUpdateEntries(item)[0];
       answer = reply(item.name + ' · última actualización', 'Registro del ' + h.fmtDate(entry.date) + (entry.author ? ' · ' + entry.author : '') + '\n' + h.shortAnswer(entry.text, 410) + (!h.weeklyMilestones([item]).length ? '\nNo hay registros de este proyecto esta semana.' : ''), link.module, link.filters, { source: 'bitácora del proyecto', openProjectId: item.id });
