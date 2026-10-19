@@ -20,7 +20,7 @@ assert.ok(start >= 0 && end > start, 'Deben existir las funciones base del porta
 const mainEnd = html.indexOf('  </script>', end);
 assert.ok(mainEnd > end);
 new vm.Script(html.slice(start, mainEnd));
-const script = html.slice(start, end) + '\n globalThis.guideTest={C,val,num,fmtDate,fmtNum,financeInfo,financeMoney,go,nav,render,refreshMondayData,financeAmountChart,financeExecutionChart,financeExcessChart,renderFinanzas,renderAtencion,regularizationIssues,projectUpdateEntries,shortAnswer,weeklyMilestones,weeklyCard,weekStartLima,cutIsStale,attentionReasons,closureInfo,closureLabel,closureSourceLabel,past};';
+const script = html.slice(start, end) + '\n globalThis.guideTest={C,val,num,progressInfo,progressPercent,progressDelta,progressSummary,portTable,renderCronograma,fmtDate,fmtNum,financeInfo,financeMoney,go,nav,render,refreshMondayData,financeAmountChart,financeExecutionChart,financeExcessChart,renderFinanzas,renderAtencion,regularizationIssues,projectUpdateEntries,shortAnswer,weeklyMilestones,weeklyCard,weekStartLima,cutIsStale,attentionReasons,closureInfo,closureLabel,closureSourceLabel,past};';
 const context = {
   document: { getElementById: id => id === 'snapshot' ? { textContent: snapshot[1] } : null },
   localStorage: { getItem: () => null, setItem: () => {} },
@@ -30,6 +30,23 @@ const context = {
 };
 vm.runInNewContext(script, context);
 const h = context.guideTest;
+
+// Comparison uses the two reported percentages, not phase or schedule dates.
+const progressItem = (real, planned) => ({id:'comparison',name:'Comparison',column_values:{[h.C.progress]:real,[h.C.progressPlan]:planned,[h.C.plan]:'2099-12-31'}});
+for (const [real, planned, delta] of [[65,100,-35],[70,60,10],[0,0,0],[0,40,-40],[100,100,0],[35.5,40,-4.5],[null,40,null],[65,null,null],['',40,null],['abc',40,null],[-1,40,null],[65,101,null]]) {
+  const item=progressItem(real,planned),result=h.progressInfo(item),markup=h.progressSummary(item);
+  assert.equal(result.delta,delta,`Comparison ${real}/${planned}`);
+  assert.doesNotMatch(markup,/NaN|Infinity|undefined/);
+  if(delta===null) assert.match(markup,/Diferencia: Sin dato/);
+}
+assert.equal(h.C.plan,'date_mkzrb4nr');
+assert.equal(h.progressPercent(0),'0%');
+assert.equal(h.progressDelta(-35),'−35 p.p.');
+assert.equal(h.progressDelta(10),'+10 p.p.');
+assert.equal(h.progressDelta(0),'0 p.p.');
+const comparisonTable=h.portTable([progressItem(65,100)]);
+assert.equal((comparisonTable.match(/−35 p.p./g)||[]).length,2,'Desktop and mobile must show the same difference');
+
 const guide = createGuide(D, h.C, h);
 const options = page => guide.options(page);
 const answer = topic => guide.answer({ type: 'answer', topic });
@@ -207,7 +224,7 @@ latest.extracted_at_utc = new Date().toISOString();
 const latestConnect = latest.items.find(item => item.id === cosmos.id);
 Object.assign(latestConnect.column_values, {
   [h.C.capex]: '999999', [h.C.capexExecuted]: '12345', [h.C.capexCommitted]: '54321',
-  [h.C.opexAnnual]: '34567', [h.C.budgetDeviation]: '9876', [h.C.progress]: '97',
+  [h.C.opexAnnual]: '34567', [h.C.budgetDeviation]: '9876', [h.C.progress]: '97', [h.C.progressPlan]: '100',
   [h.C.currency]: 'USD', [h.C.taxBasis]: 'Sin IGV',
   [h.C.risk]: 'Riesgo / Alerta', [h.C.action]: 'Decisión renovada para comité',
   [h.C.phase]: 'Ejecución', [h.C.plan]: '2099-12-31',
@@ -232,10 +249,16 @@ assert.equal(element('ppt-mobile-entry').hidden, false);
 assert.equal(element('pmo-mobile-entry').hidden, true);
 assert.ok(element('nav').innerHTML.includes('PPT semanal'));
 
+assert.match(element('dialog-content').innerHTML,/−3 p.p./);
+assert.match(context.cosmoGuide.answer({type:'answer',topic:'project-status',id:cosmos.id}).text,/Avance planificado: 100%/);
+assert.match(context.cosmoGuide.answer({type:'answer',topic:'project-status',id:cosmos.id}).text,/−3 p.p./);
+
 const dataSource = fs.readFileSync(new URL('../portafolio-ejecutivo-it/assets/js/pmo-data.js', import.meta.url), 'utf8');
 vm.runInNewContext(dataSource, context);
 const audiovisual = context.window.PMOData.build();
 assert.equal(audiovisual.cut, latest.extracted_at_utc);
+assert.equal(audiovisual.projects.find(p => p.id === cosmos.id).progressPlan,100);
+assert.equal(audiovisual.projects.find(p => p.id === cosmos.id).progressDelta,-3);
 assert.equal(audiovisual.projects.find(p => p.id === cosmos.id).financials.capex, 999999, 'Mi muelle and the visual adapters must receive the new project values');
 assert.ok(audiovisual.milestones.some(m => m.projectId === cosmos.id && m.text.includes('Comentario nuevo')));
 
@@ -245,7 +268,9 @@ h.go('atencion');
 assert.ok(element('main').innerHTML.includes('Decisión renovada para comité'));
 h.go('portafolio');
 assert.ok(element('port-body').innerHTML.includes('97%'));
+assert.match(element('port-body').innerHTML,/−3 p.p./);
 h.go('cronograma');
+assert.match(element('main').innerHTML,/−3 p.p./);
 assert.ok(element('main').innerHTML.includes(h.fmtDate('2099-12-31')));
 h.go('ppt');
 assert.ok(element('main').innerHTML.includes('PPT semanal'), 'PPT must be accessible without unlocking regularization');
