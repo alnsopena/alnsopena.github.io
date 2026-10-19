@@ -20,7 +20,7 @@ assert.ok(start >= 0 && end > start, 'Deben existir las funciones base del porta
 const mainEnd = html.indexOf('  </script>', end);
 assert.ok(mainEnd > end);
 new vm.Script(html.slice(start, mainEnd));
-const script = html.slice(start, end) + '\n globalThis.guideTest={C,val,num,riskInfo,riskDetails,hasReportedRisk,filteredAttentionItems,clearFilters,goFiltered,progressInfo,progressPercent,progressDelta,progressSummary,portTable,renderCronograma,fmtDate,fmtNum,financeInfo,financeMoney,go,nav,render,refreshMondayData,financeAmountChart,financeExecutionChart,financeExcessChart,renderFinanzas,renderAtencion,regularizationIssues,projectUpdateEntries,shortAnswer,weeklyMilestones,weeklyCard,weekStartLima,cutIsStale,attentionReasons,closureInfo,closureLabel,closureSourceLabel,past};';
+const script = html.slice(start, end) + '\n globalThis.guideTest={C,val,num,filtered,setPortfolioScope,portfolioScopeBar,riskInfo,riskDetails,hasReportedRisk,filteredAttentionItems,clearFilters,goFiltered,progressInfo,progressPercent,progressDelta,progressSummary,portTable,renderCronograma,fmtDate,fmtNum,financeInfo,financeMoney,go,nav,render,refreshMondayData,financeAmountChart,financeExecutionChart,financeExcessChart,renderFinanzas,renderAtencion,regularizationIssues,projectUpdateEntries,shortAnswer,weeklyMilestones,weeklyCard,weekStartLima,cutIsStale,attentionReasons,closureInfo,closureLabel,closureSourceLabel,past};';
 const context = {
   document: { getElementById: id => id === 'snapshot' ? { textContent: snapshot[1] } : null },
   localStorage: { getItem: () => null, setItem: () => {} },
@@ -345,4 +345,37 @@ assert.match(context.cosmoGuide.answer({type:'answer',topic:'project-risk',id:'o
 const updatedRiskData=context.window.PMOData.build();
 assert.equal(updatedRiskData.projects.find(p=>p.id==='operativo').mitigationOwner,'Walter Gonzales');
 assert.equal(updatedRiskData.decisions.find(p=>p.projectId==='operativo').owner,'Walter Gonzales');
+// Pending progress is audited only for active projects, and zero remains a valid value.
+context.auditCut=structuredClone(riskLatest);
+if(!context.auditCut.board.columns.some(c=>c.id===h.C.progressPlan))context.auditCut.board.columns.push({id:h.C.progressPlan,title:'% Avance Plan',type:'numbers'});
+vm.runInNewContext('D=auditCut',context);
+const auditItem=(real,plan,status='En Proceso')=>({id:'audit',name:'Audit',column_values:{[h.C.status]:status,[h.C.progress]:real,[h.C.progressPlan]:plan}});
+const progressIssues=item=>h.regularizationIssues(item).filter(x=>/Avance Real|Avance Plan/.test(x.field));
+assert.equal(progressIssues(auditItem(0,0)).length,0);
+assert.equal(progressIssues(auditItem(100,100)).length,0);
+assert.deepEqual(Array.from(progressIssues(auditItem(null,'')),x=>x.field),['% Avance Real','% Avance Plan']);
+for(const invalid of [-1,101,'abc','Infinity']) {
+  const issues=progressIssues(auditItem(invalid,invalid));
+  assert.equal(issues.length,2);assert.ok(issues.every(x=>x.critical&&x.field.includes('0–100')));
+}
+assert.equal(progressIssues(auditItem(null,null,'Cerrado')).length,0);
+// Quick scopes share the portfolio data pipeline with table, chart and mobile cards.
+context.scopeCut=structuredClone(context.auditCut);
+context.scopeCut.items=[
+ {id:'active',name:'Proyecto A',column_values:{[h.C.status]:'En Proceso',[h.C.pm]:'Alonso Pena'}},
+ {id:'planned',name:'Proyecto B',column_values:{[h.C.status]:'Planificado',[h.C.pm]:'Alonso Pena'}},
+ {id:'closed',name:'Proyecto C',column_values:{[h.C.status]:'Cerrado',[h.C.pm]:'Alonso Pena'}},
+];
+vm.runInNewContext('D=scopeCut;state={...state,view:"portafolio",status:"",priority:"",pm:"",search:"",portfolioScope:"all"}',context);
+const portfolioIds=()=>Array.from(h.filtered(),i=>i.id);
+assert.deepEqual(portfolioIds(),['active','planned','closed']);
+h.setPortfolioScope('active');assert.deepEqual(portfolioIds(),['active','planned']);
+assert.deepEqual(Array.from(context.artFiltered('portafolio'),i=>i.id),portfolioIds());
+h.setPortfolioScope('closed');assert.deepEqual(portfolioIds(),['closed']);
+assert.match(h.portfolioScopeBar(),/aria-pressed="true"[^>]*>Cerrados/);
+vm.runInNewContext('state.search="Proyecto C";state.pm="Alonso Pena"',context);
+h.setPortfolioScope('active');assert.equal(portfolioIds().length,0,'Search and PM are preserved');
+h.clearFilters();assert.equal(portfolioIds().length,3);
+h.setPortfolioScope('active');h.goFiltered('portafolio',{status:'Cerrado'});
+assert.deepEqual(portfolioIds(),['closed'],'Navigation from a closed-project KPI resets the active scope');
 console.log('Portal: Finanzas estandarizadas, monedas separadas, PPT visible y actualización integral de módulos, ficha, Cosmo y datos audiovisuales verificados.');
