@@ -9,7 +9,7 @@
   const mobileBarHeight = mobileBar ? mobileBar.getBoundingClientRect().height || 64 : 64;
 
   const summary = () => {
-    const activeItems = D.items.filter(active);
+    const activeItems = initiativeItems().filter(active);
     const attention = activeItems.filter(item => attentionReasons(item).length).length;
     const block = activeItems.filter(item => attentionReasons(item).some(reason => reason.startsWith('Bloqueo:'))).length;
     const risk = Math.max(0, attention - block);
@@ -96,6 +96,7 @@
     else if (!hasFilterEmpty()) emit('filter', { el, value: filterValue(key, value) });
   });
   after('clearFilters', () => emit('filter:clear', { el: filterElement() }));
+  after('setInitiativeScope', () => emit('status', summary()));
   after('setExecutivePreset', value => {
     if (value) emit('filter', { el: filterElement(), value });
     else emit('filter:clear', { el: filterElement() });

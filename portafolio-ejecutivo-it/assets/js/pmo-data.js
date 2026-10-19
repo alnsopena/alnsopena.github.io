@@ -20,8 +20,9 @@
   const firstPm = s => String(s || '').split(/\s*,\s*/)[0] || '';
 
   function build() {
-    const G = (0, eval)('({D, C, val, num, active})');   // constantes del script principal del portal
-    const { D, C, val, num, active } = G;
+    const G = (0, eval)('({D, C, val, num, active, initiativeItems})');   // constantes del script principal del portal
+    const { D: sourceD, C, val, num, active } = G;
+    const D = { ...sourceD, items: G.initiativeItems() };
     const now = new Date(D.extracted_at_utc), year = now.getFullYear(), weekStart = call('weekStartLima', D.extracted_at_utc) || new Date(now.getTime() - 7 * 86400000);
     const isBlock = r => r.startsWith('Bloqueo:');
     const projects = D.items.map(i => {

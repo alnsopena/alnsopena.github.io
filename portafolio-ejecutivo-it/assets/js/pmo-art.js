@@ -16,10 +16,10 @@
   if (!fx || typeof fx.despacho !== 'function' || typeof fx.faro !== 'function' || !window.PMOData) { console.warn('[pmo-art] Falta cosmos-paper-fx 2.5 o PMOData; se omiten las escenas de módulo.'); return; }
   const g = name => { try { return (0, eval)(name); } catch (e) { return undefined; } };
   const safe = (fn, label) => function () { try { return fn.apply(this, arguments); } catch (e) { console.warn('[pmo-art] ' + label + ' omitido.', e); } };
-  let data = null, snapshot = null;
+  let data = null, snapshot = null, initiativeScope = null;
   const getData = () => {
-    const current = g('D');
-    if (!data || current !== snapshot) { data = PMOData.build(); snapshot = current; }
+    const current = g('D'), scope = (g('state') || {}).initiativeScope || 'all';
+    if (!data || current !== snapshot || scope !== initiativeScope) { data = PMOData.build(); snapshot = current; initiativeScope = scope; }
     return data;
   };
   const plural = (n, a, b) => n + ' ' + (n === 1 ? a : b);
@@ -66,8 +66,8 @@
     const search = i => !st.search || nq(i.name).includes(nq(st.search));
     if (view === 'atencion') return g('filteredAttentionItems')();
     if (view === 'portafolio') return g('filtered')();
-    if (view === 'cronograma') return acf(D.items.filter(act), { pm: true, phase: true }).filter(search).filter(i => !st.schedule || sb(i) === st.schedule);
-    if (view === 'finanzas') return acf(D.items.filter(g('hasFinancialData')), { status: true, priority: true, pm: true }).filter(search);
+    if (view === 'cronograma') return acf(g('initiativeItems')().filter(act), { pm: true, phase: true }).filter(search).filter(i => !st.schedule || sb(i) === st.schedule);
+    if (view === 'finanzas') return acf(g('initiativeItems')().filter(g('hasFinancialData')), { status: true, priority: true, pm: true }).filter(search);
     return null;
   }
   const toProjects = items => { const d = getData(); if (!items) return d.projects; const ids = new Set(items.map(i => String(i.id))); return d.projects.filter(p => ids.has(p.id)); };
@@ -230,7 +230,7 @@
     if (view === 'muelle') return mountMuelle(main);
     if (!['atencion', 'portafolio', 'cronograma', 'finanzas'].includes(view)) return;
     const items = viewItems(view), pl = place(main, view); if (!pl) return;
-    const st = g('state') || {}, filteredView = ['search', 'status', 'priority', 'pm', 'phase', 'schedule', 'issue', 'riskType', 'mitigationOwner', 'auditFilter'].some(k => st[k]) || (view === 'portafolio' && ['active','closed'].includes(st.portfolioScope));
+    const st = g('state') || {}, filteredView = ['search', 'status', 'priority', 'pm', 'phase', 'schedule', 'issue', 'riskType', 'mitigationOwner', 'auditFilter'].some(k => st[k]) || ['projects','quick-wins'].includes(st.initiativeScope) || (view === 'portafolio' && ['active','closed'].includes(st.portfolioScope));
     const o = { cardClass: cfg.cardClass, onSelect: open };
     const mark = h => { if (filteredView) { h.pills = [{ text: 'Vista filtrada' }].concat(h.pills || []); if (h.empty && !items.length) h.msg = h.empty; } const t = toggleBtn(view, pl.charts); if (t) h.actions = [t]; return h; };
     let h;
