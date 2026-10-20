@@ -17,12 +17,26 @@ const PMO_DISPATCH = Object.freeze({
   maxRecords: 100,
 });
 
-function doGet() {
+function doGet(e) {
   try {
     requirePmoUser_();
+    if (e && e.parameter && e.parameter.mode === 'sync') {
+      const requestId = String(e.parameter.request_id || '');
+      if (!validRequestId_(requestId)) throw new Error('Solicitud inválida');
+      const page = HtmlService.createTemplateFromFile('Sync');
+      page.requestId = requestId;
+      page.accessError = false;
+      return page.evaluate().setTitle('COSMOS · Sincronizar Monday');
+    }
     return HtmlService.createHtmlOutputFromFile('Index')
       .setTitle('COSMOS · PPT semanal');
   } catch (_) {
+    if (e && e.parameter && e.parameter.mode === 'sync' && validRequestId_(e.parameter.request_id)) {
+      const page = HtmlService.createTemplateFromFile('Sync');
+      page.requestId = e.parameter.request_id;
+      page.accessError = true;
+      return page.evaluate().setTitle('COSMOS · Sincronizar Monday');
+    }
     return HtmlService.createHtmlOutput(
       '<!doctype html><html lang="es"><meta charset="utf-8"><title>Acceso restringido</title>' +
       '<body style="font:16px Arial,sans-serif;padding:3rem;color:#142c3c">' +

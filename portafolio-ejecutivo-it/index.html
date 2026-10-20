@@ -537,13 +537,14 @@
     .initiative-selector label{font-size:13px;font-weight:700;color:#24475d}.initiative-selector span{font-size:12px;color:#617682}
     .initiative-selector select{min-width:145px}
   </style>
+  <link rel="stylesheet" href="assets/css/monday-sync.css?v=20261020">
 </head>
 <body class="nav-collapsed">
   <header class="topbar"><div class="topinner">
     <button type="button" class="nav-toggle" id="nav-toggle" aria-label="Mostrar módulos" aria-expanded="false" aria-controls="nav" onclick="toggleSidebar()" title="Mostrar módulos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
     <div class="brand"><img class="brand-logo" src="assets/cosmos-logo-white.png" alt="COSMOS Global Logistics"><strong class="brand-title">Portafolio Ejecutivo de Proyectos de IT</strong></div>
     <div class="topmeta"><strong id="cut-label">Corte de datos</strong><span class="source-line"><button class="source-trigger" id="pmo-source-trigger" type="button">Fuente:</button> monday.com</span><span class="cut-freshness" id="cut-freshness" role="status" hidden>Sincronización pendiente</span></div>
-    <div class="top-actions"><span class="refresh-status" id="refresh-data-status" role="status" aria-live="polite" hidden></span><button class="refresh-data" id="refresh-data-button" type="button" onclick="refreshMondayData()" title="Recarga el último corte publicado. No inicia una consulta a Monday; la sincronización se ejecuta de forma programada."><svg class="refresh-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4.8 16.8A8 8 0 0 0 19.2 12M4 17v-5h5M19.2 7.2A8 8 0 0 0 4.8 12"/></svg><span id="refresh-data-label">Actualizar datos</span></button></div>
+    <div class="top-actions"><span class="refresh-status" id="refresh-data-status" role="status" aria-live="polite" hidden></span><button class="refresh-data" id="refresh-data-button" type="button" onclick="refreshMondayData()" title="Consulta Monday, publica un corte nuevo y carga las actualizaciones. Requiere una cuenta COSMOS autorizada."><svg class="refresh-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4.8 16.8A8 8 0 0 0 19.2 12M4 17v-5h5M19.2 7.2A8 8 0 0 0 4.8 12"/></svg><span id="refresh-data-label">Actualizar datos</span></button></div>
   </div></header>
   <div class="shell">
     <aside class="sidebar"><nav class="nav" aria-label="Navegación principal" id="nav"></nav><div id="secondary-nav" class="secondary-nav" hidden></div><div class="scope"><strong>Estado de la cartera</strong><span id="scope"></span></div></aside>
@@ -841,6 +842,7 @@
     window.dispatchEvent(new CustomEvent('portfolio:data-updated',{detail:{cut:D.extracted_at_utc}}));
   }
   async function refreshMondayData(){
+    if(window.PMOMondaySync)return window.PMOMondaySync.start();
     const button=document.getElementById('refresh-data-button'),label=document.getElementById('refresh-data-label');
     if(refreshRunning||!button)return;
     refreshRunning=true;button.disabled=true;button.classList.add('is-loading');button.dataset.state='';button.setAttribute('aria-busy','true');label.textContent='Consultando…';setRefreshStatus('Buscando el último corte publicado…','loading');
@@ -942,6 +944,7 @@
     });
   </script>
   <script src="assets/js/cosmos-paper-fx.min.js?v=updates-20261001" defer></script>
+  <script src="assets/js/monday-sync.js?v=20261020" defer></script>
   <script src="assets/js/portal-fx.js?v=quick-wins-20261019" defer></script>
   <script src="assets/js/pmo-data.js?v=quick-wins-20261019" defer></script>
   <script src="assets/js/pmo-av.js?v=quick-wins-20261019" defer></script>
