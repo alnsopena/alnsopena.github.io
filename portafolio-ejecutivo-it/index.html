@@ -543,7 +543,7 @@
     <button type="button" class="nav-toggle" id="nav-toggle" aria-label="Mostrar módulos" aria-expanded="false" aria-controls="nav" onclick="toggleSidebar()" title="Mostrar módulos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
     <div class="brand"><img class="brand-logo" src="assets/cosmos-logo-white.png" alt="COSMOS Global Logistics"><strong class="brand-title">Portafolio Ejecutivo de Proyectos de IT</strong></div>
     <div class="topmeta"><strong id="cut-label">Corte de datos</strong><span class="source-line"><button class="source-trigger" id="pmo-source-trigger" type="button">Fuente:</button> monday.com</span><span class="cut-freshness" id="cut-freshness" role="status" hidden>Sincronización pendiente</span></div>
-    <div class="top-actions"><span class="refresh-status" id="refresh-data-status" role="status" aria-live="polite" hidden></span><button class="refresh-data" id="refresh-data-button" type="button" onclick="refreshMondayData()" title="Carga el corte más reciente que ya publicó la sincronización horaria de monday.com"><svg class="refresh-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4.8 16.8A8 8 0 0 0 19.2 12M4 17v-5h5M19.2 7.2A8 8 0 0 0 4.8 12"/></svg><span id="refresh-data-label">Actualizar datos</span></button></div>
+    <div class="top-actions"><span class="refresh-status" id="refresh-data-status" role="status" aria-live="polite" hidden></span><button class="refresh-data" id="refresh-data-button" type="button" onclick="refreshMondayData()" title="Recarga el último corte publicado. No inicia una consulta a Monday; la sincronización se ejecuta de forma programada."><svg class="refresh-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4.8 16.8A8 8 0 0 0 19.2 12M4 17v-5h5M19.2 7.2A8 8 0 0 0 4.8 12"/></svg><span id="refresh-data-label">Actualizar datos</span></button></div>
   </div></header>
   <div class="shell">
     <aside class="sidebar"><nav class="nav" aria-label="Navegación principal" id="nav"></nav><div id="secondary-nav" class="secondary-nav" hidden></div><div class="scope"><strong>Estado de la cartera</strong><span id="scope"></span></div></aside>
@@ -843,7 +843,7 @@
   async function refreshMondayData(){
     const button=document.getElementById('refresh-data-button'),label=document.getElementById('refresh-data-label');
     if(refreshRunning||!button)return;
-    refreshRunning=true;button.disabled=true;button.classList.add('is-loading');button.dataset.state='';button.setAttribute('aria-busy','true');label.textContent='Consultando…';setRefreshStatus('Buscando el corte más reciente publicado desde monday.com…','loading');
+    refreshRunning=true;button.disabled=true;button.classList.add('is-loading');button.dataset.state='';button.setAttribute('aria-busy','true');label.textContent='Consultando…';setRefreshStatus('Buscando el último corte publicado…','loading');
     try{
       const url=new URL(window.location.href);url.hash='';url.searchParams.set('__fresh_data',String(Date.now()));
       const response=await fetch(url.href,{method:'GET',cache:'no-store',credentials:'same-origin',headers:{Accept:'text/html','Cache-Control':'no-cache',Pragma:'no-cache'}});
@@ -856,7 +856,7 @@
       if(!Number.isFinite(latestTime))throw new Error('El corte recibido no tiene fecha válida');
       const isNewer=!Number.isFinite(previousTime)||latestTime>previousTime;
       if(isNewer)applyMondaySnapshot(latest);else updateCutDisplay();
-      const stale=cutIsStale();button.dataset.state=stale?'error':'success';setRefreshStatus(stale?'Sincronización pendiente':isNewer?'Nuevo corte aplicado':'Datos al día',stale?'error':'success');
+      const stale=cutIsStale();button.dataset.state=stale?'error':'success';setRefreshStatus(stale?'El corte publicado está pendiente de sincronización con Monday.':isNewer?'Nuevo corte publicado aplicado.':'Sin nuevo corte publicado. La consulta a Monday se ejecuta de forma programada.',stale?'error':'success');
     }catch(error){button.dataset.state='error';setRefreshStatus('No se pudo consultar el último corte. Conservas los datos cargados.','error');console.error('No se pudo actualizar el corte publicado de monday.com',error)}
     finally{refreshRunning=false;button.disabled=false;button.classList.remove('is-loading');button.setAttribute('aria-busy','false');label.textContent='Actualizar datos'}
   }
