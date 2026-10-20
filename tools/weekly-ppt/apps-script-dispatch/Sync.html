@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es"><head><base target="_top"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>COSMOS · Sincronizar Monday</title>
+<style>
+body{margin:0;background:#f3f7f8;color:#14384b;font:16px/1.6 Arial,sans-serif}main{max-width:600px;margin:40px auto;padding:28px}h1{font-size:30px;line-height:1.2}small{color:#527281}#state{padding:20px;background:white;border:1px solid #c9dbe0;border-radius:12px}button{padding:12px 18px;background:#064e62;color:white;border:0;border-radius:8px;font-weight:bold;cursor:pointer}[hidden]{display:none!important}.pulse{height:5px;background:#d0e2e6;overflow:hidden;border-radius:5px}.pulse:after{content:'';display:block;height:100%;width:35%;background:#08798c;animation:load 1.4s ease-in-out infinite}body[data-phase=failed] #state{border-color:#a44636;color:#8b3028}body[data-phase=published] #state{border-color:#257555}body[data-phase=failed] .pulse,body[data-phase=published] .pulse{display:none}@keyframes load{from{transform:translateX(-100%)}to{transform:translateX(400%)}}@media(prefers-reduced-motion:reduce){.pulse:after{animation:none}}
+</style></head><body data-phase="connecting"><main><small>COSMOS · Servicio privado PMO</small><h1>Sincronizar Monday</h1>
+<div id="state" role="status" aria-live="polite">Conectando con el portafolio…</div><div class="pulse" aria-hidden="true"></div>
+<p>El portafolio mostrará el progreso y cargará las actualizaciones cuando estén publicadas.</p><p id="detail">Puedes mantener esta ventana abierta mientras termina.</p>
+<button id="start" hidden>Iniciar sincronización</button><button id="check" hidden>Comprobar estado</button>
+</main><script>
+const requestId = <?!= JSON.stringify(requestId) ?>;
+const accessError = <?!= JSON.stringify(accessError) ?>;
+const portalOrigin = 'https://alnsopena.github.io';
+let openerWindow = null, started = false, timer = null, failures = 0;
+try { openerWindow = window.top.opener; } catch (_) {}
+function emit(data) { if(openerWindow)openerWindow.postMessage(Object.assign({type:'cosmos:monday-sync',requestId:requestId},data),portalOrigin); }
+function show(result) { document.body.dataset.phase=result.phase||'connecting';document.getElementById('state').textContent=result.message||'Solicitud enviada. Esperando turno…';emit(result); }
+function failed() { failures++;show({ok:true,phase:'retrying',message:'La consulta tardó más de lo esperado. Reintentando…'});if(failures<5)timer=setTimeout(poll,15000);else{document.getElementById('check').hidden=false;document.getElementById('detail').textContent='No se ha confirmado el resultado. Puedes comprobarlo otra vez.';} }
+function poll() {
+ clearTimeout(timer);
+ google.script.run.withSuccessHandler(function(result){
+  failures=0;show(result);
+  if(result.ok&&result.phase!=='failed'&&result.phase!=='published')timer=setTimeout(poll,15000);
+  else if(result.phase==='published')document.getElementById('detail').textContent='Vuelve al portafolio: está comprobando y cargando este corte.';
+ }).withFailureHandler(failed).getMondaySyncStatus(requestId);
+}
+function start() {
+ if(started)return;started=true;document.getElementById('start').hidden=true;
+ if(accessError){show({ok:false,phase:'failed',message:'Tu cuenta no está autorizada en el servicio PMO de COSMOS.'});document.getElementById('detail').textContent='Usa una cuenta autorizada. No se inició ninguna sincronización.';return;}
+ show({ok:true,phase:'connecting',message:'Enviando la solicitud de sincronización…'});
+ google.script.run.withSuccessHandler(function(result){show(result);if(result.ok)poll();else document.getElementById('detail').textContent='Vuelve al portafolio para reintentar.';}).withFailureHandler(function(){show({ok:false,phase:'failed',message:'No se pudo iniciar la sincronización. Vuelve al portafolio y reintenta.'});}).requestMondaySync(requestId);
+}
+window.addEventListener('message',function(event){if(event.origin===portalOrigin&&event.source===openerWindow&&event.data&&event.data.type==='cosmos:monday-sync-start'&&event.data.requestId===requestId)start();});
+document.getElementById('start').onclick=start;
+document.getElementById('check').onclick=function(){failures=0;this.hidden=true;poll();};
+if(openerWindow){emit({phase:'ready'});const handshake=setInterval(function(){if(started)clearInterval(handshake);else emit({phase:'ready'});},1000);setTimeout(function(){clearInterval(handshake);if(!started){document.getElementById('start').hidden=false;document.getElementById('state').textContent='No se pudo conectar automáticamente con la pestaña del portafolio. Inicia la sincronización aquí; el portafolio comprobará su publicación.';}},15000);}else{document.getElementById('start').hidden=false;document.getElementById('state').textContent='Usa tu cuenta autorizada de COSMOS para iniciar la sincronización.';}
+</script></body></html>

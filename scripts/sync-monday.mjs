@@ -299,6 +299,11 @@ async function fetchSnapshot(token, previous) {
     weekly_baseline: weeklyBaseline,
     raw_items: rawItems,
     updates,
+    publication: {
+      request_id: process.env.PORTFOLIO_SYNC_REQUEST_ID || '',
+      run_id: process.env.GITHUB_RUN_ID || '',
+      run_attempt: process.env.GITHUB_RUN_ATTEMPT || '',
+    },
   };
   return { snapshot, client };
 }

@@ -1,5 +1,5 @@
 name: Publicar Portafolio Ejecutivo IT
-run-name: ${{ github.event_name == 'workflow_dispatch' && inputs.request_id != '' && format('PMO PPT {0}', inputs.request_id) || github.workflow }}
+run-name: ${{ github.event_name == 'workflow_dispatch' && inputs.request_id != '' && format('{0} {1}', inputs.generate_ppt && 'PMO PPT' || 'PMO SYNC', inputs.request_id) || github.workflow }}
 
 on:
   push:
@@ -58,7 +58,7 @@ jobs:
 
       - name: Probar reglas de datos y portal
         run: |
-          node --test scripts/finance-model.test.mjs scripts/monday-api-read.test.mjs scripts/verify-portfolio-published.test.mjs scripts/weekly-data.test.mjs scripts/encrypt-weekly-ppt.test.mjs scripts/deliver-weekly-ppt-cloud.test.mjs scripts/publish-weekly-ppt-pull.test.mjs scripts/write-ppt-config.test.mjs tools/weekly-ppt/apps-script-pull/test-pull.mjs tools/weekly-ppt/apps-script-dispatch/test-dispatch.mjs
+          node --test scripts/monday-sync.test.mjs scripts/finance-model.test.mjs scripts/monday-api-read.test.mjs scripts/verify-portfolio-published.test.mjs scripts/weekly-data.test.mjs scripts/encrypt-weekly-ppt.test.mjs scripts/deliver-weekly-ppt-cloud.test.mjs scripts/publish-weekly-ppt-pull.test.mjs scripts/write-ppt-config.test.mjs tools/weekly-ppt/apps-script-pull/test-pull.mjs tools/weekly-ppt/apps-script-dispatch/test-dispatch.mjs
           node scripts/test-cosmo.mjs
 
       - name: Verificar conexión de monday
@@ -88,6 +88,7 @@ jobs:
         env:
           MONDAY_MCP_TOKEN: ${{ secrets.MONDAY_MCP_TOKEN }}
           GENERATE_WEEKLY_PPT: ${{ steps.weekly.outputs.generate == 'true' && '1' || '0' }}
+          PORTFOLIO_SYNC_REQUEST_ID: ${{ github.event_name == 'workflow_dispatch' && !inputs.generate_ppt && inputs.request_id || '' }}
         run: node scripts/sync-monday.mjs
 
       - name: Conservar corte y comparación semanal
