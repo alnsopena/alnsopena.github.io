@@ -2,7 +2,7 @@
 
 El botón **Actualizar datos** abre la conexión privada existente de Google Workspace. La identidad y la lista `PMO_ALLOWED_EMAILS` se comprueban en el servidor en cada solicitud. No se añaden permisos ni se entregan tokens al navegador.
 
-El servicio envía `generate_ppt=false` y un UUID a `publicar-portafolio.yml`. Esa ejecución se llama `PMO SYNC <uuid>`, consulta Monday y publica un nuevo corte. El panel del portafolio distingue conexión, espera, consulta, publicación y carga. Solo finaliza cuando carga el snapshot que acredita ese UUID, el run y su intento; un despacho aceptado o un run terminado por sí solos no confirman los datos visibles.
+El servicio envía `generate_ppt=false` y un UUID a `publicar-portafolio.yml`. Esa ejecución se llama `PMO SYNC <uuid>`, consulta Monday y publica un nuevo corte. El panel del portafolio distingue conexión, espera, consulta, publicación y carga. Solo finaliza cuando el servidor confirma que la ejecución terminó correctamente, incluida su verificación pública, y el cliente carga el snapshot que acredita ese UUID, el run y su intento. Un corte visible durante una ejecución que luego falla no permite anunciar éxito.
 
 ## Componentes
 
