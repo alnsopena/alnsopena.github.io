@@ -9,10 +9,15 @@ const html = data => '<script type="application/json" id="snapshot">' + JSON.str
 test('publication check tolerates CDN delay and then verifies the exact cut and comments', async () => {
   let calls = 0;
   const cut = await verifyPublishedCut('https://example.com/', expected, {
-    request: async () => new Response(html(++calls === 1 ? { ...snapshot, extracted_at_utc: 'old' } : snapshot)),
+    request: async (target, options) => {
+      assert.ok(target.searchParams.get('__verify_cut').startsWith(expected.cut));
+      assert.equal(options.cache, 'no-store');
+      assert.match(options.headers['Cache-Control'], /no-cache/);
+      return new Response(html(++calls <= 6 ? { ...snapshot, extracted_at_utc: 'old' } : snapshot));
+    },
     sleep: async () => {},
   });
-  assert.equal(calls, 2);
+  assert.equal(calls, 7);
   assert.equal(cut, snapshot.extracted_at_utc);
 });
 
