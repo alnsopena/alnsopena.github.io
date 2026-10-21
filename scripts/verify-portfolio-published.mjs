@@ -11,20 +11,20 @@ export function updatesDigest(snapshot) {
   return createHash('sha256').update(JSON.stringify(updates)).digest('hex');
 }
 
-export async function verifyPublishedCut(url, expected, { request = fetch, sleep = wait, attempts = 5 } = {}) {
+export async function verifyPublishedCut(url, expected, { request = fetch, sleep = wait, attempts = 25 } = {}) {
   if (!expected.cut || !expected.digest) throw new Error('Falta la referencia del corte que debe publicarse');
   let error;
   for (let attempt = 0; attempt < attempts; attempt += 1) {
     try {
       const target = new URL(url);
-      target.searchParams.set('__verify_cut', expected.cut + '-' + attempt);
-      const response = await request(target, { cache: 'no-store', signal: AbortSignal.timeout(10000) });
+      target.searchParams.set('__verify_cut', expected.cut + '-' + attempt + '-' + Date.now());
+      const response = await request(target, { cache: 'no-store', headers: { 'Cache-Control': 'no-cache, no-store, max-age=0', Pragma: 'no-cache' }, signal: AbortSignal.timeout(10000) });
       if (!response.ok) throw new Error('La web publicada respondió HTTP ' + response.status);
       const match = (await response.text()).match(/<script type="application\/json" id="snapshot">([\s\S]*?)<\/script>/);
       if (!match) throw new Error('La web publicada no contiene el corte de monday');
       const snapshot = JSON.parse(match[1]);
       if (snapshot.extracted_at_utc !== expected.cut || updatesDigest(snapshot) !== expected.digest) {
-        throw new Error('La web publicada todavía no contiene el corte y los comentarios completos');
+        throw new Error('La web publicada todavía no contiene el corte y los comentarios completos. Esperado: ' + expected.cut + '; recibido: ' + snapshot.extracted_at_utc);
       }
       return snapshot.extracted_at_utc;
     } catch (failure) { error = failure; }

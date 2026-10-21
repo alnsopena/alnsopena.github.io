@@ -6,7 +6,7 @@
   const serviceOrigin = origin => /^https:\/\/(?:[a-z0-9-]+-)?script\.googleusercontent\.com$/.test(origin) || origin === 'https://script.google.com';
   function matches(snapshot, request, boardId) {
     const p = snapshot && snapshot.publication;
-    return !!(p && p.request_id === request.id && /^[1-9]\d{0,19}$/.test(p.run_id) && /^[1-9]\d*$/.test(p.run_attempt) &&
+    return !!(request.verified === true && p && p.request_id === request.id && /^[1-9]\d{0,19}$/.test(p.run_id) && /^[1-9]\d*$/.test(p.run_attempt) &&
       (!request.runId || request.runId === p.run_id) && (!request.runAttempt || request.runAttempt === p.run_attempt) &&
       String(snapshot.board_id) === String(boardId || '18396270726') && Array.isArray(snapshot.items) && snapshot.items.length > 0 && Number.isFinite(Date.parse(snapshot.extracted_at_utc)));
   }
@@ -116,6 +116,7 @@
     if (data.phase === 'failed' || data.ok === false) { fail(typeof data.message === 'string' ? data.message : 'La sincronización no terminó. Puedes reintentar.'); return; }
     if (data.runId && /^[1-9]\d{0,19}$/.test(data.runId)) request.runId = data.runId;
     if (data.runAttempt && /^[1-9]\d*$/.test(data.runAttempt)) request.runAttempt = data.runAttempt;
+    if (data.phase === 'published' && request.runId && request.runAttempt) request.verified = true;
     if (['connecting', 'queued', 'running', 'publishing', 'published', 'retrying'].includes(data.phase)) {
       request.phase = data.phase; persist();
       const labels = { connecting: 'Enviando la solicitud…', queued: 'Solicitud enviada. Esperando turno…', running: 'Consultando Monday y preparando las actualizaciones…', publishing: 'Publicando el nuevo corte…', published: 'Publicación completada. Comprobando y cargando el nuevo corte…', retrying: 'Comprobando el progreso de la sincronización…' };

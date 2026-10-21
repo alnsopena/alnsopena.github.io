@@ -47,9 +47,10 @@ test('a different run cannot complete the request and rejected dispatches are no
 const clientContext={module:{exports:{}}};vm.runInNewContext(fs.readFileSync(new URL('../portafolio-ejecutivo-it/assets/js/monday-sync.js',import.meta.url),'utf8'),clientContext);
 const {matches,serviceOrigin}=clientContext.module.exports;
 test('only the exact published request, run and attempt can finish the visual synchronization',()=>{
- const request={id,runId:'123',runAttempt:'1'};
+ const request={id,runId:'123',runAttempt:'1',verified:true};
  const cut={board_id:'18396270726',items:[{id:'one'}],extracted_at_utc:'2026-10-20T16:00:00Z',publication:{request_id:id,run_id:'123',run_attempt:'1'}};
  assert.equal(matches(cut,request),true);
+ assert.equal(matches(cut,{...request,verified:false}),false,'A briefly visible cut cannot finish before the workflow verifies its publication');
  for(const publication of [{...cut.publication,request_id:'other'},{...cut.publication,run_id:'456'},{...cut.publication,run_attempt:'2'}])assert.equal(matches({...cut,publication},request),false);
  assert.equal(matches({...cut,items:[]},request),false);assert.equal(matches({...cut,board_id:'another'},request),false);
  assert.equal(matches({...cut,extracted_at_utc:'invalid'},request),false);
