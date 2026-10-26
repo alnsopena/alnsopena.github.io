@@ -1,0 +1,753 @@
+{
+  "schema_version": 1,
+  "previous_week_key": "2026-10-19",
+  "next_week_key": "2026-10-26",
+  "archived_at_utc": "2026-10-26T19:19:11.562Z",
+  "prior_baseline": {
+    "week_key": "2026-10-19",
+    "cut_id": "18396270726:2026-10-19T17:21:33.775Z",
+    "extracted_at_utc": "2026-10-19T17:21:33.775Z",
+    "items": [
+      {
+        "id": "11041978965",
+        "name": "Cosmos Connect",
+        "column_values": {
+          "status": "En Proceso",
+          "color_mkzzg1vp": "Critical ⚠️️",
+          "multiple_person_mm087pe3": "Alonso Pena",
+          "color_mm6kg2n5": "Pruebas UAT",
+          "numeric_mkzrc075": "65",
+          "date_mkzrb4nr": "2027-01-18",
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": "Riesgo / Alerta",
+          "text_mm7fvxjn": "Contrato con Singulartech pendiente de firma."
+        }
+      },
+      {
+        "id": "11062536522",
+        "name": "Labor & Trace",
+        "column_values": {
+          "status": "En Proceso",
+          "color_mkzzg1vp": "Critical ⚠️️",
+          "multiple_person_mm087pe3": "Alonso Pena",
+          "color_mm6kg2n5": "Ejecución",
+          "numeric_mkzrc075": "35",
+          "date_mkzrb4nr": "2027-02-05",
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": "Riesgo / Alerta",
+          "text_mm7fvxjn": "15/10: Contrato CT0150 firmado (13/10) y kick off realizado (15/10). Riesgos: estabilización de Paita cruza feriados (21/12 al 01/01); plan total de 16 semanas vs 12 del contrato; OC pendiente."
+        }
+      },
+      {
+        "id": "11820220046",
+        "name": "Portal Cosmos 360",
+        "column_values": {
+          "status": "Planificado",
+          "color_mkzzg1vp": "Medium",
+          "multiple_person_mm087pe3": "Alonso Pena",
+          "color_mm6kg2n5": "Planificación",
+          "numeric_mkzrc075": "8",
+          "date_mkzrb4nr": "2027-08-31",
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": "Sin evaluar",
+          "text_mm7fvxjn": null
+        }
+      },
+      {
+        "id": "12494411901",
+        "name": "Mejoras Facturación",
+        "column_values": {
+          "status": "En Proceso",
+          "color_mkzzg1vp": "Critical ⚠️️",
+          "multiple_person_mm087pe3": "Carlos Caycho Martinez",
+          "color_mm6kg2n5": "Planificación",
+          "numeric_mkzrc075": "40",
+          "date_mkzrb4nr": "2026-10-16",
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": "Sin evaluar",
+          "text_mm7fvxjn": null
+        }
+      },
+      {
+        "id": "11560984106",
+        "name": "Cosmos  DA 360",
+        "column_values": {
+          "status": "Cerrado",
+          "color_mkzzg1vp": "High",
+          "multiple_person_mm087pe3": "Carlos Caycho Martinez",
+          "color_mm6kg2n5": "Cierre",
+          "numeric_mkzrc075": "100",
+          "date_mkzrb4nr": "2026-03-27",
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": null,
+          "text_mm7fvxjn": null
+        }
+      },
+      {
+        "id": "11485936902",
+        "name": "Cosmos EXPO 360",
+        "column_values": {
+          "status": "Cerrado",
+          "color_mkzzg1vp": "High",
+          "multiple_person_mm087pe3": "Carlos Caycho Martinez",
+          "color_mm6kg2n5": "Cierre",
+          "numeric_mkzrc075": "100",
+          "date_mkzrb4nr": "2026-03-27",
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": null,
+          "text_mm7fvxjn": null
+        }
+      },
+      {
+        "id": "12107020651",
+        "name": "Depot Vacíos",
+        "column_values": {
+          "status": "Cerrado",
+          "color_mkzzg1vp": "Critical ⚠️️",
+          "multiple_person_mm087pe3": "Carlos Caycho Martinez",
+          "color_mm6kg2n5": "Cierre",
+          "numeric_mkzrc075": "100",
+          "date_mkzrb4nr": "2026-06-09",
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": null,
+          "text_mm7fvxjn": null
+        }
+      },
+      {
+        "id": "12107022856",
+        "name": "DT LCL",
+        "column_values": {
+          "status": "Cerrado",
+          "color_mkzzg1vp": "Critical ⚠️️",
+          "multiple_person_mm087pe3": "Carlos Caycho Martinez",
+          "color_mm6kg2n5": "Cierre",
+          "numeric_mkzrc075": "99",
+          "date_mkzrb4nr": null,
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": null,
+          "text_mm7fvxjn": null
+        }
+      },
+      {
+        "id": "11041988731",
+        "name": "Portal de Proveedores",
+        "column_values": {
+          "status": "Cerrado",
+          "color_mkzzg1vp": "Critical ⚠️️",
+          "multiple_person_mm087pe3": "Juan Pablo Arbulú",
+          "color_mm6kg2n5": "Cierre",
+          "numeric_mkzrc075": "100",
+          "date_mkzrb4nr": "2026-08-31",
+          "date_mm6d8mx": "2026-09-21",
+          "color_mm6zdfgs": "Sin bloqueo",
+          "text_mm7fvxjn": "29/09: Atención de maneral manual las facturas cuando estás deben ir por el portal"
+        }
+      },
+      {
+        "id": "11700862400",
+        "name": "Portal Clientes  FE & Sustentos",
+        "column_values": {
+          "status": "Cerrado",
+          "color_mkzzg1vp": "High",
+          "multiple_person_mm087pe3": "Juan Pablo Arbulú",
+          "color_mm6kg2n5": "Cierre",
+          "numeric_mkzrc075": "100",
+          "date_mkzrb4nr": "2026-06-19",
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": null,
+          "text_mm7fvxjn": null
+        }
+      },
+      {
+        "id": "11041978967",
+        "name": "Proyecto de Financial Roll-up SAP B1",
+        "column_values": {
+          "status": "Cerrado",
+          "color_mkzzg1vp": "Critical ⚠️️",
+          "multiple_person_mm087pe3": "Juan Pablo Arbulú",
+          "color_mm6kg2n5": "Cierre",
+          "numeric_mkzrc075": "100",
+          "date_mkzrb4nr": "2026-01-21",
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": null,
+          "text_mm7fvxjn": null
+        }
+      },
+      {
+        "id": "11941507121",
+        "name": "Facturación automática  WMS",
+        "column_values": {
+          "status": "En Proceso",
+          "color_mkzzg1vp": "Critical ⚠️️",
+          "multiple_person_mm087pe3": "Juan Pablo Arbulú",
+          "color_mm6kg2n5": "Planificación",
+          "numeric_mkzrc075": "30",
+          "date_mkzrb4nr": "2026-10-15",
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": "Riesgo / Alerta",
+          "text_mm7fvxjn": "29/09: Sin respuesta por parte del proveedor desde 08/09"
+        }
+      },
+      {
+        "id": "12978628465",
+        "name": "POTRe -  Solicitud hasta Liquidación Pagos Operativos a Terceros",
+        "column_values": {
+          "status": "En Proceso",
+          "color_mkzzg1vp": "Critical ⚠️️",
+          "multiple_person_mm087pe3": "Juan Pablo Arbulú",
+          "color_mm6kg2n5": "Evaluación",
+          "numeric_mkzrc075": "10",
+          "date_mkzrb4nr": "2026-11-17",
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": "Sin evaluar",
+          "text_mm7fvxjn": "Reunión de definición con Procesos"
+        }
+      },
+      {
+        "id": "13001797552",
+        "name": "Portal de Compras",
+        "column_values": {
+          "status": "En Proceso",
+          "color_mkzzg1vp": "Critical ⚠️️",
+          "multiple_person_mm087pe3": "Juan Pablo Arbulú",
+          "color_mm6kg2n5": "Propuesta",
+          "numeric_mkzrc075": "10",
+          "date_mkzrb4nr": "2027-01-11",
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": "Sin bloqueo",
+          "text_mm7fvxjn": "29/09: Sin aprobación de los cambios a la última modificación del proceso"
+        }
+      },
+      {
+        "id": "11126286657",
+        "name": "Proyecto de Renovación  Servicios IaaS",
+        "column_values": {
+          "status": "Cerrado",
+          "color_mkzzg1vp": "High",
+          "multiple_person_mm087pe3": "Miembro eliminado",
+          "color_mm6kg2n5": "Cierre",
+          "numeric_mkzrc075": "100",
+          "date_mkzrb4nr": "2026-03-20",
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": null,
+          "text_mm7fvxjn": null
+        }
+      },
+      {
+        "id": "11133619582",
+        "name": "Renovación de antivirus",
+        "column_values": {
+          "status": "Cerrado",
+          "color_mkzzg1vp": "Critical ⚠️️",
+          "multiple_person_mm087pe3": "Miembro eliminado",
+          "color_mm6kg2n5": "Cierre",
+          "numeric_mkzrc075": "100",
+          "date_mkzrb4nr": "2026-03-20",
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": null,
+          "text_mm7fvxjn": null
+        }
+      },
+      {
+        "id": "11184730468",
+        "name": "Optimización Líneas Móviles",
+        "column_values": {
+          "status": "Cerrado",
+          "color_mkzzg1vp": "High",
+          "multiple_person_mm087pe3": "Milagros Cheel",
+          "color_mm6kg2n5": "Cierre",
+          "numeric_mkzrc075": "100",
+          "date_mkzrb4nr": "2026-03-13",
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": null,
+          "text_mm7fvxjn": null
+        }
+      },
+      {
+        "id": "11041999937",
+        "name": "Proyecto de Fusión Tecnológica",
+        "column_values": {
+          "status": "Cerrado",
+          "color_mkzzg1vp": "Critical ⚠️️",
+          "multiple_person_mm087pe3": "Milagros Cheel",
+          "color_mm6kg2n5": "Cierre",
+          "numeric_mkzrc075": "100",
+          "date_mkzrb4nr": "2026-01-09",
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": null,
+          "text_mm7fvxjn": null
+        }
+      },
+      {
+        "id": "11126298383",
+        "name": "Proyecto de Optimización del Parque de Impresión",
+        "column_values": {
+          "status": "Cerrado",
+          "color_mkzzg1vp": "Critical ⚠️️",
+          "multiple_person_mm087pe3": "Milagros Cheel",
+          "color_mm6kg2n5": "Cierre",
+          "numeric_mkzrc075": "100",
+          "date_mkzrb4nr": "2026-03-13",
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": null,
+          "text_mm7fvxjn": null
+        }
+      },
+      {
+        "id": "13001935725",
+        "name": "Plataforma Corporativa de Datos y Analítica",
+        "column_values": {
+          "status": "Planificado",
+          "color_mkzzg1vp": "Critical ⚠️️",
+          "multiple_person_mm087pe3": "Pierre Lozano",
+          "color_mm6kg2n5": "Planificación",
+          "numeric_mkzrc075": "0",
+          "date_mkzrb4nr": null,
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": null,
+          "text_mm7fvxjn": null
+        }
+      },
+      {
+        "id": "13001971369",
+        "name": "Cosmos 360",
+        "column_values": {
+          "status": "Planificado",
+          "color_mkzzg1vp": "Critical ⚠️️",
+          "multiple_person_mm087pe3": "Pierre Lozano",
+          "color_mm6kg2n5": "Planificación",
+          "numeric_mkzrc075": "0",
+          "date_mkzrb4nr": null,
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": null,
+          "text_mm7fvxjn": null
+        }
+      },
+      {
+        "id": "12002357229",
+        "name": "Addon de Reconociliaciones Automáticas",
+        "column_values": {
+          "status": "En Proceso",
+          "color_mkzzg1vp": "High",
+          "multiple_person_mm087pe3": "Valeria Hermoza",
+          "color_mm6kg2n5": "Pruebas UAT",
+          "numeric_mkzrc075": "91",
+          "date_mkzrb4nr": "2026-10-06",
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": "Sin bloqueo",
+          "text_mm7fvxjn": "29/09: no se ha cerrado el universo de pruebas funcionales"
+        }
+      },
+      {
+        "id": "12773879426",
+        "name": "Mejoras: Marcación Paita",
+        "column_values": {
+          "status": "En Proceso",
+          "color_mkzzg1vp": "Critical ⚠️️",
+          "multiple_person_mm087pe3": "Valeria Hermoza",
+          "color_mm6kg2n5": "Despliegue",
+          "numeric_mkzrc075": "95",
+          "date_mkzrb4nr": "2026-09-30",
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": "Riesgo / Alerta",
+          "text_mm7fvxjn": null
+        }
+      },
+      {
+        "id": "13001767422",
+        "name": "Servicio Logístico Integral",
+        "column_values": {
+          "status": "Planificado",
+          "color_mkzzg1vp": "Critical ⚠️️",
+          "multiple_person_mm087pe3": "Valeria Hermoza",
+          "color_mm6kg2n5": "Propuesta",
+          "numeric_mkzrc075": "0",
+          "date_mkzrb4nr": "2027-02-15",
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": "Riesgo / Alerta",
+          "text_mm7fvxjn": "Sin riesgos"
+        }
+      },
+      {
+        "id": "13020508233",
+        "name": "Migración Máximo a Maintain X",
+        "column_values": {
+          "status": "Planificado",
+          "color_mkzzg1vp": "High",
+          "multiple_person_mm087pe3": "Valeria Hermoza",
+          "color_mm6kg2n5": "Propuesta",
+          "numeric_mkzrc075": "0",
+          "date_mkzrb4nr": "2027-01-11",
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": "Sin bloqueo",
+          "text_mm7fvxjn": "Sin riesgos"
+        }
+      },
+      {
+        "id": "13020935577",
+        "name": "Centralización de Socio y Negocios",
+        "column_values": {
+          "status": "Planificado",
+          "color_mkzzg1vp": "Critical ⚠️️",
+          "multiple_person_mm087pe3": "Valeria Hermoza",
+          "color_mm6kg2n5": "Planificación",
+          "numeric_mkzrc075": "0",
+          "date_mkzrb4nr": null,
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": null,
+          "text_mm7fvxjn": null
+        }
+      },
+      {
+        "id": "11061239961",
+        "name": "Integraciones Huawei",
+        "column_values": {
+          "status": "Cerrado",
+          "color_mkzzg1vp": "High",
+          "multiple_person_mm087pe3": "Walter Gonzales",
+          "color_mm6kg2n5": "Cierre",
+          "numeric_mkzrc075": "69",
+          "date_mkzrb4nr": "2026-09-30",
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": "Sin evaluar",
+          "text_mm7fvxjn": null
+        }
+      },
+      {
+        "id": "12243759594",
+        "name": "TMS Logaware",
+        "column_values": {
+          "status": "En Proceso",
+          "color_mkzzg1vp": "Critical ⚠️️",
+          "multiple_person_mm087pe3": "Walter Gonzales",
+          "color_mm6kg2n5": "Propuesta",
+          "numeric_mkzrc075": "23",
+          "date_mkzrb4nr": "2026-11-20",
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": "Sin bloqueo",
+          "text_mm7fvxjn": "29/09: aprobación adicional de las actas de conformidad de servicio para los servicios de transporte"
+        }
+      },
+      {
+        "id": "11043368485",
+        "name": "SmartDocs AI",
+        "column_values": {
+          "status": "Cerrado",
+          "color_mkzzg1vp": "Critical ⚠️️",
+          "multiple_person_mm087pe3": "Walter Gonzales",
+          "color_mm6kg2n5": "Cierre",
+          "numeric_mkzrc075": "100",
+          "date_mkzrb4nr": "2026-02-24",
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": null,
+          "text_mm7fvxjn": null
+        }
+      },
+      {
+        "id": "13001773702",
+        "name": "Solicitud de Fondos y Rendición de Gastos",
+        "column_values": {
+          "status": "En Proceso",
+          "color_mkzzg1vp": "Critical ⚠️️",
+          "multiple_person_mm087pe3": "Walter Gonzales",
+          "color_mm6kg2n5": "Evaluación",
+          "numeric_mkzrc075": "0",
+          "date_mkzrb4nr": "2026-12-04",
+          "date_mm6d8mx": null,
+          "color_mm6zdfgs": "Sin bloqueo",
+          "text_mm7fvxjn": "Sin riesgos"
+        }
+      }
+    ]
+  },
+  "comparison": [
+    {
+      "item_id": "11041978965",
+      "item_name": "Cosmos Connect",
+      "column_id": "color_mm6kg2n5",
+      "before": "Pruebas UAT",
+      "after": "Ejecución",
+      "kind": "column_change"
+    },
+    {
+      "item_id": "11041978965",
+      "item_name": "Cosmos Connect",
+      "column_id": "text_mm7fvxjn",
+      "before": "Contrato con Singulartech pendiente de firma.",
+      "after": "Pendiente envío de OC a Singular Tech",
+      "kind": "column_change"
+    },
+    {
+      "item_id": "11062536522",
+      "item_name": "Labor & Trace",
+      "column_id": "multiple_person_mm087pe3",
+      "before": "Alonso Pena",
+      "after": "Valeria Hermoza",
+      "kind": "column_change"
+    },
+    {
+      "item_id": "11820220046",
+      "item_name": "Portal Cosmos 360",
+      "column_id": "color_mkzzg1vp",
+      "before": "Medium",
+      "after": "Low",
+      "kind": "column_change"
+    },
+    {
+      "item_id": "11820220046",
+      "item_name": "Portal Cosmos 360",
+      "column_id": "color_mm6kg2n5",
+      "before": "Planificación",
+      "after": "Propuesta",
+      "kind": "column_change"
+    },
+    {
+      "item_id": "13001935725",
+      "item_name": "Plataforma Corporativa de Datos y Analítica",
+      "column_id": "color_mm6kg2n5",
+      "before": "Planificación",
+      "after": "Propuesta",
+      "kind": "column_change"
+    },
+    {
+      "item_id": "13020935577",
+      "item_name": "Centralización de Socio y Negocios",
+      "column_id": "color_mm6kg2n5",
+      "before": "Planificación",
+      "after": "Propuesta",
+      "kind": "column_change"
+    },
+    {
+      "item_id": "12243759594",
+      "item_name": "TMS Logaware",
+      "column_id": "numeric_mkzrc075",
+      "before": "23",
+      "after": "53",
+      "kind": "column_change"
+    },
+    {
+      "item_id": "12243759594",
+      "item_name": "TMS Logaware",
+      "column_id": "text_mm7fvxjn",
+      "before": "29/09: aprobación adicional de las actas de conformidad de servicio para los servicios de transporte",
+      "after": "19/10 Considerar conceptos detallados por unidades propias podría disuadir al error en la liquidación.\nSe convocará para el día 20/10 una revisión conjunta con el equipo funcional y planeamiento.\nResponsable [TRA] Luis Miguel Lopez",
+      "kind": "column_change"
+    },
+    {
+      "item_id": "13001773702",
+      "item_name": "Solicitud de Fondos y Rendición de Gastos",
+      "column_id": "color_mm6kg2n5",
+      "before": "Evaluación",
+      "after": "Ejecución",
+      "kind": "column_change"
+    },
+    {
+      "item_id": "13001773702",
+      "item_name": "Solicitud de Fondos y Rendición de Gastos",
+      "column_id": "numeric_mkzrc075",
+      "before": "0",
+      "after": "1",
+      "kind": "column_change"
+    },
+    {
+      "item_id": "13001773702",
+      "item_name": "Solicitud de Fondos y Rendición de Gastos",
+      "column_id": "text_mm7fvxjn",
+      "before": "Sin riesgos",
+      "after": "16/10 Los datos de la plataforma podria estar visibles para todos los perfiles de administrador del corporativo.   El proveedor evaluará y presentará la solución 21/10",
+      "kind": "column_change"
+    },
+    {
+      "item_id": "13341776939",
+      "item_name": "Integración WMS Flexy & Signify",
+      "column_id": null,
+      "before": null,
+      "after": "Nuevo proyecto",
+      "kind": "new_item"
+    },
+    {
+      "item_id": "13350917367",
+      "item_name": "Portal de Proveedores FASE 2",
+      "column_id": null,
+      "before": null,
+      "after": "Nuevo proyecto",
+      "kind": "new_item"
+    },
+    {
+      "item_id": "12005154883",
+      "item_name": "Integración PROMART generación de txt",
+      "column_id": null,
+      "before": null,
+      "after": "Nuevo proyecto",
+      "kind": "new_item"
+    },
+    {
+      "item_id": "12005140969",
+      "item_name": "Desvinculaciones de Personal",
+      "column_id": null,
+      "before": null,
+      "after": "Nuevo proyecto",
+      "kind": "new_item"
+    },
+    {
+      "item_id": "12005140997",
+      "item_name": "Integración al PO Cargo ATLANTIC",
+      "column_id": null,
+      "before": null,
+      "after": "Nuevo proyecto",
+      "kind": "new_item"
+    },
+    {
+      "item_id": "12005141424",
+      "item_name": "Agregar campo personalizado en SAP formulario  SN  obligatorio Sector de Mercado",
+      "column_id": null,
+      "before": null,
+      "after": "Nuevo proyecto",
+      "kind": "new_item"
+    },
+    {
+      "item_id": "12005148928",
+      "item_name": "Modulo para Despacho de Exportaciones",
+      "column_id": null,
+      "before": null,
+      "after": "Nuevo proyecto",
+      "kind": "new_item"
+    },
+    {
+      "item_id": "12005154911",
+      "item_name": "Host to host  Bancos",
+      "column_id": null,
+      "before": null,
+      "after": "Nuevo proyecto",
+      "kind": "new_item"
+    },
+    {
+      "item_id": "12005149034",
+      "item_name": "Automatización de Registro de Formatos Inspección de Botes de buceo",
+      "column_id": null,
+      "before": null,
+      "after": "Nuevo proyecto",
+      "kind": "new_item"
+    },
+    {
+      "item_id": "12005154689",
+      "item_name": "Check in Paita",
+      "column_id": null,
+      "before": null,
+      "after": "Nuevo proyecto",
+      "kind": "new_item"
+    },
+    {
+      "item_id": "12005155354",
+      "item_name": "Gestión de Solicitudes de Personal",
+      "column_id": null,
+      "before": null,
+      "after": "Nuevo proyecto",
+      "kind": "new_item"
+    },
+    {
+      "item_id": "12005160274",
+      "item_name": "Proyecto cambio de Switch en Cosmos Aduanas",
+      "column_id": null,
+      "before": null,
+      "after": "Nuevo proyecto",
+      "kind": "new_item"
+    },
+    {
+      "item_id": "12005160359",
+      "item_name": "Optimización Gestión de contraseñas MYC",
+      "column_id": null,
+      "before": null,
+      "after": "Nuevo proyecto",
+      "kind": "new_item"
+    },
+    {
+      "item_id": "12005160542",
+      "item_name": "Envío de OC para documento de venta generados en BS",
+      "column_id": null,
+      "before": null,
+      "after": "Nuevo proyecto",
+      "kind": "new_item"
+    },
+    {
+      "item_id": "12556186863",
+      "item_name": "Independizar Maestros de SAP",
+      "column_id": null,
+      "before": null,
+      "after": "Nuevo proyecto",
+      "kind": "new_item"
+    },
+    {
+      "item_id": "12638535975",
+      "item_name": "Migración Depot 360 a Azure",
+      "column_id": null,
+      "before": null,
+      "after": "Nuevo proyecto",
+      "kind": "new_item"
+    },
+    {
+      "item_id": "12762378681",
+      "item_name": "Portal SIG Cosmos",
+      "column_id": null,
+      "before": null,
+      "after": "Nuevo proyecto",
+      "kind": "new_item"
+    },
+    {
+      "item_id": "12005137471",
+      "item_name": "Reducir Data center Cosmos",
+      "column_id": null,
+      "before": null,
+      "after": "Nuevo proyecto",
+      "kind": "new_item"
+    },
+    {
+      "item_id": "12005150643",
+      "item_name": "Implementación de SOC Cosmos",
+      "column_id": null,
+      "before": null,
+      "after": "Nuevo proyecto",
+      "kind": "new_item"
+    },
+    {
+      "item_id": "12005160247",
+      "item_name": "Service Desk  y Control de Activos",
+      "column_id": null,
+      "before": null,
+      "after": "Nuevo proyecto",
+      "kind": "new_item"
+    },
+    {
+      "item_id": "12005160248",
+      "item_name": "Centralización de Servidores en Nube",
+      "column_id": null,
+      "before": null,
+      "after": "Nuevo proyecto",
+      "kind": "new_item"
+    },
+    {
+      "item_id": "12005160625",
+      "item_name": "Control de Acceso Biométrico",
+      "column_id": null,
+      "before": null,
+      "after": "Nuevo proyecto",
+      "kind": "new_item"
+    },
+    {
+      "item_id": "12005160860",
+      "item_name": "Proyecto Implementanción Wifi  |   Seguridad (Fortinet).",
+      "column_id": null,
+      "before": null,
+      "after": "Nuevo proyecto",
+      "kind": "new_item"
+    },
+    {
+      "item_id": "13001971369",
+      "item_name": "Cosmos 360",
+      "column_id": null,
+      "before": "En inventario",
+      "after": null,
+      "kind": "removed_item"
+    }
+  ]
+}

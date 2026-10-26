@@ -1,7 +1,7 @@
 {
-  "week_key": "2026-10-19",
-  "cut_id": "18396270726:2026-10-19T17:21:33.775Z",
-  "extracted_at_utc": "2026-10-19T17:21:33.775Z",
+  "week_key": "2026-10-26",
+  "cut_id": "18396270726:2026-10-26T19:19:11.562Z",
+  "extracted_at_utc": "2026-10-26T19:19:11.562Z",
   "items": [
     {
       "id": "11041978965",
@@ -10,12 +10,12 @@
         "status": "En Proceso",
         "color_mkzzg1vp": "Critical ⚠️️",
         "multiple_person_mm087pe3": "Alonso Pena",
-        "color_mm6kg2n5": "Pruebas UAT",
+        "color_mm6kg2n5": "Ejecución",
         "numeric_mkzrc075": "65",
         "date_mkzrb4nr": "2027-01-18",
         "date_mm6d8mx": null,
         "color_mm6zdfgs": "Riesgo / Alerta",
-        "text_mm7fvxjn": "Contrato con Singulartech pendiente de firma."
+        "text_mm7fvxjn": "Pendiente envío de OC a Singular Tech"
       }
     },
     {
@@ -24,7 +24,7 @@
       "column_values": {
         "status": "En Proceso",
         "color_mkzzg1vp": "Critical ⚠️️",
-        "multiple_person_mm087pe3": "Alonso Pena",
+        "multiple_person_mm087pe3": "Valeria Hermoza",
         "color_mm6kg2n5": "Ejecución",
         "numeric_mkzrc075": "35",
         "date_mkzrb4nr": "2027-02-05",
@@ -38,9 +38,9 @@
       "name": "Portal Cosmos 360",
       "column_values": {
         "status": "Planificado",
-        "color_mkzzg1vp": "Medium",
+        "color_mkzzg1vp": "Low",
         "multiple_person_mm087pe3": "Alonso Pena",
-        "color_mm6kg2n5": "Planificación",
+        "color_mm6kg2n5": "Propuesta",
         "numeric_mkzrc075": "8",
         "date_mkzrb4nr": "2027-08-31",
         "date_mm6d8mx": null,
@@ -185,7 +185,7 @@
     },
     {
       "id": "12978628465",
-      "name": "POTRe -  Solicitud hasta Liquidación Pagos Operativos a Terceros",
+      "name": "POT -  Pagos Operativos a Terceros",
       "column_values": {
         "status": "En Proceso",
         "color_mkzzg1vp": "Critical ⚠️️",
@@ -295,22 +295,7 @@
         "status": "Planificado",
         "color_mkzzg1vp": "Critical ⚠️️",
         "multiple_person_mm087pe3": "Pierre Lozano",
-        "color_mm6kg2n5": "Planificación",
-        "numeric_mkzrc075": "0",
-        "date_mkzrb4nr": null,
-        "date_mm6d8mx": null,
-        "color_mm6zdfgs": null,
-        "text_mm7fvxjn": null
-      }
-    },
-    {
-      "id": "13001971369",
-      "name": "Cosmos 360",
-      "column_values": {
-        "status": "Planificado",
-        "color_mkzzg1vp": "Critical ⚠️️",
-        "multiple_person_mm087pe3": "Pierre Lozano",
-        "color_mm6kg2n5": "Planificación",
+        "color_mm6kg2n5": "Propuesta",
         "numeric_mkzrc075": "0",
         "date_mkzrb4nr": null,
         "date_mm6d8mx": null,
@@ -385,7 +370,7 @@
         "status": "Planificado",
         "color_mkzzg1vp": "Critical ⚠️️",
         "multiple_person_mm087pe3": "Valeria Hermoza",
-        "color_mm6kg2n5": "Planificación",
+        "color_mm6kg2n5": "Propuesta",
         "numeric_mkzrc075": "0",
         "date_mkzrb4nr": null,
         "date_mm6d8mx": null,
@@ -416,11 +401,11 @@
         "color_mkzzg1vp": "Critical ⚠️️",
         "multiple_person_mm087pe3": "Walter Gonzales",
         "color_mm6kg2n5": "Propuesta",
-        "numeric_mkzrc075": "23",
+        "numeric_mkzrc075": "53",
         "date_mkzrb4nr": "2026-11-20",
         "date_mm6d8mx": null,
         "color_mm6zdfgs": "Sin bloqueo",
-        "text_mm7fvxjn": "29/09: aprobación adicional de las actas de conformidad de servicio para los servicios de transporte"
+        "text_mm7fvxjn": "19/10 Considerar conceptos detallados por unidades propias podría disuadir al error en la liquidación.\nSe convocará para el día 20/10 una revisión conjunta con el equipo funcional y planeamiento.\nResponsable [TRA] Luis Miguel Lopez"
       }
     },
     {
@@ -445,12 +430,361 @@
         "status": "En Proceso",
         "color_mkzzg1vp": "Critical ⚠️️",
         "multiple_person_mm087pe3": "Walter Gonzales",
-        "color_mm6kg2n5": "Evaluación",
-        "numeric_mkzrc075": "0",
+        "color_mm6kg2n5": "Ejecución",
+        "numeric_mkzrc075": "1",
         "date_mkzrb4nr": "2026-12-04",
         "date_mm6d8mx": null,
         "color_mm6zdfgs": "Sin bloqueo",
-        "text_mm7fvxjn": "Sin riesgos"
+        "text_mm7fvxjn": "16/10 Los datos de la plataforma podria estar visibles para todos los perfiles de administrador del corporativo.   El proveedor evaluará y presentará la solución 21/10"
+      }
+    },
+    {
+      "id": "13341776939",
+      "name": "Integración WMS Flexy & Signify",
+      "column_values": {
+        "status": "En Proceso",
+        "color_mkzzg1vp": "Critical ⚠️️",
+        "multiple_person_mm087pe3": "Milagros Cheel",
+        "color_mm6kg2n5": "Ejecución",
+        "numeric_mkzrc075": "80",
+        "date_mkzrb4nr": "2026-11-09",
+        "date_mm6d8mx": null,
+        "color_mm6zdfgs": "Riesgo / Alerta",
+        "text_mm7fvxjn": "No llegar a la fecha - Signify no realiza las pruebas"
+      }
+    },
+    {
+      "id": "13350917367",
+      "name": "Portal de Proveedores FASE 2",
+      "column_values": {
+        "status": "En Proceso",
+        "color_mkzzg1vp": "High",
+        "multiple_person_mm087pe3": "Juan Pablo Arbulú",
+        "color_mm6kg2n5": "Ejecución",
+        "numeric_mkzrc075": "30",
+        "date_mkzrb4nr": null,
+        "date_mm6d8mx": null,
+        "color_mm6zdfgs": "Riesgo / Alerta",
+        "text_mm7fvxjn": "Asegurar la disponibilidad del equipo  de Contabilidad para el proceso de pagos efectuados ya que requiere constante interacción entre el proveedor, TI y María Sencca para el éxito de esta integración"
+      }
+    },
+    {
+      "id": "12005154883",
+      "name": "Integración PROMART generación de txt",
+      "column_values": {
+        "status": "Cerrado",
+        "color_mkzzg1vp": "Medium",
+        "multiple_person_mm087pe3": "Walter Gonzales",
+        "color_mm6kg2n5": "Cierre",
+        "numeric_mkzrc075": "100",
+        "date_mkzrb4nr": "2026-04-30",
+        "date_mm6d8mx": "2026-05-08",
+        "color_mm6zdfgs": null,
+        "text_mm7fvxjn": null
+      }
+    },
+    {
+      "id": "12005140969",
+      "name": "Desvinculaciones de Personal",
+      "column_values": {
+        "status": "Cerrado",
+        "color_mkzzg1vp": "Medium",
+        "multiple_person_mm087pe3": "Walter Gonzales",
+        "color_mm6kg2n5": "Cierre",
+        "numeric_mkzrc075": "90",
+        "date_mkzrb4nr": "2026-05-29",
+        "date_mm6d8mx": null,
+        "color_mm6zdfgs": null,
+        "text_mm7fvxjn": null
+      }
+    },
+    {
+      "id": "12005140997",
+      "name": "Integración al PO Cargo ATLANTIC",
+      "column_values": {
+        "status": "Cerrado",
+        "color_mkzzg1vp": "Critical ⚠️️",
+        "multiple_person_mm087pe3": "Walter Gonzales",
+        "color_mm6kg2n5": "Cierre",
+        "numeric_mkzrc075": "100",
+        "date_mkzrb4nr": "2026-03-19",
+        "date_mm6d8mx": "2026-03-19",
+        "color_mm6zdfgs": null,
+        "text_mm7fvxjn": null
+      }
+    },
+    {
+      "id": "12005141424",
+      "name": "Agregar campo personalizado en SAP formulario  SN  obligatorio Sector de Mercado",
+      "column_values": {
+        "status": "Cerrado",
+        "color_mkzzg1vp": "Medium",
+        "multiple_person_mm087pe3": "Juan Pablo Arbulú",
+        "color_mm6kg2n5": "Cierre",
+        "numeric_mkzrc075": "100",
+        "date_mkzrb4nr": "2026-05-19",
+        "date_mm6d8mx": "2026-05-19",
+        "color_mm6zdfgs": null,
+        "text_mm7fvxjn": null
+      }
+    },
+    {
+      "id": "12005148928",
+      "name": "Modulo para Despacho de Exportaciones",
+      "column_values": {
+        "status": "Cerrado",
+        "color_mkzzg1vp": "Critical ⚠️️",
+        "multiple_person_mm087pe3": "Walter Gonzales",
+        "color_mm6kg2n5": "Cierre",
+        "numeric_mkzrc075": "100",
+        "date_mkzrb4nr": "2026-04-17",
+        "date_mm6d8mx": "2026-04-20",
+        "color_mm6zdfgs": null,
+        "text_mm7fvxjn": null
+      }
+    },
+    {
+      "id": "12005154911",
+      "name": "Host to host  Bancos",
+      "column_values": {
+        "status": "Cerrado",
+        "color_mkzzg1vp": "Critical ⚠️️",
+        "multiple_person_mm087pe3": "Juan Pablo Arbulú",
+        "color_mm6kg2n5": "Cierre",
+        "numeric_mkzrc075": "95",
+        "date_mkzrb4nr": "2026-07-17",
+        "date_mm6d8mx": "2026-07-13",
+        "color_mm6zdfgs": null,
+        "text_mm7fvxjn": null
+      }
+    },
+    {
+      "id": "12005149034",
+      "name": "Automatización de Registro de Formatos Inspección de Botes de buceo",
+      "column_values": {
+        "status": "Cerrado",
+        "color_mkzzg1vp": "Medium",
+        "multiple_person_mm087pe3": "Walter Gonzales",
+        "color_mm6kg2n5": "Cierre",
+        "numeric_mkzrc075": "100",
+        "date_mkzrb4nr": "2026-05-22",
+        "date_mm6d8mx": "2026-05-06",
+        "color_mm6zdfgs": null,
+        "text_mm7fvxjn": null
+      }
+    },
+    {
+      "id": "12005154689",
+      "name": "Check in Paita",
+      "column_values": {
+        "status": "Cerrado",
+        "color_mkzzg1vp": "Critical ⚠️️",
+        "multiple_person_mm087pe3": "Juan Pablo Arbulú",
+        "color_mm6kg2n5": "Cierre",
+        "numeric_mkzrc075": "100",
+        "date_mkzrb4nr": "2026-06-03",
+        "date_mm6d8mx": "2026-06-10",
+        "color_mm6zdfgs": null,
+        "text_mm7fvxjn": null
+      }
+    },
+    {
+      "id": "12005155354",
+      "name": "Gestión de Solicitudes de Personal",
+      "column_values": {
+        "status": "Cerrado",
+        "color_mkzzg1vp": "Medium",
+        "multiple_person_mm087pe3": "Walter Gonzales",
+        "color_mm6kg2n5": "Cierre",
+        "numeric_mkzrc075": "100",
+        "date_mkzrb4nr": "2026-05-29",
+        "date_mm6d8mx": "2026-05-29",
+        "color_mm6zdfgs": null,
+        "text_mm7fvxjn": null
+      }
+    },
+    {
+      "id": "12005160274",
+      "name": "Proyecto cambio de Switch en Cosmos Aduanas",
+      "column_values": {
+        "status": "Cerrado",
+        "color_mkzzg1vp": "Critical ⚠️️",
+        "multiple_person_mm087pe3": {
+          "personsAndTeams": []
+        },
+        "color_mm6kg2n5": "Cierre",
+        "numeric_mkzrc075": "100",
+        "date_mkzrb4nr": "2026-01-30",
+        "date_mm6d8mx": "2026-01-30",
+        "color_mm6zdfgs": null,
+        "text_mm7fvxjn": null
+      }
+    },
+    {
+      "id": "12005160359",
+      "name": "Optimización Gestión de contraseñas MYC",
+      "column_values": {
+        "status": "Cerrado",
+        "color_mkzzg1vp": "Critical ⚠️️",
+        "multiple_person_mm087pe3": "Juan Pablo Arbulú",
+        "color_mm6kg2n5": "Cierre",
+        "numeric_mkzrc075": "100",
+        "date_mkzrb4nr": "2026-04-01",
+        "date_mm6d8mx": "2026-04-01",
+        "color_mm6zdfgs": null,
+        "text_mm7fvxjn": null
+      }
+    },
+    {
+      "id": "12005160542",
+      "name": "Envío de OC para documento de venta generados en BS",
+      "column_values": {
+        "status": "Cerrado",
+        "color_mkzzg1vp": "High",
+        "multiple_person_mm087pe3": "Juan Pablo Arbulú",
+        "color_mm6kg2n5": "Cierre",
+        "numeric_mkzrc075": "100",
+        "date_mkzrb4nr": "2026-04-20",
+        "date_mm6d8mx": "2026-04-20",
+        "color_mm6zdfgs": null,
+        "text_mm7fvxjn": null
+      }
+    },
+    {
+      "id": "12556186863",
+      "name": "Independizar Maestros de SAP",
+      "column_values": {
+        "status": "Cerrado",
+        "color_mkzzg1vp": "High",
+        "multiple_person_mm087pe3": "Pierre Lozano, Juan Pablo Arbulú",
+        "color_mm6kg2n5": "Cierre",
+        "numeric_mkzrc075": "50",
+        "date_mkzrb4nr": "2026-07-24",
+        "date_mm6d8mx": null,
+        "color_mm6zdfgs": null,
+        "text_mm7fvxjn": null
+      }
+    },
+    {
+      "id": "12638535975",
+      "name": "Migración Depot 360 a Azure",
+      "column_values": {
+        "status": "En Proceso",
+        "color_mkzzg1vp": "Medium",
+        "multiple_person_mm087pe3": "Juan Pablo Arbulú, Carlos Caycho Martinez",
+        "color_mm6kg2n5": null,
+        "numeric_mkzrc075": "20",
+        "date_mkzrb4nr": "2026-08-14",
+        "date_mm6d8mx": null,
+        "color_mm6zdfgs": null,
+        "text_mm7fvxjn": null
+      }
+    },
+    {
+      "id": "12762378681",
+      "name": "Portal SIG Cosmos",
+      "column_values": {
+        "status": "Propuesto",
+        "color_mkzzg1vp": "High",
+        "multiple_person_mm087pe3": "Alonso Pena",
+        "color_mm6kg2n5": "Propuesta",
+        "numeric_mkzrc075": "0",
+        "date_mkzrb4nr": "2026-08-31",
+        "date_mm6d8mx": "2026-09-30",
+        "color_mm6zdfgs": null,
+        "text_mm7fvxjn": null
+      }
+    },
+    {
+      "id": "12005137471",
+      "name": "Reducir Data center Cosmos",
+      "column_values": {
+        "status": "Propuesto",
+        "color_mkzzg1vp": "High",
+        "multiple_person_mm087pe3": null,
+        "color_mm6kg2n5": "Propuesta",
+        "numeric_mkzrc075": "100",
+        "date_mkzrb4nr": "2026-09-30",
+        "date_mm6d8mx": "2026-09-30",
+        "color_mm6zdfgs": null,
+        "text_mm7fvxjn": null
+      }
+    },
+    {
+      "id": "12005150643",
+      "name": "Implementación de SOC Cosmos",
+      "column_values": {
+        "status": "Propuesto",
+        "color_mkzzg1vp": "High",
+        "multiple_person_mm087pe3": null,
+        "color_mm6kg2n5": "Evaluación",
+        "numeric_mkzrc075": "0",
+        "date_mkzrb4nr": null,
+        "date_mm6d8mx": null,
+        "color_mm6zdfgs": null,
+        "text_mm7fvxjn": null
+      }
+    },
+    {
+      "id": "12005160247",
+      "name": "Service Desk  y Control de Activos",
+      "column_values": {
+        "status": "Propuesto",
+        "color_mkzzg1vp": "Medium",
+        "multiple_person_mm087pe3": null,
+        "color_mm6kg2n5": "Propuesta",
+        "numeric_mkzrc075": "10",
+        "date_mkzrb4nr": "2026-03-31",
+        "date_mm6d8mx": "2026-03-31",
+        "color_mm6zdfgs": null,
+        "text_mm7fvxjn": null
+      }
+    },
+    {
+      "id": "12005160248",
+      "name": "Centralización de Servidores en Nube",
+      "column_values": {
+        "status": "Propuesto",
+        "color_mkzzg1vp": "Critical ⚠️️",
+        "multiple_person_mm087pe3": null,
+        "color_mm6kg2n5": "Propuesta",
+        "numeric_mkzrc075": "40",
+        "date_mkzrb4nr": "2026-04-10",
+        "date_mm6d8mx": "2026-04-10",
+        "color_mm6zdfgs": null,
+        "text_mm7fvxjn": null
+      }
+    },
+    {
+      "id": "12005160625",
+      "name": "Control de Acceso Biométrico",
+      "column_values": {
+        "status": "Propuesto",
+        "color_mkzzg1vp": "Medium",
+        "multiple_person_mm087pe3": null,
+        "color_mm6kg2n5": "Propuesta",
+        "numeric_mkzrc075": "10",
+        "date_mkzrb4nr": "2026-06-26",
+        "date_mm6d8mx": "2026-06-26",
+        "color_mm6zdfgs": null,
+        "text_mm7fvxjn": null
+      }
+    },
+    {
+      "id": "12005160860",
+      "name": "Proyecto Implementanción Wifi  |   Seguridad (Fortinet).",
+      "column_values": {
+        "status": "Propuesto",
+        "color_mkzzg1vp": "High",
+        "multiple_person_mm087pe3": {
+          "personsAndTeams": []
+        },
+        "color_mm6kg2n5": "Propuesta",
+        "numeric_mkzrc075": "40",
+        "date_mkzrb4nr": "2026-03-20",
+        "date_mm6d8mx": "2026-03-20",
+        "color_mm6zdfgs": null,
+        "text_mm7fvxjn": null
       }
     }
   ]
