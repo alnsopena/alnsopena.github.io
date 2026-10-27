@@ -1078,6 +1078,26 @@
   .cc-chip.on{background:var(--cc-blue2);border-color:var(--cc-blue2);color:#fff}
   .cc-chip.obs{background:#FFF7E6;border-color:#F5C26B;color:#8A5A00}
   .cc-ph-actions{display:flex;gap:6px;flex-wrap:wrap}
+
+  /* ===== Cambios vs Connect actual (cert-internalportal · Ver PDA) ===== */
+  :root{--chg:#7C3AED;--chg-bg:#F5F0FF;--chg-bd:#D9C8FB}
+  body.chg-on [data-chg]{outline:2px solid var(--chg)!important;outline-offset:3px;border-radius:10px}
+  body.chg-on [data-chg]::after{content:attr(data-chg);position:absolute;top:-11px;right:10px;z-index:6;background:var(--chg);color:#fff;font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:5px;pointer-events:none;white-space:nowrap}
+  .chg-tag{display:none;font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:var(--chg);color:#fff;padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:middle;white-space:nowrap}
+  body.chg-on .chg-tag{display:inline-block}
+  .chg-removed{display:none;border:2px dashed var(--chg);background:var(--chg-bg);border-radius:12px;padding:12px 16px;margin:14px 0 18px;font-size:13px;color:#3B1E7A}
+  body.chg-on .chg-removed{display:block}
+  .chg-removed[hidden]{display:none!important}
+  body.chg-on .cc-chips[data-chg]{display:inline-flex}
+  .chg-removed .chg-h{display:flex;align-items:center;gap:8px;font-weight:700;margin-bottom:6px;color:var(--chg)}
+  .chg-removed ul{margin:0;padding-left:18px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:3px 24px}
+  .chg-removed li{line-height:1.45}
+  .chg-removed li s{color:#5B3FA0}
+  .chg-removed li span{color:#6B6290}
+  .chg-legend{font-weight:400;color:#6B6290;font-size:12px;margin-left:auto}
+  .cc-btn.chg-btn{background:#fff;color:var(--chg);border:1.5px solid var(--chg);padding:12px 18px}
+  body.chg-on .cc-btn.chg-btn{background:var(--chg);color:#fff}
+  @media print{.chg-removed,.chg-tag{display:none!important}[data-chg]{outline:none!important}[data-chg]::after{display:none!important}}
   .cc-btn{background:var(--cc-blue);color:#fff;border:none;border-radius:10px;padding:13px 28px;font-family:inherit;font-size:14px;font-weight:500;cursor:pointer}
   .cc-btn:hover{background:var(--cc-blue-dk)}
   .cc-btn.pink{background:var(--cc-pink)}
@@ -1532,9 +1552,9 @@
         <p id="landingSub">Escenarios de demostración con distintas naves, servicios, cargas y estados.</p>
       </div>
       <div class="buscar-head-actions">
-        <button class="btn-corp-outline" onclick="openMaster(null,'landing')">Maestro de servicios</button>
-        <button class="btn-corp-outline" onclick="openTariffs(null,'landing')">Tarifas</button>
-        <button class="btn-corp-outline" onclick="openTemplateManager()">Plantillas</button>
+        <button class="btn-corp-outline" style="display:none" onclick="openMaster(null,'landing')">Maestro de servicios</button>
+        <button class="btn-corp-outline" style="display:none" onclick="openTariffs(null,'landing')">Tarifas</button>
+        <button class="btn-corp-outline" style="display:none" onclick="openTemplateManager()">Plantillas</button>
         <button class="btn-corp" onclick="onNewPdaClick()">+ Nueva PDA</button>
       </div>
     </div>
@@ -3010,6 +3030,7 @@ function renderPdaHead(){
                state.loadedTemplate ? `Plantilla ${state.loadedTemplate.name}` : ''].filter(Boolean).join(' · ');
   h.innerHTML = `<div class="cc-ph-left"><div class="cc-ph-code">${esc(state.pdaNumber||'PDA nueva')}${ctx?`<span class="cc-ph-ctx">${esc(ctx)}</span>`:''}</div><div class="cc-chips">${chips}</div></div>
     <div class="cc-ph-actions">
+      <button type="button" class="cc-btn chg-btn" onclick="toggleChg()" title="Marca en morado lo nuevo y lo quitado respecto a Ver PDA de Connect actual">Cambios vs Connect: ${document.body.classList.contains('chg-on')?'sí':'no'}</button>
       <button type="button" class="cc-btn" onclick="openHistory()">Historial</button>
     </div>`;
 }
@@ -7307,6 +7328,125 @@ function init(){
   log('Sistema','Simulador iniciado.');
 }
 init();
+
+/* ============================================================
+   CAMBIOS VS CONNECT ACTUAL (Ver PDA de cert-internalportal)
+   Morado continuo = nuevo o cambiado · morado punteado = quitado
+============================================================ */
+const CHG_REMOVED = {
+  head: { t:'Cabecera y pestañas', items:[
+    ['Barra con los 9 estados (Borrador, Creada, Validada, Completada, En Ajuste, Aprobada, Rechazada, En Viaje, Anulada)','queda una sola etiqueta con el estado actual'],
+    ['Botón Editar','la PDA se edita directo en Datos y PDA'],
+    ['Botón Anular','pasa a la pestaña Estado'],
+    ['Botón Enviar PDA','pasa a "Previsualizar PDF y enviar" en la pestaña PDA'],
+    ['Pestañas Información General / Detalle','ahora Datos / PDA / Estado']]},
+  1: { t:'Datos (antes Información General)', items:[
+    ['Tipo de Nave','se toma del maestro de naves'], ['Tonelaje',''], ['País',''],
+    ['Código Lloyd\'s','ahora IMO'], ['Nombre del Capitán',''], ['Email del Capitán',''],
+    ['Armador',''], ['Moneda','cada servicio tiene su moneda ($ / S/)'], ['Tipo de Cambio manual','ahora T/C del día SBS / SUNAT'],
+    ['Head Owner',''], ['Charterer',''], ['Broker',''], ['Facturar por cuenta de',''], ['Enviar liquidación a',''],
+    ['Requiere adelanto',''], ['Nominada',''], ['Tipo de Servicio','va en la cabecera (Líneas / Tramps)'],
+    ['Tipo de Agenciamiento',''], ['Último Puerto','ahora Procedencia de la nave'],
+    ['ETA y ETD','quedan en el módulo Viaje'], ['Comentarios adicionales','ahora Observaciones (REMARKS)']]},
+  2: { t:'PDA (antes Detalle)', items:[
+    ['Columna Tarifa Unitaria',''], ['Columna Moneda','va como prefijo $ / S/ en la tarifa'],
+    ['Columna A/E',''], ['Columna VAT','ahora etiqueta IGV 18% en el servicio'],
+    ['Columna Comentarios','ahora dentro de editar línea (sale en el PDF)'], ['Columna Val. Ope.',''],
+    ['Contador "N Servicio(s) Asociado(s)"','ahora "activos / total"'],
+    ['Resumen por Categoría (Neto / VAT / Bruto)','ahora subtotal por categoría y total estimado']]},
+  3: { t:'Estado', items:[] }
+};
+const CHG_CATS_CONNECT = ['comisión de agencia','gastos portuarios','gastos por autoridades'];
+function chgOn(){ return document.body.classList.contains('chg-on'); }
+function toggleChg(){
+  document.body.classList.toggle('chg-on');
+  try{ localStorage.setItem('pdaChg', chgOn()?'1':'0'); }catch(e){}
+  renderPdaHead(); markChanges();
+}
+function chgRemovedHtml(key){
+  const r = CHG_REMOVED[key]; if(!r || !r.items.length) return '';
+  return `<div class="chg-h">Se quitó respecto a Connect actual · ${r.t}<span class="chg-legend">Morado continuo: nuevo o cambiado · Punteado: quitado</span></div>
+    <ul>${r.items.map(([a,b])=>`<li><s>${esc(a)}</s>${b?` <span>→ ${esc(b)}</span>`:''}</li>`).join('')}</ul>`;
+}
+function chgMark(el, label){
+  if(!el) return;
+  if(getComputedStyle(el).position==='static'){ el.style.position='relative'; el.dataset.chgPos='1'; }
+  el.setAttribute('data-chg', label||'Nuevo');
+}
+function chgTag(el, label){
+  if(!el || el.querySelector(':scope > .chg-tag')) return;
+  const t = document.createElement('span'); t.className='chg-tag'; t.textContent = label||'Nuevo'; el.appendChild(t);
+}
+function chgField(root, re, label){
+  [...root.querySelectorAll('label')].filter(l=>re.test(l.textContent.trim())).forEach(l=>chgTag(l, label));
+}
+function markChanges(){
+  // limpiar
+  document.querySelectorAll('[data-chg]').forEach(e=>{ e.removeAttribute('data-chg'); if(e.dataset.chgPos){ e.style.position=''; delete e.dataset.chgPos; } });
+  document.querySelectorAll('.chg-tag').forEach(e=>e.remove());
+  // panel de quitados de cabecera
+  let hp = document.getElementById('chgHeadRemoved');
+  const nav = document.getElementById('stepsNav');
+  if(!hp && nav){ hp = document.createElement('div'); hp.id='chgHeadRemoved'; hp.className='chg-removed'; nav.after(hp); }
+  if(hp){ hp.innerHTML = chgRemovedHtml('head'); hp.style.visibility = nav.style.display==='none' ? 'hidden' : ''; hp.hidden = nav.style.display==='none'; }
+  [1,2,3].forEach(n=>{
+    const sec = document.getElementById('step'+n); if(!sec) return;
+    let rp = sec.querySelector(':scope > .chg-removed');
+    if(!rp){ rp = document.createElement('div'); rp.className='chg-removed'; sec.querySelector('h2').after(rp); }
+    rp.innerHTML = chgRemovedHtml(n); rp.hidden = !rp.innerHTML;
+  });
+  if(!chgOn()) return;
+  // cabecera
+  const head = document.getElementById('ccPdaHead');
+  if(head){
+    chgTag(head.querySelector('.cc-ph-code'), 'Nuevo: tipo y modalidad');
+    chgMark(head.querySelector('.cc-chips'), 'Cambia: un solo estado');
+  }
+  if(nav) chgTag(nav.querySelector('[data-step="3"]'), 'Nuevo');
+  // paso 1
+  const s1 = document.getElementById('step1');
+  if(s1 && s1.classList.contains('active')){
+    chgMark(s1.querySelector('.client-pill'), 'Nuevo: elegir o registrar cliente');
+    chgMark(document.getElementById('shipSourceSeg'), 'Nuevo: nave registrada o TBN');
+    chgField(s1, /^Seleccionar nave registrada/i, 'Nuevo');
+    chgField(s1, /^IMO/i, 'Cambia: antes Código Lloyd\'s');
+    chgField(s1, /^Procedencia de la nave/i, 'Cambia: antes Último Puerto');
+    chgField(s1, /^T\/C del día/i, 'Cambia: automático SBS / SUNAT');
+    chgField(s1, /^Observaciones/i, 'Cambia: antes Comentarios adicionales');
+  }
+  // paso 2
+  const s2 = document.getElementById('step2');
+  if(s2 && s2.classList.contains('active')){
+    chgMark(document.getElementById('kpis2'), 'Nuevo: datos de cálculo editables');
+    chgMark(s2.querySelector('.cat-tools'), 'Nuevo');
+    s2.querySelectorAll('#calcSections .section-title').forEach(h=>{
+      const lbl = h.querySelector('.st-label');
+      if(lbl && !CHG_CATS_CONNECT.some(c=>lbl.textContent.toLowerCase().startsWith(c))) chgTag(lbl, 'Nueva categoría');
+      chgTag(h.querySelector('.btn-add'), 'Nuevo');
+    });
+    s2.querySelectorAll('#calcSections thead tr').forEach(tr=>{
+      const th = tr.children;
+      chgTag(th[0], 'Nuevo'); chgTag(th[5], 'Nuevo'); chgTag(th[6], 'Nuevo'); chgTag(th[7], 'Nuevo');
+    });
+    chgMark(document.getElementById('pdaReqs').firstElementChild, 'Nuevo: pendientes para aprobar');
+    chgMark(s2.querySelector('.totals-bar'), 'Cambia: total estimado fijo');
+    chgMark(s2.querySelector(':scope > .actions'), 'Nuevo: plantilla, Excel y PDF');
+  }
+  // paso 3: toda la pestaña es nueva
+  const s3 = document.getElementById('step3');
+  if(s3 && s3.classList.contains('active')){
+    chgTag(s3.querySelector('h2'), 'Nueva pestaña');
+    chgMark(s3.querySelector('.st-head'), 'Nuevo: aprobar y anular aquí');
+    chgMark(document.getElementById('obsBox'), 'Nuevo: observación');
+    chgMark(document.getElementById('opEmailsChips') && document.getElementById('opEmailsChips').closest('.field'), 'Nuevo: notificar a Operaciones');
+    chgMark(s3.querySelector(':scope > .actions'), 'Nuevo');
+  }
+}
+try{ if(localStorage.getItem('pdaChg')!=='0') document.body.classList.add('chg-on'); }catch(e){ document.body.classList.add('chg-on'); }
+['renderPdaHead','renderStep1','renderStep2','renderStep3','renderPdaReqs'].forEach(fn=>{
+  const orig = window[fn]; if(typeof orig!=='function') return;
+  window[fn] = function(){ const r = orig.apply(this, arguments); try{ markChanges(); }catch(e){ console.warn('markChanges', e); } return r; };
+});
 </script>
 <div class="cc-dd" id="ccDropdown"></div>
 <div class="tour-layer" id="tourLayer"><div class="tour-hole" id="tourHole"></div><div class="tour-pop" id="tourPop" onclick="event.stopPropagation()"></div></div>
