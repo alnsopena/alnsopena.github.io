@@ -5,7 +5,7 @@ La presentación usa el formato de referencia entregado el 27/10/2026. Su diseñ
 ## Estructura
 
 1. Portada con el corte de Lima y la condición de borrador revisado o por revisar.
-2. Resumen tabular de la misma selección PMO. Si excede 12 proyectos, continúa en otra lámina. Los conteos corresponden a toda la selección, no a todo el tablero.
+2. Resumen tabular de la misma selección PMO. Si excede 10 proyectos, continúa en otra lámina. Los conteos corresponden a toda la selección, no a todo el tablero.
 3. Una ficha por proyecto: estado y riesgo actuales, fase, avance, CAPEX aprobado, CAPEX pagado y OPEX anual. Comparación de avance, hitos, situación, decisión, riesgo y próximas acciones.
 4. Hasta un anexo por proyecto, si existen actividades tipificadas con fechas suficientes. Se muestran hasta ocho; el detalle completo se conserva en las notas.
 5. Guía común para el equipo.

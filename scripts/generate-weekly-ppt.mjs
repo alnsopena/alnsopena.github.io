@@ -61,8 +61,8 @@ export async function generateWeeklyPpt(options = {}) {
   const selected = chooseProjects(cut, config, map), models = selected.map(item => projectModel(item, cut, map));
   const reviewed = Boolean(config.reviewed_reporting_week === cut.reporting_week?.key && config.reviewed_cut_id === cut.cut_id);
   const slides = [{ base: 1, xml: coverSlide(templates.get(1), cut, reviewed), notes: sourceNotes(cut, `Selección ${reviewed ? 'revisada' : 'por revisar'} por PMO. Borrador automático, no sustituye una versión final.`) }];
-  const summaryPages = Math.max(1, Math.ceil(models.length / 12));
-  for (let page = 0; page < summaryPages; page++) slides.push({ base: 2, xml: summarySlide(templates.get(2), cut, models, models.slice(page * 12, page * 12 + 12), page + 1, summaryPages), notes: sourceNotes(cut, `Conteos sobre los mismos ${models.length} proyectos de la selección ejecutiva. IDs: ${selected.map(i => i.id).join(', ')}. No son totales de todo el tablero ni estados de salud calculados.`) });
+  const summaryPages = Math.max(1, Math.ceil(models.length / 10));
+  for (let page = 0; page < summaryPages; page++) slides.push({ base: 2, xml: summarySlide(templates.get(2), cut, models, models.slice(page * 10, page * 10 + 10), page + 1, summaryPages), notes: sourceNotes(cut, `Conteos sobre los mismos ${models.length} proyectos de la selección ejecutiva. IDs: ${selected.map(i => i.id).join(', ')}. No son totales de todo el tablero ni estados de salud calculados.`) });
   for (const model of models) {
     slides.push({ base: 3, xml: projectSlide(templates.get(3), cut, model), notes: projectNotes(cut, model) });
     if (model.activities.some(r => (r.forecastStart && r.forecastFinish && r.forecastStart <= r.forecastFinish) || (r.baselineStart && r.baselineFinish && r.baselineStart <= r.baselineFinish))) slides.push({ base: 5, xml: annexSlide(templates.get(5), cut, model), notes: projectNotes(cut, model) });

@@ -71,6 +71,16 @@ test('genera borradores editables distintos y conserva la selección PMO sin toc
     await writeFile(input, JSON.stringify(changed));
     const regenerated = await generateWeeklyPpt({ input, outputDir, config });
     assert.equal(regenerated.selection_reviewed_by_pmo, false, 'un corte nuevo requiere otra revisión PMO');
+    const sixteen = { ...cut, projects: Array.from({ length: 16 }, (_, index) => ({ ...cut.projects[0], id: String(index + 1), name: `Proyecto ${index + 1}` })) };
+    await writeFile(input, JSON.stringify(sixteen));
+    await writeFile(config, JSON.stringify({ maximum_projects: 16, pinned_project_ids: sixteen.projects.map(p => p.id) }));
+    const paginated = await generateWeeklyPpt({ input, outputDir, config });
+    assert.equal(paginated.slide_count, 20, 'sixteen projects use two summary pages plus cover, cards and guide');
+    const pages = await JSZip.loadAsync(await readFile(paginated.output));
+    const pageOne = await pages.file('ppt/slides/slide2.xml').async('string');
+    const pageTwo = await pages.file('ppt/slides/slide3.xml').async('string');
+    assert.equal((pageOne.match(/<a:tr\b/g) ?? []).length, 11);
+    assert.equal((pageTwo.match(/<a:tr\b/g) ?? []).length, 7);
   } finally {
     await rm(directory, { recursive: true, force: true });
   }

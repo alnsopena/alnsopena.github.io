@@ -136,7 +136,7 @@ export function projectSlide(xml, cutInfo, model) {
   xml = text(xml, 43, 'Riesgo clave');
   xml = text(xml, 44, [{ text: excerpt(f.riskText || (f.risk === 'Sin bloqueo' ? 'Sin bloqueo registrado' : 'Por definir'), 118), size: 11 }, { text: 'Mitigación: ' + excerpt(undefinedText(f.mitigation), 100), size: 9 }, ...(f.mitigationOwner ? [{ text: 'Responsable: ' + f.mitigationOwner, size: 9 }] : [])]);
   xml = text(xml, 45, 'Próximas acciones');
-  const actions = model.actions.slice(0, 4), rows = [['Acción', 'Responsable', 'Fecha', 'Estado'], ...actions.map(a => [excerpt(a.name, 90), undefinedText(a.owner), formatDate(a.forecastFinish), undefinedText(a.status)])];
+  const actions = model.actions.slice(0, 4), rows = [['Acción', 'Responsable', 'Fecha', 'Estado'], ...actions.map(a => [excerpt(a.name, 68), excerpt(undefinedText(a.owner), 40), formatDate(a.forecastFinish), undefinedText(a.status)])];
   if (!actions.length) rows.push(['Por definir en subelementos de monday', 'Por definir', 'Por definir', 'Por definir']);
   return table(xml, rows, { height: actions.length > 3 ? 200000 : 256032, fontSize: actions.length > 3 ? 9 : 10 });
 }
