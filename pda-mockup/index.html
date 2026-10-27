@@ -896,7 +896,6 @@
   .st-pill.vencida{background:#fee2e2;color:#991b1b}
   .st-pill.futura{background:#EEF0F0;color:#3E5561}
   .btn-add[disabled]{opacity:.5;cursor:not-allowed}
-  #fxPrefBox input{width:100%}
 
   /* ============ ANEXO DEL PDF E IMO ============ */
   .pd-annex{margin-top:30px;padding-top:22px;border-top:2px dashed #CCCFCE;break-before:page;page-break-before:always}
@@ -1830,16 +1829,7 @@
         <div style="display:flex;gap:8px"><input type="text" id="fxDay" readonly style="flex:1;background:#F6F7F7">
           <button class="btn btn-ghost btn-sm" onclick="fetchExchangeRate()">Actualizar</button></div>
         <div class="hint" id="exRateHint"></div></div>
-      <div class="field"><label>T/C a aplicar en la PDA</label>
-        <div class="seg" id="fxSeg">
-          <button type="button" data-fx="day" onclick="setFxMode(false)">T/C del día</button>
-          <button type="button" data-fx="pref" onclick="setFxMode(true)">T/C preferencial</button></div>
-</div>
-      <div class="field" id="fxPrefBox"><label>T/C preferencial</label>
-        <input type="text" inputmode="decimal" id="exRate" placeholder="Ej. 3.45" oninput="onFxPrefInput(this.value)" onchange="logFxPref()">
-        <input type="text" id="fxNote" placeholder="Motivo (ej. cliente nuevo, acuerdo comercial)" style="margin-top:6px" oninput="state.fxNote=this.value" onchange="logFxPref()"></div>
     </div>
-    <div class="pnote proc"><span class="pn-tag">Pendiente de proceso</span><b>T/C preferencial.</b> Validar con todos los comerciales de las distintas unidades si realmente lo usan antes de dejar esta opción fija en la plataforma.</div>
     <div class="section-title"><span class="st-label">CONDICIONES DE LA PDA</span></div>
     <div class="grid cols-3" id="pdaCondFields"></div>
     <div id="step1Notice"></div>
@@ -3776,28 +3766,15 @@ function setExRate(v){ if(state.categoryType==='terrestre') state.terrestrial.ex
 function renderFx(){
   const day = document.getElementById('fxDay'); if(!day) return;
   day.value = state.fxDay;
-  document.querySelectorAll('#fxSeg [data-fx]').forEach(b=>b.classList.toggle('on', (b.dataset.fx==='pref')===!!state.fxPref));
-  document.getElementById('fxPrefBox').style.visibility = state.fxPref ? 'visible' : 'hidden';
-  document.getElementById('exRate').value = state.fxPref ? currentExRate() : '';
-  document.getElementById('fxNote').value = state.fxNote || '';
-}
-function setFxMode(pref){
-  state.fxPref = pref;
-  if(!pref){ setExRate(state.fxDay); state.fxNote = ''; log('Tipo de cambio', `Se aplica el T/C del día: ${state.fxDay}`); }
-  renderFx();
-  if(pref) document.getElementById('exRate').focus();
-}
-function onFxPrefInput(v){ const n = parseNum(v); if(n>0) setExRate(n); }
-function logFxPref(){
-  if(!state.fxPref) return;
-  log('Tipo de cambio', `T/C preferencial ${currentExRate()} (T/C del día ${state.fxDay})${state.fxNote ? ' · motivo: '+state.fxNote : ''}`);
+  state.fxPref = false; state.fxNote = '';
+  setExRate(state.fxDay);
 }
 function fetchExchangeRate(){
   const hint = document.getElementById('exRateHint');
   hint.textContent = 'Consultando SBS / SUNAT...';
   setTimeout(()=>{
     state.fxDay = +(3.38 + (Math.random()*0.08 - 0.04)).toFixed(4);
-    if(!state.fxPref) setExRate(state.fxDay);
+    setExRate(state.fxDay);
     renderFx();
     hint.textContent = `Actualizado: S/ ${state.fxDay} · ${new Date().toLocaleDateString('es-PE')}`;
     toast(`T/C del día: S/ ${state.fxDay}`,'success');
@@ -3830,10 +3807,10 @@ function renderStep2(){
   renderStatusBanner('statusBanner2');
   const k = document.getElementById('kpis2');
   const kIn = (key,label,val,ph) => `<div class="kpi" data-k="${key}"><div class="lbl">${label} </div>
-       <input class="kpi-input" type="text" inputmode="decimal" value="${val||''}" placeholder="${ph}" oninput="updDimLive('${key}',this.value)"></div>`;
+       <input class="kpi-input" type="text" inputmode="decimal" value="${val||''}" placeholder="${ph}" ${key==='exRate' ? 'readonly style="background:#F6F7F7" title="T/C del día (SBS / SUNAT)"' : `oninput="updDimLive('${key}',this.value)"`}></div>`;
   k.innerHTML = (state.categoryType==='terrestre'
-    ? kIn('weight','Peso (TM)',state.terrestrial.weight,'Ingresar peso') + kIn('volume','Volumen (m³)',state.terrestrial.volume,'Ingresar volumen') + kIn('exRate',state.fxPref?'T/C preferencial':'T/C del día',state.terrestrial.exRate,'T/C')
-    : kIn('grt','GRT',state.vessel.grt,'Ingresar GRT') + kIn('loa','LOA (m)',state.vessel.loa,'Ingresar LOA') + kIn('exRate',state.fxPref?'T/C preferencial':'T/C del día',state.vessel.exRate,'T/C')
+    ? kIn('weight','Peso (TM)',state.terrestrial.weight,'Ingresar peso') + kIn('volume','Volumen (m³)',state.terrestrial.volume,'Ingresar volumen') + kIn('exRate','T/C del día',state.terrestrial.exRate,'T/C')
+    : kIn('grt','GRT',state.vessel.grt,'Ingresar GRT') + kIn('loa','LOA (m)',state.vessel.loa,'Ingresar LOA') + kIn('exRate','T/C del día',state.vessel.exRate,'T/C')
       + contKpiHtml());
   renderContPanel();
   markDimWarnings();
@@ -4166,11 +4143,6 @@ function refreshTotals(){
 function updDimLive(key,val){
   const target = state.categoryType==='terrestre' ? state.terrestrial : state.vessel;
   target[key] = parseNum(val);
-  if(key==='exRate'){
-    state.fxPref = Math.abs(target.exRate - state.fxDay) > 1e-9;
-    const lbl = document.querySelector('#kpis2 .kpi[data-k=exRate] .lbl');
-    if(lbl) lbl.textContent = state.fxPref ? 'T/C preferencial' : 'T/C del día';
-  }
   markDimWarnings();
   state.services.forEach(refreshLine);
 }
@@ -6210,7 +6182,7 @@ function exportRows(){
     [B('Tipo de cambio'), {v:currentExRate(), s:5}], [B('Idioma PDA'), state.lang==='en'?'English':'Español'],
     [B('Estado'), statusLabel(state.status)], [B('Observación'), state.obs ? state.obs.reason : 'Sin observación'],
     ...(state.annul ? [[B('Motivo de anulación'), state.annul.reason]] : []), ...(state.os ? [[B('Orden de servicio'), state.os.number]] : []),
-    [B('T/C aplicado'), state.fxPref ? `Preferencial ${currentExRate()} (día ${state.fxDay})${state.fxNote?' · '+state.fxNote:''}` : `Del día ${currentExRate()}`],
+    [B('T/C aplicado'), `Del día ${currentExRate()}`],
     [B('Exportado por'), document.getElementById('currentUser').value],
     [B('Fecha de exportación'), new Date().toLocaleString('es-PE')], []
   ];
@@ -6310,9 +6282,7 @@ function pdfDate(d,lang,withTime){
   return out;
 }
 function fxCell(lang){
-  const ex = fmtNum(currentExRate());
-  if(!state.fxPref) return ex;
-  return `${ex}<div class="pd-fx">${lang==='en' ? `Preferential exchange rate (daily rate: ${fmtNum(state.fxDay)})` : `Tipo de cambio preferencial (T/C del día: ${fmtNum(state.fxDay)})`}${state.fxNote ? ' · '+esc(state.fxNote) : ''}</div>`;
+  return fmtNum(currentExRate());
 }
 function usd(n){ return 'USD '+Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function tariffTxt(sv){ return `${sv.currency} ${Number(sv.rate||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:4})}`; }
@@ -6422,16 +6392,16 @@ function annexHtml(lang){
     ? {title:'ANNEX · CALCULATION BREAKDOWN', sub:'Detail of how each amount was calculated. Values in USD unless stated otherwise.',
        data:'Data used in the calculation', svc:'Service', calc:'Calculation', tariff:'Tariff', qty:'Qty', unit:'Unit',
        net:'Net', vat:'VAT', total:'Total', note:'Comment', grt:'GRT', loa:'LOA', cargo:'Cargo quantity', fx:'Exchange rate',
-       pref:'preferential', day:'daily', pending:'To be confirmed', date:'Calculation date'}
+       day:'daily', pending:'To be confirmed', date:'Calculation date'}
     : {title:'ANEXO · DESGLOSE DE CÁLCULO', sub:'Detalle de cómo se calculó cada importe. Valores en USD salvo indicación.',
        data:'Datos usados en el cálculo', svc:'Servicio', calc:'Cálculo', tariff:'Tarifa', qty:'Cant.', unit:'Unidad',
        net:'Neto', vat:'IGV', total:'Total', note:'Comentario', grt:'GRT', loa:'LOA', cargo:'Cantidad de carga', fx:'Tipo de cambio',
-       pref:'preferencial', day:'del día', pending:'Por confirmar', date:'Fecha de cálculo'};
+       day:'del día', pending:'Por confirmar', date:'Fecha de cálculo'};
   const kind = cargoKind();
   const contTxt = sz => [['fl',en?'full load':'llenos carga'],['fd',en?'full disch.':'llenos desc.'],['el',en?'empty load':'vacíos carga'],['ed',en?'empty disch.':'vacíos desc.']]
                  .map(([k,l])=>`${l} ${fmtNum(v['c'+sz+'_'+k])}`).join(' · ');
   const contChips = kind==='cont' ? [[`${en?'Containers':'Contenedores'} 20'`, contTxt(20)], [`${en?'Containers':'Contenedores'} 40'`, contTxt(40)]] : [];
-  const fx = `${fmtNum(currentExRate())} (${state.fxPref ? L1.pref + ` · ${en?'daily':'del día'} ${fmtNum(state.fxDay)}` : L1.day})`;
+  const fx = `${fmtNum(currentExRate())} (${L1.day})`;
   const chips = isTerr
     ? [[L1.fx, fx], [L1.date, pdfDate(new Date(), lang)]]
     : [[L1.grt, v.grt>0?fmtNum(v.grt):L1.pending], [L1.loa, v.loa>0?fmtNum(v.loa):L1.pending], ...contChips, [L1.fx, fx], [L1.date, pdfDate(new Date(), lang)]];
@@ -6763,7 +6733,7 @@ const GUIDES = {
       {el:'#clientSelect', h:'Cliente', p:'Elígelo de la lista o regístralo si es nuevo.'},
       {el:'#shipSourceSeg', h:'Nave', p:'Registrada, o "No registrada o TBN": se preregistra en Data Maestra > Nave y se homologa antes de aprobar.'},
       {el:'#vesselFields', h:'Datos de la escala', p:'GRT, LOA, puerto y procedencia definen las tarifas que se aplican.'},
-      {el:'#fxSeg', h:'Tipo de cambio', p:'Del día o preferencial con su motivo.'}]}
+      {el:'#fxDay', h:'Tipo de cambio', p:'Se aplica el T/C del día (SBS / SUNAT).'}]}
   ],
   step2: [
     {t:'Agregar un servicio', steps:[
