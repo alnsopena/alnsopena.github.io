@@ -1,5 +1,7 @@
 # Borrador semanal de portafolio
 
+Desde el 27/10/2026 utiliza el [formato estándar y el mapa de campos de monday](../../docs/ppt-estandar-monday.md): portada, resumen tabular, ficha por proyecto, anexo cuando existe cronograma y guía de llenado. Estatus, Riesgo / Bloqueo y las ocho fases conservan los valores del tablero; Fin Plan representa el Go-Live. Los hitos y las acciones se mantienen en subelementos tipificados. La situación toma la última bitácora al corte, incluidas respuestas y actividad de subelementos.
+
 El generador lee el corte privado `_build/weekly-cut.json` producido por la misma lectura de monday que publica la web. No consulta monday por su cuenta. El resultado siempre se guarda como **Borrador**, con fecha y hora de Lima en el nombre; nunca edita la versión final del equipo. La PPT conserva su corte al descargarse; el enlace «Consultar estado actual» abre la web para ver datos posteriores.
 
 ## Selección para comité
@@ -13,7 +15,7 @@ Edite `selection.json` antes de regenerar:
 - `reviewed_cut_id`: ID exacto del corte aprobado, disponible en `latest-qa.json`. Ambos valores deben coincidir con el corte; una extracción posterior vuelve a marcar la selección como pendiente de revisión.
 - `include_recently_closed`: permite incluir cierres de la semana si el tablero registra Fin Real dentro del corte.
 
-Cuando no hay suficientes proyectos fijados, el generador sugiere activos según bloqueo/riesgo, decisión registrada, fin próximo y actividad reciente. La selección nunca se atribuye a una aprobación humana sin semana e ID de corte coincidentes. La PPT usa solamente campos que existen en el esquema actual de monday y evita totales financieros mientras el tablero no registre moneda por proyecto.
+Cuando no hay suficientes proyectos fijados, el generador sugiere proyectos activos según bloqueo/riesgo, decisión o acción registrada, fin próximo y actividad reciente. Los quick wins no se incorporan automáticamente. La selección nunca se atribuye a una aprobación humana sin semana e ID de corte coincidentes. La PPT usa solamente campos que existen en el esquema actual de monday. Presenta los importes por proyecto con la moneda registrada, marca monedas pendientes y no suma USD con PEN.
 
 ## Ejecución
 

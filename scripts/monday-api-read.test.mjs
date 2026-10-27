@@ -1,6 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { getAllUpdates, fetchWithRetry } from './monday-api-read.mjs';
+import { getAllUpdates, fetchWithRetry, decodeMcpToolResult } from './monday-api-read.mjs';
+
+test('confirmed empty activity prose becomes an empty list, while errors and unrelated prose still fail', () => {
+  const empty = { structuredContent: null, content: [{ type: 'text', text: 'No activity found for board 123 in the specified time range (2026-10-24T05:00:00Z to 2026-10-25T05:00:00Z).' }] };
+  assert.deepEqual(decodeMcpToolResult('get_board_activity', { boardId: 123 }, empty), { data: [] });
+  assert.throws(() => decodeMcpToolResult('get_board_activity', { boardId: 124 }, empty));
+  assert.throws(() => decodeMcpToolResult('get_board_items_page', { boardId: 123 }, empty));
+  assert.throws(() => decodeMcpToolResult('get_board_activity', { boardId: 123 }, { ...empty, isError: true }));
+  assert.throws(() => decodeMcpToolResult('get_board_activity', {}, { content: [{ type: 'text', text: 'Connection failed' }] }));
+});
 
 test('comments use typed API, preserve replies and paginate without duplicates', async () => {
   const calls = [];

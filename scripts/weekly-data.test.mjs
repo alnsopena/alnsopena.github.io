@@ -87,9 +87,9 @@ test('corte privado conserva el mismo ID de extracción para PPT y snapshot', ()
     people_directory: [{ id: '7', name: 'PM' }],
     inventory: { projects: 1, subitems: 0, updates: 1 },
     items: [{ id: '10', name: 'Proyecto', group: { title: 'Activos' },
-      column_values: { status: 'En Proceso' }, subitems: [] }],
+      column_values: { status: 'En Proceso' }, subitems: [{ id: 'sub' }] }],
     raw_items: [{ id: '10', column_values: [{ id: 'status', text: 'En Proceso' }] }],
-    updates: [{ id: 'u1', item_id: '10', text_body: 'Hito validado' }],
+    updates: [{ id: 'u1', item_id: '10', text_body: 'Hito validado' }, { id: 'u2', item_id: 'sub', text_body: 'Actividad del subelemento' }],
   };
   const cut = buildWeeklyCut(snapshot, [], null);
   assert.equal(cut.cut_id, '1:2026-09-29T20:00:00Z');
@@ -97,5 +97,6 @@ test('corte privado conserva el mismo ID de extracción para PPT y snapshot', ()
   assert.equal(cut.reporting_week.key, '2026-09-21');
   assert.equal(cut.projects[0].raw_item.column_values[0].text, 'En Proceso');
   assert.equal(cut.projects[0].updates[0].id, 'u1');
+  assert.equal(cut.projects[0].updates[1].id, 'u2');
   assert.equal(cut.activity.coverage.complete, true);
 });

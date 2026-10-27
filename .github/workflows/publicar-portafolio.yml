@@ -113,7 +113,7 @@ jobs:
 
       - name: Probar generador PowerPoint
         if: steps.weekly.outputs.generate == 'true'
-        run: node --test scripts/generate-weekly-ppt.test.mjs
+        run: node --test scripts/generate-weekly-ppt.test.mjs scripts/weekly-ppt-model.test.mjs
 
       - name: Generar borrador editable con el mismo corte
         if: steps.weekly.outputs.generate == 'true'

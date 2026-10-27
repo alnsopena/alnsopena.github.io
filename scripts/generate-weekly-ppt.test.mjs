@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import { generateWeeklyPpt } from './generate-weekly-ppt.mjs';
+import JSZip from 'jszip';
 
 test('genera borradores editables distintos y conserva la selección PMO sin tocar finales', async () => {
   const directory = await mkdtemp(path.join(tmpdir(), 'cosmos-weekly-ppt-'));
@@ -46,6 +47,23 @@ test('genera borradores editables distintos y conserva la selección PMO sin toc
     assert.match(first.output, /Borrador_20260929_0905/);
     assert.ok((await stat(first.output)).size > 10000);
     assert.equal((await readFile(first.output)).subarray(0, 2).toString(), 'PK');
+    const packageFile = await JSZip.loadAsync(await readFile(first.output));
+    const slides = Object.keys(packageFile.files).filter(n => /^ppt\/slides\/slide\d+\.xml$/.test(n));
+    assert.equal(slides.length, 4);
+    const presentation = await packageFile.file('ppt/presentation.xml').async('string');
+    assert.match(presentation, /<p:presentation\b[^>]*xmlns:r=/, 'cloned slide IDs need the relationships namespace at their parent');
+    const summary = await packageFile.file('ppt/slides/slide2.xml').async('string');
+    const project = await packageFile.file('ppt/slides/slide3.xml').async('string');
+    const guide = await packageFile.file('ppt/slides/slide4.xml').async('string');
+    assert.match(summary, /<a:tbl>/); assert.match(project, /<a:tbl>/);
+    assert.match(project, /Piloto completado|Se completó el piloto/);
+    assert.match(project, /Hitos por definir en monday/);
+    assert.doesNotMatch(project, /Sin movimientos|Elegir estado|dd\/mm|± N días/);
+    assert.match(guide, /Propuesta/); assert.match(guide, /Despliegue/); assert.match(guide, /Estabilización/);
+    for (const name of Object.keys(packageFile.files).filter(n => /^ppt\/slides\/.*\.xml$/.test(n))) {
+      const xml = await packageFile.file(name).async('string');
+      assert.doesNotMatch(xml, /Migración TMS Logaware|12\/10\/2026|\[fecha\]/, 'historical example data must not survive in package parts');
+    }
     assert.equal((await readFile(path.join(outputDir, 'latest-path.txt'), 'utf8')).trim(), second.output);
     assert.equal(JSON.parse(await readFile(path.join(outputDir, 'latest-qa.json'), 'utf8')).cut_id, cut.cut_id);
     const changed = { ...cut, extracted_at_utc: '2026-09-29T14:06:00.000Z',

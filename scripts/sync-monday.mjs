@@ -2,7 +2,7 @@ import { appendFile, cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildWeeklyCut, businessWeek, getActivityPages } from './weekly-data.mjs';
-import { getAllUpdates, fetchWithRetry } from './monday-api-read.mjs';
+import { getAllUpdates, fetchWithRetry, decodeMcpToolResult } from './monday-api-read.mjs';
 import { updatesDigest } from './verify-portfolio-published.mjs';
 import { withRiskOrigin } from './risk-origin.mjs';
 
@@ -87,14 +87,7 @@ class MondayMcpClient {
 
   async callTool(name, args) {
     const result = await this.rpc('tools/call', { name, arguments: args });
-    if (result.isError) {
-      const message = result.content?.map((entry) => entry.text).filter(Boolean).join(' ') || `Falló ${name}`;
-      throw new Error(message);
-    }
-    if (result.structuredContent !== undefined) return result.structuredContent;
-    const text = result.content?.find((entry) => entry.type === 'text')?.text;
-    if (!text) throw new Error(`${name} no devolvió contenido estructurado`);
-    return JSON.parse(text);
+    return decodeMcpToolResult(name, args, result);
   }
 }
 

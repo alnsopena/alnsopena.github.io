@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "board_id": "18396270726",
+  "subitem_board_id": "18397995230",
+  "project": {
+    "area": "text_mm8hmzer",
+    "decision": "long_text_mm8hgt22",
+    "decider": "text_mm8hqgv",
+    "decision_due": "date_mm8he39"
+  },
+  "subitem": {
+    "kind": "color_mm8hx11b",
+    "baseline": "timerange_mm8hpnfz",
+    "actual_finish": "date_mm8h67vm",
+    "owner": "person",
+    "status": "status",
+    "forecast_start": "date_mm5esvwt",
+    "forecast_finish": "date_mm5ennwx"
+  }
+}

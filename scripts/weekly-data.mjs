@@ -278,7 +278,8 @@ export function buildWeeklyCut(snapshot, rawActivity, previousBaseline) {
     id: String(item.id), name: item.name, group: item.group ?? null,
     column_values: item.column_values ?? {}, subitems: item.subitems ?? [],
     raw_item: rawItemsById.get(String(item.id)) ?? null,
-    updates: updatesById.get(String(item.id)) ?? [],
+    updates: [String(item.id), ...(item.subitems ?? []).map(sub => String(sub.id))]
+      .flatMap(id => updatesById.get(id) ?? []),
   }));
   return {
     schema_version: 1, cut_id: `${snapshot.board_id}:${extractedAt}`,

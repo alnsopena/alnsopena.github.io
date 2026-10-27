@@ -1,5 +1,17 @@
 import { setTimeout as wait } from 'node:timers/promises';
 
+export function decodeMcpToolResult(name, args, result) {
+  const message = result.content?.filter(entry => entry.type === 'text').map(entry => entry.text).join(' ') ?? '';
+  if (result.isError) throw new Error(message || `Falló ${name}`);
+  if (result.structuredContent != null) return result.structuredContent;
+  // Confirmed MCP empty-window response, 2026-10-27. Do not confuse failures
+  // or arbitrary prose with a successful empty activity list.
+  if (name === 'get_board_activity' && message.startsWith(`No activity found for board ${args.boardId} in the specified time range (`) && message.endsWith(').')) return { data: [] };
+  if (!message) throw new Error(`${name} no devolvió contenido estructurado`);
+  try { return JSON.parse(message); }
+  catch { throw new Error(`${name} devolvió una respuesta no estructurada inesperada`); }
+}
+
 // Use the typed API through the existing MCP connection. The convenience
 // get_updates tool changed its objectId argument and stopped scheduled cuts.
 const UPDATE_FIELDS = `id item_id text_body created_at updated_at
