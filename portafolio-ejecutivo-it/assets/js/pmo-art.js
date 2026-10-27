@@ -64,7 +64,7 @@
   function viewItems(view) {
     const D = g('D'), st = g('state') || {}, nq = g('normalizeQuery') || (s => String(s || '').toLowerCase()), acf = g('applyCommonFilters'), ar = g('attentionReasons'), sb = g('scheduleBucket'), act = g('active');
     const search = i => !st.search || nq(i.name).includes(nq(st.search));
-    if (view === 'atencion') return g('filteredAttentionItems')();
+    if (view === 'atencion') return g('riskAttentionItems')();
     if (view === 'portafolio') return g('filtered')();
     if (view === 'cronograma') return acf(g('initiativeItems')().filter(act), { pm: true, phase: true }).filter(search).filter(i => !st.schedule || sb(i) === st.schedule);
     if (view === 'finanzas') return acf(g('initiativeItems')().filter(g('hasFinancialData')), { status: true, priority: true, pm: true }).filter(search);
@@ -81,10 +81,9 @@
     const prio = val && C.priority ? countBy(items || [], i => val(i, C.priority) || 'Sin prioridad') : [];
     return {
       title: 'La mesa de despacho',
-      sub: 'Cada expediente requiere seguimiento. La compuerta permanece cerrada mientras haya asuntos pendientes.',
-      msg: n ? '<em>' + plural(n, 'proyecto requiere', 'proyectos requieren') + '</em> atención sobre la mesa' : 'Mesa despejada: ningún proyecto requiere atención',
-      pills: [blk && { text: plural(blk, 'bloqueo', 'bloqueos'), tone: 'red' }, rsk && { text: plural(rsk, 'riesgo', 'riesgos'), tone: 'amber' }, late && { text: late + ' con Fin Plan vencido', tone: 'amber' }]
-        .concat(prio.map(([k, v]) => ({ text: 'Prioridad ' + k + ': ' + v, tone: /critical/i.test(k) ? 'red' : /high|alta/i.test(k) ? 'amber' : 'blue' }))),
+      sub: g('riskConclusion')(items || []),
+      msg: '',
+      pills: [],
       key: [{ svg: I.ribbon('#B2493A') + I.detenido, text: 'Cinta roja y sello DETENIDO: bloqueo' }, { svg: I.ribbon('#D69A3C'), text: 'Cinta ámbar: riesgo' }, { svg: I.ribbon('#C2633F'), text: 'Cinta óxido: Fin Plan vencido' }, { svg: I.gate, text: 'Compuerta cerrada: atención pendiente' }],
       empty: 'Con estos filtros, ningún proyecto requiere atención'
     };
@@ -221,6 +220,41 @@
     personalObs = new MutationObserver(() => { clearTimeout(personalObs.t); personalObs.t = setTimeout(paint, 120); }); personalObs.observe(dock, { childList: true, subtree: true });
   }
   let current = null;
+  // Add date labels without changing the vendor scene, its data, hit areas or indicators.
+  function dispatchDates(scene, items) {
+    if (!scene || typeof scene.drawLive !== 'function' || !scene.wrap || !scene.pos) return;
+    scene.box.classList.add('pav-art-atencion');
+    const summary = document.querySelector('#main [data-risk-summary]');
+    if (summary) summary.hidden = true;
+    const subtitle = scene.headEl.querySelector('.pav-scene-sub');
+    if (subtitle) { subtitle.title = subtitle.textContent; subtitle.setAttribute('aria-label', subtitle.textContent); }
+    const layer = document.createElement('div'); layer.className = 'risk-dispatch-dates'; layer.setAttribute('aria-hidden', 'true');
+    scene.wrap.appendChild(layer);
+    const C = g('C'), val = g('val'), days = g('riskDaysLate'), short = window.PMORiskDiagnostics.shortDate;
+    const byId = new Map(items.map(item => [String(item.id), item]));
+    const labels = (scene.items || []).flatMap((project, index) => {
+      const item = byId.get(String(project.id)), plan = item && val(item, C.plan);
+      if (!plan || !short(plan)) return [];
+      const label = document.createElement('span'); label.className = 'risk-dispatch-date';
+      label.innerHTML = '<time datetime="' + esc(plan) + '">Fin Plan ' + esc(short(plan)) + '</time>' + (days(item) > 0 ? ' · ' + g('riskDelayBadge')(item) : '');
+      layer.appendChild(label);
+      return [{ label, id: String(project.id), index }];
+    });
+    const original = scene.drawLive;
+    scene.drawLive = function (pen, elapsed, time, frame) {
+      const result = original.call(this, pen, elapsed, time, frame);
+      for (const { label, id, index } of labels) {
+        const pos = this.pos[id]; if (!pos) continue;
+        const settled = this.quiet || frame >= this.firstAt + .55 + .14 * index;
+        label.style.opacity = settled ? '1' : '0';
+        const hot = this.isHot(id) ? 6 : 0, drift = this.quiet ? 0 : 1.4 * Math.sin(.9 * time + 1.3 * index);
+        label.style.left = pos.x + 'px'; label.style.top = (pos.y + this.card.h / 2 - (this.mob ? 31 : 47) - hot + drift) + 'px';
+        label.style.maxWidth = Math.max(0, this.card.w - 18) + 'px';
+      }
+      return result;
+    };
+    scene.wake(.2);
+  }
   function mount() {
     const main = document.getElementById('main'), view = (g('state') || {}).view; if (!main) return;
     if (current && !document.body.contains(current.box)) { current.destroy(); current = null; }
@@ -230,11 +264,11 @@
     if (view === 'muelle') return mountMuelle(main);
     if (!['atencion', 'portafolio', 'cronograma', 'finanzas'].includes(view)) return;
     const items = viewItems(view), pl = place(main, view); if (!pl) return;
-    const st = g('state') || {}, filteredView = ['search', 'status', 'priority', 'pm', 'phase', 'schedule', 'issue', 'riskType', 'mitigationOwner', 'auditFilter'].some(k => st[k]) || ['projects','quick-wins'].includes(st.initiativeScope) || (view === 'portafolio' && ['active','closed'].includes(st.portfolioScope));
+    const st = g('state') || {}, filteredView = ['search', 'status', 'priority', 'pm', 'phase', 'schedule', 'issue', 'riskType', 'mitigationOwner', 'riskOrigin', 'auditFilter'].some(k => st[k]) || ['projects','quick-wins'].includes(st.initiativeScope) || (view === 'portafolio' && ['active','closed'].includes(st.portfolioScope));
     const o = { cardClass: cfg.cardClass, onSelect: open };
-    const mark = h => { if (filteredView) { h.pills = [{ text: 'Vista filtrada' }].concat(h.pills || []); if (h.empty && !items.length) h.msg = h.empty; } const t = toggleBtn(view, pl.charts); if (t) h.actions = [t]; return h; };
+    const mark = h => { if (filteredView && view !== 'atencion') { h.pills = [{ text: 'Vista filtrada' }].concat(h.pills || []); if (h.empty && !items.length) h.msg = h.empty; } const t = toggleBtn(view, pl.charts); if (t) h.actions = [t]; return h; };
     let h;
-    if (view === 'atencion') { const ps = toProjects(items); h = mark(headAtencion(ps, items)); const dossiers = ps.map(p => Object.assign({}, p, { actionOwner: [p.action, p.mitigationOwner ? 'Responsable: ' + p.mitigationOwner : 'Sin responsable'].filter(Boolean).join(' · ') })); current = fx.despacho(pl.slot, { items: dossiers }, Object.assign(o, { head: h })); }
+    if (view === 'atencion') { const ps = toProjects(items); h = mark(headAtencion(ps, items)); const dossiers = ps.map(p => Object.assign({}, p, { actionOwner: [p.action, p.mitigationOwner ? 'Responsable: ' + p.mitigationOwner : 'Sin responsable'].filter(Boolean).join(' · '), planLabel: p.planLabel + (g('riskDaysLate')(items.find(item => String(item.id) === p.id)) > 0 ? ' · ' + g('riskDaysLate')(items.find(item => String(item.id) === p.id)) + ' días de atraso' : '') })); current = fx.despacho(pl.slot, { items: dossiers }, Object.assign(o, { head: h })); dispatchDates(current, items); }
     else if (view === 'portafolio') { const ps = toProjects(items); h = mark(headPortafolio(ps)); const phases = g('orderedPhases') ? g('orderedPhases')({}).map(r => r[0]) : getData().phases;
       current = fx.carta(pl.slot, { items: ps, phases }, Object.assign(o, { head: h, onPM: grp => { const cnt = {}; grp.list.forEach(p => cnt[p.pm] = (cnt[p.pm] || 0) + 1); const pm = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0]; if (pm && typeof window.setFilter === 'function') window.setFilter('pm', pm); } })); }
     else if (view === 'cronograma') { const ps = toProjects(items), today = todayLima(); h = mark(headCronograma(ps, today)); current = fx.arribos(pl.slot, { items: ps, today }, Object.assign(o, { head: h })); }

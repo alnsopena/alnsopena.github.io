@@ -10,6 +10,7 @@ const loadFactory = name => {
 const createGuide = loadFactory('cosmo-guide.js');
 const createKnowledge = loadFactory('cosmo-knowledge.js');
 const financeModel = loadFactory('finance-model.js');
+const riskDiagnostics = loadFactory('risk-diagnostics.js');
 const html = fs.readFileSync(new URL('../portafolio-ejecutivo-it/index.html', import.meta.url), 'utf8');
 const snapshot = html.match(/<script type="application\/json" id="snapshot">([\s\S]*?)<\/script>/);
 assert.ok(snapshot, 'Debe existir un corte de monday');
@@ -27,6 +28,7 @@ const context = {
   location: { search: '', pathname: '/', hash: '' },
   URLSearchParams, Intl, Date, Set, Map, Number, String, Object, Array,
   PMOFinance: financeModel,
+  PMORiskDiagnostics: riskDiagnostics,
 };
 vm.runInNewContext(script, context);
 const h = context.guideTest;

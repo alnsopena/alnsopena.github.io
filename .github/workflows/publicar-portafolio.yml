@@ -58,7 +58,7 @@ jobs:
 
       - name: Probar reglas de datos y portal
         run: |
-          node --test scripts/monday-sync.test.mjs scripts/finance-model.test.mjs scripts/monday-api-read.test.mjs scripts/verify-portfolio-published.test.mjs scripts/weekly-data.test.mjs scripts/encrypt-weekly-ppt.test.mjs scripts/deliver-weekly-ppt-cloud.test.mjs scripts/publish-weekly-ppt-pull.test.mjs scripts/write-ppt-config.test.mjs tools/weekly-ppt/apps-script-pull/test-pull.mjs tools/weekly-ppt/apps-script-dispatch/test-dispatch.mjs
+          node --test scripts/risk-diagnostics.test.mjs scripts/monday-sync.test.mjs scripts/finance-model.test.mjs scripts/monday-api-read.test.mjs scripts/verify-portfolio-published.test.mjs scripts/weekly-data.test.mjs scripts/encrypt-weekly-ppt.test.mjs scripts/deliver-weekly-ppt-cloud.test.mjs scripts/publish-weekly-ppt-pull.test.mjs scripts/write-ppt-config.test.mjs tools/weekly-ppt/apps-script-pull/test-pull.mjs tools/weekly-ppt/apps-script-dispatch/test-dispatch.mjs
           node scripts/test-cosmo.mjs
 
       - name: Verificar conexión de monday
