@@ -84,7 +84,7 @@
       sub: g('riskConclusion')(items || []),
       msg: '',
       pills: [],
-      key: [{ svg: I.ribbon('#B2493A') + I.detenido, text: 'Cinta roja y sello DETENIDO: bloqueo' }, { svg: I.ribbon('#D69A3C'), text: 'Cinta ámbar: riesgo' }, { svg: I.ribbon('#C2633F'), text: 'Cinta óxido: Fin Plan vencido' }, { svg: I.gate, text: 'Compuerta cerrada: atención pendiente' }],
+      key: [{ svg: I.ribbon('#B2493A') + I.detenido, text: 'Cinta roja y sello DETENIDO: bloqueo' }, { svg: I.ribbon('#D69A3C'), text: 'Cinta ámbar: riesgo' }, { svg: I.ribbon('#C2633F'), text: 'Cinta óxido: Fin Plan vencido' }],
       empty: 'Con estos filtros, ningún proyecto requiere atención'
     };
   }
@@ -248,7 +248,9 @@
         const settled = this.quiet || frame >= this.firstAt + .55 + .14 * index;
         label.style.opacity = settled ? '1' : '0';
         const hot = this.isHot(id) ? 6 : 0, drift = this.quiet ? 0 : 1.4 * Math.sin(.9 * time + 1.3 * index);
-        label.style.left = pos.x + 'px'; label.style.top = (pos.y + this.card.h / 2 - (this.mob ? 31 : 47) - hot + drift) + 'px';
+        const cardHeight = this.detailHeights?.[id] || this.card.h;
+        const offset = this.detailDateOffsets?.[id];
+        label.style.left = pos.x + 'px'; label.style.top = (pos.y + (offset === undefined ? cardHeight / 2 - (this.mob ? 31 : 47) : -cardHeight / 2 + offset) - hot + drift) + 'px';
         label.style.maxWidth = Math.max(0, this.card.w - 18) + 'px';
       }
       return result;
@@ -268,7 +270,7 @@
     const o = { cardClass: cfg.cardClass, onSelect: open };
     const mark = h => { if (filteredView && view !== 'atencion') { h.pills = [{ text: 'Vista filtrada' }].concat(h.pills || []); if (h.empty && !items.length) h.msg = h.empty; } const t = toggleBtn(view, pl.charts); if (t) h.actions = [t]; return h; };
     let h;
-    if (view === 'atencion') { const ps = toProjects(items); h = mark(headAtencion(ps, items)); const dossiers = ps.map(p => Object.assign({}, p, { actionOwner: [p.action, p.mitigationOwner ? 'Responsable: ' + p.mitigationOwner : 'Sin responsable'].filter(Boolean).join(' · '), planLabel: p.planLabel + (g('riskDaysLate')(items.find(item => String(item.id) === p.id)) > 0 ? ' · ' + g('riskDaysLate')(items.find(item => String(item.id) === p.id)) + ' días de atraso' : '') })); current = fx.despacho(pl.slot, { items: dossiers }, Object.assign(o, { head: h })); dispatchDates(current, items); }
+    if (view === 'atencion') { const ps = toProjects(items); h = mark(headAtencion(ps, items)); const dossiers = ps.map(p => Object.assign({}, p, { actionOwner: [p.action, p.mitigationOwner ? 'Responsable: ' + p.mitigationOwner : 'Sin responsable'].filter(Boolean).join(' · '), planLabel: p.planLabel + (g('riskDaysLate')(items.find(item => String(item.id) === p.id)) > 0 ? ' · ' + g('riskDaysLate')(items.find(item => String(item.id) === p.id)) + ' días de atraso' : '') })); current = fx.despacho(pl.slot, { items: dossiers }, Object.assign(o, { head: h, fullActions: true, hideTools: true })); dispatchDates(current, items); }
     else if (view === 'portafolio') { const ps = toProjects(items); h = mark(headPortafolio(ps)); const phases = g('orderedPhases') ? g('orderedPhases')({}).map(r => r[0]) : getData().phases;
       current = fx.carta(pl.slot, { items: ps, phases }, Object.assign(o, { head: h, onPM: grp => { const cnt = {}; grp.list.forEach(p => cnt[p.pm] = (cnt[p.pm] || 0) + 1); const pm = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0]; if (pm && typeof window.setFilter === 'function') window.setFilter('pm', pm); } })); }
     else if (view === 'cronograma') { const ps = toProjects(items), today = todayLima(); h = mark(headCronograma(ps, today)); current = fx.arribos(pl.slot, { items: ps, today }, Object.assign(o, { head: h })); }

@@ -174,3 +174,36 @@ test('origin cards, URL, storage, reset, preventive filters, detail delay tones 
   assert.doesNotMatch(escaped, /<img/);
   assert.match(escaped, /&lt;img/);
 });
+
+test('desk actions wrap completely, grow each paper card and leave no decorative tools column', () => {
+  const rendererContext = { module: { exports: {} } };
+  vm.runInNewContext(fs.readFileSync(new URL('portafolio-ejecutivo-it/assets/js/dispatch-layout.js', root), 'utf8'), rendererContext);
+  const renderer = rendererContext.module.exports;
+  const painted = [], ctx = { save() {}, restore() {}, measureText: text => ({ width: text.length * 6.5 }), fillText(text) { painted.push(text); } };
+  const action = 'Entregar cronograma detallado en Excel, confirmar responsables y completar todas las validaciones. '.repeat(5) + 'FIN COMPLETO ' + 'URLLARGASINESPACIOS'.repeat(12);
+  const projects = [{ id: 'long', name: 'Proyecto con acción extensa', actionOwner: action }, { id: 'short', name: 'Proyecto breve', actionOwner: 'Validar acta.' }];
+  const original = JSON.stringify(projects);
+  for (const width of [300, 375, 800, 1200]) {
+    const scene = { ctx, w: width, items: projects };
+    renderer.layout(scene);
+    assert.equal(scene.tools, 0);
+    assert.ok(scene.detailHeights.long > scene.detailHeights.short);
+    assert.equal(scene.detailActions.long.join('').replace(/\s/g, ''), action.replace(/\s/g, ''));
+    assert.ok(scene.detailActions.long.every(text => ctx.measureText(text).width <= scene.card.w - 22));
+    assert.ok(Object.values(scene.pos).every(pos => pos.x - scene.card.w / 2 >= 0 && pos.x + scene.card.w / 2 <= width));
+    painted.length = 0;
+    renderer.draw(scene, { ctx, alpha: 1, line() {} }, projects[0], 0, 0, scene.card.w, 70, { inkSoft: 'ink', navy3: 'navy' });
+    assert.equal(painted.slice(1).join('').replace(/\s/g, ''), action.replace(/\s/g, ''));
+    assert.doesNotMatch(painted.join(''), /…/);
+  }
+  assert.equal(JSON.stringify(projects), original);
+  // The vendor keeps its original layout unless the portal explicitly opts in.
+  const vendor = fs.readFileSync(new URL('portafolio-ejecutivo-it/assets/js/cosmos-paper-fx.min.js', root), 'utf8');
+  new vm.Script(vendor);
+  const start = vendor.indexOf('class ie extends Ut'), end = vendor.indexOf('class ', start + 10);
+  const sandbox = { Ut: class {}, window: { PMODispatchLayout: renderer } };
+  vm.runInNewContext('globalThis.Desk=' + vendor.slice(start, end), sandbox);
+  const scene = new sandbox.Desk(); Object.assign(scene, { ctx, w: 800, items: projects, o: { fullActions: true, hideTools: true } });
+  scene.layout(); assert.equal(scene.tools, 0); assert.ok(scene.height(800) > 320);
+  scene.o = {}; assert.equal(scene.height(800), 320);
+});
