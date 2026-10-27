@@ -1484,6 +1484,89 @@
   .m-cont label{display:flex;gap:8px;align-items:center;cursor:pointer}
   .m-custom{border:1px dashed #CCCFCE;border-radius:12px;padding:12px;margin-bottom:6px}
   .m-custom .m-vars{margin-top:12px}
+
+  /* ============ VER PDA: ASPECTO IGUAL A CONNECT (cert-internalportal) ============ */
+  /* Estado: píldora azul de Connect, igual para todos los estados */
+  #ccPdaHead .cc-chip.on{background:var(--cc-blue2)!important;border-color:var(--cc-blue2)!important;color:#fff!important}
+  #ccPdaHead .cc-chip.obs,#ccPdaHead .cc-chip.vy-chip{background:#fff;border-color:var(--cc-line);color:var(--cc-text)}
+  #ccPdaHead .cc-ph-code{font-size:14px;font-weight:400}
+  #ccPdaHead .cc-chip{font-size:12px;padding:4px 9px}
+  /* Pestañas */
+  nav.steps button{font-size:13px;padding:12px 10px}
+  nav.steps button.active{font-weight:400;background:#F2F4F7}
+  nav.steps button:disabled{opacity:.5}
+  /* Contenido de pestañas sobre fondo gris con tarjetas blancas */
+  #step1,#step2,#step3{background:#F4F6FA;padding:24px}
+  #step1 > h2,#step2 > h2,#step3 > h2{display:none}
+  .ig-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:start}
+  .ig-card,#step2 .svc-card,#step3 .st-card{background:#fff;border-radius:12px;padding:22px 24px}
+  .ig-card h3,#step2 .svc-card > h3{font-size:15px;font-weight:500;color:var(--cc-ink);margin:0 0 18px}
+  .ig-card .grid{grid-template-columns:1fr!important;gap:14px;margin:0 0 14px}
+  .ig-card .grid:empty{display:none}
+  .ig-card .seg{margin-bottom:10px}
+  .ig-card .seg button{font-size:12px;padding:6px 10px}
+  #igCliente .client-pill{padding:0;border:none;background:none;box-shadow:none;gap:8px}
+  #igCliente .client-pill .meta{font-size:11px;margin-top:4px}
+  #igCliente .client-pill .btn-icon{width:30px;height:30px;border-radius:4px}
+  @media(max-width:1100px){.ig-grid{grid-template-columns:1fr}}
+  #igCliente > .field{margin-bottom:14px}
+  #vesselFields{margin-top:14px}
+  #step1 .field label{display:block}
+  #step1 .chg-tag{margin-left:4px}
+  /* Campos: compactos como Connect */
+  #step1 .field,#step3 .field{gap:4px}
+  #step1 .field label,#step2 .kpi .lbl,#step3 .field label{font-size:12px;font-weight:400;color:#333}
+  #step1 .field input,#step1 .field select,#step1 .field textarea,#step1 #clientSelect,
+  #step3 .field input,#step3 .field textarea,#step3 #opEmailInput{border:1px solid #D9DDE3!important;border-radius:4px!important;padding:6px 12px!important;font-size:12px!important;font-weight:400!important;color:#4B5563;min-height:30px;box-shadow:none}
+  #step1 .field input[readonly]{background:#fff!important}
+  #step1 .btn-sm,#step3 .btn-sm{border-radius:4px;padding:5px 10px;font-size:12px}
+  /* Detalle */
+  #step2 .svc-card{margin-bottom:0}
+  #step2 .calc-sticky{position:static!important;box-shadow:none!important;background:transparent!important;border:none!important;padding:0!important;margin:0 0 18px}
+  #step2 .kpis{gap:14px;margin-bottom:0}
+  #step2 .kpi{border:none;border-radius:0;padding:0;background:transparent;box-shadow:none}
+  #step2 .kpi-input{border:1px solid #D9DDE3;border-radius:4px;padding:6px 12px;font-size:12px;font-weight:400;margin-top:4px}
+  #step2 .kpi .val{font-size:13px;font-weight:400}
+  #step2 .section-title{background:#fff;border:1px solid #EEF0F3;border-radius:8px 8px 0 0;padding:16px 20px;font-size:13.5px;font-weight:600;margin:16px 0 0}
+  #step2 .section-title.closed{border-radius:8px}
+  #step2 .section-title .st-label{flex:1;order:0}
+  #step2 .section-title .chev{order:9;margin-left:6px}
+  #step2 .section-title .st-label > span[style]{background:#E0EDFF;color:#2563EB!important;font-size:10.5px!important;font-weight:400;border-radius:4px;padding:3px 7px;margin-left:8px;opacity:1!important}
+  #step2 .cat-body{border:1px solid #EEF0F3;border-top:none;border-radius:0 0 8px 8px;padding:0 20px 8px}
+  #step2 table.data{font-size:12px}
+  #step2 table.data thead th{background:#fff!important;font-weight:400;color:#374151;text-transform:none;letter-spacing:0;font-size:12px;padding:14px 10px;border-bottom:1px solid #E5E7EB;border-radius:0!important}
+  #step2 table.data td{padding:14px 10px;border-bottom:1px solid #EEF0F3}
+  #step2 table.data tbody tr:hover{background:#FAFBFC}
+  #step2 table.data tfoot td{background:#fff;border-top:1px solid #E5E7EB;font-weight:500}
+  #step2 table.data .mono,#step2 table.data .num,#step2 .mono{font-family:inherit!important;font-size:12px}
+  #step2 table.data .inp-prefix input,#step2 table.data input[type=text]{font-family:inherit!important;font-weight:400;font-size:12px;border-radius:4px}
+  #step2 table.data select{border:1px solid #D9DDE3;border-radius:4px;font-size:12px}
+  #step2 table.data td b,#step2 table.data td strong{font-weight:400}
+  #step2 .cat-tools{margin:6px 0 0}
+  /* Etiquetas de fila en colores neutros (las alertas ámbar se mantienen) */
+  #step2 table.data .tag-mini:not(.warnb):not(.off){background:#F2F4F7!important;color:#4B5563!important;border:1px solid #E5E7EB!important;font-weight:500}
+  #step2 table.data .lock-btn.locked{background:#F2F4F7;color:#4B5563}
+  #step2 table.data .cell-box,#step2 table.data .cell-in{font-family:inherit!important;font-weight:400!important;font-size:12px}
+  #step2 table.data .cell-box{border:1px solid #D9DDE3;border-radius:4px}
+  #step2 table.data td[style*="font-weight"]{font-weight:400!important}
+  #step2 .comment-cell{font-family:inherit;font-size:11px}
+  #step2 table.data tbody tr:not(.edit-row):not(.editing):nth-child(even){background:#fff}
+  #step2 .section-title{position:relative;padding-right:46px}
+  #step2 .section-title .chev{position:absolute;right:16px;top:50%;transform:translateY(-50%);margin:0}
+  #step2 .section-title.closed .chev{transform:translateY(-50%) rotate(-90deg)}
+  /* Total al final, sin barra fija */
+  #step2 .totals-bar{position:static!important;box-shadow:none!important;border:1px solid #EEF0F3!important;border-left:1px solid #EEF0F3!important;border-radius:8px;background:#fff!important;margin-top:18px;bottom:auto}
+  #step2 .totals-bar .tb-lbl{font-size:12px;font-weight:400;color:#374151}
+  #step2 .totals-bar .value{font-size:16px;font-weight:600;color:var(--cc-ink)}
+  #step2 #pdaReqs > *{background:#fff}
+  #step2 > .actions,#step1 > .actions,#step3 > .actions{margin-top:20px}
+  /* Estado */
+  #step3 .section-title{background:#fff;border:none;border-radius:12px 12px 0 0;padding:18px 24px 6px;font-size:15px;font-weight:500;margin:18px 0 0}
+  #step3 .st-head{background:#fff;border-radius:12px;padding:18px 24px;margin:0}
+  #step3 #obsBox > *,#step3 .field{background:#fff}
+  #step3 #obsBox{background:#fff;border-radius:0 0 12px 12px;padding:0 24px 18px}
+  #step3 .field[style]{border-radius:0 0 12px 12px;padding:6px 24px 20px;margin:0!important}
+  #step3 .pnote{margin-top:16px}
 </style>
 </head>
 <body>
@@ -1515,9 +1598,9 @@
 
   <div class="cc-pdahead" id="ccPdaHead" style="display:none"></div>
   <nav class="steps" id="stepsNav" style="display:none">
-    <button data-step="1" class="active"><span class="num">1</span> Datos</button>
-    <button data-step="2" disabled><span class="num">2</span> PDA</button>
-    <button data-step="3" disabled><span class="num">3</span> Estado</button>
+    <button data-step="1" class="active">Información General</button>
+    <button data-step="2" disabled>Detalle</button>
+    <button data-step="3" disabled>Estado</button>
   </nav>
 
   <section class="panel active" id="screenType">
@@ -1813,9 +1896,25 @@
 
   <!-- ============ PASO 1 ============ -->
   <section class="panel" id="step1">
-    <h2 id="step1Title">Datos Generales</h2>
-
-    <div class="section-title"><span class="st-label">CLIENTE</span></div>
+    <h2 id="step1Title">Información General</h2>
+    <div class="ig-grid">
+      <div class="ig-card" id="igBuque">
+        <h3 id="secVesselTitle">Datos del Buque</h3>
+        <div id="maritimeVesselBlock" style="display:none">
+          <div class="seg" id="shipSourceSeg">
+            <button type="button" data-src="registrada" onclick="setShipSource('registrada')">Nave registrada</button>
+            <button type="button" data-src="provisional" onclick="setShipSource('provisional')">Nave no registrada o TBN</button>
+          </div>
+          <div id="shipSourceBody"></div>
+          <div class="grid" id="vesselFields"></div>
+        </div>
+        <div id="terrestrialBlock" style="display:none">
+          <div class="grid" id="terrestrialFields"></div>
+        </div>
+      </div>
+      <div class="ig-card" id="igCliente">
+        <h3>Cliente / Facturación</h3>
+        <div class="field"><label>Cliente</label>
     <div class="client-pill">
       <div class="client-info">
         <select id="clientSelect" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-weight:700;background:#fff"></select>
@@ -1823,39 +1922,26 @@
       </div>
       <button class="btn btn-ghost btn-icon" onclick="openClientModal()" title="Registrar nuevo cliente"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button>
     </div>
-
-    <!-- ============ NAVE Y VIAJE con Origen de la nave ============ -->
-    <div class="section-title" id="secVesselTitle"><span class="st-label">NAVE Y VIAJE</span></div>
-
-    <div id="maritimeVesselBlock" style="display:none">
-      <div class="seg" id="shipSourceSeg">
-        <button type="button" data-src="registrada" onclick="setShipSource('registrada')">Nave registrada</button>
-        <button type="button" data-src="provisional" onclick="setShipSource('provisional')">Nave no registrada o TBN</button>
-      </div>
-      <div id="shipSourceBody"></div>
-      <div class="grid cols-3" id="vesselFields" style="margin-top:16px"></div>
-      <div class="section-title"><span class="st-label">CARGA Y OPERACIÓN</span></div>
-      <div class="grid cols-4" id="cargoFields"></div>
-    </div>
-
-    <!-- Bloque Terrestre -->
-    <div id="terrestrialBlock" style="display:none">
-      <div class="grid cols-4" id="terrestrialFields"></div>
-    </div>
-
-    <div class="section-title"><span class="st-label">TIPO DE CAMBIO</span></div>
-    <div class="grid cols-3">
+        </div>
+        <div class="grid">
       <div class="field"><label>T/C del día (SBS / SUNAT)</label>
         <div style="display:flex;gap:8px"><input type="text" id="fxDay" readonly style="flex:1;background:#F6F7F7">
           <button class="btn btn-ghost btn-sm" onclick="fetchExchangeRate()">Actualizar</button></div>
         <div class="hint" id="exRateHint"></div></div>
+        </div>
+        <div class="grid" id="pdaCondFields"></div>
+      </div>
+      <div class="ig-card" id="igOper">
+        <h3>Configuración Operativa</h3>
+        <div class="grid" id="opFields"></div>
+        <div class="grid" id="cargoFields"></div>
+        <div class="grid" id="remarksField"></div>
+      </div>
     </div>
-    <div class="section-title"><span class="st-label">CONDICIONES DE LA PDA</span></div>
-    <div class="grid cols-3" id="pdaCondFields"></div>
     <div id="step1Notice"></div>
     <div class="actions">
       <button class="btn btn-ghost" onclick="backToLanding()">← Volver al listado</button>
-      <button class="btn btn-primary" onclick="goStep(2)">Continuar a PDA →</button>
+      <button class="btn btn-primary" onclick="goStep(2)">Continuar a Detalle →</button>
     </div>
   </section>
 
@@ -1868,12 +1954,15 @@
       <div id="contPanel"></div>
     </div>
     <div class="pnote later"><span class="pn-tag">Fase posterior</span><b>Reporte de rentabilidad.</b> Negociado vs facturado por servicio, cliente y comercial. La variación vs la tarifa base ya sale en el Excel interno; costo del proveedor y margen se agregan en esa fase.</div>
-    <div class="cat-tools"><button class="link-btn" onclick="setAllCats(false)">Expandir todo</button><span>·</span><button class="link-btn" onclick="setAllCats(true)">Contraer todo</button></div>
-    <div id="calcSections"></div>
-    <div id="pdaReqs"></div>
-    <div class="totals-bar">
-      <div class="tb-main"><span class="tb-lbl">TOTAL ESTIMADO (USD)</span><span class="value" id="grandTotal2">$ 0.00</span></div>
+    <div class="svc-card">
+      <h3>Servicios</h3>
+      <div class="cat-tools"><button class="link-btn" onclick="setAllCats(false)">Expandir todo</button><span>·</span><button class="link-btn" onclick="setAllCats(true)">Contraer todo</button></div>
+      <div id="calcSections"></div>
+      <div class="totals-bar">
+        <div class="tb-main"><span class="tb-lbl">Total estimado (USD)</span><span class="value" id="grandTotal2">$ 0.00</span></div>
+      </div>
     </div>
+    <div id="pdaReqs"></div>
     <div class="actions">
       <button class="btn btn-ghost" onclick="openTplEditor(null,true)">Guardar como plantilla</button>
       <button class="btn btn-ghost" onclick="exportExcel()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M9 13l4 5M13 13l-4 5"/></svg> Exportar desglose (Excel)</button>
@@ -1890,11 +1979,11 @@
       <div class="st-actions" id="statusActions"></div>
     </div>
     <div id="statusActionBanner"></div>
-    <div class="section-title"><span class="st-label">OBSERVACIÓN</span></div>
+    <div class="section-title"><span class="st-label">Observación</span></div>
     <div id="obsBox"></div>
     <div class="pnote later"><span class="pn-tag">Fase posterior</span><b>Liquidación: cotizado vs real.</b> Después de aprobar, Operaciones confirmará las cantidades reales (horas sobre lo cotizado, viajes adicionales de lancha, etc.). El sistema recalculará la PDA respetando los mínimos y mostrará las diferencias contra lo cotizado.</div>
     <div class="pnote proc"><span class="pn-tag">Pendiente de proceso</span><b>Formalizar el flujo de Jenny.</b> Comunicación oficial a Comercial con fecha de inicio y responsables de cada registro (aprobado por gerencia, falta la difusión formal).</div>
-    <div class="section-title"><span class="st-label">NOTIFICACIONES A OPERACIONES</span></div>
+    <div class="section-title"><span class="st-label">Notificaciones a Operaciones</span></div>
     <div class="field" style="margin-bottom:14px">
       <label>Correos que reciben la notificación al aprobar</label>
       <div class="email-chips" id="opEmailsChips"></div>
@@ -2226,7 +2315,7 @@ const state = {
   status: 'Pendiente', traceability: [], os: null, lastObserverNote: '',
   obs: null,             // marca de observación {reason, by, ts, snap}; independiente del estado
   annul: null,           // {reason, by, ts} cuando la PDA se anula
-  editingId: null        // línea desplegada en el paso PDA (una a la vez)
+  editingId: null        // línea desplegada en la pestaña Detalle (una a la vez)
 };
 
 /* ============================================================
@@ -3032,6 +3121,9 @@ function renderPdaHead(){
     <div class="cc-ph-actions">
       <button type="button" class="cc-btn chg-btn" onclick="toggleChg()" title="Marca en morado lo nuevo y lo quitado respecto a Ver PDA de Connect actual">Cambios vs Connect: ${document.body.classList.contains('chg-on')?'sí':'no'}</button>
       <button type="button" class="cc-btn" onclick="openHistory()">Historial</button>
+      <button type="button" class="cc-btn" ${st==='Anulada'?'disabled':''} onclick="editPda()">Editar</button>
+      <button type="button" class="cc-btn pink" ${st==='Anulada'||!can?'disabled':''} ${can?'':'title="Solo Comercial y Gerencia pueden anular"'} onclick="openAnnul()">Anular</button>
+      <button type="button" class="cc-btn" onclick="openPdfPreview()">Enviar PDA</button>
     </div>`;
 }
 const CC_SUBMENU = {
@@ -3540,7 +3632,9 @@ function startNewPda(fromTemplate){
 ============================================================ */
 function renderStep1(){
   renderBreadcrumbs();
-  document.getElementById('step1Title').textContent = 'Datos generales';
+  document.getElementById('step1Title').textContent = 'Información General';
+  document.getElementById('igOper').style.display = state.categoryType==='terrestre' ? 'none' : '';
+  document.getElementById('secVesselTitle').textContent = state.categoryType==='terrestre' ? 'Datos del Servicio' : 'Datos del Buque';
 
   // Cliente
   const sel = document.getElementById('clientSelect');
@@ -3595,18 +3689,19 @@ function renderVesselFields(){
     ${fld('IMO *','imo',v.imo,'text','7 dígitos, ej. 9654323')}
     ${fld('GRT','grt',v.grt||'','num','Pendiente')}
     ${fld('LOA / eslora (m)','loa',v.loa||'','num','Pendiente')}
-    ${fld('Viaje (VOY)','voy',v.voy,'text','Ej. 684')}
+    ${fld('Viaje (VOY)','voy',v.voy,'text','Ej. 684')}`;
+  document.getElementById('opFields').innerHTML = `
     <div class="field"><label>Puerto</label><select data-k="port">${PORTS.map(x=>`<option value="${x.k}" ${x.k===v.port?'selected':''}>${x.k} (${x.code}${x.toConfirm?', código por confirmar':''})</option>`).join('')}</select></div>
     <div class="field"><label>Terminal</label><input data-k="terminal" list="dlTerminals" value="${esc(v.terminal||'')}" placeholder="Ej. DP World Callao S.R.L.">
       <datalist id="dlTerminals">${(TERMINALS_BY_PORT[v.port]||[]).map(x=>`<option value="${esc(x)}">`).join('')}</datalist></div>
     <div class="field"><label title="Define la tarifa de Ayudas a la navegación: 0.12 x GRT internacional, 0.03 x GRT nacional">Procedencia de la nave</label>
       <select data-k="origin">${ORIGINS.map(o=>`<option value="${o.k}" ${o.k===(v.origin||'intl')?'selected':''}>${o.es}</option>`).join('')}</select></div>`;
-  bindVessel('#vesselFields');
+  bindVessel('#vesselFields'); bindVessel('#opFields');
 }
 function renderCargoFields(){
   const v = state.vessel, kind = cargoKind();
   const extra = kind==='cont'
-    ? `<div class="hint" style="align-self:end">Las cantidades de contenedores (20' y 40', llenos y vacíos) se registran en el paso PDA, recuadro Contenedores.</div>`
+    ? `<div class="hint" style="align-self:end">Las cantidades de contenedores (20' y 40', llenos y vacíos) se registran en la pestaña Detalle, recuadro Contenedores.</div>`
     : kind ? ''
     : `<div class="hint" style="align-self:end">Elige el tipo de carga para agregar sus conceptos de carga y descarga.</div>`;
   document.getElementById('cargoFields').innerHTML = `
@@ -3677,8 +3772,9 @@ function renderBreadcrumbs(){
 function renderCondFields(){
   document.getElementById('pdaCondFields').innerHTML = `
     <div class="field"><label>Condición de pago</label>
-      <select onchange="state.payment=this.value">${optList(PAYMENT_TERMS,state.payment)}</select></div>
-    <div class="field" style="grid-column:1/-1"><label>Observaciones (se imprimen en REMARKS)</label>
+      <select onchange="state.payment=this.value">${optList(PAYMENT_TERMS,state.payment)}</select></div>`;
+  document.getElementById('remarksField').innerHTML = `
+    <div class="field"><label>Observaciones (se imprimen en REMARKS)</label>
       <textarea rows="2" placeholder="Opcional" oninput="state.remarks=this.value">${esc(state.remarks)}</textarea></div>`;
 }
 function setLang(l){
@@ -3844,7 +3940,7 @@ function renderStep2(){
     const closed = catCollapsed(cat, items);
     return `
       <div class="section-title ${cat} coll ${closed?'closed':''}" onclick="toggleCat('${cat}')" title="${closed?'Mostrar':'Ocultar'} los servicios de esta categoría">
-        <span class="st-label"><span class="chev">${ICON.chev}</span>${catLabel(cat)} <span style="opacity:.7;font-size:11px">(${activos}/${items.length} activos)</span>${cat==='owner'?'<span class="st-opt">Opcional</span>':''}</span>
+        <span class="st-label"><span class="chev">${ICON.chev}</span>${catLabel(cat)} <span style="opacity:.7;font-size:11px">${activos}/${items.length} activo(s)</span>${cat==='owner'?'<span class="st-opt">Opcional</span>':''}</span>
         <span class="st-sub">Subtotal <b id="subh_${cat}">${fmt(subtotal(cat))}</b></span>
         <div class="dd-wrap" onclick="event.stopPropagation()">
           <button class="btn-add" onclick="toggleDropdown('${cat}',event)">Agregar servicio ▼</button>
@@ -6479,8 +6575,7 @@ function renderStep3(){
     : (st==='Pendiente'
         ? `<button class="btn btn-success btn-sm" ${dis} onclick="openStatusModal('approve')">Aprobar</button>`
         : `<button class="btn btn-ghost btn-sm" ${dis} onclick="openStatusModal('reopen')">Volver a pendiente</button>`)
-      + ` <button class="btn btn-danger-ghost btn-sm" ${dis} onclick="openAnnul()">Anular PDA</button>`
-      + (can ? '' : `<div class="hint" style="margin:6px 0 0">Aprobar, volver a pendiente y anular: solo Comercial y Gerencia. Cambia el usuario arriba.</div>`);
+      + (can ? '' : `<div class="hint" style="margin:6px 0 0">Aprobar y volver a pendiente: solo Comercial y Gerencia. Cambia el usuario arriba. Anular está en la cabecera.</div>`);
   const banner = document.getElementById('statusActionBanner');
   banner.innerHTML = st==='Anulada'
     ? `<div class="status-banner anulada"><div><b>Anulada</b> por ${esc(state.annul?.by||'')} el ${state.annul?new Date(state.annul.ts).toLocaleString('es-PE'):''}. Motivo: ${esc(state.annul?.reason||'')}${state.os?` · ${state.os.number} anulada`:''}</div></div>`
@@ -6493,6 +6588,7 @@ function renderStep3(){
   renderOpEmails();
   renderTimeline();
 }
+function editPda(){ goStep(1); toast('Edita los datos aquí o en Detalle','info'); }
 function openHistory(){
   const list = state.traceability.slice().reverse();
   openHistModal(list.map((t,i)=>({ts:t.ts, user:t.user, prev: i ? (list[i-1].st||'') : '', next: t.st || state.status,
@@ -7336,11 +7432,8 @@ init();
 const CHG_REMOVED = {
   head: { t:'Cabecera y pestañas', items:[
     ['Barra con los 9 estados (Borrador, Creada, Validada, Completada, En Ajuste, Aprobada, Rechazada, En Viaje, Anulada)','queda una sola etiqueta con el estado actual'],
-    ['Botón Editar','la PDA se edita directo en Datos y PDA'],
-    ['Botón Anular','pasa a la pestaña Estado'],
-    ['Botón Enviar PDA','pasa a "Previsualizar PDF y enviar" en la pestaña PDA'],
-    ['Pestañas Información General / Detalle','ahora Datos / PDA / Estado']]},
-  1: { t:'Datos (antes Información General)', items:[
+    ]},
+  1: { t:'Información General', items:[
     ['Tipo de Nave','se toma del maestro de naves'], ['Tonelaje',''], ['País',''],
     ['Código Lloyd\'s','ahora IMO'], ['Nombre del Capitán',''], ['Email del Capitán',''],
     ['Armador',''], ['Moneda','cada servicio tiene su moneda ($ / S/)'], ['Tipo de Cambio manual','ahora T/C del día SBS / SUNAT'],
@@ -7348,11 +7441,11 @@ const CHG_REMOVED = {
     ['Requiere adelanto',''], ['Nominada',''], ['Tipo de Servicio','va en la cabecera (Líneas / Tramps)'],
     ['Tipo de Agenciamiento',''], ['Último Puerto','ahora Procedencia de la nave'],
     ['ETA y ETD','quedan en el módulo Viaje'], ['Comentarios adicionales','ahora Observaciones (REMARKS)']]},
-  2: { t:'PDA (antes Detalle)', items:[
+  2: { t:'Detalle', items:[
     ['Columna Tarifa Unitaria',''], ['Columna Moneda','va como prefijo $ / S/ en la tarifa'],
     ['Columna A/E',''], ['Columna VAT','ahora etiqueta IGV 18% en el servicio'],
     ['Columna Comentarios','ahora dentro de editar línea (sale en el PDF)'], ['Columna Val. Ope.',''],
-    ['Contador "N Servicio(s) Asociado(s)"','ahora "activos / total"'],
+    
     ['Resumen por Categoría (Neto / VAT / Bruto)','ahora subtotal por categoría y total estimado']]},
   3: { t:'Estado', items:[] }
 };
@@ -7436,7 +7529,7 @@ function markChanges(){
   const s3 = document.getElementById('step3');
   if(s3 && s3.classList.contains('active')){
     chgTag(s3.querySelector('h2'), 'Nueva pestaña');
-    chgMark(s3.querySelector('.st-head'), 'Nuevo: aprobar y anular aquí');
+    chgMark(s3.querySelector('.st-head'), 'Nuevo: aprobar aquí');
     chgMark(document.getElementById('obsBox'), 'Nuevo: observación');
     chgMark(document.getElementById('opEmailsChips') && document.getElementById('opEmailsChips').closest('.field'), 'Nuevo: notificar a Operaciones');
     chgMark(s3.querySelector(':scope > .actions'), 'Nuevo');
