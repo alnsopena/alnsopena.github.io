@@ -1098,6 +1098,106 @@
   .cc-btn.chg-btn{background:#fff;color:var(--chg);border:1.5px solid var(--chg);padding:12px 18px}
   body.chg-on .cc-btn.chg-btn{background:var(--chg);color:#fff}
   @media print{.chg-removed,.chg-tag{display:none!important}[data-chg]{outline:none!important}[data-chg]::after{display:none!important}}
+  /* ===== Facturación: Provisiones y Documentos Contables (aspecto de Connect) ===== */
+  section.panel.fac-screen{background:var(--cc-band);padding:16px;border-radius:12px;box-shadow:none}
+  .fac-card{background:#fff;border-radius:12px;padding:24px;margin-bottom:16px;box-shadow:0 1px 3px rgba(16,24,40,.06)}
+  .fac-card h3{font-size:18px;font-weight:600;color:var(--cc-ink);margin:0 0 4px}
+  .fac-card .fac-sub{font-size:12px;color:var(--cc-gray);margin-bottom:18px}
+  .fac-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+  .fac-head .fac-sub{margin-bottom:0}
+  .fac-acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .fac-g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 24px}
+  .fac-g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 24px}
+  .fac-g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 16px}
+  .fac-span2{grid-column:span 2}.fac-span4{grid-column:1 / -1}
+  @media(max-width:1000px){.fac-g4,.fac-g3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:640px){.fac-g4,.fac-g3,.fac-g2{grid-template-columns:1fr}.fac-span2{grid-column:auto}}
+  .fac-f{display:flex;flex-direction:column;gap:6px;min-width:0}
+  .fac-f label{font-size:13px;font-weight:600;color:var(--cc-ink);text-transform:none;letter-spacing:0}
+  .fac-f input,.fac-f select,.fac-f textarea{width:100%;padding:9px 12px;border:1px solid var(--cc-line);border-radius:7px;font:inherit;font-size:13.5px;color:var(--cc-text);background:#fff}
+  .fac-f input:focus,.fac-f select:focus,.fac-f textarea:focus{outline:none;border-color:var(--cc-blue)}
+  .fac-f input:disabled,.fac-f select:disabled,.fac-f textarea:disabled{background:#fff;color:var(--cc-gray);opacity:1}
+  .fac-range{display:flex;gap:6px;align-items:center}
+  .fac-range input{min-width:0}
+  .fac-cc{grid-column:1 / -1;background:var(--cc-band);border-radius:8px;padding:10px 12px;display:grid;grid-template-columns:repeat(3,1fr);gap:4px 12px;font-size:13px}
+  .fac-cc b{grid-column:1 / -1;font-weight:600}.fac-cc small{display:block;color:var(--cc-blue2);font-size:11px}
+  .fac-btns{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;flex-wrap:wrap}
+  .fac-screen .cc-btn,.fac-zone .cc-btn{padding:10px 20px;font-size:13.5px;border-radius:9px}
+  .fac-zone .cc-btn.chg-btn{padding:10px 16px}
+  .fac-zone .cc-btn.ghost{background:#fff;color:var(--cc-blue);border:1px solid var(--cc-blue)}
+  .fac-tabs{display:flex;gap:4px;border-bottom:1px solid var(--cc-line2);margin-bottom:14px;flex-wrap:wrap}
+  .fac-tabs button{background:none;border:none;border-bottom:2px solid transparent;padding:11px 16px;font:inherit;font-size:13.5px;color:var(--cc-text);cursor:pointer}
+  .fac-tabs button.on{border-bottom-color:var(--cc-blue);color:var(--cc-ink);font-weight:500}
+  .fac-scroll{overflow:auto;border:1px solid var(--cc-line2);border-radius:10px;max-height:560px}
+  .fac-tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;background:#fff}
+  .fac-tbl th{position:sticky;top:0;z-index:2;background:#fff;text-align:left;font-weight:600;color:var(--cc-ink);padding:12px 14px;border-bottom:1px solid var(--cc-line2);white-space:nowrap;vertical-align:top}
+  .fac-tbl td{padding:11px 14px;border-bottom:1px solid #EEF0F4;color:var(--cc-text);white-space:nowrap;vertical-align:middle}
+  .fac-tbl tr:last-child td{border-bottom:none}
+  .fac-tbl .num{text-align:right}
+  .fac-tbl.fac-fix th:first-child,.fac-tbl.fac-fix td:first-child{position:sticky;left:0;background:#fff;z-index:1}
+  .fac-tbl.fac-fix th:first-child{z-index:3}
+  .fac-tbl tfoot td{font-weight:600;border-top:1px solid var(--cc-line2);background:#fff}
+  .fac-tbl input,.fac-tbl select{padding:6px 8px;border:1px solid var(--cc-line);border-radius:6px;font:inherit;font-size:13px;width:92px}
+  .fac-tbl th .chg-tag{display:none;margin:4px 0 0;white-space:normal;line-height:1.3;max-width:190px}
+  body.chg-on .fac-tbl th .chg-tag{display:block}
+  .fac-link{color:var(--cc-blue);cursor:pointer;background:none;border:none;font:inherit;padding:0;text-decoration:none}
+  .fac-link:hover{text-decoration:underline}.fac-link.err{color:#C62828;font-weight:600}.fac-link.dis{color:var(--cc-gray);cursor:not-allowed;text-decoration:none}
+  .fac-rowacts{display:flex;gap:10px;align-items:center}
+  .fac-expand{background:var(--cc-band);padding:14px}
+  .fac-expand-in{background:#fff;border-radius:10px;padding:8px 14px 14px;white-space:normal}
+  .fac-expbtn{background:none;border:none;cursor:pointer;color:var(--cc-text);font-size:15px;padding:0 6px}
+  .fac-empty{text-align:center;padding:26px;color:var(--cc-gray);font-style:italic}
+  .fac-note{background:#F5F7FB;border-radius:8px;padding:10px 12px;font-size:12.5px;color:var(--cc-sub);margin-top:10px;line-height:1.45}
+  .fac-note.warn{background:#FFF7E6;color:#8A5A00}.fac-note.err{background:#FDECEC;color:#B3261E}
+  .fac-mk{position:relative}
+  .fac-kv{display:grid;grid-template-columns:150px 1fr;gap:6px 10px;font-size:13px}
+  .fac-kv dt{color:var(--cc-gray)}.fac-kv dd{margin:0;color:var(--cc-ink);word-break:break-word}
+  .fac-tot{display:flex;justify-content:flex-end;gap:18px;font-size:12.5px;font-weight:600;color:var(--cc-ink);margin:8px 0 14px;flex-wrap:wrap}
+  .fac-saldo{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:10px}
+  .fac-saldo div{background:var(--cc-band);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--cc-gray)}
+  .fac-saldo b{display:block;font-size:15px;color:var(--cc-ink);font-weight:600;margin-top:2px}
+  @media(max-width:640px){.fac-saldo{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  .fac-modal.modal{border-radius:14px;padding:24px;max-width:640px}
+  .fac-modal.modal.lg{max-width:1040px}.fac-modal.modal.md{max-width:800px}
+  .fac-modal h3{font-size:17px;font-weight:600;color:var(--cc-ink)}
+  .fac-modal .fac-btns{position:sticky;bottom:-24px;background:#fff;padding:12px 0 0}
+  .fac-sec{font-size:13px;font-weight:600;color:var(--cc-ink);margin:18px 0 8px}
+  .fac-radio{display:flex;flex-direction:column;gap:8px;background:var(--cc-band);border-radius:8px;padding:14px;font-size:13.5px}
+  .fac-radio label{display:flex;gap:8px;align-items:center;cursor:pointer}
+  .fac-chk{display:inline-flex;gap:6px;align-items:center;font-size:13px;font-weight:400}
+  .fac-chk input{width:auto}
+  .fac-pdf{border:1px solid var(--cc-line);border-radius:8px;padding:22px;font-size:12.5px;color:#222;background:#fff}
+  .fac-pdf h4{font-size:15px;margin:0 0 2px}.fac-pdf table{width:100%;border-collapse:collapse;margin-top:12px;font-size:12px}
+  .fac-pdf th,.fac-pdf td{border:1px solid #D7DBE2;padding:6px 8px;text-align:left;vertical-align:top}
+  .fac-pdf .r{text-align:right}
+  .fac-pdf .sig{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:26px;text-align:center}
+  .fac-pdf .sig div{border-top:1px solid #777;padding-top:6px}
+  .fac-zone .chg-tag{white-space:normal;line-height:1.3}
+  .fac-legend{display:none;font-size:12px;color:#6B6290;margin-left:4px}
+  body.chg-on .fac-legend{display:inline}
+  .fac-zone .chg-removed ul{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+  .fac-pill{display:inline-block;border:1px solid var(--cc-line);border-radius:6px;padding:2px 8px;font-size:12px;color:var(--cc-text);background:#fff}
+  .fac-pill.ok{border-color:#9AD3AE;background:#EEF9F1;color:#1B6B35}.fac-pill.err{border-color:#F2B8B5;background:#FDECEC;color:#B3261E}.fac-pill.wait{border-color:#F5C26B;background:#FFF7E6;color:#8A5A00}
+  details.fac-tech{margin-top:10px;font-size:12.5px}
+  details.fac-tech summary{cursor:pointer;color:var(--cc-blue)}
+  details.fac-tech pre{white-space:pre-wrap;word-break:break-word;background:#F5F7FB;border-radius:6px;padding:10px;margin-top:6px;font-size:12px}
+  .fac-tbl.fac-layout{table-layout:fixed}
+  .fac-tbl.fac-layout td.fac-expand{white-space:normal}
+  [data-chg].fac-mk-l::after{left:0;right:auto}
+  .fac-pdf .fp-top{display:flex;justify-content:space-between;align-items:center;gap:14px}
+  .fac-pdf .fp-logo{font-weight:800;letter-spacing:.14em;font-size:19px;color:#0B2545}
+  .fac-pdf .fp-co{text-align:center;flex:1}
+  .fac-pdf .fp-box{border:1px solid #555;padding:8px 12px;text-align:center;font-weight:700;line-height:1.5}
+  .fac-pdf .fp-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:6px 24px}
+  .fac-pdf .fp-kv{display:grid;grid-template-columns:118px 1fr;gap:3px 6px;align-content:start}
+  .fac-pdf .fp-kv .k{font-weight:700}
+  .fac-pdf.fp-it{font-style:italic}
+  .fac-pdf table.fp-cover th,.fac-pdf table.fp-cover td{border:none;padding:3px 8px}
+  .fac-pdf table.fp-cover .fp-sum td{border-top:2px solid #222}
+  .fac-pdf .fp-line{display:flex;justify-content:space-between;gap:12px;margin-top:10px}
+  .fac-pdf .fp-bal b:last-child{border-bottom:3px double #222}
+  .fac-pdf table.fp-sign{margin-top:26px}.fac-pdf table.fp-sign td{width:33%;font-size:11px}
+  .fac-pdf table.fp-sign div{border-top:1px solid #333;padding-top:4px;text-align:center;font-weight:700;font-size:10.5px}
   .cc-btn{background:var(--cc-blue);color:#fff;border:none;border-radius:10px;padding:13px 28px;font-family:inherit;font-size:14px;font-weight:500;cursor:pointer}
   .cc-btn:hover{background:var(--cc-blue-dk)}
   .cc-btn.pink{background:var(--cc-pink)}
@@ -1777,6 +1877,12 @@
     <div id="tfDetail" style="display:none"><div id="tfEditor"></div></div>
   </section>
 
+  <!-- ============ PROVISIONES (Liquidación > Provisiones de Connect) ============ -->
+  <section class="panel fac-screen fac-zone" id="screenProvisions"><div id="fpRoot"></div></section>
+
+  <!-- ============ DOCUMENTOS CONTABLES (Liquidación > Documentos Contables de Connect) ============ -->
+  <section class="panel fac-screen fac-zone" id="screenAccDocs"><div id="fdRoot"></div></section>
+
   <!-- ============ SOCIOS (Data Maestra > Socio de Connect) ============ -->
   <section class="panel" id="screenPartners">
     <div class="buscar-head">
@@ -2173,6 +2279,8 @@
 </div>
 
 <!-- Modal anular PDA -->
+
+<div class="modal-bg" id="facModal"><div class="modal fac-modal fac-zone" id="facModalBox"></div></div>
 
 <div class="modal-bg" id="historyModal">
   <div class="modal cc-hist">
@@ -3144,12 +3252,12 @@ const CC_SUBMENU = {
 function ccMenu(name, btn){
   const dd = document.getElementById('ccDropdown');
   if(name==='Dashboard'){ openOperationalDashboard(); return; }
-  if(name==='PDA' && document.getElementById('screenDashboard').classList.contains('active') && !state.categoryType){ dd.classList.remove('show'); showScreen('screenType'); return; }
+  if(name==='PDA' && (document.getElementById('screenDashboard').classList.contains('active') || document.querySelector('section.panel.active.fac-screen')) && !state.categoryType){ dd.classList.remove('show'); showScreen('screenType'); return; }
   const items = CC_SUBMENU[name];
   if(!items){ dd.classList.remove('show'); toast(`${name}: fuera del alcance de este prototipo`,'info'); return; }
   if(dd.classList.contains('show') && dd.dataset.menu===name){ dd.classList.remove('show'); return; }
   dd.dataset.menu = name; dd.classList.toggle('wide', items.length > 4);
-  dd.innerHTML = items.map(([l,fn,ic])=>`<button type="button" onclick="document.getElementById('ccDropdown').classList.remove('show');if(!state.categoryType){toast('Elige primero Marítimo o Terrestre','error');return;}${fn}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${ic}</svg>${l}</button>`).join('');
+  dd.innerHTML = items.map(([l,fn,ic,free])=>`<button type="button" onclick="document.getElementById('ccDropdown').classList.remove('show');${free?'':"if(!state.categoryType){toast('Elige primero Marítimo o Terrestre','error');return;}"}${fn}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${ic}</svg>${l}</button>`).join('');
   const r = (btn||document.querySelector(`[data-menu="${name}"]`)).getBoundingClientRect();
   dd.style.left = (items.length > 4 ? 16 : Math.max(8, r.left)) + 'px'; dd.style.top = (r.bottom + 4) + 'px';
   dd.classList.add('show');
@@ -3158,7 +3266,7 @@ document.addEventListener('click', e=>{ const dd = document.getElementById('ccDr
   if(dd && dd.classList.contains('show') && !e.target.closest('#ccDropdown') && !e.target.closest('.cc-menu')) dd.classList.remove('show'); });
 window.addEventListener('scroll', ()=>document.getElementById('ccDropdown')?.classList.remove('show'), {passive:true});
 function setMenuOn(id){
-  const m = id==='screenDashboard' ? 'Dashboard' : id==='screenTariffs' ? 'Tarifa' : (id==='screenMaster' || id==='screenRequests' || id==='screenPartners' || id==='screenVessels') ? 'Data Maestra' : id==='screenVoyages' ? 'Agenciamiento' : 'PDA';
+  const m = id==='screenDashboard' ? 'Dashboard' : id==='screenTariffs' ? 'Tarifa' : (id==='screenMaster' || id==='screenRequests' || id==='screenPartners' || id==='screenVessels') ? 'Data Maestra' : id==='screenVoyages' ? 'Agenciamiento' : (id==='screenProvisions' || id==='screenAccDocs') ? 'Liquidación' : 'PDA';
   document.querySelectorAll('#ccMenu button[data-menu]').forEach(b=>b.classList.toggle('on', b.dataset.menu===m));
 }
 function ccClock(){
@@ -7484,8 +7592,8 @@ function chgField(root, re, label){
 }
 function markChanges(){
   // limpiar
-  document.querySelectorAll('[data-chg]').forEach(e=>{ e.removeAttribute('data-chg'); if(e.dataset.chgPos){ e.style.position=''; delete e.dataset.chgPos; } });
-  document.querySelectorAll('.chg-tag').forEach(e=>e.remove());
+  document.querySelectorAll('[data-chg]').forEach(e=>{ if(e.closest('.fac-zone')) return; e.removeAttribute('data-chg'); if(e.dataset.chgPos){ e.style.position=''; delete e.dataset.chgPos; } });
+  document.querySelectorAll('.chg-tag').forEach(e=>{ if(!e.closest('.fac-zone')) e.remove(); });
   // panel de quitados de cabecera
   let hp = document.getElementById('chgHeadRemoved');
   const nav = document.getElementById('stepsNav');
@@ -7549,6 +7657,875 @@ try{ if(localStorage.getItem('pdaChg')!=='0') document.body.classList.add('chg-o
   const orig = window[fn]; if(typeof orig!=='function') return;
   window[fn] = function(){ const r = orig.apply(this, arguments); try{ markChanges(); }catch(e){ console.warn('markChanges', e); } return r; };
 });
+
+/* ============================================================
+   FACTURACIÓN: Liquidación > Provisiones y Documentos Contables
+   Base: Connect actual. Morado = cambio sustentado en ticket y HU.
+   Datos ficticios, solo en memoria. Hilo: PDA > Provisión > Documento.
+============================================================ */
+const FAC_HU = {prov:'HU-FAC-01', num:'HU-FAC-02', reab:'HU-FAC-03', cover:'HU-FAC-04', excel:'HU-FAC-05', nc:'HU-FAC-06', detr:'HU-FAC-08', pdf:'HU-FAC-10', sap:'HU-FAC-12', lc:'HU-FAC-13'};
+function fmTxt(kind, hu, tk, pen){ return (pen ? `Propuesta TI, por validar · ${pen}` : kind) + ` · ${hu} · ${tk}`; }
+function fm(kind, hu, tk, pen){ return `<span class="chg-tag">${fmTxt(kind,hu,tk,pen)}</span>`; }
+function fb(kind, hu, tk, pen){ return `data-chg="${fmTxt(kind,hu,tk,pen)}"`; }
+function fRemoved(title, hu, tk, items){
+  return `<div class="chg-removed"><div class="chg-h">Se quitó respecto a Connect actual · ${title} · ${hu} · ${tk}<span class="chg-legend">Morado continuo: nuevo o cambiado · Punteado: quitado</span></div>
+    <ul>${items.map(([a,b])=>`<li><s>${esc(a)}</s>${b?` <span>→ ${esc(b)}</span>`:''}</li>`).join('')}</ul></div>`;
+}
+function fChgBtn(){ return `<button type="button" class="cc-btn chg-btn" onclick="facToggleChg()" title="Marca en morado lo nuevo y lo quitado respecto a Connect actual">Cambios vs Connect: ${chgOn()?'sí':'no'}</button><span class="fac-legend">Morado continuo: nuevo o cambiado · Punteado: quitado</span>`; }
+function facToggleChg(){ document.body.classList.toggle('chg-on'); try{ localStorage.setItem('pdaChg', chgOn()?'1':'0'); }catch(e){} facRefresh(); }
+function facRefresh(){
+  const id = document.querySelector('section.panel.active')?.id;
+  if(id==='screenProvisions') renderFp(); else if(id==='screenAccDocs') renderFd();
+}
+function fF(label, inner, cls){ return `<div class="fac-f ${cls||''}"><label>${label}</label>${inner}</div>`; }
+function fRo(label, val, cls){ return fF(label, `<input disabled value="${esc(val??'')}">`, cls); }
+function fSel(opts, val, attrs, ph){
+  return `<select ${attrs||''}>${ph!=null?`<option value="">${esc(ph)}</option>`:''}${opts.map(o=>{ const [v,l] = Array.isArray(o)?o:[o,o]; return `<option value="${esc(v)}" ${String(v)===String(val??'')?'selected':''}>${esc(l)}</option>`; }).join('')}</select>`;
+}
+function fMoney(n){ return Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fCur(c){ return c==='PEN' ? 'S/' : 'US$'; }
+function facOpen(html, size){ const b = document.getElementById('facModalBox'); b.className = 'modal fac-modal fac-zone '+(size||''); b.innerHTML = html; document.getElementById('facModal').classList.add('show'); b.scrollTop = 0; }
+function facClose(){ closeModal('facModal'); }
+function facSetBar(screen, title, crumbs, backFn){
+  const t = document.getElementById('ccPbTitle'), c = document.getElementById('ccCrumbs');
+  if(t) t.innerHTML = backFn ? `<button type="button" class="cc-back" onclick="${backFn}" title="Volver a la búsqueda"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 6l-6 6 6 6"/></svg></button>${title}` : title;
+  if(c) c.innerHTML = crumbs.map((x,i)=> i===crumbs.length-1 ? `<b>${x}</b>` : x).join(' / ');
+}
+function facEnter(id){
+  document.getElementById('stepsNav').style.display = 'none';
+  const hp = document.getElementById('chgHeadRemoved'); if(hp) hp.hidden = true;
+  showScreen(id);
+}
+function facNow(){ return new Date().toISOString(); }
+function facCanBill(){ return /Facturación|Gerencia/.test(curUser()); }
+
+/* ---------- Viajes del hilo PDA: mismas naves, viajes y clientes del mockup ---------- */
+function facVoys(){
+  return SAMPLE_PDAS.filter(p=>p.tipo==='maritimo').map(p=>{
+    const s = SHIPS_CATALOG.find(x=>x.name===p.nave) || {};
+    return {nro:p.viaje, nave:p.nave, puerto:p.puerto, cliente:p.cliente, eta:(p.data?.eta||'').slice(0,10), pda:p.code, svc:p.servicio, trg:s.grt||0, loa:s.loa||0};
+  });
+}
+function facVoy(nave, nro){ return facVoys().find(v=>v.nave===nave && (!nro || v.nro===nro)) || {nro:nro||'',nave:nave||'',puerto:'',cliente:'',eta:'',trg:0,loa:0}; }
+function facEta(v){ return v && v.eta ? fmtDate(v.eta) : 'Sin ETA'; }
+function facVoyLabel(v){ return `${v.nro} - ${v.nave} - ETA ${facEta(v)}`; }
+function facVoyList(id){ return `<datalist id="${id}">${facVoys().map(v=>`<option value="${esc(facVoyLabel(v))}"></option>`).join('')}</datalist>`; }
+
+/* ---------- Catálogos ---------- */
+const FAC_CATS = ['Comisión de agencia y otros servicios','Cambio de tripulación','Gastos por autoridades marítimas','Gastos del armador','Gastos portuarios'];
+const FAC_TARIFFS = [
+  {code:'TAR-0201', prov:'Autoridad Portuaria Nacional - APN', cat:'Gastos por autoridades marítimas', svc:'AYUDAS A LA NAVEGACION', unit:'Por TRG', cur:'USD', rate:0.12, igv:false, vigente:true},
+  {code:'TAR-0310', prov:'SERVICIOS DE PRACTICAJE MARITIMO S.A.', cat:'Gastos portuarios', svc:'SERVICIO DE PRACTICAJE', unit:'Por maniobra', cur:'USD', rate:350, igv:true, vigente:true},
+  {code:'TAR-0311', prov:'SERVICIOS DE PRACTICAJE MARITIMO S.A.', cat:'Gastos portuarios', svc:'SERVICIO DE PRACTICAJE', unit:'Por TRG', cur:'USD', rate:0.03, igv:true, vigente:true},
+  {code:'TAR-0312', prov:'SERVICIOS DE PRACTICAJE MARITIMO S.A.', cat:'Gastos portuarios', svc:'PRACTICO EN STANDBY', unit:'Por hora', cur:'USD', rate:120, igv:true, vigente:true},
+  {code:'TAR-0299', prov:'SERVICIOS DE PRACTICAJE MARITIMO S.A.', cat:'Gastos portuarios', svc:'SERVICIO DE AMARRE / DESAMARRE', unit:'Por maniobra', cur:'USD', rate:90, igv:true, vigente:false},
+  {code:'TAR-0420', prov:'PSA MARINE PERU S.A.', cat:'Gastos portuarios', svc:'SERVICIO DE LANCHA - RECEPCION', unit:'Por servicio', cur:'USD', rate:180, igv:true, vigente:true},
+  {code:'TAR-0421', prov:'PSA MARINE PERU S.A.', cat:'Gastos portuarios', svc:'SERVICIO DE LANCHA - DESPACHO', unit:'Por servicio', cur:'USD', rate:180, igv:true, vigente:true},
+  {code:'TAR-0510', prov:'ULTRATUG', cat:'Gastos portuarios', svc:'SERVICIO DE REMOLCAJE', unit:'Por maniobra', cur:'USD', rate:1250, igv:true, vigente:true},
+  {code:'TAR-0610', prov:'DP WORLD CALLAO S.R.L.', cat:'Gastos portuarios', svc:'USO DE AMARRADERO', unit:'Por hora', cur:'USD', rate:45, igv:true, vigente:true},
+  {code:'TAR-0710', prov:'COSMOS AGENCIA MARITIMA S.A.C.', cat:'Comisión de agencia y otros servicios', svc:'COMISION DE AGENCIA', unit:'Por servicio', cur:'USD', rate:800, igv:true, vigente:true}
+];
+const FAC_PROVS = [...new Set(FAC_TARIFFS.map(t=>t.prov))];
+function facTariffs(prov, svc){ return FAC_TARIFFS.filter(t=>t.vigente && t.prov===prov && (!svc || t.svc===svc)); }
+function facServices(prov, cat){
+  if(!prov && !cat) return [];
+  return [...new Set(FAC_TARIFFS.filter(t=>t.vigente && (!prov || t.prov===prov) && (!cat || t.cat===cat)).map(t=>t.svc))];
+}
+const FP_STATES = ['SIN PROVISIÓN','PROVISIONADO','LIQUIDADO','ERROR','ANULADO'];
+function fpPending(prov, nave, nro, svc, cat){ return {id:'sv'+(FP.seq++), prov, nave, nro, svc, cat, sel:false}; }
+function fpLine(p, l){
+  const v = facVoy(l.nave, l.nro), base = l.unit==='Por TRG' ? (v.trg||0)*l.rate*l.qty : l.rate*l.qty;
+  return {sub:base, igv:l.igv ? base*.18 : 0, total:base + (l.igv ? base*.18 : 0)};
+}
+function fpTotal(p){ return p.lines.reduce((a,l)=>a+fpLine(p,l).total, 0); }
+function fpNew(o){ return {id:0, code:'', origin:'', sit:'Provisional', docType:'Factura', docSerie:'', docNum:'', docDate:'', cur:'USD', tc:3.38, recDate:'', payDate:'', cuotas:1, op:'Venta Interna', base:'Operación Gravada', tax:'Impuesto General (18%)', cond:'Crédito', lang:'Ambos', desc:'', status:'PROVISIONADO', linked:'', reopen:'', hist:[], lines:[], ...o}; }
+function fpMkLine(t, nave, nro, cliente, tipo, qty, date){
+  return {tipo:tipo||'Reembolsable', nave, nro, cat:t.cat, svc:t.svc, date:date||'', unit:t.unit, tariff:t.code, rate:t.rate, qty:qty||1, igv:t.igv, cur:t.cur, bill:cliente, collect:cliente, addr:'LIMA - PERÚ', quiebre:'Q02089 - COSTOS GENERALES', remark:''};
+}
+const FP = {seq:1, nextPrv:76, f:{prov:'',nave:'',viaje:'',num:'',sit:'',cat:'',svc:'',est:'PROVISIONADO',from:'',to:''}, searched:true, open:'', tab:'gen', page:1, size:10, view:'list', sel:null, list:[], pending:[]};
+function fpSeed(){
+  const T = c=>FAC_TARIFFS.find(t=>t.code===c);
+  const box = facVoy('BOX ENDURANCE'), pac = facVoy('PACIFIC HORIZON'), oce = facVoy('OCEAN MERIDIAN'), ree = facVoy('REEFER ATLANTIC'), nor = facVoy('NORD VALOUR');
+  const pdaDesc = v=>`Servicios de ${v.pda}`;
+  FP.list = [
+    fpNew({id:71, code:'PRV00000000071', prov:T('TAR-0201').prov, sit:'Provisional', docType:'', docDate:'2026-09-10', recDate:'2026-09-10', payDate:'2026-10-10', desc:pdaDesc(box), linked:72, lines:[fpMkLine(T('TAR-0201'),box.nave,box.nro,box.cliente,'Reembolsable',1,'2026-09-10')]}),
+    fpNew({id:72, code:'PRV00000000072', origin:'PRV00000000071', prov:T('TAR-0201').prov, sit:'Original', docType:'Factura', docSerie:'F123', docNum:'000456', docDate:'2026-09-15', recDate:'2026-09-15', payDate:'2026-10-15', desc:pdaDesc(box), lines:[fpMkLine(T('TAR-0201'),box.nave,box.nro,box.cliente,'Reembolsable',1,'2026-09-10')]}),
+    fpNew({id:73, code:'PRV00000000073', prov:T('TAR-0310').prov, sit:'Original', docType:'Factura', docSerie:'F045', docNum:'002210', docDate:'2026-09-08', recDate:'2026-09-08', payDate:'2026-10-08', status:'LIQUIDADO', desc:pdaDesc(pac), lines:[fpMkLine(T('TAR-0310'),pac.nave,pac.nro,pac.cliente,'Reembolsable',2,'2026-09-05')]}),
+    fpNew({id:74, code:'PRV00000000074', prov:T('TAR-0420').prov, sit:'Original', docType:'Factura', docSerie:'F010', docNum:'008877', docDate:'2026-09-16', recDate:'2026-09-16', payDate:'2026-10-16', status:'ERROR', desc:pdaDesc(oce), lines:[fpMkLine(T('TAR-0420'),oce.nave,oce.nro,oce.cliente,'Gasto',1,'2026-09-14')]}),
+    fpNew({id:75, code:'PRV00000000075', prov:T('TAR-0510').prov, sit:'Original', docType:'Factura', docSerie:'F002', docNum:'000901', docDate:'2026-09-20', recDate:'2026-09-20', payDate:'2026-10-20', status:'ANULADO', desc:pdaDesc(box), lines:[fpMkLine(T('TAR-0510'),box.nave,box.nro,box.cliente,'Gasto',1,'2026-09-10')]})
+  ];
+  FP.list.forEach(p=>p.hist=[{ts:'2026-09-18T10:00:00', user:'P. Díaz (Facturación)', prev:'', next:p.status, comment:'Carga de ejemplo'}]);
+  FP.pending = [
+    fpPending('SERVICIOS DE PRACTICAJE MARITIMO S.A.', box.nave, box.nro, 'PRACTICO EN STANDBY', 'Gastos portuarios'),
+    fpPending('SERVICIOS DE PRACTICAJE MARITIMO S.A.', nor.nave, nor.nro, 'SERVICIO DE PRACTICAJE', 'Gastos portuarios'),
+    fpPending('PSA MARINE PERU S.A.', ree.nave, ree.nro, 'SERVICIO DE LANCHA - DESPACHO', 'Gastos portuarios'),
+    fpPending('ULTRATUG', nor.nave, nor.nro, 'SERVICIO DE REMOLCAJE', 'Gastos portuarios')
+  ];
+}
+function openProvisions(){
+  if(!FP.list.length) fpSeed();
+  FP.view = 'list'; FP.sel = null;
+  facEnter('screenProvisions'); renderFp();
+}
+function fpSet(k, v){
+  FP.f[k] = v;
+  if(k==='cat' || k==='prov') FP.f.svc = '';
+  renderFp();
+}
+function fpHasFilter(){ return Object.values(FP.f).some(Boolean); }
+function fpClear(){ Object.keys(FP.f).forEach(k=>FP.f[k]=''); FP.searched = false; FP.open = ''; renderFp(); }
+function fpSearch(){ FP.searched = true; FP.page = 1; FP.open = ''; renderFp(); if(!fpGroups().length) toast('No se encontraron resultados con los criterios seleccionados','info'); }
+function fpVoyNro(txt){ return String(txt||'').split(' - ')[0].trim(); }
+function fpMatch(p){
+  const f = FP.f, l = p.lines[0] || {}, q = x=>normTxt(x);
+  return (!f.prov || q(p.prov).includes(q(f.prov))) && (!f.nave || p.lines.some(x=>q(x.nave).includes(q(f.nave)))) && (!f.viaje || p.lines.some(x=>q(x.nro).includes(q(fpVoyNro(f.viaje)))))
+    && (!f.num || q(p.code).includes(q(f.num))) && (!f.sit || p.sit===f.sit) && (!f.cat || p.lines.some(x=>x.cat===f.cat)) && (!f.svc || p.lines.some(x=>x.svc===f.svc))
+    && (!f.est || p.status===f.est) && (!f.from || (p.docDate||'')>=f.from) && (!f.to || (p.docDate||'')<=f.to);
+}
+function fpMatchPend(s){
+  const f = FP.f, q = x=>normTxt(x);
+  if(f.est && f.est!=='SIN PROVISIÓN') return false;
+  if(f.sit || f.num || f.from || f.to) return false;
+  return (!f.prov || q(s.prov).includes(q(f.prov))) && (!f.nave || q(s.nave).includes(q(f.nave))) && (!f.viaje || q(s.nro).includes(q(fpVoyNro(f.viaje)))) && (!f.cat || s.cat===f.cat) && (!f.svc || s.svc===f.svc);
+}
+function fpGroups(){
+  const provs = FP.f.est==='SIN PROVISIÓN' ? [] : FP.list.filter(fpMatch), pend = FP.pending.filter(fpMatchPend);
+  return [...new Set([...provs.map(p=>p.prov), ...pend.map(s=>s.prov)])].map(n=>({name:n, provs:provs.filter(p=>p.prov===n), pend:pend.filter(s=>s.prov===n)}));
+}
+function renderFp(){ if(FP.view==='detail') renderFpDetail(); else renderFpList(); }
+function renderFpList(){
+  updatePagebar('screenProvisions');
+  const f = FP.f, svcs = facServices(FAC_PROVS.find(p=>p===f.prov)||'', f.cat), voy = facVoys().find(v=>v.nro===fpVoyNro(f.viaje));
+  const groups = FP.searched ? fpGroups() : [];
+  document.getElementById('fpRoot').innerHTML = `
+    <div class="fac-card" ${fb('','HU-FAC-02','I-042','PEN-JENNY-I042-01')} style="padding:14px 24px;position:relative">
+      <div class="fac-acts" style="justify-content:space-between"><span style="font-size:13px;color:var(--cc-sub)">Nombre propuesto por Facturación para este módulo: Registro de documentos. Se mantiene Provisiones hasta validar.</span><span class="fac-acts">${fChgBtn()}</span></div>
+    </div>
+    <div class="fac-card">
+      <h3>Buscar Provisiones</h3><div class="fac-sub">Ingrese datos para buscar</div>
+      <div class="fac-g4">
+        ${fF('Proveedor', `<input list="fpProvs" placeholder="Ingresar un proveedor" value="${esc(f.prov)}" onchange="fpSet('prov',this.value)"><datalist id="fpProvs">${FAC_PROVS.map(p=>`<option value="${esc(p)}"></option>`).join('')}</datalist>`)}
+        ${fF('Nave', `<input placeholder="Ingresar una nave" value="${esc(f.nave)}" onchange="fpSet('nave',this.value)">`)}
+        ${fF(`Número de Viaje ${fm('Modifica: ETA a la derecha',FAC_HU.prov,'I-041','PEN-I041-01')}`, `<input id="fpViaje" list="fpVoys" placeholder="Ingresar un número de viaje" value="${esc(f.viaje)}" onchange="fpSet('viaje',this.value)">${facVoyList('fpVoys')}${voy?`<small style="color:var(--cc-sub);font-size:12px">ETA: ${facEta(voy)}</small>`:''}`)}
+        ${fF('Número de Provisión', `<input placeholder="Ingresar un número de provisión" value="${esc(f.num)}" onchange="fpSet('num',this.value)">`)}
+        ${fF('Situación', fSel(['Provisional','Original'], f.sit, `onchange="fpSet('sit',this.value)"`, 'Elegir una situación'))}
+        ${fF('Categoría', fSel(FAC_CATS, f.cat, `onchange="fpSet('cat',this.value)"`, 'Elegir una categoría'))}
+        ${fF(`Servicios ${fm('Modifica: por Categoría y Proveedor, sin duplicados',FAC_HU.prov,'I-040','PEN-I040-01')}`, fSel(svcs, f.svc, `id="fpSvc" onchange="fpSet('svc',this.value)"`, 'Elegir un servicio comercial'))}
+        ${fF(`Estado de Provisión ${fm('Modifica',FAC_HU.prov,'I-014','PEN-I014-01')}`, fSel(FP_STATES, f.est, `id="fpEst" onchange="fpSet('est',this.value)"`, 'Elegir un estado'))}
+        ${fF('Rango de Fechas', `<div class="fac-range"><input type="date" value="${f.from}" onchange="fpSet('from',this.value)"><input type="date" value="${f.to}" onchange="fpSet('to',this.value)"></div>`)}
+      </div>
+      <div class="fac-btns"><button type="button" class="cc-btn" ${fpHasFilter()?'':'disabled'} onclick="fpSearch()">Buscar</button><button type="button" class="cc-btn pink" ${fpHasFilter()?'':'disabled'} onclick="fpClear()">Limpiar</button></div>
+      ${fRemoved('Estados de provisión', FAC_HU.prov, 'I-014', [['CANJEADO','LIQUIDADO, Propuesta TI, por validar, PEN-I014-01'],['PENDIENTE','SIN PROVISIÓN para el servicio sin provisión, Propuesta TI, por validar, PEN-I014-01']])}
+    </div>
+    ${FP.searched && groups.length ? `<div class="fac-card" style="padding:0">
+      <div style="padding:20px 24px 12px"><h3>Resultados (${groups.length})</h3></div>
+      <div style="padding:0 24px 24px"><div class="fac-scroll" style="max-height:none"><table class="fac-tbl fac-layout"><thead><tr><th>Proveedor</th><th>Servicios Pendientes</th><th>Provisiones</th><th></th></tr></thead><tbody>
+        ${groups.map(g=>`<tr><td>${esc(g.name)}</td><td>${g.pend.length}</td><td>${g.provs.length}</td><td class="num"><button type="button" class="fac-expbtn" aria-label="Expandir" onclick="fpToggle('${esc(g.name).replace(/'/g,"\\'")}')">${FP.open===g.name?'▲':'▼'}</button></td></tr>
+          ${FP.open===g.name?`<tr><td colspan="4" class="fac-expand"><div class="fac-expand-in">${fpExpanded(g)}</div></td></tr>`:''}`).join('')}
+      </tbody></table></div>
+      <div class="cc-pager">${pagerHtml(groups.length, 1, FP.size, 'fpGo')}</div></div>
+    </div>` : ''}`;
+}
+function fpGo(p, size){ if(size) FP.size = size; renderFp(); }
+function fpToggle(name){ FP.open = FP.open===name ? '' : name; FP.tab = 'gen'; renderFp(); }
+function fpTab(t){ FP.tab = t; renderFp(); }
+function fpExpanded(g){
+  const tabs = `<div class="fac-tabs"><button type="button" class="${FP.tab==='svc'?'on':''}" onclick="fpTab('svc')">Servicios</button><button type="button" class="${FP.tab==='gen'?'on':''}" onclick="fpTab('gen')">Provisiones Generadas</button></div>`;
+  if(FP.tab==='svc') return tabs + `
+    <div class="fac-btns" style="margin:0 0 10px"><button type="button" class="cc-btn" onclick="fpGenerate()">Generar Provisión</button></div>
+    <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th></th><th>Nave</th><th>Número de Viaje</th><th>ETA ${fm('Agrega',FAC_HU.prov,'I-041','PEN-I041-01')}</th><th>Servicios</th><th>Sucursal</th><th>Puerto</th></tr></thead><tbody>
+      ${g.pend.map(s=>{ const v = facVoy(s.nave,s.nro); return `<tr><td><input type="checkbox" style="width:auto" ${s.sel?'checked':''} onchange="fpPick('${s.id}',this.checked)"></td><td>${esc(s.nave)}</td><td>${esc(s.nro)}</td><td>${facEta(v)}</td><td>${esc(s.svc)}</td><td>Callao</td><td>${esc(v.puerto)}</td></tr>`; }).join('') || '<tr><td colspan="7" class="fac-empty">No se encontraron servicios pendientes</td></tr>'}
+    </tbody></table></div>
+    <div class="fac-note warn fac-mk" ${fb('',FAC_HU.prov,'I-014','PEN-I014-02')}>Una provisión admite servicios de una sola nave. Si eliges servicios de naves distintas, Generar Provisión no continúa.</div>`;
+  return tabs + `<div class="fac-scroll"><table class="fac-tbl fac-fix"><thead><tr><th>Número de Provisión</th><th>Número de Provisión de Origen</th><th>Situación</th><th>Tipo de Documento</th><th>Número de Documento ${fm('Agrega',FAC_HU.prov,'I-014','PEN-I014-01')}</th><th>Fecha de Documento</th><th>Nave ${fm('Agrega',FAC_HU.prov,'I-014','PEN-I014-01')}</th><th>Número de Viaje ${fm('Agrega',FAC_HU.prov,'I-014','PEN-I014-01')}</th><th>ETA ${fm('Agrega',FAC_HU.prov,'I-041','PEN-I041-01')}</th><th>Servicio ${fm('Agrega',FAC_HU.prov,'I-014','PEN-I014-01')}</th><th>Moneda</th><th class="num">Monto</th><th>Estado de Provisión</th><th></th></tr></thead><tbody>
+    ${g.provs.map(p=>{ const l = p.lines[0]||{}, v = facVoy(l.nave,l.nro); return `<tr><td><button type="button" class="fac-link" onclick="fpOpen(${p.id})">${p.code}</button></td><td>${esc(p.origin)}</td><td>${p.sit}</td><td>${esc(p.docType||'-')}</td><td>${p.docNum?`${esc(p.docSerie)}-${esc(p.docNum)}`:'-'}</td><td>${fmtDate(p.docDate)}</td><td>${esc(l.nave)}</td><td>${esc(l.nro)}</td><td>${facEta(v)}</td><td>${esc(l.svc)}</td><td>${p.cur}</td><td class="num">${fMoney(fpTotal(p))}</td><td>${p.status}${p.reopen?` <span class="fac-pill wait">Reabierta por ${esc(p.reopen)}</span>`:''}</td>
+      <td>${p.status==='PROVISIONADO'&&p.sit==='Provisional'&&!p.linked?`<button type="button" class="fac-link" title="Canjear a Original" onclick="fpExchange(${p.id})">Canjear</button>`:''}</td></tr>`; }).join('') || '<tr><td colspan="14" class="fac-empty">No se encontraron provisiones</td></tr>'}
+  </tbody></table></div>`;
+}
+function fpPick(id, on){ const s = FP.pending.find(x=>x.id===id); if(s) s.sel = on; }
+function fpGenerate(){
+  const picked = FP.pending.filter(s=>s.sel);
+  if(!picked.length){ toast('No se han seleccionado servicios','error'); return; }
+  if(new Set(picked.map(s=>s.nave)).size>1){ toast('Una provisión admite servicios de una sola nave (Propuesta TI, por validar)','error'); return; }
+  if(new Set(picked.map(s=>s.prov)).size>1){ toast('Selecciona servicios de un solo proveedor','error'); return; }
+  const id = FP.nextPrv++, v = facVoy(picked[0].nave, picked[0].nro);
+  const lines = picked.map(s=>{ const ts = facTariffs(s.prov, s.svc); return fpMkLine(ts[0]||{}, s.nave, s.nro, v.cliente, 'Reembolsable', 1, v.eta); });
+  const p = fpNew({id, code:'PRV'+String(id).padStart(11,'0'), prov:picked[0].prov, docType:'', docDate:new Date().toISOString().slice(0,10), desc:v.pda?`Servicios de ${v.pda}`:'', lines, hist:[{ts:facNow(), user:curUser(), prev:'SIN PROVISIÓN', next:'PROVISIONADO', comment:'Provisión generada'}]});
+  FP.list.push(p); FP.pending = FP.pending.filter(s=>!s.sel);
+  toast('Provisión creada exitosamente','success'); fpOpen(id);
+}
+function fpOpen(id){ FP.view = 'detail'; FP.sel = id; renderFp(); window.scrollTo({top:0}); }
+function fpBack(){ FP.view = 'list'; FP.sel = null; renderFp(); }
+function fpById(id){ return FP.list.find(p=>p.id===id); }
+function fpAnnulBlock(p){
+  if(!facCanBill()) return 'Solo Facturación y Gerencia pueden anular (Propuesta TI, por validar).';
+  if(p.status==='LIQUIDADO') return 'La provisión ya tiene documento emitido. No se puede anular.';
+  if(p.status==='ANULADO') return 'La provisión ya está anulada.';
+  if(!(p.status==='ERROR' || (p.sit==='Original' && p.status==='PROVISIONADO'))) return 'Solo se anula en Provisión Original o en ERROR.';
+  return '';
+}
+function renderFpDetail(){
+  const p = fpById(FP.sel); if(!p){ fpBack(); return; }
+  facSetBar('screenProvisions','Editar Provisión',['Inicio','Provisiones','Editar Provisión'],'fpBack()');
+  const block = fpAnnulBlock(p), locked = /LIQUIDADO|ANULADO/.test(p.status);
+  const total = fpTotal(p);
+  document.getElementById('fpRoot').innerHTML = `
+    <div class="fac-card"><div class="fac-head">
+      <div><div class="cc-ph-code" style="font-weight:600;font-size:15px;margin-bottom:8px">${p.code}${p.origin?`  (${p.origin})`:''}</div>
+        <div class="cc-chips fac-mk" ${fb('Modifica',FAC_HU.prov,'I-014','PEN-I014-01')}>${FP_STATES.filter(s=>s!=='SIN PROVISIÓN').map(s=>`<span class="cc-chip ${s===p.status?'on':''}">${s}</span>`).join('')}</div></div>
+      <div class="fac-acts">${fChgBtn()}<button type="button" class="cc-btn" onclick="fpHistory()">Historial</button>
+        <span class="fac-mk" ${fb('Modifica',FAC_HU.prov,'I-014','PEN-I014-02')}><button type="button" class="cc-btn pink" ${block?'disabled':''} title="${esc(block)}" onclick="fpAnnul()">Anular</button></span></div>
+    </div>
+    ${block?`<div class="fac-note warn" style="margin-top:0">${esc(block)}</div>`:''}
+    ${p.reopen?`<div class="fac-note">Provisión disponible otra vez para canje. La reabrió la nota de crédito ${esc(p.reopen)}. ${fm('Agrega',FAC_HU.reab,'I-015','PEN-I015-02')}</div>`:''}
+    <div class="fac-note fac-mk" ${fb('',FAC_HU.prov,'I-014','PEN-I014-03')}>En Viaje no se podría modificar ni quitar un servicio ya provisionado. Al anular, el servicio vuelve a SIN PROVISIÓN y queda disponible otra vez. No se dibuja en la pantalla Viaje.</div>
+    </div>
+    <div class="fac-card"><h3 style="margin-bottom:16px">Información General</h3>
+      <div class="fac-g4">
+        ${fRo('Proveedor',p.prov)}${fRo('Fecha de Documento',fmtDate(p.docDate))}${fRo('Situación',p.sit)}${fRo('Cuotas',p.cuotas)}
+        ${fRo('Tipo de Documento',p.docType||'-')}${fF('Número',`<div class="fac-range"><input disabled value="${esc(p.docSerie)}"><input disabled value="${esc(p.docNum)}"></div>`)}${fRo('Moneda',p.cur==='USD'?'Dólar estadounidense':'Sol peruano')}${fRo('Tipo de Cambio',p.tc)}
+        ${fRo('Fecha de Recepción',fmtDate(p.recDate))}${fRo('Fecha de Pago',fmtDate(p.payDate))}${fRo('Tipo de Operación',p.op)}${fRo('Base Imponible',p.base)}
+        ${fRo('Total',fMoney(total))}${fRo('Tipo de Impuesto',p.tax)}${fRo('Condición de Pago',p.cond)}${fRo('Idioma',p.lang)}
+        ${fRo('Descripción',p.desc,'fac-span4')}
+      </div>
+    </div>
+    <div class="fac-card"><h3 style="margin-bottom:16px">Detalle de Provisión</h3>
+      <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th></th><th>Tipo</th><th>Nave</th><th>Número de Viaje</th><th>ETA ${fm('Agrega',FAC_HU.prov,'I-041','PEN-I041-01')}</th><th>Servicios</th><th>Fecha de Servicio</th><th>Unidad de Tarifa</th><th>Facturar a</th><th>Cobrar a</th><th class="num">Tarifa (Costo)</th><th class="num">TC</th><th class="num">Cantidad</th><th class="num">Subtotal (${fCur(p.cur)})</th><th class="num">IGV (${fCur(p.cur)})</th><th class="num">Total (${fCur(p.cur)})</th></tr></thead><tbody>
+        ${p.lines.map((l,i)=>{ const c = fpLine(p,l), v = facVoy(l.nave,l.nro); return `<tr><td><button type="button" class="fac-link" onclick="fpDetailModal(${p.id},${i})">${locked?'Ver':'Editar'}</button></td><td>${l.tipo}</td><td>${esc(l.nave)}</td><td>${esc(l.nro)}</td><td>${facEta(v)}</td><td>${esc(l.svc)}</td><td>${fmtDate(l.date)}</td><td>${esc(l.unit)}</td><td>${esc(l.bill)}</td><td>${esc(l.collect)}</td><td class="num">${l.rate}</td><td class="num">${p.tc}</td><td class="num">${fMoney(l.qty)}</td><td class="num">${fMoney(c.sub)}</td><td class="num">${fMoney(c.igv)}</td><td class="num">${fMoney(c.total)}</td></tr>`; }).join('')}
+      </tbody></table></div>
+      <div class="fac-tot"><span>Total ${fCur(p.cur)} ${fMoney(total)}</span></div>
+      <div class="cc-pager">${pagerHtml(p.lines.length, 1, 10, 'fpGo')}</div>
+    </div>`;
+}
+function fpHistory(){ const p = fpById(FP.sel); if(p) openHistModal(p.hist); }
+function fpAnnul(){
+  const p = fpById(FP.sel); if(!p || fpAnnulBlock(p)) return;
+  openReason('Anular provisión','Anular', txt=>{
+    const prev = p.status; p.status = 'ANULADO'; p.hist.push({ts:facNow(), user:curUser(), prev, next:'ANULADO', comment:txt});
+    p.lines.forEach(l=>FP.pending.push(fpPending(p.prov, l.nave, l.nro, l.svc, l.cat)));
+    toast('Provisión anulada exitosamente','info'); renderFp();
+  });
+}
+function fpExchange(id){
+  const p = fpById(id); if(!p) return;
+  facOpen(`<h3>Canjear a Provisión Original</h3><div class="fac-sub" style="margin-bottom:14px">${p.code}. Registra el documento del proveedor.</div>
+    <div class="fac-g2">${fF('Tipo de Documento', fSel(['Factura','Boleta','Nota de Crédito'], 'Factura', 'id="fxTipo"'))}${fF('Fecha de Documento', `<input type="date" id="fxFec" value="${new Date().toISOString().slice(0,10)}">`)}
+      ${fF('Serie', '<input id="fxSer" placeholder="F001">')}${fF('Número', '<input id="fxNum" placeholder="000123">')}</div>
+    <div class="fac-note fac-mk" ${fb('',FAC_HU.prov,'I-014','PEN-I014-01')}>La provisión provisional vuelve a PROVISIONADO y la original queda con el documento.</div>
+    <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose()">Cancelar</button><button type="button" class="cc-btn" onclick="fpExchangeOk(${id})">Canjear</button></div>`);
+}
+function fpExchangeOk(id){
+  const p = fpById(id), ser = document.getElementById('fxSer').value.trim(), num = document.getElementById('fxNum').value.trim();
+  if(!ser || !num){ toast('Por favor, complete los campos requeridos','error'); return; }
+  const nid = FP.nextPrv++, n = fpNew({...JSON.parse(JSON.stringify(p)), id:nid, code:'PRV'+String(nid).padStart(11,'0'), origin:p.code, sit:'Original', docType:document.getElementById('fxTipo').value, docSerie:ser, docNum:num, docDate:document.getElementById('fxFec').value, linked:'', status:'PROVISIONADO', hist:[{ts:facNow(), user:curUser(), prev:'', next:'PROVISIONADO', comment:'Canje de '+p.code}]});
+  p.linked = nid; FP.list.push(n); facClose(); toast('Provisión actualizada exitosamente','success'); renderFp();
+}
+function fpDetailModal(pid, idx){
+  const p = fpById(pid), l = p.lines[idx], ro = /LIQUIDADO|ANULADO/.test(p.status), v = facVoy(l.nave,l.nro), dis = ro?'disabled':'';
+  const svcs = facServices(p.prov, l.cat), ts = facTariffs(p.prov, l.svc), c = fpLine(p,l);
+  const tarifa = !ts.length ? `<input disabled value="${l.rate}"><small style="color:#B3261E;font-size:12px">No se encontraron tarifas para los criterios seleccionados</small>`
+    : ts.length===1 ? `<input disabled value="${ts[0].rate}"><small style="color:var(--cc-sub);font-size:12px">Precargada: ${esc(ts[0].code)}, ${esc(ts[0].unit)}</small>`
+    : fSel(ts.map(t=>[t.code, `${t.code}: ${t.unit}, ${t.cur} ${t.rate}`]), l.tariff, `${dis} onchange="fpSetTariff(${pid},${idx},this.value)"`);
+  facOpen(`<h3>${ro?'Ver':'Editar'} Detalle</h3><div style="height:12px"></div>
+    <div class="fac-g2 fac-mk" ${fb('Modifica: orden de campos',FAC_HU.prov,'I-014')} style="padding-top:6px">
+      ${fRo('Nave',l.nave)}${fF(`Número de Viaje ${fm('Agrega: Fecha de Arribo',FAC_HU.prov,'I-014','PEN-I041-01')}`, `<input disabled value="${esc(l.nro)}  |  Arribo: ${facEta(v)}">`)}
+      ${fRo('TRG',fmtNum(v.trg))}${fRo('LOA',v.loa)}
+      ${fF('Tipo', fSel(['Reembolsable','Gasto'], l.tipo, `${dis} onchange="fpLineSet(${pid},${idx},'tipo',this.value)"`))}<div></div>
+      ${fF('Categoría', fSel(FAC_CATS, l.cat, `${dis} onchange="fpLineSet(${pid},${idx},'cat',this.value)"`))}
+      ${fF(`Servicios ${fm('Modifica: del proveedor',FAC_HU.prov,'I-040','PEN-I040-01')}`, fSel(svcs, l.svc, `${dis} onchange="fpLineSet(${pid},${idx},'svc',this.value)"`, svcs.includes(l.svc)?null:'Elegir un servicio comercial'))}
+      <div class="fac-cc"><b>Centro de Costo</b><span><small>División</small>Servicios Portuarios</span><span><small>Actividad - UN</small>Agenciamiento Marítimo</span><span><small>Área</small>Operaciones</span></div>
+      ${fRo('Unidad de Tarifa',l.unit)}${fRo('Moneda',l.cur==='USD'?'Dólar estadounidense':'Sol peruano')}
+      ${fF('Contrato - Quiebre', fSel([l.quiebre,'Q02090 - GASTOS DE ESCALA'], l.quiebre, `${dis} onchange="fpLineSet(${pid},${idx},'quiebre',this.value)"`),'fac-span2')}
+      ${fF('Comentarios', `<input ${dis} placeholder="Ingresar comentarios" value="${esc(l.remark)}" onchange="fpLineSet(${pid},${idx},'remark',this.value)">`,'fac-span2')}
+    </div>
+    <div class="fac-sec">Cliente y cálculo</div>
+    <div class="fac-g2">
+      ${fRo('Facturar a',l.bill)}${fRo('Dirección',l.addr)}${fRo('Cobrar a',l.collect)}
+      ${fF(`Tarifa (Costo) - TC ${p.tc} ${fm('Modifica: una se precarga, varias se eligen',FAC_HU.prov,'I-040','PEN-I040-01')}`, tarifa)}
+      ${fF('Cantidad', `<input type="number" min="0" ${dis} value="${l.qty}" onchange="fpLineSet(${pid},${idx},'qty',Number(this.value))">`)}
+      ${fRo('Porcentaje de IVA',l.igv?'18':'0')}
+      ${fRo('Subtotal',fMoney(c.sub))}${fRo('IGV',fMoney(c.igv))}${fRo('Total',fMoney(c.total))}
+    </div>
+    <div class="fac-note">*El monto se muestra en la moneda de la cabecera de la provisión</div>
+    <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose();renderFp()">Cerrar</button></div>`, 'md');
+}
+function fpLineSet(pid, idx, k, v){
+  const p = fpById(pid), l = p.lines[idx]; l[k] = v;
+  if(k==='cat'){ const s = facServices(p.prov, v); l.svc = s[0]||''; }
+  if(k==='cat' || k==='svc'){ const ts = facTariffs(p.prov, l.svc); if(ts.length){ l.tariff = ts[0].code; l.rate = ts[0].rate; l.unit = ts[0].unit; l.igv = ts[0].igv; } }
+  fpDetailModal(pid, idx);
+}
+function fpSetTariff(pid, idx, code){ const p = fpById(pid), l = p.lines[idx], t = FAC_TARIFFS.find(x=>x.code===code); if(t){ l.tariff = code; l.rate = t.rate; l.unit = t.unit; l.igv = t.igv; } fpDetailModal(pid, idx); }
+
+/* ============================================================
+   DOCUMENTOS CONTABLES: Documentos, Cover y Notas de Crédito
+============================================================ */
+const FD_ST = ['Borrador','Registro de documento','Enviado a SAP','SAP OK','SAP Error','Anulado'];
+const FD_TYPES = ['Factura','Boleta','Nota de Cargo','Nota de Crédito','Liquidación de Cobranza'];
+const FD_DEST = {'Factura':'serie F. PDF y XML, va a Efact y SAP. Baja en 7 días','Boleta':'serie B. PDF y XML, va a Efact y SAP. Baja en 7 días','Nota de Crédito':'serie FC o BC, hoy F002 en Connect. Exige documento de origen. PDF y XML, reduce saldo en SAP. Baja en 7 días','Nota de Cargo':'el archivo de series la llama Nota de Débito, serie FD o BD. Exige documento de origen. Baja en 7 días','Liquidación de Cobranza':'serie LC. Interna, solo PDF, no va a SUNAT, se registra en SAP. Se anula con extorno y libera reembolsos'};
+const FD_SVC_EN = {'SERVICIO DE PRACTICAJE':'PILOTAGE SERVICE','COMISION DE AGENCIA':'AGENCY FEE','AYUDAS A LA NAVEGACION':'AIDS TO NAVIGATION','SERVICIO DE REMOLCAJE':'TOWAGE SERVICE','SERVICIO DE LANCHA - RECEPCION':'LAUNCH SERVICE - INWARD','USO DE AMARRADERO':'BERTH USE','REEMBOLSO DE GASTOS':'REIMBURSEMENT'};
+const FD_SAP_CAT = {
+  '-5002':{tipo:'Dato corregible', msg:'El número del documento ya existe en SAP.', dato:'Número de Documento', accion:'Revisa la serie y el correlativo. Corrige el dato y vuelve a Enviar a SAP.'},
+  '-1116':{tipo:'Dato corregible', msg:'El número de referencia está vacío o no coincide con los datos del documento.', dato:'Número de referencia', accion:'Revisa el número de referencia del documento y vuelve a Enviar a SAP.'}
+};
+const FD = {seq:{F005:31017,F002:4011,B005:13602,LC51:10,RD:19,NC:0}, lotSeq:8, tab:'docs', view:'list', sel:null, f:{num:'',tipo:'',fact:'',from:'',to:'',cur:'',est:'',lote:'',sinLote:false,orig:'',asoc:''}, page:1, size:10, ncF:{asoc:'',est:''}, sel2:{}, list:[], lots:{}, cover:null, ncDraft:null};
+function fdLine(svc, tarifa, qty, igv, date, remark){ return {svc, en:FD_SVC_EN[svc]||svc, date:date||'', tarifa, qty, igv:igv!==false, remark:remark||''}; }
+function fdDue(date){ const x = new Date((date||'2026-09-20')+'T12:00:00'); x.setDate(x.getDate()+30); return x.toISOString().slice(0,10); }
+function fdNew(o){ return {id:0, num:'', internal:'', tipo:'Factura', fact:'', collect:'', addr:'LIMA - PERÚ', lote:'', paid:'No', tipoOp:'Venta Interna', orig:'', date:'2026-09-20', due:'2026-10-20', cur:'USD', tc:3.38, status:'Borrador', nave:'', nro:'', puerto:'', lang:'Ambos', pay:'Crédito', cond:'Crédito 30 dias', tax:'Impuesto General (18%)', oc:'', he:'', comments:'', coverDesc:'', user:'P. Díaz (Facturación)', lines:[], assoc:'', mov:'', motivo:'', reopen:'', provs:[], canje:null, sap:null, det:{pct:''}, hist:[], edit:false, ...o, due:fdDue(o.date)}; }
+function fdNet(d){ return d.lines.reduce((a,l)=>a+l.tarifa*l.qty,0); }
+function fdIgv(d){ return d.lines.reduce((a,l)=>a+(l.igv?l.tarifa*l.qty*.18:0),0); }
+function fdTot(d){ return fdNet(d)+fdIgv(d); }
+function fdById(id){ return FD.list.find(d=>d.id===id); }
+function fdByNum(n){ return FD.list.find(d=>d.num===n); }
+function fdRuc(name){ try{ return (partnerByName(name)||{}).doc || '20600000001'; }catch(e){ return '20600000001'; } }
+function fdSeed(){
+  const v = n=>facVoy(n), pac = v('PACIFIC HORIZON'), box = v('BOX ENDURANCE'), oce = v('OCEAN MERIDIAN'), nor = v('NORD VALOUR');
+  const base = (x)=>({nave:x.nave, nro:x.nro, puerto:x.puerto, fact:x.cliente, collect:x.cliente, comments:`Referencia ${x.pda}`});
+  let id = 1; const add = o=>{ const d = fdNew({id:id++, ...o}); d.hist = [{ts:'2026-09-18T10:00:00', user:d.user, prev:'', next:d.status, comment:'Carga de ejemplo'}]; FD.list.push(d); return d; };
+  add({num:'F005-00031010', ...base(pac), date:'2026-09-08', status:'SAP OK', provs:['PRV00000000073'], lines:[fdLine('SERVICIO DE PRACTICAJE',350,2,true,'2026-09-05','Maniobra de entrada y salida')]});
+  add({num:'F002-00004010', tipo:'Nota de Crédito', ...base(pac), date:'2026-09-12', status:'SAP OK', assoc:'F005-00031010', mov:'Parcial', motivo:'Descuento por ítem', lines:[fdLine('SERVICIO DE PRACTICAJE',25,1,true,'2026-09-05','Ajuste de maniobra')]});
+  add({num:'F005-00031011', ...base(box), date:'2026-09-16', status:'SAP OK', comments:`O/C 5678. Referencia ${box.pda}`, oc:'5678', lines:[fdLine('COMISION DE AGENCIA',800,1,true,'2026-09-10','Comisión por la transferencia'),fdLine('SERVICIO DE REMOLCAJE',1200,2,true,'2026-09-10','')]});
+  add({num:'F005-00031012', ...base(box), date:'2026-09-16', cur:'PEN', tc:1, status:'SAP OK', lines:[fdLine('USO DE AMARRADERO',145,40,true,'2026-09-10','')]});
+  add({num:'F005-00031013', ...base(box), date:'2026-09-17', status:'SAP OK', lote:'7', lines:[fdLine('SERVICIO DE LANCHA - RECEPCION',500,1,true,'2026-09-10','')]});
+  add({num:'F005-00031014', ...base(box), date:'2026-09-17', status:'SAP OK', lote:'7', paid:'Sí', lines:[fdLine('SERVICIO DE PRACTICAJE',200,1,true,'2026-09-10','')]});
+  add({num:'LC51-00000009', tipo:'Liquidación de Cobranza', ...base(box), date:'2026-09-18', status:'SAP OK', provs:['PRV00000000071'], lines:[fdLine('REEMBOLSO DE GASTOS',2600.04,1,false,'2026-09-10','Ayudas a la navegación')]});
+  add({num:'RD-2026-000018', internal:'RD-2026-000018', ...base(oce), date:'2026-09-30', status:'Registro de documento', lines:[fdLine('COMISION DE AGENCIA',950,1,true,'2026-09-14','')]});
+  add({num:'F005-00031015', ...base(nor), date:'2026-09-26', status:'SAP Error', sap:{code:'-5002', estado:'SAPER', sent:'2026-09-26T10:37:31', msg:'Codigo:-5002/Mensaje:-5002 10001467 - There is already a record with duplicated customer/vendor reference number.'}, lines:[fdLine('COMISION DE AGENCIA',800,1,true,'2026-09-25','')]});
+  add({num:'F005-00031016', ...base(oce), date:'2026-09-27', status:'SAP Error', sap:{code:'', estado:'SAPER', sent:'2026-09-27T16:02:11', msg:'Valor inválido de una propiedad.'}, lines:[fdLine('SERVICIO DE LANCHA - RECEPCION',180,1,true,'2026-09-14','')]});
+  add({num:'B005-00013601', tipo:'Boleta', ...base(pac), date:'2026-09-28', status:'Borrador', lines:[fdLine('COMISION DE AGENCIA',120,1,true,'2026-09-05','')]});
+  FD.lots['7'] = {n:'7', client:box.cliente, nave:box.nave, nro:box.nro, ids:['F005-00031013','F005-00031014'], adv:[{op:'004512', banco:'Banco de ejemplo', monto:300, cur:'USD', date:'2026-09-12'}], sent:false, lang:'Inglés', incl:true, control:null};
+}
+function openAccDocs(tab){
+  if(!FP.list.length) fpSeed();
+  if(!FD.list.length) fdSeed();
+  FD.tab = tab||'docs'; FD.view = 'list'; FD.sel = null;
+  facEnter('screenAccDocs'); renderFd();
+}
+function fdTab(t){ FD.tab = t; FD.view = 'list'; FD.sel = null; renderFd(); }
+function renderFd(){
+  if(FD.view==='detail'){ renderFdDetail(); return; }
+  updatePagebar('screenAccDocs');
+  const tabs = `<div class="fac-card" style="padding:6px 24px 0;margin-bottom:16px"><div class="fac-acts" style="justify-content:space-between">
+    <div class="fac-tabs fac-mk" ${fb('Agrega: sub-vistas',FAC_HU.cover+' · '+FAC_HU.nc,'I-066 · I-065')} style="margin:0;border:none">
+      <button type="button" class="${FD.tab==='docs'?'on':''}" onclick="fdTab('docs')">Documentos</button>
+      <button type="button" class="${FD.tab==='cover'?'on':''}" onclick="fdTab('cover')">Cover</button>
+      <button type="button" class="${FD.tab==='nc'?'on':''}" onclick="fdTab('nc')">Notas de Crédito</button></div>
+    <span class="fac-acts" style="padding:6px 0">${fChgBtn()}</span></div></div>`;
+  const body = FD.tab==='cover' ? fdCoverHtml() : FD.tab==='nc' ? fdNcListHtml() : fdListHtml();
+  document.getElementById('fdRoot').innerHTML = tabs + body;
+}
+/* ---------- Consulta de documentos ---------- */
+function fdSet(k, v){ FD.f[k] = v; FD.page = 1; renderFd(); }
+function fdClear(){ Object.keys(FD.f).forEach(k=>FD.f[k]= k==='sinLote'?false:''); FD.page = 1; renderFd(); }
+function fdFiltered(){
+  const f = FD.f, q = x=>normTxt(x);
+  return FD.list.filter(d=>(!f.num || q(d.num).includes(q(f.num)) || q(d.internal).includes(q(f.num))) && (!f.tipo || d.tipo===f.tipo) && (!f.fact || q(d.fact).includes(q(f.fact))) && (!f.from || d.date>=f.from) && (!f.to || d.date<=f.to)
+    && (!f.cur || d.cur===f.cur) && (!f.est || d.status===f.est) && (!f.lote || d.lote===f.lote) && (!f.sinLote || !d.lote) && (!f.orig || d.orig===f.orig) && (!f.asoc || q(d.assoc).includes(q(f.asoc))));
+}
+function fdRowActions(d){
+  const ok = d.status==='SAP OK', lc = d.tipo==='Liquidación de Cobranza';
+  return `<div class="fac-rowacts">${ok?`<button type="button" class="fac-link" onclick="fdPdf(${d.id})">PDF</button>`:''}${ok&&!lc?`<button type="button" class="fac-link" onclick="toast('Descarga de XML simulada','info')">XML</button><button type="button" class="fac-link" onclick="toast('Descarga de CDR simulada','info')">CDR</button>`:''}
+    ${d.status!=='Anulado'?(lc?`<button type="button" class="fac-link" onclick="fdExtorno(${d.id})">Extornar</button>`:`<button type="button" class="fac-link" onclick="fdAnnul(${d.id})">Anular</button>`):''}${d.lote?`<button type="button" class="fac-link" onclick="fdOpenLot('${d.lote}')">Ver Cover</button>`:''}</div>`;
+}
+function fdCols(d){
+  const usd = d.cur==='USD', n = fdNet(d), g = fdIgv(d), t = n+g;
+  return `<td class="num">${fMoney(usd?0:n)}</td><td class="num">${fMoney(usd?0:g)}</td><td class="num">${fMoney(usd?0:t)}</td><td class="num">${fMoney(usd?n:0)}</td><td class="num">${fMoney(usd?g:0)}</td><td class="num">${fMoney(usd?t:0)}</td>`;
+}
+function fdStatusCell(d){ return d.status==='SAP Error' ? `<button type="button" class="fac-link err" onclick="fdSapErr(${d.id})">${d.status}</button>` : esc(d.status); }
+function fdListHtml(){
+  const f = FD.f, all = fdFiltered(), pages = Math.max(1,Math.ceil(all.length/FD.size)); FD.page = Math.min(FD.page,pages);
+  const list = all.slice((FD.page-1)*FD.size, FD.page*FD.size);
+  return `<div class="fac-card">
+    <div class="fac-head"><div><h3>Buscar Documentos Contables</h3><div class="fac-sub">Ingrese datos para buscar</div></div>
+      <div class="fac-acts"><button type="button" class="cc-btn" onclick="toast('Notificar Devolución: se mantiene como en Connect','info')">Notificar Devolución</button><button type="button" class="cc-btn" onclick="fdCoverStart()">Generar Cover</button><button type="button" class="cc-btn" onclick="fdNewModal()">+ Nuevo</button></div></div>
+    <div class="fac-g4">
+      ${fF('Número de Documento', `<input placeholder="Ingresar número de documento" value="${esc(f.num)}" onchange="fdSet('num',this.value)">`)}
+      ${fF('Documento a Emitir', fSel(FD_TYPES, f.tipo, `onchange="fdSet('tipo',this.value)"`, 'Elegir documento a emitir'))}
+      ${fF('Facturar a', `<input placeholder="Ingresar el cliente a facturar" value="${esc(f.fact)}" onchange="fdSet('fact',this.value)">`)}
+      ${fF('Fecha de Emisión', `<div class="fac-range"><input type="date" value="${f.from}" onchange="fdSet('from',this.value)"><input type="date" value="${f.to}" onchange="fdSet('to',this.value)"></div>`)}
+      ${fF('Moneda', fSel([['PEN','Sol peruano'],['USD','Dólar estadounidense']], f.cur, `onchange="fdSet('cur',this.value)"`, 'Elegir moneda'))}
+      ${fF(`Estado del Documento ${fm('Modifica: Registro de documento, antes Provisionado',FAC_HU.num,'I-042','PEN-JENNY-I042-01')}`, fSel(FD_ST, f.est, `id="fdEst" onchange="fdSet('est',this.value)"`, 'Elegir estado del documento'))}
+      ${fF('Número de Lote', `<input placeholder="Ingresar número de lote" value="${esc(f.lote)}" onchange="fdSet('lote',this.value)">`)}
+      ${fF('&nbsp;', `<label class="fac-chk"><input type="checkbox" ${f.sinLote?'checked':''} onchange="fdSet('sinLote',this.checked)"> Sin Lote</label>`)}
+      ${fF('Origen', fSel(['Documentario','Sobreestadía - Importación','Sobreestadía - Exportación'], f.orig, `onchange="fdSet('orig',this.value)"`, 'Elegir el origen'))}
+      ${fF(`Documento Asociado ${fm('Agrega',FAC_HU.nc,'I-005')}`, `<input id="fdAsoc" placeholder="Ingresar documento asociado" value="${esc(f.asoc)}" onchange="fdSet('asoc',this.value)">`)}
+    </div>
+    <div class="fac-btns"><button type="button" class="cc-btn" onclick="renderFd()">Buscar</button><button type="button" class="cc-btn" onclick="fdClear()">Limpiar</button></div>
+    ${fRemoved('Documento a Emitir', FAC_HU.lc, 'I-040', [['Nota de Abono','para anular una LC se usa Extornar, sin PDF. Acuerdo del 17/09. Catálogo final en PEN-I167-01']])}
+    <div class="fac-note fac-mk" ${fb('',FAC_HU.lc,'I-040','PEN-I167-01')}><b>Destinos por documento.</b> ${Object.entries(FD_DEST).map(([k,v])=>`${k}: ${v}.`).join(' ')}</div>
+  </div>
+  <div class="fac-card"><div class="fac-head"><h3>Resultados (${all.length})</h3><div class="fac-acts"><button type="button" class="cc-btn" onclick="toast('Notificar Devolución: se mantiene como en Connect','info')">Notificar Devolución</button><button type="button" class="cc-btn" onclick="fdNewModal()">Nuevo</button></div></div>
+    <div class="fac-scroll"><table class="fac-tbl fac-fix"><thead><tr>${f.sinLote?'<th></th>':''}<th>Número de Documento</th><th>Documento a Emitir</th><th>Facturar a</th><th>Número de Lote</th><th>Pagado</th><th>Tipo de Operación</th><th>Origen</th><th>Fecha de Emisión</th><th>Moneda</th><th class="num">Tipo de Cambio</th><th class="num">Neto PEN</th><th class="num">IGV PEN</th><th class="num">Total PEN</th><th class="num">Neto USD</th><th class="num">IGV USD</th><th class="num">Total USD</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
+      ${list.map(d=>`<tr>${f.sinLote?`<td><input type="checkbox" style="width:auto" ${d.status==='SAP OK'?'':'disabled'} ${FD.sel2[d.id]?'checked':''} onchange="FD.sel2[${d.id}]=this.checked"></td>`:''}<td><button type="button" class="fac-link" onclick="fdOpen(${d.id})">${esc(d.num)}</button></td><td>${esc(d.tipo)}</td><td>${esc(d.fact)}</td><td>${esc(d.lote||'-')}</td><td>${d.paid}</td><td>${esc(d.tipoOp)}</td><td>${esc(d.orig||'-')}</td><td>${fmtDate(d.date)}</td><td>${d.cur}</td><td class="num">${d.tc.toFixed(2)}</td>${fdCols(d)}<td>${fdStatusCell(d)}</td><td>${fdRowActions(d)}</td></tr>`).join('') || `<tr><td colspan="19" class="fac-empty">No se encontraron resultados con los criterios seleccionados</td></tr>`}
+    </tbody></table></div>
+    <div class="fac-btns" style="justify-content:space-between;align-items:center">
+      <button type="button" class="cc-btn fac-mk fac-mk-l" ${fb('Modifica: 3 columnas',FAC_HU.excel,'I-064','PEN-I064-01')} onclick="fdExport()">Exportar</button>
+      <div class="cc-pager" style="border:none">${pagerHtml(all.length, FD.page, FD.size, 'fdGo')}</div></div>
+  </div>`;
+}
+function fdGo(p, size){ if(size) FD.size = size; FD.page = p; renderFd(); }
+/* ---------- Exportar Excel ---------- */
+function fdExport(){
+  const rows = fdFiltered().flatMap(d=>d.lines.map(l=>({d,l}))).slice(0,8);
+  facOpen(`<h3>Exportar Excel</h3><div class="fac-sub" style="margin-bottom:12px">Vista previa. Se conservan las columnas actuales y se agregan tres. Las columnas actuales del Excel no se verificaron en Connect.</div>
+    <div class="fac-note warn fac-mk" ${fb('',FAC_HU.excel,'I-064','PEN-JENNY-I064-01')}>Facturación confirmará el reporte final. Propuesta: RUC de Facturar a y una fila por detalle de servicio (PEN-I064-01). No iniciar desarrollo sin alcance aprobado.</div>
+    <div class="fac-scroll" style="margin-top:14px"><table class="fac-tbl"><thead><tr><th>Número de Documento</th><th>Documento a Emitir</th><th>Facturar a</th><th>Fecha de Emisión</th><th>Moneda</th><th class="num">Total</th>
+      <th>RUC ${fm('Agrega',FAC_HU.excel,'I-064','PEN-I064-01')}</th><th>Servicio facturado ${fm('Agrega',FAC_HU.excel,'I-064','PEN-I064-01')}</th><th>Usuario emisor ${fm('Agrega',FAC_HU.excel,'I-064')}</th></tr></thead><tbody>
+      ${rows.map(({d,l})=>`<tr><td>${esc(d.num)}</td><td>${esc(d.tipo)}</td><td>${esc(d.fact)}</td><td>${fmtDate(d.date)}</td><td>${d.cur}</td><td class="num">${fMoney(fdTot(d))}</td><td>${fdRuc(d.fact)}</td><td>${esc(l.svc)}</td><td>${esc(d.user)}</td></tr>`).join('')}
+    </tbody></table></div>
+    <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose()">Cerrar</button><button type="button" class="cc-btn" onclick="facClose();toast('Descarga de Excel simulada','info')">Exportar</button></div>`, 'lg');
+}
+/* ---------- Error SAP legible ---------- */
+function fdSapErr(id){
+  const d = fdById(id), s = d.sap || {}, c = FD_SAP_CAT[s.code];
+  facOpen(`<h3>Detalle del Error SAP</h3><div style="height:10px"></div>
+    <dl class="fac-kv"><dt>Número de Documento</dt><dd>${esc(d.num)}</dd><dt>Código de Estado</dt><dd>${esc(s.estado||'')}</dd><dt>Fecha de Envío</dt><dd>${s.sent?new Date(s.sent).toLocaleString('es-PE',{hour12:false}):''}</dd></dl>
+    <div class="fac-mk" ${fb('Modifica: mensaje legible',FAC_HU.sap,'I-159','PEN-I159-02')} style="margin-top:18px;padding:12px;background:#F5F7FB;border-radius:8px">
+      ${c?`<dl class="fac-kv"><dt>Qué pasó</dt><dd>${esc(c.msg)}</dd><dt>Dato afectado</dt><dd>${esc(c.dato)}</dd><dt>Qué hacer</dt><dd>${esc(c.accion)}</dd><dt>Tipo</dt><dd><span class="fac-pill wait">${esc(c.tipo)}</span></dd></dl>`
+      :`<dl class="fac-kv"><dt>Qué pasó</dt><dd>Error no catalogado todavía. Escala a TI con la referencia.</dd><dt>Referencia de soporte ${fm('Agrega',FAC_HU.sap,'I-159','PEN-I159-02')}</dt><dd>SOP-2026-${String(d.id).padStart(5,'0')}</dd><dt>Tipo</dt><dd><span class="fac-pill err">Por diagnosticar</span></dd></dl>
+        <div class="fac-note warn">El caso de valor inválido no tiene todavía JSON ni propiedad identificados (PEN-I159-01).</div>`}
+    </div>
+    <details class="fac-tech"><summary>Ver mensaje técnico</summary><pre>${esc(s.msg||'Sin mensaje de error registrado.')}</pre></details>
+    <div class="fac-btns"><button type="button" class="cc-btn" onclick="facClose()">Cerrar</button></div>`);
+}
+/* ---------- Nuevo documento y canje desde provisión ---------- */
+const FN = {mode:'blank', tipo:'Factura', cur:'USD', pick:{}, nave:'', viaje:'', prov:''};
+function fdNewModal(){ FN.mode = 'blank'; FN.pick = {}; FN.nave = ''; FN.viaje = ''; FN.prov = ''; fdNewRender(); }
+function fnSet(k, v){ FN[k] = v; fdNewRender(); }
+function fnEligible(){
+  return FP.list.filter(p=>p.sit==='Original' && p.status==='PROVISIONADO' && (!FN.prov || normTxt(p.prov).includes(normTxt(FN.prov)))
+    && (!FN.nave || p.lines.some(l=>normTxt(l.nave).includes(normTxt(FN.nave)))) && (!FN.viaje || p.lines.some(l=>normTxt(l.nro).includes(normTxt(fpVoyNro(FN.viaje))))));
+}
+function fdNewRender(){
+  const prov = FN.mode==='prov';
+  facOpen(`<h3>Nuevo Documento</h3><div style="height:10px"></div>
+    <div class="fac-radio"><label><input type="radio" name="fnMode" style="width:auto" ${prov?'':'checked'} onchange="fnSet('mode','blank')"> Desde Documento en Blanco</label><label><input type="radio" name="fnMode" style="width:auto" ${prov?'checked':''} onchange="fnSet('mode','prov')"> Desde Provisión</label></div>
+    ${prov?`<div class="fac-sec">Datos al Emitir Documentos</div><div class="fac-g4">${fF('Moneda', fSel([['USD','Dólar estadounidense'],['PEN','Sol peruano']], FN.cur, `onchange="fnSet('cur',this.value)"`))}${fRo('Fecha de Emisión',fmtDate(new Date().toISOString().slice(0,10)))}${fRo('T.C.','3.38')}${fRo('T.C. Especial','')}</div>
+      <div class="fac-sec">Filtros</div><div class="fac-g4">
+        ${fF('Nave', `<input placeholder="Ingresar nave" value="${esc(FN.nave)}" onchange="fnSet('nave',this.value)">`)}
+        ${fF(`Número de Viaje ${fm('Modifica: ETA a la derecha',FAC_HU.prov,'I-041','PEN-I041-01')}`, `<input list="fnVoys" placeholder="Ingresar número de viaje" value="${esc(FN.viaje)}" onchange="fnSet('viaje',this.value)">${facVoyList('fnVoys')}`)}
+        ${fF('Proveedor', `<input placeholder="Ingresar el proveedor" value="${esc(FN.prov)}" onchange="fnSet('prov',this.value)">`)}
+        ${fF(`Documento a Emitir ${fm('Modifica',FAC_HU.lc,'I-040','PEN-I167-01')}`, fSel(FD_TYPES.filter(t=>t!=='Nota de Crédito'), FN.tipo, `id="fnTipo" onchange="fnSet('tipo',this.value)"`))}
+      </div>
+      ${fRemoved('Documento a Emitir', FAC_HU.lc, 'I-040', [['Nota de Abono','Extornar, sin PDF']])}
+      <div class="fac-note">${esc(FN.tipo)}: ${esc(FD_DEST[FN.tipo]||'')}</div>
+      <div class="fac-sec">Documentos Provisionales a Canjear</div>
+      <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th></th><th>Número de Provisión</th><th>Emitir a</th><th>Número de Viaje</th><th>Fecha</th><th>Moneda</th><th class="num">Total PEN</th><th class="num">Total USD</th></tr></thead><tbody>
+        ${fnEligible().map(p=>{ const l = p.lines[0], t = fpTotal(p); return `<tr><td><input type="checkbox" style="width:auto" ${FN.pick[p.id]?'checked':''} onchange="FN.pick[${p.id}]=this.checked"></td><td>${p.code}</td><td>${esc(l.bill)}</td><td>${esc(l.nro)}</td><td>${fmtDate(p.docDate)}</td><td>${p.cur}</td><td class="num">${fMoney(p.cur==='PEN'?t:0)}</td><td class="num">${fMoney(p.cur==='USD'?t:0)}</td></tr>`; }).join('') || '<tr><td colspan="8" class="fac-empty">Debe de buscar provisiones para crear el nuevo documento</td></tr>'}
+      </tbody></table></div>`:''}
+    <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose()">Cancelar</button><button type="button" class="cc-btn" id="fnCreate" onclick="fdCreate()">Crear Documento</button></div>`, prov?'lg':'');
+}
+function fdNextNum(tipo){
+  const k = tipo==='Boleta'?'B005':tipo==='Nota de Crédito'?'F002':tipo==='Liquidación de Cobranza'?'LC51':'F005', w = 8;
+  return `${k}-${String(FD.seq[k]++).padStart(w,'0')}`;
+}
+function fdCreate(){
+  if(FN.mode==='blank'){ facClose(); fdNewBlank(); return; }
+  const picks = FP.list.filter(p=>FN.pick[p.id]);
+  if(!picks.length){ toast('Debe de buscar provisiones para crear el nuevo documento','error'); return; }
+  const k = p=>p.lines[0]; const same = (fn)=>new Set(picks.map(fn)).size===1;
+  if(!same(p=>k(p).nro) && !same(p=>k(p).bill)){ toast('Solo se pueden seleccionar provisiones con el mismo Viaje y Emitir A','error'); return; }
+  if(!same(p=>k(p).bill)){ toast('Solo se pueden seleccionar provisiones con el mismo Emitir A','error'); return; }
+  if(!same(p=>k(p).nro)){ toast('Solo se pueden seleccionar provisiones con el mismo Viaje','error'); return; }
+  const first = k(picks[0]), v = facVoy(first.nave, first.nro), tipo = FN.tipo;
+  const lines = picks.flatMap(p=>p.lines.map(l=>{ const c = fpLine(p,l); return fdLine(tipo==='Liquidación de Cobranza'?'REEMBOLSO DE GASTOS':l.svc, l.unit==='Por TRG' ? (v.trg*l.rate) : l.rate, l.qty, tipo==='Liquidación de Cobranza'?false:l.igv, l.date, l.svc); }));
+  const id = Math.max(...FD.list.map(d=>d.id))+1;
+  const d = fdNew({id, num:fdNextNum(tipo), tipo, fact:first.bill, collect:first.collect, addr:first.addr, nave:first.nave, nro:first.nro, puerto:v.puerto, cur:FN.cur, tc:FN.cur==='PEN'?1:3.38, date:new Date().toISOString().slice(0,10), user:curUser(), comments:picks[0].desc, provs:picks.map(p=>p.code), status:'Borrador', lines,
+    canje:{rows:picks.flatMap(p=>p.lines.map(l=>{ const c = fpLine(p,l); return {prov:p.code, svc:l.svc, unit:l.unit, rate:l.rate, qty:l.qty, total:c.sub}; })), connect:'Generado', sap:'Pendiente de envío'},
+    hist:[{ts:facNow(), user:curUser(), prev:'', next:'Borrador', comment:'Canje desde '+picks.map(p=>p.code).join(', ')}]});
+  picks.forEach(p=>{ p.hist.push({ts:facNow(), user:curUser(), prev:p.status, next:'LIQUIDADO', comment:'Canje a '+d.num}); p.status = 'LIQUIDADO'; p.reopen = ''; });
+  FD.list.push(d); facClose(); toast('Documento contable creado exitosamente.','success'); fdOpen(id);
+}
+function fdNewBlank(){
+  const id = Math.max(...FD.list.map(d=>d.id))+1, v = facVoy('BOX ENDURANCE');
+  FD.list.push(fdNew({id, num:fdNextNum('Factura'), fact:v.cliente, collect:v.cliente, nave:v.nave, nro:v.nro, puerto:v.puerto, date:new Date().toISOString().slice(0,10), user:curUser(), comments:`Referencia ${v.pda}`, edit:true, lines:[fdLine('COMISION DE AGENCIA',800,1,true,v.eta,'')], hist:[{ts:facNow(), user:curUser(), prev:'', next:'Borrador', comment:'Documento en blanco'}]}));
+  toast('Documento contable creado exitosamente.','success'); fdOpen(id);
+}
+/* ---------- Detalle del documento ---------- */
+function fdOpen(id){ FD.view = 'detail'; FD.sel = id; renderFd(); window.scrollTo({top:0}); }
+function fdBack(){ FD.view = 'list'; FD.sel = null; renderFd(); }
+function fdIsNc(d){ return d.tipo==='Nota de Crédito'; }
+function fdIsLc(d){ return d.tipo==='Liquidación de Cobranza'; }
+function fdDField(k, v){ const d = fdById(FD.sel); d[k] = v; }
+function renderFdDetail(){
+  const d = fdById(FD.sel); if(!d){ fdBack(); return; }
+  facSetBar('screenAccDocs','Editar Documento Contable',['Inicio','Documentos Contables','Editar Documento Contable'],'fdBack()');
+  const v = facVoy(d.nave, d.nro), ed = d.edit, dis = ed?'':'disabled', isNc = fdIsNc(d), isLc = fdIsLc(d), isReg = d.status==='Registro de documento';
+  const canSend = /Borrador|SAP Error/.test(d.status), closed = d.status==='Anulado';
+  document.getElementById('fdRoot').innerHTML = `
+    <div class="fac-card"><div class="fac-head">
+      <div><div style="font-weight:600;font-size:15px;margin-bottom:8px">${esc(d.num)}${d.internal&&d.internal!==d.num?`  <span style="color:var(--cc-gray);font-weight:400">(Código interno ${esc(d.internal)})</span>`:''}</div>
+        <div class="cc-chips fac-mk" ${fb('Modifica',FAC_HU.num,'I-042','PEN-JENNY-I042-01')}>${FD_ST.map(s=>`<span class="cc-chip ${s===d.status?'on':''}">${s}</span>`).join('')}</div></div>
+      <div class="fac-acts">${fChgBtn()}
+        ${closed?'':`<button type="button" class="cc-btn" onclick="fdToggleEdit()">${ed?'Guardar':'Editar'}</button>`}
+        ${d.status==='Borrador'&&!isNc&&!isLc?`<button type="button" class="cc-btn" onclick="fdProvisionar()">Provisionar</button>`:''}
+        ${isReg?`<span class="fac-mk" ${fb('Agrega',FAC_HU.num,'I-042','PEN-I042-01')}><button type="button" class="cc-btn" onclick="fdEmitir()">Emitir</button></span>`:''}
+        ${canSend?`<button type="button" class="cc-btn" onclick="fdSend()">Enviar a SAP</button>`:''}
+        ${d.status==='SAP OK'?`<button type="button" class="cc-btn" onclick="fdPdf(${d.id})">Vista previa PDF</button>`:(canSend||isReg?`<span class="fac-mk" ${fb('Agrega',isLc?FAC_HU.lc:FAC_HU.pdf,isLc?'I-040':'I-007',isLc?'PEN-I167-02':'PEN-I007-01')}><button type="button" class="cc-btn ghost" onclick="fdPdf(${d.id})">Vista previa PDF</button></span>`:'')}
+        ${closed?'':isLc?`<span class="fac-mk" ${fb('Agrega: sin PDF',FAC_HU.lc,'I-040','PEN-I167-03')}><button type="button" class="cc-btn pink" onclick="fdExtorno(${d.id})">Extornar</button></span>`:`<button type="button" class="cc-btn pink" onclick="fdAnnul(${d.id})">Anular</button>`}
+      </div></div>
+      ${isReg?`<div class="fac-note fac-mk" ${fb('Modifica',FAC_HU.num,'I-042','PEN-I042-01')}>No consume correlativo de factura. Código interno ${esc(d.internal)}. Al emitir recibe su serie y conserva la referencia. Formato y reinicio del código por definir. Método SAP en PEN-I042-02.</div>`:''}
+      ${fRemoved('Estado del Documento', FAC_HU.num, 'I-042', [['Provisionado con número de serie de factura','Registro de documento con código interno, PEN-I042-01']])}
+    </div>
+    ${d.canje?fdCanjeHtml(d):''}
+    <div class="fac-card"><h3 style="margin-bottom:16px">Información General</h3>
+      <div class="fac-g3">
+        ${fRo('Sucursal','Callao')}${fRo('Tipo de Operación',d.tipoOp)}<button type="button" class="fac-link" style="align-self:end;justify-self:start;padding-bottom:10px" onclick="fdHistory()">Ver Historial</button>
+        ${fRo('Tipo de Documento',d.tipo)}${fRo('Origen',d.orig||'-')}<div></div>
+        ${isNc?`${fRo('Documento Asociado',d.assoc)}${fRo('Tipo de Movimiento',d.mov)}${fRo('Motivo de NC',d.motivo)}`:''}
+        ${fRo('Fecha de Emisión',fmtDate(d.date))}${fRo('Fecha de Vencimiento',fmtDate(d.due))}${fRo('Moneda',d.cur==='USD'?'Dólar estadounidense':'Sol peruano')}
+        ${fRo('Tipo de Cambio',d.tc)}${fRo('Idioma',d.lang)}${fRo('Método de Pago',d.pay)}
+        ${fRo('Condición de Pago',d.cond)}${fRo('Tipo de Impuesto',d.tax)}
+        ${fF('Orden de Compra',`<input ${dis} value="${esc(d.oc)}" onchange="fdDField('oc',this.value)">`)}
+        ${fF(`HE ${fm('Agrega: opcional',FAC_HU.reab,'I-015','PEN-I015-02')}`,`<input ${dis} placeholder="Opcional" value="${esc(d.he)}" onchange="fdDField('he',this.value)">`)}
+        ${fF('Comentarios',`<input ${dis} value="${esc(d.comments)}" onchange="fdDField('comments',this.value)">`)}
+        ${fF('Descripción Cover',`<input ${dis} value="${esc(d.coverDesc)}" onchange="fdDField('coverDesc',this.value)">`)}
+      </div>
+    </div>
+    ${isNc?fdNcBoxHtml(d):''}
+    <div class="fac-card"><h3 style="margin-bottom:16px">Información del Cliente</h3>
+      <div class="fac-g2">${fRo('Facturar a',`${d.fact} - ${fdRuc(d.fact)}`)}${fRo('Cobrar a',`${d.collect} - ${fdRuc(d.collect)}`)}${fRo('Dirección',d.addr,'fac-span2')}</div>
+    </div>
+    <div class="fac-card"><h3 style="margin-bottom:16px">Información del Viaje</h3>
+      <div class="fac-g4">${fRo('Nave',d.nave)}${fF(`Número de Viaje`,`<input disabled value="${esc(d.nro)}">`)}${fF(`ETA ${fm('Agrega',FAC_HU.prov,'I-041','PEN-I041-01')}`,`<input disabled value="${facEta(v)}">`)}${fRo('Puerto',d.puerto)}</div>
+    </div>
+    ${fdLinesHtml(d)}
+    ${!isNc&&!isLc?fdDetrHtml(d):''}`;
+}
+function fdCanjeHtml(d){
+  const c = d.canje;
+  return `<div class="fac-card fac-mk" ${fb('Agrega: resultado del canje',FAC_HU.prov,'I-040','PEN-I095-01')}><h3>Resultado del canje</h3><div class="fac-sub">Datos heredados de la provisión. Facturar a, Dirección y Cobrar a no se vuelven a pedir.</div>
+    <div class="fac-acts" style="margin-bottom:12px"><span class="fac-pill ok">Connect: ${esc(c.connect)}</span><span class="fac-pill ${/Recibido/.test(c.sap)?'ok':'wait'}">SAP: ${esc(c.sap)}</span><span class="fac-pill">${esc(d.tipo)}</span></div>
+    <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th>Provisión</th><th>Servicio</th><th>Unidad</th><th class="num">Tarifa provisión</th><th class="num">Cantidad provisión</th><th class="num">Subtotal provisión</th><th class="num">Subtotal documento</th><th>Coincide</th></tr></thead><tbody>
+      ${c.rows.map((r,i)=>{ const l = d.lines[i], sub = l ? l.tarifa*l.qty : 0, ok = Math.abs(sub-r.total)<.01; return `<tr><td>${esc(r.prov)}</td><td>${esc(r.svc)}</td><td>${esc(r.unit)}</td><td class="num">${r.rate}</td><td class="num">${fMoney(r.qty)}</td><td class="num">${fMoney(r.total)}</td><td class="num">${fMoney(sub)}</td><td><span class="fac-pill ${ok?'ok':'err'}">${ok?'Sí':'No'}</span></td></tr>`; }).join('')}
+    </tbody></table></div>
+    <div class="fac-note">Fórmula de control: la del servicio. Ejemplo de la fuente: TRG x 0.12 x 1 (PEN-I006-01). Matriz por tipo de documento en PEN-I116-02.</div></div>`;
+}
+function fdLinesHtml(d){
+  const ed = d.edit && d.status!=='Anulado', isNc = fdIsNc(d);
+  return `<div class="fac-card"><h3 style="margin-bottom:16px">Detalle del Documento</h3>
+    ${isNc?fRemoved('Detalle del Documento', FAC_HU.nc, 'I-065', [['Monto de Descuento','Saldo, pedido de Facturación del 12/10']]):''}
+    <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th>Servicio</th><th>Fecha Servicio</th><th class="num">Tarifa</th><th>Moneda</th><th class="num">TC</th><th class="num">Cantidad</th><th class="num">Subtotal</th><th class="num">IGV</th><th class="num">Total</th>${isNc?`<th class="num">Saldo ${fm('Modifica: antes Monto de Descuento',FAC_HU.nc,'I-065','PEN-JENNY-I065-01')}</th>`:''}${ed&&isNc?'<th></th>':''}</tr></thead><tbody>
+      ${d.lines.map((l,i)=>{ const s = l.tarifa*l.qty, g = l.igv?s*.18:0; return `<tr><td>${esc(l.svc)}${l.remark?`<br><small style="color:var(--cc-gray)">${esc(l.remark)}</small>`:''}</td><td>${fmtDate(l.date)}</td><td class="num">${ed?`<input type="number" step="0.01" value="${l.tarifa}" onchange="fdLineSet(${i},'tarifa',Number(this.value))">`:fMoney(l.tarifa)}</td><td>${d.cur}</td><td class="num">${d.tc}</td><td class="num">${ed?`<input type="number" step="1" value="${l.qty}" onchange="fdLineSet(${i},'qty',Number(this.value))">`:fMoney(l.qty)}</td><td class="num">${fMoney(s)}</td><td class="num">${fMoney(g)}</td><td class="num">${fMoney(s+g)}</td>${isNc?`<td class="num">${fMoney(s)}</td>`:''}${ed&&isNc?`<td><button type="button" class="fac-link" onclick="fdLineDel(${i})">Quitar</button></td>`:''}</tr>`; }).join('') || `<tr><td colspan="11" class="fac-empty">No hay líneas de detalle. Presione Agregar para añadir una.</td></tr>`}
+    </tbody><tfoot><tr><td colspan="6" class="num">Totales:</td><td class="num">${fMoney(fdNet(d))}</td><td class="num">${fMoney(fdIgv(d))}</td><td class="num">${fMoney(fdTot(d))}</td>${isNc?`<td class="num">${fMoney(fdNet(d))}</td>`:''}${ed&&isNc?'<td></td>':''}</tr></tfoot></table></div>
+    ${isNc?`<div class="fac-note fac-mk" ${fb('Modifica: importe se conserva',FAC_HU.nc,'I-005','PEN-I005-01')}>El importe guardado de la nota es el mismo en este detalle y en la grilla de resultados.</div>`:''}
+  </div>`;
+}
+function fdLineSet(i, k, v){ const d = fdById(FD.sel); d.lines[i][k] = v; renderFd(); }
+function fdLineDel(i){ const d = fdById(FD.sel); d.lines.splice(i,1); renderFd(); }
+function fdDetrHtml(d){
+  const pct = Number(d.det.pct)||0, imp = fdTot(d)*pct/100, ed = !/Anulado/.test(d.status);
+  return `<div class="fac-card fac-mk" ${fb('Agrega',FAC_HU.detr,'I-115','PEN-I115-01')}><h3>Detracción</h3><div class="fac-sub">Sin regla aprobada: no hay porcentaje, base, umbral ni redondeo definidos. El % no viene precargado.</div>
+    <div class="fac-g4">${fF('Afecta a detracción', `<input disabled value="${pct?'Sí':'Por definir'}">`)}${fF('Porcentaje (%)', `<input id="fdDetPct" type="number" min="0" max="100" step="0.01" ${ed?'':'disabled'} placeholder="Según matriz aprobada" value="${esc(d.det.pct)}" onchange="fdDetSet(this.value)">`)}${fRo('Base (total del documento)',`${fCur(d.cur)} ${fMoney(fdTot(d))}`)}${fRo('Importe de detracción',pct?`${fCur(d.cur)} ${fMoney(imp)}`:'-')}</div>
+    <div class="fac-note">Dónde se muestra y qué campos de SAP y PDF lo reciben: PEN-I115-02 y PEN-I007-02. Facturación pidió confirmar si el proveedor ya resolvió la incidencia (PEN-JENNY-I115-01).</div></div>`;
+}
+function fdDetSet(v){ const d = fdById(FD.sel); d.det.pct = v; renderFd(); }
+function fdHistory(){ openHistModal(fdById(FD.sel).hist); }
+function fdHist(d, next, comment){ d.hist.push({ts:facNow(), user:curUser(), prev:d.status, next, comment}); d.status = next; }
+function fdToggleEdit(){
+  const d = fdById(FD.sel);
+  if(d.edit){
+    if(fdIsNc(d)){ const av = fdSaldoFor(d); if(fdNet(d) > av + .001){ toast(`El importe supera el saldo disponible de ${fCur(d.cur)} ${fMoney(av)}`,'error'); return; } }
+    d.edit = false; toast('Documento contable actualizado exitosamente.','success');
+  } else d.edit = true;
+  renderFd();
+}
+function fdProvisionar(){
+  const d = fdById(FD.sel), code = `RD-2026-${String(FD.seq.RD++).padStart(6,'0')}`;
+  d.internal = code; d.num = code; fdHist(d,'Registro de documento','Registro previo con código interno'); toast('Documento cambiado a Registro de documento exitosamente','success'); renderFd();
+}
+function fdEmitir(){
+  const d = fdById(FD.sel), prev = d.num; d.num = fdNextNum(d.tipo); fdHist(d,'SAP OK',`Emitido desde ${prev}, conserva la referencia`); toast('Documento emitido. Conserva el código interno.','success'); renderFd();
+}
+function fdSend(){
+  const d = fdById(FD.sel);
+  d.sap = null; fdHist(d,'SAP OK','Envío simulado a SAP');
+  if(d.canje) d.canje.sap = 'Recibido en SAP';
+  toast('Documento enviado a SAP exitosamente.','success'); renderFd();
+}
+function fdAnnul(id){
+  const d = fdById(id);
+  openReason('Anular Documento','Anular', txt=>{ fdHist(d,'Anulado',txt); toast('Documento anulado exitosamente.','info'); renderFd(); });
+}
+function fdExtorno(id){
+  const d = fdById(id);
+  openReason('Extornar Liquidación de Cobranza','Extornar', txt=>{
+    fdHist(d,'Anulado','Extorno sin PDF. Notificado a SAP. '+txt);
+    d.provs.forEach(c=>{ const p = FP.list.find(x=>x.code===c); if(p){ p.hist.push({ts:facNow(), user:curUser(), prev:p.status, next:'PROVISIONADO', comment:'Reembolso liberado por extorno de '+d.num}); p.status = 'PROVISIONADO'; p.linked = p.sit==='Provisional'?p.linked:''; } });
+    toast('Extorno registrado y notificado a SAP. Reembolsos liberados.','info'); renderFd();
+  });
+}
+/* ---------- Vista previa PDF ---------- */
+function fdPdfHead(tipo, num){
+  return `<div class="fp-top"><div class="fp-logo">COSMOS</div><div class="fp-co"><b>COSMOS GLOBAL LOGISTICS SAC</b><br>Sucursal Callao. Dirección de ejemplo</div><div class="fp-box">R.U.C. 20000000001<br>${esc(tipo).toUpperCase()}<br>Nro. ${esc(num)}</div></div>`;
+}
+function fdPdf(id){
+  const d = fdById(id), v = facVoy(d.nave,d.nro), lc = fdIsLc(d), pct = Number(d.det.pct)||0;
+  const kv = (k,val,tag)=>`<span class="k">${k}</span><span>: ${esc(val||'')}${tag||''}</span>`;
+  facOpen(`<h3>Vista previa PDF</h3><div class="fac-sub" style="margin-bottom:12px">${lc?'Liquidación de Cobranza generada desde Connect. No va a SUNAT.':'Formato actual de la factura. El contenido real se valida contra SAP.'}</div>
+    <div class="fac-pdf fac-mk" ${lc?fb('Agrega',FAC_HU.lc,'I-040','PEN-I167-02'):fb('Modifica: mapeo de campos',FAC_HU.pdf,'I-007','PEN-I007-01')}>
+      ${fdPdfHead(d.tipo, d.num)}
+      <div style="text-align:center;margin:10px 0"><b>Fecha de Emisión:</b> ${fmtDate(d.date).replace(/\//g,'-')}</div>
+      <div class="fp-grid">
+        <div class="fp-kv">${kv('SEÑORES',d.fact)}${kv('DIRECCION',d.addr)}${kv('R.U.C. N°',fdRuc(d.fact))}${kv('COND. PAGO',d.pay)}${kv('B/L MASTER','')}${kv('REFERENCIA',d.collect)}${kv('NAVE',d.nave,fm('Modifica',FAC_HU.pdf,'I-007'))}${kv('VIAJE',d.nro,fm('Modifica',FAC_HU.pdf,'I-007'))}${kv('SERVICIO',v.svc)}${kv('AG. GENERAL','')}${kv('COMENTARIO',d.comments,fm('Cabecera',FAC_HU.pdf,'I-007'))}${kv('ORDEN DE COMPRA',d.oc)}${kv('HES',d.he,fm('',FAC_HU.reab,'I-015','PEN-I015-02'))}</div>
+        <div class="fp-kv">${kv('CODIGO','C'+fdRuc(d.fact))}${kv('TELEFONO','')}${kv('MONEDA',d.cur==='USD'?'US DÓLARES':'SOLES')}${kv('FECHA VCTO',fmtDate(d.due).replace(/\//g,'-'))}${kv('TICKET','')}${kv('B/L HIJO','')}${kv('ARRIBO',facEta(v),fm('ATA o ETA',FAC_HU.pdf,'I-007'))}${kv('PUERTO',d.puerto)}${kv('LINEA','')}${kv('AG. ADUANA','')}</div>
+      </div>
+      <table><thead><tr><th style="width:44px">ITEM</th><th>DESCRIPCIÓN ${fm('Inglés + comentario',FAC_HU.pdf,'I-007')}</th><th class="r" style="width:70px">CANTIDAD</th><th class="r" style="width:96px">PRECIO UNITARIO</th><th class="r" style="width:90px">VALOR VENTA</th></tr></thead><tbody>
+        ${d.lines.map((l,i)=>`<tr><td>${i+1}</td><td>${esc(l.en)}${l.remark?` - ${esc(l.remark)}`:''}</td><td class="r">${fMoney(l.qty)}</td><td class="r">${fMoney(l.tarifa)}</td><td class="r">${fMoney(l.tarifa*l.qty)}</td></tr>`).join('')}
+      </tbody></table>
+      <div style="text-align:right;margin-top:8px">Valor venta ${fCur(d.cur)} ${fMoney(fdNet(d))}<br>IGV ${fCur(d.cur)} ${fMoney(fdIgv(d))}<br><b>Total ${fCur(d.cur)} ${fMoney(fdTot(d))}</b>${pct?`<br>Detracción ${pct}%: ${fCur(d.cur)} ${fMoney(fdTot(d)*pct/100)} ${fm('Agrega',FAC_HU.detr,'I-115','PEN-I115-02')}`:''}</div>
+    </div>
+    ${lc?`<div class="fac-note">Formato definitivo para mar y tierra en PEN-I167-02. Aquí se usa la plantilla de factura como base. El extorno no genera PDF.</div>`:fRemoved('Descripción de la línea', FAC_HU.pdf, 'I-007', [['Nombre del servicio en español','solo inglés + comentario del detalle, definido el 26/08']])+`<div class="fac-note">Exportación de servicios usa su tipo de factura propio (PEN-I007-01). Campos y plantilla por confirmar con SAP.</div>`}
+    <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose()">Cerrar</button></div>`, 'md');
+}
+/* ---------- Sub-vista Notas de Crédito ---------- */
+function fdNcSet(k, v){ FD.ncF[k] = v; renderFd(); }
+function fdNcListHtml(){
+  const q = x=>normTxt(x), f = FD.ncF, all = FD.list.filter(d=>fdIsNc(d) && (!f.asoc || q(d.assoc).includes(q(f.asoc))) && (!f.est || d.status===f.est));
+  return `<div class="fac-card"><div class="fac-head"><div><h3>Buscar Notas de Crédito</h3><div class="fac-sub">Ingrese datos para buscar</div></div><div class="fac-acts"><button type="button" class="cc-btn" onclick="fdNcNew()">+ Nuevo</button></div></div>
+    <div class="fac-g4">${fF(`Documento Asociado ${fm('Agrega',FAC_HU.nc,'I-005')}`, `<input id="fdNcAsoc" placeholder="Ingresar documento asociado" value="${esc(f.asoc)}" onchange="fdNcSet('asoc',this.value)">`)}${fF('Estado del Documento', fSel(FD_ST, f.est, `onchange="fdNcSet('est',this.value)"`, 'Elegir estado del documento'))}</div>
+  </div>
+  <div class="fac-card"><h3 style="margin-bottom:14px">Resultados (${all.length})</h3>
+    <div class="fac-scroll"><table class="fac-tbl fac-fix"><thead><tr><th>Número de Documento</th><th>Documento Asociado ${fm('Agrega',FAC_HU.nc,'I-005')}</th><th>Facturar a</th><th>Fecha de Emisión</th><th>Moneda</th><th class="num">Neto</th><th class="num">IGV</th><th class="num">Total</th><th>Motivo de NC</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
+      ${all.map(d=>`<tr><td><button type="button" class="fac-link" onclick="fdOpen(${d.id})">${esc(d.num)}</button></td><td>${esc(d.assoc)}</td><td>${esc(d.fact)}</td><td>${fmtDate(d.date)}</td><td>${d.cur}</td><td class="num">${fMoney(fdNet(d))}</td><td class="num">${fMoney(fdIgv(d))}</td><td class="num">${fMoney(fdTot(d))}</td><td>${esc(d.motivo)}</td><td>${fdStatusCell(d)}</td><td>${fdRowActions(d)}</td></tr>`).join('') || `<tr><td colspan="11" class="fac-empty">No se encontraron resultados con los criterios seleccionados</td></tr>`}
+    </tbody></table></div></div>`;
+}
+function fdNcPrev(invNum, exceptId){ return FD.list.filter(d=>fdIsNc(d) && d.assoc===invNum && d.id!==exceptId); }
+function fdSaldo(inv, exceptId){ return fdNet(inv) - fdNcPrev(inv.num, exceptId).filter(n=>n.status!=='Anulado').reduce((a,n)=>a+fdNet(n),0); }
+function fdSaldoFor(nc){ const inv = fdByNum(nc.assoc); return inv ? fdSaldo(inv, nc.id) : Infinity; }
+function fdNcBoxHtml(d){
+  const inv = fdByNum(d.assoc); if(!inv) return '';
+  const prev = fdNcPrev(inv.num, d.id), saldo = fdSaldo(inv, d.id);
+  return `<div class="fac-card fac-mk" ${fb('Agrega: NC previas y saldo',FAC_HU.nc,'I-065','PEN-I065-01')}><h3>Notas de crédito previas de ${esc(inv.num)}</h3><div class="fac-sub">Las anuladas no restan saldo. Una nueva nota no puede superar el saldo.</div>
+    <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th>Número</th><th>Fecha</th><th>Estado</th><th class="num">Importe neto</th></tr></thead><tbody>
+      ${prev.map(n=>`<tr><td>${esc(n.num)}</td><td>${fmtDate(n.date)}</td><td>${esc(n.status)}</td><td class="num">${fMoney(fdNet(n))}</td></tr>`).join('') || '<tr><td colspan="4" class="fac-empty">Sin notas previas</td></tr>'}
+    </tbody></table></div>
+    <div class="fac-saldo"><div>Neto factura<b>${fCur(inv.cur)} ${fMoney(fdNet(inv))}</b></div><div>NC previas<b>${fCur(inv.cur)} ${fMoney(fdNet(inv)-saldo)}</b></div><div>Saldo disponible<b>${fCur(inv.cur)} ${fMoney(saldo)}</b></div><div>Esta nota<b>${fCur(inv.cur)} ${fMoney(fdNet(d))}</b></div></div>
+    ${d.reopen?`<div class="fac-note">Reapertura de servicios: ${esc(d.reopen)}. ${fm('Agrega',FAC_HU.reab,'I-015','PEN-JENNY-I015-01')}</div>`:''}</div>`;
+}
+const FC = {assoc:'', mov:'Parcial', motivo:'Descuento por ítem', lines:[], he:'', oc:''};
+function fdNcNew(){ FC.assoc = ''; FC.mov = 'Parcial'; FC.motivo = 'Descuento por ítem'; FC.lines = []; FC.he = ''; FC.oc = ''; fdNcRender(); }
+function fcInvs(){ return FD.list.filter(d=>(d.tipo==='Factura'||d.tipo==='Boleta') && d.status==='SAP OK'); }
+function fcSet(k, v){
+  FC[k] = v;
+  if(k==='assoc'){ const inv = fdByNum(v); FC.lines = inv ? JSON.parse(JSON.stringify(inv.lines)) : []; FC.oc = inv?inv.oc:''; if(inv && FC.mov==='Parcial') FC.lines.forEach(l=>{ l.tarifa = 0; }); }
+  if(k==='mov'){ FC.motivo = v==='Total con refacturación'?'Anulación de la operación':'Descuento por ítem'; const inv = fdByNum(FC.assoc); if(inv){ FC.lines = JSON.parse(JSON.stringify(inv.lines)); if(v==='Parcial') FC.lines.forEach(l=>{ l.tarifa = 0; }); } }
+  fdNcRender();
+}
+function fcLine(i, k, v){ FC.lines[i][k] = v; fdNcRender(); }
+function fdNcRender(){
+  const inv = fdByNum(FC.assoc), net = FC.lines.reduce((a,l)=>a+l.tarifa*l.qty,0), saldo = inv?fdSaldo(inv):0, prev = inv?fdNcPrev(inv.num):[];
+  facOpen(`<h3>Nueva Nota de Crédito</h3><div style="height:12px"></div>
+    <div class="fac-g3">
+      ${fF('Documento Asociado *', fSel(fcInvs().map(d=>[d.num,`${d.num} - ${d.fact}`]), FC.assoc, `id="fcAssoc" onchange="fcSet('assoc',this.value)"`, 'Ingresar documento asociado'))}
+      ${fF('Tipo de Movimiento *', fSel(['Parcial','Total con refacturación'], FC.mov, `id="fcMov" onchange="fcSet('mov',this.value)"`))}
+      ${fF('Motivo de NC *', fSel(['Descuento por ítem','Corrección de monto','Anulación de la operación'], FC.motivo, `onchange="fcSet('motivo',this.value)"`))}
+    </div>
+    ${inv?`<div class="fac-mk" ${fb('Modifica: hereda de la factura',FAC_HU.nc,'I-005','PEN-JENNY-I005-01')} style="margin-top:18px"><div class="fac-g3" style="padding-top:8px">
+        ${fRo('Facturar a',inv.fact)}${fRo('Cobrar a',inv.collect)}${fRo('Dirección',inv.addr)}${fRo('Nave',inv.nave)}${fRo('Número de Viaje',inv.nro)}${fRo('Moneda',inv.cur)}
+      </div><div class="fac-note">Solo se modifican servicios, cantidad y tarifa. El resto viene de la factura.</div></div>
+      <div class="fac-g2" style="margin-top:14px">${fRo('Orden de Compra',FC.oc)}${fF(`HE ${fm('Agrega: opcional',FAC_HU.reab,'I-015','PEN-I015-02')}`,`<input placeholder="Opcional" value="${esc(FC.he)}" onchange="FC.he=this.value">`)}</div>
+      <div class="fac-mk" ${fb('Agrega: NC previas y saldo',FAC_HU.nc,'I-065','PEN-I065-01')} style="margin-top:18px"><div class="fac-sec" style="margin-top:6px">Notas de crédito previas</div>
+        ${prev.length?`<ul style="margin:0 0 6px 18px;font-size:13px">${prev.map(n=>`<li>${esc(n.num)}, ${esc(n.status)}, ${fCur(n.cur)} ${fMoney(fdNet(n))}</li>`).join('')}</ul>`:'<div style="font-size:13px;color:var(--cc-gray)">Sin notas previas</div>'}
+        <div class="fac-saldo"><div>Neto factura<b>${fCur(inv.cur)} ${fMoney(fdNet(inv))}</b></div><div>NC previas<b>${fCur(inv.cur)} ${fMoney(fdNet(inv)-saldo)}</b></div><div>Saldo disponible<b id="fcSaldo">${fCur(inv.cur)} ${fMoney(saldo)}</b></div><div>Esta nota<b id="fcEsta">${fCur(inv.cur)} ${fMoney(net)}</b></div></div></div>
+      <div class="fac-sec">Detalle</div>
+      ${fRemoved('Detalle', FAC_HU.nc, 'I-065', [['Monto de Descuento','Saldo']])}
+      <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th>Servicio</th><th class="num">Tarifa</th><th class="num">Cantidad</th><th class="num">Saldo ${fm('Modifica',FAC_HU.nc,'I-065','PEN-JENNY-I065-01')}</th><th></th></tr></thead><tbody>
+        ${FC.lines.map((l,i)=>`<tr><td>${esc(l.svc)}</td><td class="num"><input class="fcTarifa" type="number" step="0.01" min="0" value="${l.tarifa}" onchange="fcLine(${i},'tarifa',Number(this.value))"></td><td class="num"><input type="number" step="1" min="0" value="${l.qty}" onchange="fcLine(${i},'qty',Number(this.value))"></td><td class="num">${fMoney(l.tarifa*l.qty)}</td><td><button type="button" class="fac-link" onclick="FC.lines.splice(${i},1);fdNcRender()">Quitar</button></td></tr>`).join('')}
+      </tbody></table></div>`:`<div class="fac-note">Elige el documento asociado. Debe ser Factura o Boleta en estado SAP OK.</div>`}
+    <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose()">Cancelar</button><button type="button" class="cc-btn" id="fcSave" onclick="fcSave()">Guardar</button></div>`, 'lg');
+}
+function fcSave(){
+  const inv = fdByNum(FC.assoc);
+  if(!inv){ toast('Por favor complete los campos obligatorios.','error'); return; }
+  const net = FC.lines.reduce((a,l)=>a+l.tarifa*l.qty,0), saldo = fdSaldo(inv);
+  if(net<=0){ toast('Algunos detalles tienen campos obligatorios sin completar.','error'); return; }
+  if(net > saldo + .001){ toast(`El importe supera el saldo disponible de ${fCur(inv.cur)} ${fMoney(saldo)}`,'error'); return; }
+  if(FC.mov==='Total con refacturación'){
+    if(Math.abs(net-saldo)>.001){ toast(`La NC total debe igualar el saldo de ${fCur(inv.cur)} ${fMoney(saldo)}`,'error'); return; }
+    fcAskReopen(inv); return;
+  }
+  fcCommit(inv, '');
+}
+function fcAskReopen(inv){
+  const provs = inv.provs.map(c=>FP.list.find(p=>p.code===c)).filter(Boolean);
+  facOpen(`<h3>Reabrir servicios emitidos</h3><div style="height:8px"></div>
+    <div class="fac-mk" ${fb('Agrega',FAC_HU.reab,'I-015','PEN-JENNY-I015-01')} style="padding:14px;background:#F5F7FB;border-radius:8px;font-size:13.5px;line-height:1.5">
+      Esta nota de crédito anula ${esc(inv.num)} y se va a refacturar. ¿Deseas reabrir los servicios emitidos para volver a canjearlos?
+      ${provs.length?`<ul style="margin:8px 0 0 18px">${provs.map(p=>`<li>${esc(p.code)}: ${esc(p.lines[0]?.svc||'')}</li>`).join('')}</ul>`:`<div style="margin-top:8px;color:var(--cc-gray)">Este documento no tiene provisión asociada. Solo se registra la respuesta.</div>`}
+    </div>
+    <div class="fac-note">Solo aplica a NC total con refacturación. NC parcial y nota de débito se definen aparte (PEN-I015-01). Perfiles que aceptan: PEN-I015-02.</div>
+    <div class="fac-btns"><button type="button" class="cc-btn pink" id="fcNo" onclick="fcCommit(fdByNum(FC.assoc),'No')">No</button><button type="button" class="cc-btn" id="fcYes" onclick="fcCommit(fdByNum(FC.assoc),'Sí')">Sí, reabrir</button></div>`);
+}
+function fcCommit(inv, answer){
+  const id = Math.max(...FD.list.map(d=>d.id))+1, num = fdNextNum('Nota de Crédito');
+  const d = fdNew({id, num, tipo:'Nota de Crédito', assoc:inv.num, mov:FC.mov, motivo:FC.motivo, fact:inv.fact, collect:inv.collect, addr:inv.addr, nave:inv.nave, nro:inv.nro, puerto:inv.puerto, cur:inv.cur, tc:inv.tc, oc:FC.oc, he:FC.he, comments:`Referencia ${inv.num}`, date:new Date().toISOString().slice(0,10), user:curUser(), lines:JSON.parse(JSON.stringify(FC.lines)), reopen:answer, hist:[{ts:facNow(), user:curUser(), prev:'', next:'Borrador', comment:answer?`Reapertura de servicios: ${answer}`:'Nota de crédito registrada'}]});
+  FD.list.push(d);
+  if(answer==='Sí') inv.provs.forEach(c=>{ const p = FP.list.find(x=>x.code===c); if(p){ p.hist.push({ts:facNow(), user:curUser(), prev:p.status, next:'PROVISIONADO', comment:'Servicios reabiertos por '+num}); p.status = 'PROVISIONADO'; p.reopen = num; } });
+  facClose(); toast('Documento contable creado exitosamente.','success'); FD.tab = 'nc'; fdOpen(id);
+}
+/* ---------- Sub-vista Cover ---------- */
+function fdCoverStart(){ FD.tab = 'cover'; FD.view = 'list'; FD.cover = null; renderFd(); window.scrollTo({top:0}); }
+function fdOpenLot(n){
+  const l = FD.lots[n]; if(!l) return;
+  FD.tab = 'cover'; FD.view = 'list'; FD.cover = JSON.parse(JSON.stringify(l)); FD.cover.step = 'batch'; FD.cover.isNew = false; renderFd(); window.scrollTo({top:0});
+}
+function fcClients(){ return [...new Set(FD.list.filter(d=>d.status==='SAP OK').map(d=>d.fact))]; }
+const FCV = {client:'', viaje:''};
+function fcvSet(k, v){ FCV[k] = v; if(k==='client') FCV.viaje = ''; renderFd(); }
+function fdCoverView(){
+  if(!FCV.client){ toast('Seleccione el cliente a facturar.','error'); return; }
+  FD.cover = {n:'', client:FCV.client, nro:fpVoyNro(FCV.viaje), ids:[], adv:[], sent:false, lang:'Inglés', incl:false, control:null, step:'batch', isNew:true};
+  FD.cover.ids = fcvAvail().map(d=>d.num); renderFd();
+}
+function fcvAvail(){
+  const c = FD.cover;
+  return FD.list.filter(d=>d.fact===c.client && d.status==='SAP OK' && (!d.lote || d.lote===c.n) && (!c.nro || d.nro===c.nro));
+}
+function fcvToggle(num, on){ const c = FD.cover; c.ids = on ? [...new Set([...c.ids,num])] : c.ids.filter(x=>x!==num); renderFd(); }
+function fcvAll(kind, on){ const c = FD.cover, list = fcvAvail().filter(d=>fdIsNc(d)===(kind==='nc')).map(d=>d.num); c.ids = on ? [...new Set([...c.ids,...list])] : c.ids.filter(x=>!list.includes(x)); renderFd(); }
+function fcvBalance(){
+  const c = FD.cover, docs = c.ids.map(fdByNum).filter(Boolean), sum = (cur,f)=>docs.filter(d=>d.cur===cur&&f(d)).reduce((a,d)=>a+fdTot(d),0);
+  return ['USD','PEN'].map(cur=>{ const fac = sum(cur,d=>!fdIsNc(d)), nc = sum(cur,d=>fdIsNc(d)), pag = sum(cur,d=>!fdIsNc(d)&&d.paid==='Sí'), adv = c.adv.filter(a=>a.cur===cur).reduce((a,x)=>a+x.monto,0); return {cur, fac, nc, pag, adv, saldo:fac-nc-pag-adv}; });
+}
+function fdCoverHtml(){
+  const c = FD.cover;
+  if(!c || c.step!=='batch'){
+    const voys = FCV.client ? facVoys().filter(v=>v.cliente===FCV.client) : [];
+    return `<div class="fac-card"><h3>Generar Cover</h3><div class="fac-sub">Solo se muestran los viajes con documentos SAP OK del Cliente sin lote</div>
+      <div class="fac-g2">
+        ${fF('Facturar a', fSel(fcClients(), FCV.client, `id="fcvClient" onchange="fcvSet('client',this.value)"`, 'Ingresar el cliente a facturar'))}
+        ${fF('Número de Viaje', fSel(voys.map(v=>[facVoyLabel(v),`${v.nro} - ${v.nave} - ${v.puerto} - ${facEta(v)}`]), FCV.viaje, `${FCV.client?'':'disabled'} onchange="fcvSet('viaje',this.value)"`, 'Ingresar número de viaje'))}
+      </div>
+      <div class="fac-btns"><button type="button" class="cc-btn" id="fcvView" onclick="fdCoverView()">Ver Documentos</button></div></div>`;
+  }
+  const avail = fcvAvail(), docs = avail.filter(d=>!fdIsNc(d)), notes = avail.filter(fdIsNc), ro = c.sent, dis = ro?'disabled':'', bal = fcvBalance();
+  const tbl = (rows, kind)=>{
+    const allOn = rows.length && rows.every(d=>c.ids.includes(d.num));
+    return `<div class="fac-scroll"><table class="fac-tbl"><thead><tr><th><input type="checkbox" style="width:auto" ${dis} ${allOn?'checked':''} onchange="fcvAll('${kind}',this.checked)"></th><th>Número de Documento</th><th>Fecha de Emisión</th><th>Moneda</th><th class="num">Monto</th></tr></thead><tbody>
+      ${rows.map(d=>`<tr><td><input type="checkbox" style="width:auto" ${dis} ${c.ids.includes(d.num)?'checked':''} onchange="fcvToggle('${d.num}',this.checked)"></td><td>${esc(d.num)}</td><td>${fmtDate(d.date)}</td><td>${d.cur}</td><td class="num">${fMoney(fdTot(d))}</td></tr>`).join('') || '<tr><td colspan="5" class="fac-empty">Sin documentos pendientes</td></tr>'}
+    </tbody></table></div>
+    <div class="fac-tot"><span>Total S/: ${fMoney(rows.filter(d=>d.cur==='PEN'&&c.ids.includes(d.num)).reduce((a,d)=>a+fdTot(d),0))}</span><span>Total US$: ${fMoney(rows.filter(d=>d.cur==='USD'&&c.ids.includes(d.num)).reduce((a,d)=>a+fdTot(d),0))}</span></div>`;
+  };
+  return `<div class="fac-card"><div class="fac-head"><div><h3>Generar Cover${c.n?` - N° ${esc(c.n)}`:''}</h3><div class="fac-sub">${esc(c.client)}${c.nro?`, viaje ${esc(c.nro)}`:''}</div></div>
+      <div class="fac-acts"><button type="button" class="cc-btn ghost" onclick="fdCoverStart()">Cambiar cliente</button></div></div>
+    ${ro?`<div class="fac-note warn">Este lote fue ENVIADO: no admite cambios en los documentos.</div>`:''}
+    <div class="fac-sec">Documentos</div>${tbl(docs,'doc')}
+    <div class="fac-sec">Notas</div>${tbl(notes,'nc')}
+    <div class="fac-note fac-mk" ${fb('',FAC_HU.cover,'I-066','PEN-I009-01')}>Solo se listan documentos del cliente sin lote. Lo ya incluido en otro cover no vuelve a aparecer.</div>
+  </div>
+  <div class="fac-card fac-mk" ${fb('Agrega: adelantos',FAC_HU.cover,'I-066','PEN-I009-02')}><h3>Adelantos</h3><div class="fac-sub">Abono a cuenta recibido del cliente. En el cover sale como Less your remittance.</div>
+    <div class="fac-g4">${fF('Fecha',`<input id="fcvAdvDate" type="date" ${dis} value="${new Date().toISOString().slice(0,10)}">`)}${fF('Número de Operación',`<input id="fcvOp" ${dis} placeholder="Ingresar número de operación">`)}${fF('Banco',`<input id="fcvBank" ${dis} placeholder="Ingresar banco">`)}${fF('Monto',`<input id="fcvAmt" type="number" min="0" step="0.01" ${dis} placeholder="0.00">`)}${fF('Moneda',fSel([['USD','US$'],['PEN','S/']],'USD',`id="fcvCur" ${dis}`))}</div>
+    <div class="fac-btns" style="margin-top:10px"><button type="button" class="cc-btn" id="fcvAddAdv" ${dis} onclick="fcvAddAdv()">Agregar adelanto</button></div>
+    ${c.adv.length?`<div class="fac-scroll" style="margin-top:10px"><table class="fac-tbl"><thead><tr><th>Fecha</th><th>Número de Operación</th><th>Banco</th><th>Moneda</th><th class="num">Monto</th><th></th></tr></thead><tbody>${c.adv.map((a,i)=>`<tr><td>${fmtDate(a.date)}</td><td>${esc(a.op)}</td><td>${esc(a.banco)}</td><td>${a.cur}</td><td class="num">${fMoney(a.monto)}</td><td>${ro?'':`<button type="button" class="fac-link" onclick="FD.cover.adv.splice(${i},1);renderFd()">Quitar</button>`}</td></tr>`).join('')}</tbody></table></div>`:''}
+  </div>
+  <div class="fac-card fac-mk" id="fcvBal" ${fb('Agrega: balance',FAC_HU.cover,'I-066','PEN-I009-02')}><h3>Balance</h3><div class="fac-sub">Saldo = Documentos - Notas - Pagado - Adelantos. Tratamiento de monedas por validar.</div>
+    <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th>Moneda</th><th class="num">Documentos</th><th class="num">Notas</th><th class="num">Pagado</th><th class="num">Adelantos</th><th class="num">Saldo</th></tr></thead><tbody>
+      ${bal.map(b=>`<tr><td>${fCur(b.cur)}</td><td class="num">${fMoney(b.fac)}</td><td class="num">${fMoney(b.nc)}</td><td class="num">${fMoney(b.pag)}</td><td class="num">${fMoney(b.adv)}</td><td class="num"><b>${fMoney(b.saldo)}</b></td></tr>`).join('')}
+    </tbody></table></div></div>
+  <div class="fac-card"><h3 style="margin-bottom:14px">Envío</h3>
+    <div class="fac-g2">${fF('Idioma',fSel(['Inglés','Español','Ambos'],c.lang,`${dis} onchange="FD.cover.lang=this.value"`))}<div style="display:flex;align-items:end"><label class="fac-chk"><input type="checkbox" ${dis} ${c.incl?'checked':''} onchange="FD.cover.incl=this.checked"> Incluir comprobantes</label></div></div>
+    <div class="fac-mk" ${fb('Modifica: muestra origen',FAC_HU.cover,'I-066','PEN-I039-01')} style="margin-top:16px;font-size:13px;line-height:1.7;padding:8px">
+      <b>Para (cliente):</b> cobranzas@cliente.example <span style="color:var(--cc-gray)">(Contacto Cobranza del socio)</span>, comercial@cliente.example <span style="color:var(--cc-gray)">(Contacto Comercial del socio)</span><br>
+      <b>Copia (interno):</b> facturacion@agencia.example <span style="color:var(--cc-gray)">(Configuración por sucursal)</span>
+    </div>
+    <div class="fac-btns">
+      ${!c.n?`<button type="button" class="cc-btn" id="fcvGen" onclick="fcvGenerate()">Generar Cover</button>`:ro?'':`<button type="button" class="cc-btn" onclick="fcvSave()">Guardar</button>`}
+      <span class="fac-mk" ${fb('Modifica: con importes y descarga',FAC_HU.cover,'I-066','PEN-JENNY-COVER-01')}><button type="button" class="cc-btn" id="fcvPrev" onclick="fcvPreview()">Ver Cover</button></span>
+      ${c.n?`<button type="button" class="cc-btn" ${ro?'disabled':''} onclick="fcvSend()">Enviar</button>`:''}
+      <button type="button" class="cc-btn pink" onclick="fdCoverStart()">Cancelar</button>
+    </div></div>
+  <div class="fac-card fac-mk" ${fb('Agrega: Control de envío',FAC_HU.cover,'I-066','PEN-I066-01')}><h3>Control de envío de documentos</h3><div class="fac-sub">Hoja asociada al lote. Numeración, permisos y efectos por validar (PEN-I066-02).</div>
+    ${c.control?`<div class="fac-acts" style="margin-bottom:10px"><span class="fac-pill ${c.control.st==='Vigente'?'ok':'err'}">${esc(c.control.st)}</span><span style="font-size:13px">${esc(c.control.num||'')}, Lote ${esc(c.control.lote)}</span>${c.control.reason?`<span style="font-size:13px;color:var(--cc-gray)">Motivo: ${esc(c.control.reason)}</span>`:''}</div>`:''}
+    <div class="fac-acts">
+      <button type="button" class="cc-btn" id="fcvCtl" ${c.n?'':'disabled'} title="${c.n?'':'Primero genera el Cover'}" onclick="fcvControl()">${c.control&&c.control.st==='Vigente'?'Ver Control de envío':'Generar Control de envío'}</button>
+      ${c.control&&c.control.st==='Vigente'?`<button type="button" class="cc-btn pink" id="fcvCtlRev" onclick="fcvControlRevert()">Anular o revertir</button>`:''}
+    </div></div>`;
+}
+function fcvAddAdv(){
+  const op = document.getElementById('fcvOp').value.trim(), banco = document.getElementById('fcvBank').value.trim(), monto = Number(document.getElementById('fcvAmt').value), cur = document.getElementById('fcvCur').value;
+  if(!op || !banco || !(monto>0)){ toast('Por favor complete los campos obligatorios.','error'); return; }
+  FD.cover.adv.push({op, banco, monto, cur, date:document.getElementById('fcvAdvDate').value}); renderFd();
+}
+function fcvPersist(){ const c = FD.cover; FD.lots[c.n] = JSON.parse(JSON.stringify(c)); FD.list.forEach(d=>{ if(d.lote===c.n && !c.ids.includes(d.num)) d.lote = ''; }); c.ids.forEach(n=>{ const d = fdByNum(n); if(d) d.lote = c.n; }); }
+function fcvGenerate(){
+  const c = FD.cover; if(!c.ids.length){ toast('Seleccione al menos un documento.','error'); return; }
+  c.n = String(FD.lotSeq++); c.isNew = false; fcvPersist(); toast('Lote generado correctamente.','success'); renderFd();
+}
+function fcvSave(){ const c = FD.cover; if(!c.ids.length){ toast('Seleccione al menos un documento.','error'); return; } fcvPersist(); toast('Lote actualizado correctamente.','success'); renderFd(); }
+function fcvSend(){ const c = FD.cover; fcvPersist(); c.sent = true; FD.lots[c.n].sent = true; toast('Cover enviado correctamente (simulado).','success'); renderFd(); }
+const FC_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+function fcvEnDate(iso){ const [y,m,d] = String(iso).slice(0,10).split('-').map(Number), n = d%10===1&&d!==11?'st':d%10===2&&d!==12?'nd':d%10===3&&d!==13?'rd':'th'; return `${FC_MONTHS[m-1]} ${d}${n}, ${y}`; }
+function fcvVoy(c){ const first = c.ids.map(fdByNum).filter(Boolean)[0]; return first ? facVoy(first.nave, first.nro) : (facVoys().find(x=>x.cliente===c.client && (!c.nro || x.nro===c.nro)) || {}); }
+function fcvPreview(){
+  const c = FD.cover, v = fcvVoy(c), docs = c.ids.map(fdByNum).filter(Boolean), today = new Date().toISOString().slice(0,10);
+  const curs = ['USD','PEN'].filter(k=>docs.some(d=>d.cur===k) || c.adv.some(a=>a.cur===k));
+  const sign = d=>fdIsNc(d)?-1:1, bal = fcvBalance();
+  const sec = cur=>{ const ds = docs.filter(d=>d.cur===cur), tot = ds.reduce((a,d)=>a+sign(d)*fdTot(d),0), adv = c.adv.filter(a=>a.cur===cur), b = bal.find(x=>x.cur===cur), pag = b.pag;
+    return `<table class="fp-cover"><thead><tr><th>Documents</th><th>Descriptions</th><th class="r">Amount ${fCur(cur)}</th></tr></thead><tbody>
+      ${ds.flatMap(d=>d.lines.map(l=>`<tr><td>${esc(d.num)}</td><td>${esc(d.coverDesc||l.en)}</td><td class="r">${fMoney(sign(d)*(l.tarifa*l.qty+(l.igv?l.tarifa*l.qty*.18:0)))}</td></tr>`)).join('')}
+      <tr class="fp-sum"><td></td><td class="r">${fCur(cur)}</td><td class="r"><b>${fMoney(tot)}</b></td></tr></tbody></table>
+      ${pag?`<div class="fp-line"><b>Less paid documents</b><b>${fMoney(pag)}</b></div>`:''}
+      ${adv.map(a=>`<div class="fp-line"><b>Less your remittance on ${fcvEnDate(a.date||today)}. Op. ${esc(a.op)}, ${esc(a.banco)} ${fm('Agrega',FAC_HU.cover,'I-066','PEN-I009-02')}</b><b>${fMoney(a.monto)}</b></div>`).join('')}
+      <div class="fp-line fp-bal"><b>Balance due "COSMOS" Global Logistics S.A.C.</b><b>${fCur(cur)} ${fMoney(b.saldo)}</b></div>`; };
+  facOpen(`<h3>Ver Cover${c.n?` - N° ${esc(c.n)}`:''}</h3><div style="height:10px"></div>
+    <div class="fac-pdf fp-it fac-mk" ${fb('Modifica: números e importes',FAC_HU.cover,'I-066','PEN-JENNY-COVER-01')}>
+      <div class="fp-logo">COSMOS</div>
+      <div style="text-align:right;margin:10px 0 14px">Callao, ${fcvEnDate(today)}</div>
+      <b>Messrs.<br>${esc(c.client)}</b><br>LIMA - PERÚ
+      <div style="display:flex;justify-content:space-between;margin:16px 0"><b>Ref.- ${esc(v.nave||'')} V.${esc(v.nro||'')}${v.eta?` (${fmtDate(v.eta).replace(/\//g,'-')})`:''} - ${esc(v.puerto||'')} PORT</b>${c.n?`<b>Lote ${esc(c.n)}</b>`:''}</div>
+      Dear Sirs:<br>We are attaching here all the expenses for attention to vessel mentioned above during call at Peruvian port, as the following detail:
+      ${curs.map(sec).join('<div style="height:14px"></div>')||'<div style="margin:14px 0">Sin documentos</div>'}
+      <div style="margin-top:14px">Please confirm remittance of funds to our bank account N° <b>000-0000000-0-00</b><br>(Cosmos Global Logistics S.A.C.) of <b>Banco de ejemplo</b>, LIMA - PERU. SWIFT: <b>EXAMPLEPE</b></div>
+      <div style="margin-top:14px">Thanks in advance for you attention.<br><br>Best regards,</div>
+    </div>
+    <div class="fac-note">Formato de los modelos del ticket. Previsualizado, descargado y enviado deben tener el mismo conjunto de documentos e importes. Qué se puede modificar en la previsualización está pendiente: la frase de la revisión quedó incompleta (PEN-JENNY-COVER-02). Cuenta y banco de ejemplo.</div>
+    <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose()">Cerrar</button><button type="button" class="cc-btn" onclick="toast('Descarga de PDF simulada','info')">Descargar</button></div>`, 'md');
+}
+function fcvControl(){
+  const c = FD.cover, v = fcvVoy(c), today = new Date().toISOString().slice(0,10);
+  if(!c.control || c.control.st!=='Vigente'){ c.control = {lote:c.n, st:'Vigente', user:curUser(), num:`LN PECLL N° ${String(FD.ctlSeq=(FD.ctlSeq||1679)+1).replace(/(\d)(\d{3})$/,'$1.$2')}/26`, date:today}; fcvPersist(); }
+  const pre = d=>fdIsNc(d)?'NC':d.tipo==='Boleta'?'BV':d.tipo==='Liquidación de Cobranza'?'LC':d.tipo==='Nota de Cargo'?'NT':'FT';
+  const docs = c.ids.map(fdByNum).filter(Boolean), left = docs.filter(d=>!fdIsNc(d)), right = docs.filter(fdIsNc), n = Math.max(left.length,right.length,1);
+  const cell = d=>d?`<td>${pre(d)} ${esc(d.num)}</td><td>${fmtDate(d.date)}</td><td class="r">${d.cur==='PEN'?fMoney(fdTot(d)):''}</td><td class="r">${d.cur==='USD'?fMoney(fdTot(d)):''}</td>`:'<td></td><td></td><td></td><td></td>';
+  const tot = (l,k)=>fMoney(l.filter(d=>d.cur===k).reduce((a,d)=>a+fdTot(d),0));
+  facOpen(`<h3>Control de envío de documentos</h3><div style="height:10px"></div>
+    <div class="fac-pdf fac-mk" ${fb('Agrega',FAC_HU.cover,'I-066','PEN-I066-02')}>
+      <div class="fp-top"><div class="fp-logo">COSMOS</div><div class="fp-co"><b>CONTROL DE ENVIO DE DOCUMENTOS</b></div><div style="width:120px"></div></div>
+      <div style="margin:12px 0;text-decoration:underline">${esc(c.control.num)} ${fm('Correlativo',FAC_HU.cover,'I-066','PEN-I066-02')}</div>
+      <div class="fp-grid" style="grid-template-columns:1fr 220px"><div class="fp-kv"><span class="k">DE :</span><b>COSMOS GLOBAL LOGISTICS S.A.C.</b><span class="k">PARA :</span><b>${esc(c.client)}</b><span class="k">NAVE / VIAJE :</span><b>${esc(v.nave||'')} / ${esc(v.nro||'')}</b></div>
+        <div class="fp-kv"><span class="k">Fecha de Envío :</span><span>${fmtDate(c.control.date)}</span><span class="k">Lote :</span><span>${esc(c.control.lote)}</span></div></div>
+      <div style="margin:12px 0">ESTIMADOS SEÑORES:<br>MEDIANTE LA PRESENTE LE ADJUNTAMOS LOS SIGUIENTES DOCUMENTOS</div>
+      <table><thead><tr><th>DOCUMENTOS</th><th>EMISION</th><th class="r">S/</th><th class="r">US$</th><th>NOTAS</th><th>EMISION</th><th class="r">S/</th><th class="r">US$</th></tr></thead><tbody>
+        ${Array.from({length:n},(_,i)=>`<tr>${cell(left[i])}${cell(right[i])}</tr>`).join('')}
+        <tr><td colspan="2"><b>TOTAL</b></td><td class="r"><b>${tot(left,'PEN')}</b></td><td class="r"><b>${tot(left,'USD')}</b></td><td colspan="2"><b>TOTAL</b></td><td class="r"><b>${tot(right,'PEN')}</b></td><td class="r"><b>${tot(right,'USD')}</b></td></tr>
+      </tbody></table>
+      <table class="fp-sign"><tr><td>Elaborado por:<br><br><br><div>LIQUIDADOR - FACTURADOR: ${esc(c.control.user)}</div></td><td>Aprobado por:<br><br><br><div>JEFE DE SUCURSAL</div></td><td>Revisado por:<br><br><br><div>SUPERVISOR DE LIQUIDACIONES</div></td></tr></table>
+    </div>
+    <div class="fac-note">Formato de los modelos del ticket. El modelo dice Hecho por; el ticket pide Elaborado. Numeración por validar (PEN-I066-02).</div>
+    <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose();renderFd()">Cerrar</button><button type="button" class="cc-btn" onclick="toast('Descarga de PDF simulada','info')">Descargar PDF</button></div>`, 'md');
+}
+function fcvControlRevert(){
+  openReason('Anular o revertir Control de envío','Confirmar', txt=>{
+    const c = FD.cover; c.control.st = 'Anulado'; c.control.reason = txt; c.sent = false; fcvPersist(); toast('Control de envío anulado. Puedes ajustar documentos y generar uno nuevo.','info'); renderFd();
+  });
+}
+/* ---------- Registro en navegación y guías ---------- */
+CC_SUBMENU['Liquidación'] = [
+  ['Provisiones','openProvisions()','<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M9 5v14M15 5v14"/>',true],
+  ['Documentos Contables','openAccDocs()','<path d="M5 4h10l4 4v12H5z"/><path d="M15 4v4h4M8 13h8M8 16h6"/>',true]];
+PAGEBAR.screenProvisions = ['Consulta de Provisiones',['Inicio','Provisiones','Consulta de Provisiones']];
+PAGEBAR.screenAccDocs = ['Consulta de Documentos Contables',['Inicio','Documentos Contables','Consulta de Documentos Contables']];
+GUIDES.screenProvisions = [
+  {t:'Buscar provisiones', steps:[
+    {el:'#fpEst', h:'Estado', p:'Basta un filtro para buscar. Estado es el mínimo.'},
+    {el:'#fpSvc', h:'Servicios', p:'Se filtra por Categoría y Proveedor, sin duplicados.'},
+    {el:'#fpViaje', h:'Viaje', p:'Al elegirlo se ve su ETA.'}]}];
+GUIDES.screenAccDocs = [
+  {t:'Consultar y crear documentos', steps:[
+    {el:'#fdAsoc', h:'Documento Asociado', p:'Encuentra las notas de una factura.'},
+    {el:()=>gqt('#screenAccDocs button','Nuevo'), h:'Nuevo', p:'Desde cero o por canje desde una provisión.'},
+    {el:()=>gqt('#screenAccDocs button','Exportar'), h:'Exportar', p:'Excel con RUC, servicio y usuario emisor.'}]}];
 </script>
 <div class="cc-dd" id="ccDropdown"></div>
 <div class="tour-layer" id="tourLayer"><div class="tour-hole" id="tourHole"></div><div class="tour-pop" id="tourPop" onclick="event.stopPropagation()"></div></div>
