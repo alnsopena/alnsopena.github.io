@@ -1,0 +1,32 @@
+#screenDashboard { background: transparent; border: 0; padding: 0; box-shadow: none; }
+#operationalDashboard { display: block; width: 100%; height: 760px; border: 0; background: #f4f7fb; }
+.app:has(#screenDashboard.active) > #chgHeadRemoved { display: none !important; }
+.dashboard-mobile-link { display: none; }
+@media(min-width:701px){
+ body.operational-dashboard-active{overflow:hidden}
+ body.operational-dashboard-active>.app{height:100dvh;box-sizing:border-box;display:flex;flex-direction:column;min-height:0}
+ body.operational-dashboard-active>.app>header.top,body.operational-dashboard-active>.app>.cc-menu,body.operational-dashboard-active>.app>.cc-pagebar{flex-shrink:0}
+ body.operational-dashboard-active #screenDashboard.active{flex:1;min-height:0;margin:0}
+ body.operational-dashboard-active #ccPagebar{display:none}
+ body.operational-dashboard-active #operationalDashboard{height:100%}
+}
+@media print{body.operational-dashboard-active{overflow:visible}.app:has(#screenDashboard.active) .chg-removed,.chg-tag,.chg-btn{display:none!important}}
+@media (max-width: 700px) {
+  .dashboard-mobile-link { display: inline-flex; align-items: center; border: 1px solid #0057dd; background: #fff; color: #0057dd; border-radius: 6px; padding: 7px 10px; font: inherit; font-size: 12px; cursor: pointer; }
+}
+
+/* Compact only the dashboard's surrounding shell on laptop-height windows. */
+@media(min-width:701px) and (max-height:850px){
+ body.operational-dashboard-active>.app{padding:10px 16px}
+ body.operational-dashboard-active>.app>header.top{padding:8px 18px}
+ body.operational-dashboard-active>.app>.cc-menu{margin-top:6px;padding-top:5px;padding-bottom:5px}
+}
+
+body.operational-dashboard-active header.top .cc-date{display:none}
+@media(min-width:701px) and (max-height:850px){
+ body.operational-dashboard-active>.app>header.top .user-box{padding:5px 9px}
+ body.operational-dashboard-active>.app>.cc-menu{margin-bottom:8px}
+ body.operational-dashboard-active>.app>.cc-menu button{padding-top:7px;padding-bottom:7px}
+}
+
+@media(min-width:701px) and (max-height:850px){body.operational-dashboard-active>.app>.cc-menu{margin-bottom:0}}

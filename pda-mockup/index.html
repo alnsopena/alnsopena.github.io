@@ -1568,6 +1568,7 @@
   #step3 .field[style]{border-radius:0 0 12px 12px;padding:6px 24px 20px;margin:0!important}
   #step3 .pnote{margin-top:16px}
 </style>
+<link rel="stylesheet" href="dashboard-embed.css?v=v36">
 </head>
 <body>
 <div class="app">
@@ -1577,7 +1578,7 @@
       <span class="brand-div"></span>
       <div>
         <h1>Simulador PDA <span class="cc-site">Callao <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span><span class="cc-date" id="ccDate"></span></h1>
-        <div class="sub">Agencia Marítima · Port Callao · PC01-R02 · v35</div>
+        <div class="sub">Agencia Marítima · Port Callao · PC01-R02 · v36</div>
       </div>
     </div>
     <div class="user-box">
@@ -1603,6 +1604,9 @@
     <button data-step="3" disabled>Estado</button>
   </nav>
 
+  <section class="panel" id="screenDashboard" aria-label="Dashboard operativo">
+    <iframe id="operationalDashboard" title="COSMOS Dashboard Operativo v3" data-src="dashboard/?v=v36" scrolling="no"></iframe>
+  </section>
   <section class="panel active" id="screenType">
     <span class="hero-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="265 341 550 398"><path fill="#00293B" d="M 705.61 438.32 C 669.30 397.82 624.10 347.41 540 347.41 C 455.89 347.41 410.69 397.82 374.38 438.32 C 339.16 477.60 314.92 502.16 271.17 503.69 L 271.17 572.14 C 347.89 570.37 390.75 522.56 425.32 484.00 C 459.47 445.91 486.44 415.83 540 415.83 C 593.55 415.83 620.52 445.91 654.67 484.00 C 689.24 522.56 732.11 570.37 808.82 572.14 L 808.82 503.69 C 765.07 502.16 740.83 477.60 705.61 438.32 "/><path fill="#011B2B" d="M 600.08 548.24 C 575.85 523.17 561.23 508.03 540 508.03 C 518.76 508.03 504.14 523.17 479.91 548.25 C 438.54 591.05 369.71 662.27 271.17 664.34 L 271.17 732.77 C 398.65 730.80 483.36 643.13 529.19 595.71 C 532.04 592.76 535.88 591.13 540 591.13 C 544.11 591.13 547.95 592.76 550.88 595.79 C 596.64 643.13 681.35 730.80 808.82 732.77 L 808.82 664.34 C 710.29 662.27 641.46 591.05 600.08 548.24 "/><path fill="#003D53" d="M 333.47 366.85 C 339.23 360.78 345.56 354.12 352.39 347.22 L 271.17 347.22 L 271.17 411.53 C 292.99 409.49 309.40 392.21 333.47 366.85 "/><path fill="#003D53" d="M 746.52 367.04 C 770.59 392.40 787 409.68 808.82 411.72 L 808.82 347.41 L 727.60 347.41 C 734.44 354.32 740.76 360.98 746.52 367.04 "/></svg></span>
     <h1>Bienvenido al Simulador PDA</h1>
@@ -3089,10 +3093,13 @@ function showScreen(id){
   document.querySelectorAll('.modal-bg.show').forEach(m=>m.classList.remove('show'));
   document.querySelectorAll('section.panel').forEach(p=>p.classList.toggle('active', p.id===id));
   updatePagebar(id); setMenuOn(id);
+  if(id!=='screenDashboard' && location.hash==='#dashboard') history.replaceState(null,'',location.pathname+location.search);
+  window.dispatchEvent(new CustomEvent('cosmos:pda-screen', {detail:id}));
   window.scrollTo({top:0,behavior:'smooth'});
 }
 /* ===== Estilo Cosmos Connect: barra de página, cabecera de PDA y menú ===== */
 const PAGEBAR = {
+  screenDashboard:['Dashboard',['Inicio','Dashboard']],
   screenType:['PDA',['Inicio','PDA']], screenLanding:['Buscar PDA',['Inicio','PDA','Buscar PDA']],
   screenMaster:['Maestro de servicios',['Inicio','Servicios']], screenTemplates:['Plantillas',['Inicio','PDA','Plantillas']],
   screenRequests:['Solicitudes',['Inicio','Servicios','Solicitudes']],
@@ -3136,6 +3143,8 @@ const CC_SUBMENU = {
 };
 function ccMenu(name, btn){
   const dd = document.getElementById('ccDropdown');
+  if(name==='Dashboard'){ openOperationalDashboard(); return; }
+  if(name==='PDA' && document.getElementById('screenDashboard').classList.contains('active') && !state.categoryType){ dd.classList.remove('show'); showScreen('screenType'); return; }
   const items = CC_SUBMENU[name];
   if(!items){ dd.classList.remove('show'); toast(`${name}: fuera del alcance de este prototipo`,'info'); return; }
   if(dd.classList.contains('show') && dd.dataset.menu===name){ dd.classList.remove('show'); return; }
@@ -3149,7 +3158,7 @@ document.addEventListener('click', e=>{ const dd = document.getElementById('ccDr
   if(dd && dd.classList.contains('show') && !e.target.closest('#ccDropdown') && !e.target.closest('.cc-menu')) dd.classList.remove('show'); });
 window.addEventListener('scroll', ()=>document.getElementById('ccDropdown')?.classList.remove('show'), {passive:true});
 function setMenuOn(id){
-  const m = id==='screenTariffs' ? 'Tarifa' : (id==='screenMaster' || id==='screenRequests' || id==='screenPartners' || id==='screenVessels') ? 'Data Maestra' : id==='screenVoyages' ? 'Agenciamiento' : 'PDA';
+  const m = id==='screenDashboard' ? 'Dashboard' : id==='screenTariffs' ? 'Tarifa' : (id==='screenMaster' || id==='screenRequests' || id==='screenPartners' || id==='screenVessels') ? 'Data Maestra' : id==='screenVoyages' ? 'Agenciamiento' : 'PDA';
   document.querySelectorAll('#ccMenu button[data-menu]').forEach(b=>b.classList.toggle('on', b.dataset.menu===m));
 }
 function ccClock(){
@@ -7543,5 +7552,6 @@ try{ if(localStorage.getItem('pdaChg')!=='0') document.body.classList.add('chg-o
 </script>
 <div class="cc-dd" id="ccDropdown"></div>
 <div class="tour-layer" id="tourLayer"><div class="tour-hole" id="tourHole"></div><div class="tour-pop" id="tourPop" onclick="event.stopPropagation()"></div></div>
+<script src="dashboard-embed.js?v=v36"></script>
 </body>
 </html>
