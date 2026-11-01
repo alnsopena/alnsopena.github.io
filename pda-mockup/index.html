@@ -1209,6 +1209,11 @@
   .fac-pen-meta{font-size:12.5px;color:var(--cc-gray);margin-top:2px}
   .fac-pen-rel{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
   .fac-pen-rel button{border:1px solid var(--chg-bd);background:#fff;color:var(--chg);border-radius:6px;padding:3px 8px;font:inherit;font-size:12px;cursor:pointer}
+  /* ===== Cobranzas ===== */
+  .cb-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#E53935;vertical-align:middle}
+  .cb-dot.on{background:#2E9E4F}
+  body.chg-on .fac-zone .cb-mk{padding:18px 8px 8px}
+  .cb-chg{margin-bottom:16px}
   #aiGuide{max-height:62vh;overflow:auto}
   .fac-zone .chg-tag.fac-nb,.fac-zone .chg-tag.fac-nb.fac-pentag:hover{background:#fff;color:#6D4FC2;box-shadow:inset 0 0 0 1px #B9A5EE}
   body.chg-on .fac-zone [data-chg*="No bloqueante"]{outline:1px solid #B9A5EE!important}
@@ -1897,6 +1902,9 @@
 
   <!-- ============ DOCUMENTOS CONTABLES (Liquidación > Documentos Contables de Connect) ============ -->
   <section class="panel fac-screen fac-zone" id="screenAccDocs"><div id="fdRoot"></div></section>
+  <section class="panel fac-screen fac-zone" id="screenCobranzas"><div id="cbRoot"></div></section>
+  <section class="panel fac-screen fac-zone" id="screenDocBl"><div id="dbRoot"></div></section>
+  <section class="panel fac-screen fac-zone" id="screenOrgFin"><div id="orgRoot"></div></section>
 
   <!-- ============ SOCIOS (Data Maestra > Socio de Connect) ============ -->
   <section class="panel" id="screenPartners">
@@ -3262,7 +3270,7 @@ const CC_SUBMENU = {
   'Agenciamiento':[['Viaje',"openVoyages(null,'landing')",'<path d="M3 17l2 3h14l2-3"/><path d="M5 17V9h14v8M12 9V4M9 6h6"/>']],
   'PDA':[['PDA','backToLanding()','<circle cx="12" cy="12" r="8"/><path d="M9 9h4a2 2 0 0 1 0 4h-3v3"/>']],
   'Tarifa':[['Tarifa',"openTariffs(null,'landing')",'<circle cx="12" cy="12" r="8"/><path d="M14.5 9.5c-.4-.9-1.4-1.5-2.5-1.5-1.5 0-2.5.8-2.5 2s1 1.6 2.5 2 2.5.9 2.5 2-1 2-2.5 2c-1.2 0-2.2-.6-2.6-1.6M12 6.5v11"/>']],
-  'Data Maestra':[['Catálogo','vyOut()','<path d="M4 6h16M4 12h10M4 18h7M16 16l2 2 4-4"/>'],['Organización','vyOut()','<path d="M4 21V7l8-4 8 4v14M9 21v-6h6v6M8 10h.01M12 10h.01M16 10h.01"/>'],['Socio',"openPartners(null,'landing')",'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.5 1.7-2.2 3-2.2s2.4.7 3 2.2M14 10h4M14 13h3"/>'],['Servicios',"openMaster(null,'landing')",'<rect x="4" y="7" width="16" height="12" rx="2"/><path d="M9 7V5h6v2M4 12h16"/>'],
+  'Data Maestra':[['Catálogo','vyOut()','<path d="M4 6h16M4 12h10M4 18h7M16 16l2 2 4-4"/>'],['Organización','openOrgFin()','<path d="M4 21V7l8-4 8 4v14M9 21v-6h6v6M8 10h.01M12 10h.01M16 10h.01"/>',true],['Socio',"openPartners(null,'landing')",'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.5 1.7-2.2 3-2.2s2.4.7 3 2.2M14 10h4M14 13h3"/>'],['Servicios',"openMaster(null,'landing')",'<rect x="4" y="7" width="16" height="12" rx="2"/><path d="M9 7V5h6v2M4 12h16"/>'],
     ['Nave',"openVessels(null,'landing')",'<path d="M3 17l2 3h14l2-3"/><path d="M5 17V9h14v8M12 9V4M9 6h6"/>'],['Tipo de cambio','vyOut()','<path d="M4 8h13l-3-3M20 16H7l3 3"/>'],['Series','vyOut()','<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M10 8l-1 8M15 8l-1 8M8 11h9M7 14h9"/>'],
     ['Plantilla Email','vyOut()','<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>'],['Días No Laborables','vyOut()','<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>']]
 };
@@ -3283,7 +3291,7 @@ document.addEventListener('click', e=>{ const dd = document.getElementById('ccDr
   if(dd && dd.classList.contains('show') && !e.target.closest('#ccDropdown') && !e.target.closest('.cc-menu')) dd.classList.remove('show'); });
 window.addEventListener('scroll', ()=>document.getElementById('ccDropdown')?.classList.remove('show'), {passive:true});
 function setMenuOn(id){
-  const m = id==='screenDashboard' ? 'Dashboard' : id==='screenTariffs' ? 'Tarifa' : (id==='screenMaster' || id==='screenRequests' || id==='screenPartners' || id==='screenVessels') ? 'Data Maestra' : id==='screenVoyages' ? 'Agenciamiento' : (id==='screenProvisions' || id==='screenAccDocs') ? 'Liquidación' : 'PDA';
+  const m = id==='screenDashboard' ? 'Dashboard' : id==='screenTariffs' ? 'Tarifa' : (id==='screenMaster' || id==='screenRequests' || id==='screenPartners' || id==='screenVessels') ? 'Data Maestra' : id==='screenVoyages' ? 'Agenciamiento' : (id==='screenProvisions' || id==='screenAccDocs') ? 'Liquidación' : id==='screenCobranzas' ? 'Cobranzas' : id==='screenDocBl' ? 'Documentación' : id==='screenOrgFin' ? 'Data Maestra' : 'PDA';
   document.querySelectorAll('#ccMenu button[data-menu]').forEach(b=>b.classList.toggle('on', b.dataset.menu===m));
 }
 function ccClock(){
@@ -7184,6 +7192,7 @@ function seedPartners(){
     p.doc = docFor(c.name, c.tax); p.erp = 'C' + p.doc; p.moneda = 'USD';
     PARTNERS.push(p);
   });
+  cbSocioCtas();
   /* Ejemplo de preregistro desde una PDA */
   const name = 'SERVICIOS PORTUARIOS DEL SUR S.A.C.';
   if(!state.suppliers.includes(name)) state.suppliers.push(name);
@@ -7342,7 +7351,7 @@ function renderPtEditor(){
         <td>${cell('contactos',i,'movil',c.movil)}</td><td>${cell('contactos',i,'email',c.email)}</td><td>${cell('contactos',i,'dir',c.dir)}</td>${del('contactos',i)}</tr>`).join('') || empty(7,'Sin contactos.')}
     </tbody></table></div>`;
   else body = `<div class="results-table"><table><thead><tr><th>Banco</th><th>Tipo</th><th>Cuenta</th><th>Moneda</th>${edit?'<th></th>':''}</tr></thead><tbody>
-      ${d.bancos.map((b,i)=>`<tr><td>${cell('bancos',i,'banco',b.banco)}</td><td>${csel('bancos',i,'tipo',PT_BANK_TYPES,b.tipo)}</td><td>${cell('bancos',i,'cuenta',b.cuenta)}</td>
+      ${d.bancos.map((b,i)=>`<tr><td>${csel('bancos',i,'banco',['',...CB_BANKS],b.banco)}</td><td>${csel('bancos',i,'tipo',PT_BANK_TYPES,b.tipo)}</td><td>${cell('bancos',i,'cuenta',b.cuenta)}</td>
         <td>${csel('bancos',i,'moneda',['PEN','USD'],b.moneda)}</td>${del('bancos',i)}</tr>`).join('') || empty(5,'Sin cuentas.')}
     </tbody></table></div>`;
   if(edit) body += `<div style="margin-top:10px"><button class="btn-add" onclick="ptAddRow('${tab}')">+ ${tab==='roles'?'Rol':tab==='contactos'?'Contacto':'Cuenta'}</button></div>`;
@@ -7695,7 +7704,7 @@ function fChgBtn(){ return `<button type="button" class="cc-btn chg-btn" onclick
 function facToggleChg(){ document.body.classList.toggle('chg-on'); try{ localStorage.setItem('pdaChg', chgOn()?'1':'0'); }catch(e){} facRefresh(); }
 function facRefresh(){
   const id = document.querySelector('section.panel.active')?.id;
-  if(id==='screenProvisions') renderFp(); else if(id==='screenAccDocs') renderFd();
+  if(id==='screenProvisions') renderFp(); else if(id==='screenAccDocs') renderFd(); else if(id==='screenCobranzas') renderCb();
 }
 function fF(label, inner, cls){ return `<div class="fac-f ${cls||''}"><label>${label}</label>${inner}</div>`; }
 function fRo(label, val, cls){ return fF(label, `<input disabled value="${esc(val??'')}">`, cls); }
@@ -8051,7 +8060,7 @@ function fdListHtml(){
   const list = all.slice((FD.page-1)*FD.size, FD.page*FD.size);
   return `<div class="fac-card">
     <div class="fac-head"><div><h3>Buscar Documentos Contables</h3><div class="fac-sub">Ingrese datos para buscar</div></div>
-      <div class="fac-acts"><button type="button" class="cc-btn" onclick="toast('Notificar Devolución: se mantiene como en Connect','info')">Notificar Devolución</button><button type="button" class="cc-btn" onclick="fdCoverStart()">Generar Cover</button><button type="button" class="cc-btn" onclick="fdNewModal()">+ Nuevo</button></div></div>
+      <div class="fac-acts"><button type="button" class="cc-btn" onclick="cbNdOpen()">Notificar Devolución</button><button type="button" class="cc-btn" onclick="fdCoverStart()">Generar Cover</button><button type="button" class="cc-btn" onclick="fdNewModal()">+ Nuevo</button></div></div>
     <div class="fac-g4">
       ${fF('Número de Documento', `<input placeholder="Ingresar número de documento" value="${esc(f.num)}" onchange="fdSet('num',this.value)">`)}
       ${fF(`Documento a Emitir ${fm('Modifica',FAC_HU.lc,'I-040','PEN-I167-01')}`, fSel(FD_TYPES, f.tipo, `onchange="fdSet('tipo',this.value)"`, 'Elegir documento a emitir'))}
@@ -8068,7 +8077,7 @@ function fdListHtml(){
     ${fRemoved('Documento a Emitir', FAC_HU.lc, 'I-040', [['Nota de Abono','Extornar, sin PDF']])}
     ${fRemoved('Estado del Documento', FAC_HU.num, 'I-042', [['Provisionado','Registro de documento']])}
   </div>
-  <div class="fac-card"><div class="fac-head"><h3>Resultados (${all.length})</h3><div class="fac-acts"><button type="button" class="cc-btn" onclick="toast('Notificar Devolución: se mantiene como en Connect','info')">Notificar Devolución</button><button type="button" class="cc-btn" onclick="fdNewModal()">Nuevo</button></div></div>
+  <div class="fac-card"><div class="fac-head"><h3>Resultados (${all.length})</h3><div class="fac-acts"><button type="button" class="cc-btn" onclick="cbNdOpen()">Notificar Devolución</button><button type="button" class="cc-btn" onclick="fdNewModal()">Nuevo</button></div></div>
     <div class="fac-scroll"><table class="fac-tbl fac-fix"><thead><tr>${f.sinLote?'<th></th>':''}<th>Número de Documento</th><th>Documento a Emitir</th><th>Facturar a</th><th>Número de Lote</th><th>Pagado</th><th>Tipo de Operación</th><th>Origen</th><th>Fecha de Emisión</th><th>Moneda</th><th class="num">Tipo de Cambio</th><th class="num">Neto PEN</th><th class="num">IGV PEN</th><th class="num">Total PEN</th><th class="num">Neto USD</th><th class="num">IGV USD</th><th class="num">Total USD</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
       ${list.map(d=>`<tr>${f.sinLote?`<td><input type="checkbox" style="width:auto" ${d.status==='SAP OK'?'':'disabled'} ${FD.sel2[d.id]?'checked':''} onchange="FD.sel2[${d.id}]=this.checked"></td>`:''}<td><button type="button" class="fac-link" onclick="fdOpen(${d.id})">${esc(d.num)}</button></td><td>${esc(d.tipo)}</td><td>${esc(d.fact)}</td><td>${esc(d.lote||'-')}</td><td>${d.paid}</td><td>${esc(d.tipoOp)}</td><td>${esc(d.orig||'-')}</td><td>${fmtDate(d.date)}</td><td>${d.cur}</td><td class="num">${d.tc.toFixed(2)}</td>${fdCols(d)}<td>${fdStatusCell(d)}</td><td>${fdRowActions(d)}</td></tr>`).join('') || `<tr><td colspan="19" class="fac-empty">No se encontraron resultados con los criterios seleccionados</td></tr>`}
     </tbody></table></div>
@@ -8633,6 +8642,581 @@ const FAC_GUIDES = [
 ];
 GUIDES.screenProvisions = FAC_GUIDES;
 GUIDES.screenAccDocs = FAC_GUIDES;
+/* ============================================================
+   COBRANZAS: Validación de pagos, Medios de pago y Reportes
+   Base: Connect actual. Morado = cambio sustentado en ticket y HU.
+   Datos ficticios, solo en memoria. Listas: catálogos de Data Maestra.
+============================================================ */
+/* D3: resultados tal como están en cert. Para cambiar las opciones, editar solo esta lista. */
+const CB_RESULTS = ['Pendiente de revisión','Aprobado','Aprobado con observaciones','Rechazado'];
+const CB_APPROVED = ['Aprobado','Aprobado con observaciones'];
+/* Catálogo BANK de Data Maestra, en su orden */
+const CB_BANKS = ['Alfin Banco','BanBif','Banco de Comercio','Banco de Crédito del Perú','Banco Falabella','Banco GNB Perú','Banco Pichincha','Banco Ripley','Bank of China (Perú)','BBVA Perú','Citibank del Perú','ICBC Perú Bank','Interbank','Mibanco','Santander Perú','Scotiabank Perú','Banco de la Nacion'];
+/* Organización > Información Financiera: mismos bancos que cert, cuentas ficticias */
+const CB_ORG_FIN = [
+  {banco:'BBVA Perú', tipo:'Cuenta corriente', cuenta:'000-0000001-0-01', swift:'EXAMPLEPE', erp:'BK-0001', moneda:'Dólar estadounidense', cover:true},
+  {banco:'Banco de Crédito del Perú', tipo:'Cuenta corriente', cuenta:'000-0000002-0-02', swift:'EXAMPLEPE', erp:'BK-0002', moneda:'Dólar estadounidense', cover:false},
+  {banco:'Scotiabank Perú', tipo:'Cuenta corriente', cuenta:'000-0000003-0-03', swift:'EXAMPLEPE', erp:'BK-0003', moneda:'Dólar estadounidense', cover:false}];
+const CB_ORDER_ST = ['Creada','Pendiente de validación','Validada','Rechazado','Anulado'];
+const CB_METHODS = ['Transferencia bancaria','ASBANC','Crédito'];
+const CB_CURS = [['PEN','Sol peruano'],['USD','Dólar estadounidense']];
+const CB_BL_PAY = ['Listo para facturar','Liquidación pendiente','Liquidación pagada','Liquidación crédito'];
+const CB_BL_ST = ['POR REVISAR','APROBADO','TRANSMITIDO A SUNAT','POR RECTIFICAR','Anulado'];
+const CB_HU = {val:'HU-FAC-11', amp:'HU-FAC-11, ampliación en Monday 15/10', none:'Sin HU, bitácora Monday', ti:'HU-TI-01'};
+Object.assign(FAC_PEN, {
+  'PEN-I158-01':{t:'I-158',hu:CB_HU.val,q:'¿Qué eventos, destinatarios y datos incluye el aviso de constancia, y cómo se identifica una nueva versión o un duplicado?',p:'Se avisa cada vez que el cliente carga o reemplaza una constancia. El aviso llega a la casilla de Cobranzas e indica pago, cliente, documento y versión. Un reemplazo se marca como nueva versión y el duplicado exacto no genera otro aviso.',w:'Cobranzas'},
+  'PEN-I158-02':{t:'I-158',hu:CB_HU.val,q:'¿Qué campos de referencia bancaria se mantienen y cuáles son las reglas y perfiles del reverso en Connect, SAP y el documento?',p:'Revertir validación solo en operaciones aprobadas, con motivo obligatorio y registro de quién y cuándo. En Connect la operación pasa a Revertido y la orden vuelve a Pendiente de validación. En SAP no se revierte sola: se gestiona allí. El documento no se anula de forma automática. La HU no autoriza automatizar sin reglas.',w:'Cobranzas y SAP'},
+  'PEN-I158-03':{t:'I-158',hu:CB_HU.val,q:'¿Qué columnas, fecha de corte, zona horaria, filtros y formato tiene el reporte diario?',p:'Una fila por operación validada: fecha de validación, orden, operación, cliente, documento, moneda, monto registrado, monto aplicado, resultado, motivo, usuario y correo. Filtro por rango de fechas, hora de Lima y Excel.',w:'Cobranzas'},
+  'PEN-I158-04':{t:'I-158',hu:CB_HU.amp,q:'Definir destinatarios, plantilla, motivo y evento de envío al cliente para cada resultado de validación, y contemplar reintentos sin duplicar correos.',p:'Al confirmar se muestra la vista previa del correo automático con orden, estado y el motivo como fundamento. Destinatario: contacto Cobranzas del socio. Plantilla: la que defina I-068. El reenvío avisa cuántas veces ya salió. "Observado" se comunica como Aprobado con observaciones hasta cerrar PEN-UAT122-06.',w:'Cobranzas'},
+  'PEN-I158-06':{t:'I-158',hu:CB_HU.amp,q:'Delimitar el reporte diario de confirmaciones frente al reporte de recaudación EPAY.',p:'El reporte diario lista validaciones hechas por Cobranzas. Recaudación EPAY lista lo que entró por ese canal, esté o no validado. Son dos vistas separadas y un mismo abono no suma dos veces en el total diario.',w:'Cobranzas'},
+  'PEN-JENNY-I158-01':{t:'I-158',hu:CB_HU.val,q:'Cobranza debe confirmar responsable receptor y alcance de validación de pagos, reverso, referencias bancarias y reporte diario.',p:'Receptor: área de Cobranzas. Alcance dibujado: validación con datos confirmados, reverso con motivo, bancos separados y reporte diario como vista de Reportes.',w:'Cobranzas'},
+  'PEN-UAT122-01':{t:'I-177',hu:CB_HU.amp,q:'Contabilidad y Cobranzas deben aprobar la fecha efectiva de abono, el corte de 20:00, el tratamiento interbancario y los permisos de confirmación de operación y banco receptor.',p:'Campos propios para operación confirmada, fecha efectiva y banco receptor. Lo declarado por el cliente queda como antecedente y no se sobrescribe. Después de las 20:00 o en interbancarios se muestra un aviso, sin regla automática.',w:'Contabilidad y Cobranzas'},
+  'PEN-UAT122-02':{t:'I-177',hu:CB_HU.amp,q:'Definir filtros y columnas del Excel de estados de documentos emitidos y delimitar con I-158 el alcance compartido.',p:'Exporta lo que muestra la búsqueda, con sus filtros. Columnas: orden, documento, cliente, condición, estado de la orden, moneda, monto total, conciliado, saldo y estado del documento.',w:'Cobranzas'},
+  'PEN-UAT122-04':{t:'I-177',hu:CB_HU.amp,q:'Resolver banco de origen solicitado en el Word frente a banco receptor requerido para conciliación, conservando ambos conceptos.',p:'Dos desplegables. Banco de origen: catálogo Bancos (Perú) de Data Maestra. Banco receptor: bancos de Organización > Información Financiera de Cosmos. No se define cuál va a conciliación y SAP. Ojo: en Nuevo Pago, "Banco origen" hoy lista los bancos de Cosmos.',w:'Cobranzas y SAP'},
+  'PEN-UAT122-05':{t:'I-177',hu:CB_HU.amp,q:'Validar con Cobranzas y SAP la solicitud de mapear fecha de pago a fecha de vencimiento, sin sustituir la fecha sin regla aprobada.',p:'En reunión se pidió que la fecha de pago digitada por Cobranzas migre a SAP como fecha de vencimiento. Se indica ese destino junto a la fecha efectiva. No se reemplaza hasta tener el mapeo aprobado.',w:'Cobranzas y SAP'},
+  'PEN-UAT122-06':{t:'I-177',hu:CB_HU.amp,q:'Definir autorización para el cambio excepcional USD/PEN, casos de Aprobado con observaciones, obligatoriedad del motivo y efecto contable.',p:'USD por defecto, porque todos los VB están en dólares. Soles solo en casos puntuales: cambiar a PEN pide marcar la aprobación de jefatura. Se conservan las cuatro opciones actuales. En el mockup: motivo obligatorio si el resultado no es Aprobado; Aprobado y Aprobado con observaciones concilian. Abierto: en qué casos aplica Aprobado con observaciones y por qué Observaciones no se deshabilita cuando el pago se marca Aprobado. No hay regla definida.',w:'Jefatura de Cobranzas y Contabilidad'},
+  'PEN-ABO-01':{t:'I-180',hu:CB_HU.none,q:'Confirmar fuentes y relación entre abono, documento y socio; identificar la información que no llega completa a SAP y el tratamiento de anulaciones y reversiones.',p:'Un abono tiene una o varias aplicaciones, cada una con documento, socio e importe. El total del abono se cuenta una vez. Una reversión deja el aplicado en cero y sube el saldo del documento. La consulta no modifica aplicaciones. El dato de abono entre socios no viaja completo a SAP; queda para evaluación del equipo de proyectos.',w:'Cobranzas y SAP'},
+  'PEN-ABO-02':{t:'I-180',hu:CB_HU.none,q:'Aprobar filtros, permisos y ejemplos de abono aplicado a uno o varios documentos o socios, y definir dónde se consulta en Connect.',p:'Opción Medios de pago bajo Cobranzas, más enlace desde el detalle de la orden. Filtros: tipo, serie, número y socio. Estructura de Blue Ship: Documento Principal, Documentos Relacionados y Medios de Pago.',w:'Cobranzas'},
+  'PEN-ABO-03':{t:'I-180',hu:CB_HU.none,q:'Evaluar viabilidad y vincular HU vigente específica para esta consulta.',p:'Falta HU propia. Se dibuja como consulta para evaluar viabilidad con la fuente real. Parciales, anulaciones y reversiones se muestran solo en lectura.',w:'Cobranzas y TI'},
+  'PEN-REP-01':{t:'I-181',hu:CB_HU.none,q:'Cobranzas debe confirmar columnas, filtros, estados, fecha de corte y ejemplos de resultado de los cuatro reportes. El SQL del Word es referencia, no prueba de equivalencia.',p:'Columnas tomadas de los ejemplos de Blue Ship, con etiquetas legibles. Filtro por rango de fechas en Recaudación EPAY y Detracción. Exportación a Excel en todos.',w:'Cobranzas'},
+  'PEN-REP-02':{t:'I-181',hu:CB_HU.none,q:'Evaluar fuentes, conciliación de importes y viabilidad y plazos; verificar si el reporte de provisiones existente satisface el alcance y habilitar acceso.',p:'Se dibuja como vista propia con el formato de Blue Ship. No se ubicó en Connect; en la reunión del 15/10 se indicó que existía: confirmar. BL pendientes suma Monto USD, que el ejemplo no trae. Los reportes se habilitan para Cobranzas y siguen en evaluación técnica y de plazos.',w:'Cobranzas y TI'},
+  'PEN-REP-03':{t:'I-181',hu:CB_HU.none,q:'Vincular la HU vigente que cubra este paquete. No se identificó una ficha completa en la revisión.',p:'Falta crear o vincular una HU para los cuatro reportes.',w:'TI'},
+  'PEN-CRE-01':{t:'I-178',hu:CB_HU.none,q:'Aprobar permisos ATC, días, límite, excepciones y controles de crédito; identificar catálogo y códigos SAP de CONTADO DOC y CONTADO I.',p:'CONTADO DOC y CONTADO I se agregan al catálogo Condición pago, que hoy solo tiene Contado y Crédito. Figuran como CONTADO pero funcionan como crédito. Códigos SAP por confirmar. Crédito: en reunión se acordó que ATC active una casilla sujeto a crédito con días y límite, en el maestro de clientes; aquí solo se muestra la referencia, sin construirla. Abierto: quién define la condición y en qué etapa. El cliente se registra con una condición inicial y Cobranzas decide; falta definir si la indica Documentación, el cliente o ATC al emitir. La inclusión en la entrega está por confirmar con el proveedor.',w:'ATC, Facturación y Cobranzas'},
+  'PEN-CRE-02':{t:'I-178',hu:CB_HU.none,q:'Confirmar vencimiento, representación impresa y estados de cuenta por cobrar y conciliación para ambas condiciones.',p:'CONTADO DOC: para saldo a favor, NC pendiente de aplicar, inconsistencia en el número de BL, o pagos parciales o mayores al monto. Requiere conciliación manual con varios documentos de pago. Ejemplo: factura USD 300 = saldo a favor USD 100 + abono USD 200, se cancela solo con USD 300 conciliados. CONTADO I: servicios financiados por VB en operaciones logísticas integrales. Cosmos paga el VB a la línea al contado y traslada el costo al cliente como crédito; Cobranzas controla la cuenta por cobrar hasta su propia cancelación.',w:'Facturación y Cobranzas'},
+  'PEN-CRE-03':{t:'I-178',hu:CB_HU.none,q:'Vincular HU vigente específica. HU-DM-01 es dependencia de datos maestros, no cobertura integral de este alcance.',p:'Falta crear o vincular una HU para crédito, CONTADO DOC y CONTADO I.',w:'TI'},
+  'PEN-I164-01':{t:'I-164',hu:CB_HU.ti,q:'Identificar liquidación o documento y bloqueantes previos, ejecutar UAT-E2E-124 y adjuntar evidencia.',p:'Se dibuja la vista previa para definir el resultado esperado. No acredita que la alerta funcione: la prueba sigue bloqueada y sin evidencia.',w:'Cobranzas'},
+  'PEN-I164-02':{t:'I-164',hu:CB_HU.ti,q:'Definir evento gatillador exacto, canal y destinatarios, y comportamiento con saldo cero o cierre repetido.',p:'Se avisa al determinarse un saldo en la liquidación, con documento, cliente, monto, moneda y tipo. Saldo cero no avisa. Un cierre repetido sin cambio de saldo no duplica. Notificar Devolución manual se mantiene mientras se decide.',w:'Cobranzas y Finanzas'},
+  'PEN-JENNY-I164-01':{t:'I-164',hu:CB_HU.ti,q:'Finanzas debe validar la necesidad del aviso, responsable, evento gatillador, destinatarios, canal y resultados para saldos a cobrar o devolver.',p:'Destinatario: casilla de Cobranzas. Canal: correo y consulta en Validación de pagos. Tipo: A cobrar o A devolver. Se trata Cobranzas y Tesorería como el mismo equipo, por confirmar.',w:'Finanzas'}
+});
+const CB = {seeded:false, tab:'val', view:'list', sel:null, f:{num:'',from:'',to:'',met:'',cur:'',est:'Pendiente de validación'}, page:1, size:10,
+  orders:[], bls:[], avisos:[], abonos:[], epay:[], np:{f:{num:'',doc:'',cli:'',est:'Creada'},pick:{}}, d:null,
+  mp:{f:{tipo:'Factura',serie:'F005',num:'00031011',socio:''}, doc:'F005-00031011'}, rep:'bl',
+  rf:{bl:{linea:''}, prov:{tipo:'',serie:'',num:'',from:'',to:''}, epay:{from:'',to:''}, det:{from:'',to:''}, dia:{from:'',to:''}}};
+/* Documento del ejemplo de I-178: no existe en Facturación y solo se usa en Cobranza */
+const CB_EJ_DOC = {num:'F005-00030995', tipo:'Factura', fact:'ANDES MINING EXPORT S.A.', cur:'USD', total:300, aFavor:100, abono:200};
+function cbSocioFind(n){ const t = normTxt(n).split(' ').slice(0,2).join(' '); return PARTNERS.find(p=>normTxt(p.largo)===normTxt(n)) || PARTNERS.find(p=>normTxt(p.largo).startsWith(t)); }
+function cbCta(n){ return ({ZIM:'000-1000011-0-11',MAERSK:'000-1000012-0-12',ANDES:'000-1000013-0-13'})[String(n).split(' ')[0]] || '-'; }
+function cbSocioCtas(){
+  [['ZIM INTEGRATED SHIPPING SERVICE LTD','BBVA Perú'],['MAERSK LINE A/S','Interbank'],['ANDES MINING EXPORT S.A.','Banco de Crédito del Perú']].forEach(([n,b])=>{
+    const p = cbSocioFind(n); if(p && !p.bancos.length) p.bancos.push({banco:b, tipo:'Cuenta corriente', cuenta:cbCta(n), moneda:'USD'}); });
+}
+function cbOpNew(o){ return {id:'', num:'', date:'', banco:'', cta:'-', inf:0, reg:0, apl:0, cur:'USD', st:'Pendiente de revisión', by:'', at:'', motivo:'', conf:null, mail:{n:0,at:''}, ab:'', hist:[], ...o}; }
+function cbSeed(){
+  if(CB.seeded) return; CB.seeded = true;
+  if(!FP.list.length) fpSeed(); if(!FD.list.length) fdSeed();
+  const tot = n=>fdTot(fdByNum(n)), z = 'ZIM INTEGRATED SHIPPING SERVICE LTD', m = 'MAERSK LINE A/S', a = 'ANDES MINING EXPORT S.A.', u = 'Usuario de Cobranzas';
+  const box = facVoy('BOX ENDURANCE'), pac = facVoy('PACIFIC HORIZON'), ree = facVoy('REEFER ATLANTIC'), oce = facVoy('OCEAN MERIDIAN');
+  const conf = (num,date,bo,br,cur)=>({num,date,bo,br,cur});
+  const bl = (n,v,cons,lin,st,tp,mani,base)=>({n,nave:v.nave,nro:v.nro,cons,lin,st,tp,mani,emi:base,pc:'Kingston',pd:'Callao',pf:'Callao',ind:'Importación',usd:0,liq:''});
+  CB.bls = [bl('ZIMUBOX0000011',box,'PACIFIC CHEMICALS LTD','ZIM','APROBADO','House B/L','2026-0411','2026-09-08'), bl('ZIMUBOX0000012',box,'ANDES MINING EXPORT S.A.','ZIM','TRANSMITIDO A SUNAT','House B/L','2026-0411','2026-09-08'),
+    bl('ZIMUREE0000031',ree,'VALERO MARKETING & SUPPLY','ZIM','APROBADO','Master B/L','2026-0432','2026-09-11'), bl('DMFPPAC0000115',pac,'REPSOL PERU','DMFP','APROBADO','House B/L','2026-0398','2026-09-02'),
+    bl('DMFPPAC0000116',pac,'PETROPERU S.A.','DMFP','POR RECTIFICAR','House B/L','2026-0398','2026-09-02'), bl('ZIMUOCE0000027',oce,'TRAFIGURA PERU','ZIM','TRANSMITIDO A SUNAT','House B/L','2026-0440','2026-09-13')];
+  const liq = (n,tipo,b,monto,cur,st)=>({n,tipo,bl:b,monto,cur,st});
+  CB.orders = [
+    {n:'PO-00301', reg:'2026-10-21', met:'Transferencia bancaria', cond:'Contado', est:'Pendiente de validación', cur:'USD', total:tot('F005-00031014'), doc:'F005-00031014', cli:z,
+      ops:[cbOpNew({id:'a', num:'000111221', date:'2026-10-20', banco:'BBVA Perú', cta:cbCta(z), inf:236, apl:236, late:true})], liqs:[liq('LIQ0000000301','Documentación','ZIMUBOX0000011',236,'USD','Pendiente de confirmación')]},
+    {n:'PO-00302', reg:'2026-10-22', met:'Transferencia bancaria', cond:'CONTADO DOC', est:'Pendiente de validación', cur:'USD', total:CB_EJ_DOC.total, doc:CB_EJ_DOC.num, cli:a,
+      ops:[cbOpNew({id:'a', num:'000111300', date:'2026-10-10', banco:'Banco de Crédito del Perú', cta:cbCta(a), inf:100, reg:100, apl:100, st:'Aprobado', by:u, at:'2026-10-11T09:30:00', conf:conf('000111300','2026-10-10','Banco de Crédito del Perú','BBVA Perú','USD'), concepto:'Saldo a favor'}),
+           cbOpNew({id:'b', num:'000111301', date:'2026-10-22', banco:'Banco de Crédito del Perú', cta:cbCta(a), inf:200, apl:200, concepto:'Nuevo abono'})], liqs:[liq('LIQ0000000302','Documentación','ZIMUBOX0000012',300,'USD','Pendiente de confirmación')]},
+    {n:'PO-00303', reg:'2026-10-23', met:'Transferencia bancaria', cond:'CONTADO I', est:'Pendiente de validación', cur:'USD', total:tot('F005-00031013'), doc:'F005-00031013', cli:z,
+      ops:[cbOpNew({id:'a', num:'000111330', date:'2026-10-23', banco:'BBVA Perú', cta:cbCta(z), inf:590, apl:590})], liqs:[liq('LIQ0000000303','Documentación','ZIMUREE0000031',590,'USD','Pago Pendiente')]},
+    {n:'PO-00304', reg:'2026-10-24', met:'ASBANC', cond:'Contado', est:'Pendiente de validación', cur:'USD', total:322, doc:'', cli:m,
+      ops:[cbOpNew({id:'a', num:'ASB-000441', date:'2026-10-24', banco:'Banco de Crédito del Perú', inf:322, apl:322})], liqs:[liq('LIQ0000000304','Sobreestadía','DMFPPAC0000116',322,'USD','Pendiente de confirmación')]},
+    {n:'PO-00305', reg:'2026-10-02', met:'Crédito', cond:'Crédito', est:'Validada', cur:'PEN', total:tot('F005-00031012'), doc:'F005-00031012', cli:z, ops:[], liqs:[liq('LIQ0000000305','Documentación','ZIMUOCE0000027',tot('F005-00031012'),'PEN','Pago Pendiente')], credito:true},
+    {n:'PO-00306', reg:'2026-09-20', met:'Transferencia bancaria', cond:'Contado', est:'Pendiente de validación', cur:'USD', total:tot('F005-00031011'), doc:'F005-00031011', cli:z,
+      ops:[cbOpNew({id:'a', num:'000555111', date:'2026-09-20', banco:'BBVA Perú', cta:cbCta(z), inf:2826, reg:2826, apl:2000, st:'Aprobado', by:u, at:'2026-10-30T11:05:00', ab:'AB-1', conf:conf('000555111','2026-09-20','BBVA Perú','BBVA Perú','USD'), mail:{n:1,at:'2026-10-30T11:06:00'}}),
+           cbOpNew({id:'b', num:'000555140', date:'2026-09-28', banco:'BBVA Perú', cta:cbCta(z), inf:1000, reg:1000, apl:1000, st:'Aprobado', by:u, at:'2026-10-30T11:20:00', ab:'AB-2', conf:conf('000555140','2026-09-28','BBVA Perú','Banco de Crédito del Perú','USD'), mail:{n:1,at:'2026-10-30T11:21:00'}})],
+      liqs:[liq('LIQ0000000306','Documentación','ZIMUBOX0000012',tot('F005-00031011'),'USD','Pendiente de confirmación')]},
+    {n:'PO-00307', reg:'2026-09-20', met:'Transferencia bancaria', cond:'Contado', est:'Validada', cur:'USD', total:tot('F005-00031010'), doc:'F005-00031010', cli:m,
+      ops:[cbOpNew({id:'a', num:'000555111', date:'2026-09-20', banco:'BBVA Perú', cta:cbCta(z), inf:2826, reg:2826, apl:826, st:'Aprobado', by:u, at:'2026-10-30T11:08:00', ab:'AB-1', conf:conf('000555111','2026-09-20','BBVA Perú','BBVA Perú','USD'), mail:{n:1,at:'2026-10-30T11:09:00'}})],
+      liqs:[liq('LIQ0000000307','Documentación','DMFPPAC0000115',tot('F005-00031010'),'USD','Pago confirmado')]},
+    {n:'PO-00308', reg:'2026-10-05', met:'Transferencia bancaria', cond:'Contado', est:'Rechazado', cur:'USD', total:450, doc:'', cli:m,
+      ops:[cbOpNew({id:'a', num:'000222001', date:'2026-10-05', banco:'Interbank', cta:cbCta(m), inf:450, st:'Rechazado', motivo:'Comprobante ilegible', by:u, at:'2026-10-30T15:40:00', conf:conf('000222001','2026-10-05','Interbank','','USD'), mail:{n:1,at:'2026-10-30T15:41:00'}})], liqs:[]},
+    {n:'PO-00309', reg:'2026-10-28', met:'Transferencia bancaria', cond:'Contado', est:'Creada', cur:'USD', total:180, doc:'', cli:m, ops:[], liqs:[]},
+    {n:'PO-00310', reg:'2026-09-30', met:'Transferencia bancaria', cond:'Contado', est:'Anulado', cur:'USD', total:95, doc:'', cli:a, ops:[], liqs:[]}];
+  CB.orders.forEach(o=>o.hist = [{ts:o.reg+'T10:00:00', user:'Portal del cliente', prev:'', next:o.est, comment:'Carga de ejemplo'}]);
+  CB.abonos = [
+    {id:'AB-1', tipo:'Transferencia bancaria', num:'000555111', cta:cbCta(z), banco:'BBVA Perú', monto:2826, cur:'USD', date:'2026-09-20', obs:'Abono distribuido', apps:[{doc:'F005-00031011',socio:z,monto:2000},{doc:'F005-00031010',socio:m,monto:826}]},
+    {id:'AB-2', tipo:'Transferencia bancaria', num:'000555140', cta:cbCta(z), banco:'BBVA Perú', monto:1000, cur:'USD', date:'2026-09-28', obs:'Pago parcial', apps:[{doc:'F005-00031011',socio:z,monto:1000}]},
+    {id:'AB-3', tipo:'Transferencia bancaria', num:'000555170', cta:cbCta(z), banco:'BBVA Perú', monto:776, cur:'USD', date:'2026-10-02', obs:'Revertido: operación no encontrada', apps:[{doc:'F005-00031011',socio:z,monto:776,rev:true}]},
+    {id:'AB-4', tipo:'ASBANC', num:'ASB-000400', cta:'-', banco:'Banco de Crédito del Perú', monto:2600.04, cur:'USD', date:'2026-09-19', obs:'Abono único', apps:[{doc:'LC51-00000009',socio:z,monto:2600.04}]}];
+  CB.avisos = [
+    {tipo:'Constancia', order:'PO-00301', op:'000111221', doc:'F005-00031014', cli:z, monto:236, cur:'USD', at:'2026-10-21T08:42:00', ver:2},
+    {tipo:'Constancia', order:'PO-00302', op:'000111301', doc:CB_EJ_DOC.num, cli:a, monto:200, cur:'USD', at:'2026-10-22T16:10:00', ver:1},
+    {tipo:'Saldo', doc:'F005-00031012', cli:z, monto:320, cur:'PEN', at:'2026-10-26T12:00:00', dir:'A devolver'},
+    {tipo:'Saldo', doc:'F005-00031011', cli:z, monto:776, cur:'USD', at:'2026-10-30T11:25:00', dir:'A cobrar'}];
+  CB.epay = [
+    {bl:'ZIMUBOX0000011', mas:'ZIMUBOX0000010', at:'Sí', lin:'ZIM', doc:'F005-00031014', id:'EP-20001', cli:z, reg:'2026-10-20', cur:'USD', mbl:236, op:'EP-778001', ban:'Banco de Crédito del Perú', mp:236, fp:'2026-10-20', res:'Portal del cliente', con:'Visto bueno'},
+    {bl:'DMFPPAC0000115', mas:'DMFPPAC0000110', at:'Sí', lin:'DMFP', doc:'F005-00031010', id:'EP-20002', cli:m, reg:'2026-10-20', cur:'USD', mbl:826, op:'EP-778002', ban:'Interbank', mp:826, fp:'2026-10-20', res:'Portal del cliente', con:'Visto bueno'},
+    {bl:'ZIMUREE0000031', mas:'ZIMUREE0000030', at:'No', lin:'ZIM', doc:'F005-00031013', id:'EP-20003', cli:z, reg:'2026-10-23', cur:'USD', mbl:590, op:'EP-778090', ban:'BBVA Perú', mp:590, fp:'2026-10-23', res:'Portal del cliente', con:'Sobreestadía'}];
+  CB.orders.forEach(cbSync);
+}
+function cbOrder(n){ return CB.orders.find(o=>o.n===n); }
+function cbOk(op){ return CB_APPROVED.includes(op.st); }
+function cbConc(o){ return o.ops.filter(cbOk).reduce((a,x)=>a+x.apl,0); }
+function cbSaldo(o){ const s = o.total - cbConc(o); return s < .005 ? 0 : s; }
+/* Hilo: el saldo manda sobre orden, liquidación y Estado Pago del BL */
+function cbSync(o){
+  o.liqs.forEach(l=>{ const b = CB.bls.find(x=>x.n===l.bl); if(b){ b.usd = l.cur==='USD' ? l.monto : b.usd; b.liq = l.n; b.pay = o.credito ? 'Liquidación crédito' : l.st==='Pago confirmado' ? 'Liquidación pagada' : 'Liquidación pendiente'; } });
+  CB.bls.forEach(b=>{ if(!b.pay) b.pay = 'Listo para facturar'; });
+}
+function cbRecalc(o){
+  if(o.credito) return;
+  const saldo = cbSaldo(o), pend = o.ops.some(x=>x.st==='Pendiente de revisión'), anyOk = o.ops.some(cbOk), rej = o.ops.length && o.ops.every(x=>x.st==='Rechazado');
+  o.est = rej ? 'Rechazado' : saldo===0 && anyOk ? 'Validada' : 'Pendiente de validación';
+  o.liqs.forEach(l=>{ l.st = saldo===0 ? 'Pago confirmado' : pend || !anyOk ? 'Pendiente de confirmación' : 'Pago Pendiente'; });
+  cbSync(o);
+}
+function cbDocStatus(n){ const d = fdByNum(n); return d ? d.status : 'SAP OK'; }
+function cbMoney(c, v){ return `${fCur(c)} ${fMoney(v)}`; }
+/* ---------- Entrada ---------- */
+function openCobranzas(tab){ cbSeed(); CB.tab = tab||'val'; CB.view = 'list'; CB.sel = null; facEnter('screenCobranzas'); renderCb(); }
+function renderCb(){
+  const r = document.getElementById('cbRoot');
+  if(CB.tab==='mp'){ facSetBar('screenCobranzas','Medios de pago',['Inicio','Cobranzas','Medios de pago']); r.innerHTML = cbMpHtml(); return; }
+  if(CB.tab==='rep'){ facSetBar('screenCobranzas','Reportes',['Inicio','Cobranzas','Reportes']); r.innerHTML = cbRepHtml(); return; }
+  if(CB.view==='detail'){ facSetBar('screenCobranzas',`Detalle de Orden de Pago - ${CB.sel}`,['Inicio','Cobranzas','Validación de Pagos'],'cbBack()'); r.innerHTML = cbDetailHtml(cbOrder(CB.sel)); return; }
+  updatePagebar('screenCobranzas'); r.innerHTML = cbListHtml();
+}
+function cbBack(){ CB.view = 'list'; CB.sel = null; renderCb(); }
+/* ---------- Validación: búsqueda y resultados ---------- */
+function cbSet(k, v){ CB.f[k] = v; CB.page = 1; renderCb(); }
+function cbClear(){ CB.f = {num:'',from:'',to:'',met:'',cur:'',est:''}; CB.page = 1; renderCb(); }
+function cbFiltered(){ const f = CB.f, q = normTxt; return CB.orders.filter(o=>(!f.num || q(o.n).includes(q(f.num))) && (!f.from || o.reg>=f.from) && (!f.to || o.reg<=f.to) && (!f.met || o.met===f.met) && (!f.cur || o.cur===f.cur) && (!f.est || o.est===f.est)); }
+function cbGo(p, size){ if(size) CB.size = size; CB.page = p; renderCb(); }
+function cbListHtml(){
+  const f = CB.f, all = cbFiltered(), pages = Math.max(1,Math.ceil(all.length/CB.size)); CB.page = Math.min(CB.page,pages);
+  const list = all.slice((CB.page-1)*CB.size, CB.page*CB.size);
+  return `<div class="fac-card" id="cbF"><div class="fac-head"><div><h3>Buscar pagos por validar</h3><div class="fac-sub">Ingrese los criterios de búsqueda para filtrar los pagos</div></div>
+      <div class="fac-acts"><button type="button" class="cc-btn" id="cbNuevo" onclick="cbNpOpen()">+ Nuevo</button></div></div><div class="fac-acts cb-chg">${fChgBtn()}</div>
+    <div class="fac-g3">
+      ${fF('N° Orden Pago', `<input placeholder="Ingrese el N° de orden de pago" value="${esc(f.num)}" onchange="cbSet('num',this.value)">`)}
+      ${fF('Fecha de Registro', `<div class="fac-range"><input type="date" value="${f.from}" onchange="cbSet('from',this.value)"><input type="date" value="${f.to}" onchange="cbSet('to',this.value)"></div>`)}
+      ${fF('Método', fSel(CB_METHODS, f.met, `onchange="cbSet('met',this.value)"`, 'Elegir el método de pago'))}
+      ${fF('Moneda', fSel(CB_CURS, f.cur, `onchange="cbSet('cur',this.value)"`, 'Elegir la moneda'))}
+      ${fF('Estado', fSel(CB_ORDER_ST, f.est, `id="cbEst" onchange="cbSet('est',this.value)"`, 'Elegir el estado'))}
+    </div>
+    <div class="fac-btns"><button type="button" class="cc-btn" onclick="renderCb()">Buscar</button><button type="button" class="cc-btn" onclick="cbClear()">Limpiar</button></div></div>
+  <div class="fac-card" id="cbRes"><div class="fac-head"><h3>Resultados (${all.length})</h3></div>
+    <div class="fac-scroll"><table class="fac-tbl fac-fix"><thead><tr><th>N° Orden</th><th>Fecha de Registro</th><th>Método</th><th>Condición ${fm('Modifica: CONTADO DOC y CONTADO I',CB_HU.none,'I-178','PEN-CRE-01')}</th><th>Estado</th><th class="num">N° operaciones</th><th>Moneda</th><th class="num">Monto total</th><th class="num" id="cbSaldoCol">Saldo pendiente ${fm('Agrega',CB_HU.none,'I-178','PEN-CRE-02')}</th><th>Tiene Factura o Boleta</th><th>Acciones</th></tr></thead><tbody>
+      ${list.map(o=>`<tr><td><button type="button" class="fac-link" onclick="cbOpen('${o.n}')">${o.n}</button></td><td>${fmtDate(o.reg)}</td><td>${esc(o.met)}</td><td>${esc(o.cond)}</td><td>${esc(o.est)}</td><td class="num">${o.ops.length}</td><td>${esc(CB_CURS.find(c=>c[0]===o.cur)[1])}</td><td class="num">${fMoney(o.total)}</td><td class="num">${fMoney(cbSaldo(o))}</td><td><span class="cb-dot ${o.doc?'on':''}"></span>${o.doc?` <button type="button" class="fac-link" onclick="cbDocOpen('${o.doc}')">${o.doc}</button>`:''}</td><td><button type="button" class="fac-link" onclick="cbOpen('${o.n}')">Ver detalle</button></td></tr>`).join('') || `<tr><td colspan="11" class="fac-empty">No se encontraron resultados con los criterios seleccionados.</td></tr>`}
+    </tbody></table></div>
+    <div class="fac-btns" style="justify-content:space-between;align-items:center">
+      <span class="fac-mk fac-mk-l" id="cbExpBtn" ${fb('Agrega: Exportar',CB_HU.amp,'I-177','PEN-UAT122-02')}><button type="button" class="cc-btn" onclick="cbExport()">Exportar</button></span>
+      <div class="cc-pager" style="border:none">${pagerHtml(all.length, CB.page, CB.size, 'cbGo')}</div></div></div>
+  ${cbAvisosHtml()}`;
+}
+/* ---------- Avisos recibidos ---------- */
+function cbAvisosHtml(){
+  return `<div class="fac-card" id="cbAvisos"><div class="fac-head"><h3>Avisos recibidos</h3></div>
+    <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th>Fecha</th><th>Tipo ${fm('Agrega: constancia cargada',CB_HU.val,'I-158','PEN-I158-01')} ${fm('Agrega: saldo de liquidación',CB_HU.ti,'I-164','PEN-JENNY-I164-01')}</th><th>Documento</th><th>Cliente</th><th class="num">Monto</th><th>Moneda</th><th>Detalle</th><th>Acciones</th></tr></thead><tbody>
+      ${CB.avisos.map((a,i)=>`<tr><td>${new Date(a.at).toLocaleString('es-PE',{hour12:false})}</td><td>${a.tipo==='Saldo'?'Saldo de liquidación':'Constancia cargada'}</td><td>${esc(a.doc)}</td><td>${esc(a.cli)}</td><td class="num">${fMoney(a.monto)}</td><td>${a.cur}</td><td>${a.tipo==='Saldo'?esc(a.dir):a.ver>1?`<span class="fac-pill wait">Nueva versión ${a.ver}</span>`:'Versión 1'}</td><td><button type="button" class="fac-link" onclick="cbAvisoOpen(${i})">Ver aviso</button></td></tr>`).join('')}
+    </tbody></table></div></div>`;
+}
+function cbAvisoOpen(i){
+  const a = CB.avisos[i], sal = a.tipo==='Saldo', pre = fdByNum(a.doc)||CB_EJ_DOC;
+  facOpen(`<h3>Vista previa del aviso ${sal?fm('',CB_HU.ti,'I-164','PEN-I164-02'):fm('',CB_HU.val,'I-158','PEN-I158-01')}</h3>
+    <div class="fac-pdf" id="cbAvisoBody" style="margin-top:14px">
+      <dl class="fac-kv"><dt>Para</dt><dd>cobranzas@cosmos.example</dd><dt>Asunto</dt><dd>${sal?`Saldo ${esc(a.dir.toLowerCase())}: ${esc(a.doc)}`:`Constancia de pago cargada: ${esc(a.order)}${a.ver>1?` (versión ${a.ver})`:''}`}</dd>
+      ${sal?'':`<dt>Pago</dt><dd>${esc(a.order)} · operación ${esc(a.op)}</dd>`}<dt>Cliente</dt><dd>${esc(a.cli)}</dd><dt>Documento</dt><dd>${esc(a.doc)} · ${esc(pre.tipo)}</dd><dt>Monto</dt><dd>${cbMoney(a.cur,a.monto)}</dd><dt>${sal?'Tipo':'Versión'}</dt><dd>${sal?esc(a.dir):a.ver>1?`${a.ver}, reemplaza la anterior`:'1'}</dd></dl></div>
+    ${sal?`<div class="fac-note warn">${fm('Sin evidencia de la alerta',CB_HU.ti,'I-164','PEN-I164-01')}</div>`:''}
+    <div class="fac-btns">${a.order?`<button type="button" class="cc-btn ghost" onclick="facClose();cbOpen('${a.order}')">Ver orden</button>`:''}${fdByNum(a.doc)?`<button type="button" class="cc-btn ghost" onclick="facClose();cbDocOpen('${a.doc}')">Ver documento</button>`:''}<button type="button" class="cc-btn" onclick="facClose()">Cerrar</button></div>`, 'md');
+}
+/* ---------- Exportar ---------- */
+function cbExport(){
+  const rows = cbFiltered();
+  facOpen(`<h3>Exportar Excel ${fm('',CB_HU.amp,'I-177','PEN-UAT122-02')}</h3>
+    <div class="fac-scroll" style="margin-top:14px"><table class="fac-tbl"><thead><tr><th>N° Orden</th><th>Documento</th><th>Cliente</th><th>Condición</th><th>Estado</th><th>Moneda</th><th class="num">Monto total</th><th class="num">Conciliado</th><th class="num">Saldo</th><th>Estado del Documento</th></tr></thead><tbody>
+      ${rows.map(o=>`<tr><td>${o.n}</td><td>${esc(o.doc||'-')}</td><td>${esc(o.cli)}</td><td>${esc(o.cond)}</td><td>${esc(o.est)}</td><td>${o.cur}</td><td class="num">${fMoney(o.total)}</td><td class="num">${fMoney(cbConc(o))}</td><td class="num">${fMoney(cbSaldo(o))}</td><td>${o.doc?esc(cbDocStatus(o.doc)):'-'}</td></tr>`).join('') || '<tr><td colspan="10" class="fac-empty">Sin datos</td></tr>'}
+    </tbody></table></div>
+    <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose()">Cerrar</button><button type="button" class="cc-btn" onclick="facClose();toast('Descarga de Excel simulada','info')">Exportar</button></div>`, 'lg');
+}
+/* ---------- Nuevo Pago ---------- */
+function cbNpOpen(){ CB.np.pick = {}; cbNpRender(); }
+function cbNpSet(k, v){ CB.np.f[k] = v; cbNpRender(); }
+function cbNpRows(){ const f = CB.np.f, q = normTxt; return CB.orders.filter(o=>(!f.num || q(o.n).includes(q(f.num))) && (!f.doc || q(o.doc).includes(q(f.doc))) && (!f.cli || q(o.cli).includes(q(f.cli))) && (!f.est || o.est===f.est)); }
+function cbNpRender(){
+  const f = CB.np.f, rows = cbNpRows();
+  facOpen(`<h3>Nuevo Pago</h3><div class="fac-sec">Filtros de búsqueda</div>
+    <div class="fac-g3">${fF('N° Orden Pago',`<input placeholder="Ingrese el N° de orden de pago" value="${esc(f.num)}" onchange="cbNpSet('num',this.value)">`)}${fF('Nro. Documento',`<input placeholder="Ingrese el Nro. de documento" value="${esc(f.doc)}" onchange="cbNpSet('doc',this.value)">`)}${fF('Cliente',`<input placeholder="Buscar cliente..." value="${esc(f.cli)}" onchange="cbNpSet('cli',this.value)">`)}${fF('Estado',fSel(CB_ORDER_ST,f.est,`onchange="cbNpSet('est',this.value)"`,'Elegir el estado'))}</div>
+    <div class="fac-sec">Resultados (${rows.length})</div>
+    <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th></th><th>N° Orden</th><th>Nro. Documento</th><th>Cliente</th><th>Moneda</th><th class="num">Monto total</th><th class="num">Monto pagado</th><th class="num">Saldo pendiente</th><th>Estado</th></tr></thead><tbody>
+      ${rows.map(o=>`<tr><td><input type="checkbox" style="width:auto" ${CB.np.pick[o.n]?'checked':''} onchange="CB.np.pick['${o.n}']=this.checked"></td><td>${o.n}</td><td>${esc(o.doc||'-')}</td><td>${esc(o.cli)}</td><td>${o.cur}</td><td class="num">${fMoney(o.total)}</td><td class="num">${fMoney(cbConc(o))}</td><td class="num">${fMoney(cbSaldo(o))}</td><td>${esc(o.est)}</td></tr>`).join('') || '<tr><td colspan="9" class="fac-empty">Sin resultados</td></tr>'}
+    </tbody></table></div>
+    <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose()">Cancelar</button><button type="button" class="cc-btn" onclick="cbNpPay()">Pagar</button></div>`, 'lg');
+}
+function cbNpPay(){
+  const n = Object.keys(CB.np.pick).find(k=>CB.np.pick[k]);
+  if(!n){ toast('Elige una orden','error'); return; }
+  const o = cbOrder(n);
+  CB.np.d = {order:n, date:'', banco:'', fin:'', num:'', amt:cbSaldo(o), com:''}; cbNpForm();
+}
+function cbNpSetF(k, v){ CB.np.d[k] = v; if(k==='banco') CB.np.d.fin = ''; cbNpForm(); }
+function cbNpForm(){
+  const d = CB.np.d, o = cbOrder(d.order), banks = CB_ORG_FIN.map(x=>x.banco), accs = CB_ORG_FIN.filter(x=>x.banco===d.banco).map(x=>x.cuenta);
+  facOpen(`<h3>Nuevo Pago - Transferencia</h3><div class="fac-sec">Orden de Pago</div>
+    <div class="fac-g3">${fRo('Número OP',o.n)}${fRo('Nro. Documento',o.doc||'-')}${fRo('Cliente',o.cli)}${fRo('Moneda OP',o.cur)}${fRo('Monto total OP',fMoney(o.total))}${fRo('Saldo pendiente',fMoney(cbSaldo(o)))}</div>
+    <div class="fac-sec">Datos de la operación (obligatorios *)</div>
+    <div class="fac-g3">${fF('Fecha del pago *',`<input type="date" id="npDate" value="${d.date}" onchange="cbNpSetF('date',this.value)">`)}${fF('Banco origen *',fSel(banks,d.banco,`id="npBanco" onchange="cbNpSetF('banco',this.value)"`,'Elegir el banco origen'))}${fF('Nro. Cuenta *',fSel(accs,d.fin,`id="npCta" ${d.banco?'':'disabled'} onchange="cbNpSetF('fin',this.value)"`,'Elegir'))}${fF('N° operación bancaria *',`<input id="npNum" value="${esc(d.num)}" onchange="cbNpSetF('num',this.value)">`)}${fF('Monto pagado *',`<input id="npAmt" type="number" min="0" step="0.01" value="${d.amt}" onchange="cbNpSetF('amt',this.value)">`)}${fF('Comentarios',`<input value="${esc(d.com)}" onchange="cbNpSetF('com',this.value)">`)}</div>
+    <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose()">Cancelar</button><button type="button" class="cc-btn" id="npPay" onclick="cbNpSave()">Pagar</button></div>`, 'md');
+}
+function cbNpSave(){
+  const d = CB.np.d, o = cbOrder(d.order);
+  if(!d.date || !d.banco || !d.fin || !d.num || !(Number(d.amt)>0)){ toast('Por favor, complete todos los campos obligatorios.','error'); return; }
+  o.ops.push(cbOpNew({id:'n'+o.ops.length, num:d.num, date:d.date, banco:d.banco, cta:d.fin, inf:Number(d.amt), apl:Number(d.amt), cur:o.cur}));
+  if(o.est==='Creada') o.est = 'Pendiente de validación';
+  o.hist.push({ts:facNow(), user:curUser(), prev:'', next:o.est, comment:`Pago registrado: ${d.num}`});
+  facClose(); toast('Pago registrado','success'); renderCb();
+}
+/* ---------- Detalle de Orden de Pago ---------- */
+function cbOpen(n){ CB.tab = 'val'; CB.sel = n; CB.view = 'detail'; if(document.querySelector('section.panel.active')?.id!=='screenCobranzas') facEnter('screenCobranzas'); renderCb(); }
+function cbDocOpen(n){
+  const d = fdByNum(n);
+  if(d){ openAccDocs(fdIsNc(d)?'nc':'docs'); fdOpen(d.id); return; }
+  const e = CB_EJ_DOC;
+  facOpen(`<h3>${esc(e.num)}</h3><div style="height:12px"></div><dl class="fac-kv"><dt>Documento a Emitir</dt><dd>${esc(e.tipo)}</dd><dt>Facturar a</dt><dd>${esc(e.fact)}</dd><dt>Condición</dt><dd>CONTADO DOC</dd><dt>Total</dt><dd>${cbMoney(e.cur,e.total)}</dd><dt>Saldo a favor</dt><dd>${cbMoney(e.cur,e.aFavor)}</dd><dt>Nuevo abono</dt><dd>${cbMoney(e.cur,e.abono)}</dd></dl>
+    <div class="fac-btns"><button type="button" class="cc-btn" onclick="facClose()">Cerrar</button></div>`);
+}
+function cbCondHtml(o){
+  const cj = o.cond==='CONTADO DOC', ci = o.cond==='CONTADO I', p = cbSocioFind(o.cli), s = cbSaldo(o), ok = s===0 && !o.credito;
+  return `<div class="fac-card" id="cbCond"><div class="fac-head"><div><h3>${esc(o.cli)}</h3><div class="fac-sub">${esc(o.met)} · Estado: ${esc(o.est)}</div></div>
+      <div class="fac-acts"><button type="button" class="cc-btn ghost" onclick="openHistModal(cbOrder('${o.n}').hist)">Historial</button></div></div><div class="fac-acts cb-chg">${fChgBtn()}</div>
+    <div class="fac-mk" ${fb('Agrega: condición y saldo',CB_HU.none,'I-178','PEN-CRE-02')}><div class="fac-saldo" id="cbSaldoBox"><div>Condición<b>${esc(o.cond)}</b></div><div>Total<b>${cbMoney(o.cur,o.total)}</b></div><div>Conciliado<b>${cbMoney(o.cur,cbConc(o))}</b></div><div>Saldo<b id="cbSaldoVal">${cbMoney(o.cur,s)}</b></div></div></div>
+    ${cj?`<div class="fac-note" id="cbEjemplo">Factura ${cbMoney('USD',CB_EJ_DOC.total)} = saldo a favor ${cbMoney('USD',CB_EJ_DOC.aFavor)} + abono ${cbMoney('USD',CB_EJ_DOC.abono)}. <b>${ok?'Cancelada: USD 300 conciliados.':`Sigue con saldo: faltan ${cbMoney('USD',s)} por conciliar.`}</b></div>`:''}
+    ${ci?`<div class="fac-note warn" id="cbContadoI">${fm('Agrega',CB_HU.none,'I-178','PEN-CRE-01')} Cosmos paga el VB a la línea y lo traslada como crédito: esta cuenta sigue por cobrar.</div>`:''}
+    <div class="fac-g4" style="margin-top:14px">
+      <div class="fac-f" id="cbDocLink"><label>Documento ${fm('Agrega: enlace',CB_HU.none,'I-180','PEN-ABO-01')}</label>${o.doc?`<button type="button" class="fac-link" style="text-align:left" onclick="cbDocOpen('${o.doc}')">${o.doc}</button>`:'<span>-</span>'}</div>
+      <div class="fac-f" id="cbMpLink"><label>Medios de pago ${fm('Agrega: enlace',CB_HU.none,'I-180','PEN-ABO-02')}</label>${o.doc&&fdByNum(o.doc)?`<button type="button" class="fac-link" style="text-align:left" onclick="cbMpOpen('${o.doc}')">Ver medios de pago</button>`:'<span>-</span>'}</div>
+      <div class="fac-f fac-span2" id="cbCred"><label>Condición de Pago en Socio ${fm('Agrega: solo lectura',CB_HU.none+' · dependencia HU-DM-01','I-178','PEN-CRE-01')}</label><span>${esc(p?p.pago:'-')} · Días: Por definir · Límite: Por definir${p?` · <button type="button" class="fac-link" onclick="openPartner('${p.id}','landing')">Ver Socio</button>`:''}</span></div>
+    </div></div>`;
+}
+function cbDetailHtml(o){
+  const canRev = o.ops.some(cbOk);
+  return `${cbCondHtml(o)}
+  <div class="fac-card"><h3 id="cbTransTitle" style="margin-bottom:12px">Detalle de transferencias asociadas</h3>
+    <div class="fac-scroll" id="cbTrans"><table class="fac-tbl fac-fix"><thead><tr><th>Nº operación</th><th>Fecha de pago</th><th>Banco origen</th><th>Cuenta origen</th><th class="num">Monto informado</th><th class="num">Monto registrado</th><th class="num">Monto aplicado</th><th>Estado</th><th>Validado por</th><th>Fecha validación</th>
+      <th>Operación confirmada ${fm('Agrega',CB_HU.amp,'I-177','PEN-UAT122-01')}</th><th>Fecha efectiva ${fm('Agrega',CB_HU.amp,'I-177','PEN-UAT122-01')}</th><th>Banco receptor ${fm('Agrega',CB_HU.amp,'I-177','PEN-UAT122-04')}</th><th>Correo ${fm('Agrega',CB_HU.amp,'I-158','PEN-I158-04')}</th><th>Voucher</th><th>Acciones</th></tr></thead><tbody>
+      ${o.ops.map(x=>`<tr><td>${esc(x.num)}${x.concepto?` <span class="fac-pill">${esc(x.concepto)}</span>`:''}</td><td>${fmtDate(x.date)}</td><td>${esc(x.banco)}</td><td>${esc(x.cta)}</td><td class="num">${fMoney(x.inf)}</td><td class="num">${fMoney(x.reg)}</td><td class="num">${fMoney(x.apl)}</td><td>${esc(x.st)}</td><td>${esc(x.by||'-')}</td><td>${x.at?new Date(x.at).toLocaleDateString('es-PE'):'-'}</td>
+        <td>${esc(x.conf?.num||'-')}</td><td>${x.conf?.date?fmtDate(x.conf.date):'-'}</td><td>${esc(x.conf?.br||'-')}</td><td>${x.mail.n?`<button type="button" class="fac-link" onclick="cbMail('${o.n}','${x.id}')">Enviado (${x.mail.n})</button>`:x.conf?`<button type="button" class="fac-link" onclick="cbMail('${o.n}','${x.id}')">Sin enviar</button>`:'-'}</td>
+        <td><button type="button" class="fac-link" onclick="toast('Descarga de comprobante simulada','info')">Descargar</button></td><td><button type="button" class="fac-link cb-det" onclick="cbOpOpen('${o.n}','${x.id}')">Ver detalle</button></td></tr>`).join('') || `<tr><td colspan="16" class="fac-empty">Sin transferencias asociadas</td></tr>`}
+    </tbody></table></div>
+    <h3 style="margin:20px 0 12px">Liquidaciones</h3>
+    <div class="fac-scroll" id="cbLiqs"><table class="fac-tbl"><thead><tr><th>Nº liquidación</th><th>Tipo</th><th>BL asociado</th><th class="num">Monto liquidación</th><th>Moneda</th><th>Estado liquidación</th></tr></thead><tbody>
+      ${o.liqs.map(l=>`<tr><td>${esc(l.n)}</td><td>${esc(l.tipo)}</td><td><button type="button" class="fac-link" onclick="openDocBl('imp','${l.bl}')">${esc(l.bl)}</button></td><td class="num">${fMoney(l.monto)}</td><td>${esc(CB_CURS.find(c=>c[0]===l.cur)[1])}</td><td>${esc(l.st)}</td></tr>`).join('') || `<tr><td colspan="6" class="fac-empty">Sin liquidaciones</td></tr>`}
+    </tbody></table></div>
+    <div class="fac-btns"><span class="fac-mk" id="cbRevWrap" ${fb('Agrega: reverso',CB_HU.val,'I-158','PEN-I158-02')}><button type="button" class="cc-btn pink" id="cbRevBtn" ${canRev?'':'disabled'} onclick="cbRevOpen('${o.n}')">Revertir validación</button></span><button type="button" class="cc-btn" onclick="cbBack()">Cerrar</button></div></div>`;
+}
+/* ---------- Detalle de operación ---------- */
+function cbOpOpen(n, id){
+  const o = cbOrder(n), x = o.ops.find(q=>q.id===id), c = x.conf||{};
+  CB.d = {n, id, num:c.num||'', date:c.date||'', bo:c.bo||'', br:c.br||'', cur:c.cur||'USD', jefe:(c.cur==='PEN'), reg:x.reg||'', res:x.st, mot:x.motivo||''};
+  cbOpRender();
+}
+function cbOpSet(k, v){ CB.d[k] = v; if(k==='cur' && v==='USD') CB.d.jefe = false; cbOpRender(); }
+function cbOpRender(){
+  const d = CB.d, o = cbOrder(d.n), x = o.ops.find(q=>q.id===d.id), ro = cbOk(x) || x.st==='Rechazado' || x.st==='Revertido', dis = ro?'disabled':'', recv = CB_ORG_FIN.map(f=>f.banco), reqMot = d.res!=='Aprobado';
+  facOpen(`<h3>Detalle de operación - ${esc(x.num)}</h3>
+    <div class="fac-sec">Datos de la operación bancaria</div>
+    <div class="fac-mk cb-mk" id="cbOpDecl" ${fb('Modifica: declarados por el cliente',CB_HU.amp,'I-177','PEN-UAT122-01')}><div class="fac-g2">${fRo('Nº operación / referencia',x.num)}${fRo('Moneda',CB_CURS.find(c=>c[0]===x.cur)[1])}${fRo('Fecha de pago',fmtDate(x.date))}${fRo('Banco origen',x.banco)}</div></div>
+    <div class="fac-sec">Confirmado por Cobranzas ${fm('Agrega',CB_HU.amp,'I-177','PEN-UAT122-01')}</div>
+    <div class="fac-g2" id="cbOpConf">
+      ${fF('Nº operación confirmado',`<input id="cbConfNum" ${dis} placeholder="Ingresar número de operación" value="${esc(d.num)}" onchange="cbOpSet('num',this.value)">`)}
+      ${fF('Fecha efectiva de pago',`<input id="cbConfDate" type="date" ${dis} value="${d.date}" onchange="cbOpSet('date',this.value)">`)}
+      ${fF(`Banco de origen ${fm('Agrega',CB_HU.amp,'I-177','PEN-UAT122-04')}`,fSel(CB_BANKS,d.bo,`id="cbBancoO" ${dis} onchange="cbOpSet('bo',this.value)"`,'Elegir banco'))}
+      ${fF(`Banco receptor ${fm('Agrega',CB_HU.amp,'I-177','PEN-UAT122-04')}`,fSel(recv,d.br,`id="cbBancoR" ${dis} onchange="cbOpSet('br',this.value)"`,'Elegir banco'))}
+      ${fF(`Moneda ${fm('Modifica',CB_HU.amp,'I-177','PEN-UAT122-06')}`,fSel(CB_CURS,d.cur,`id="cbMoneda" ${dis} onchange="cbOpSet('cur',this.value)"`))}
+      ${fF('Monto registrado por Cobranzas',`<input id="cbReg" type="number" min="0" step="0.01" ${dis} value="${d.reg}" onchange="cbOpSet('reg',this.value)">`)}
+      ${d.cur==='PEN'?`<div class="fac-span4" id="cbJefeBox"><label class="fac-chk"><input type="checkbox" id="cbJefe" ${dis} ${d.jefe?'checked':''} onchange="cbOpSet('jefe',this.checked)"> Aprobado por jefatura el cambio a Sol peruano</label></div>`:''}
+    </div>
+    <div class="fac-note warn" id="cbCorte">${fm('Agrega: aviso',CB_HU.amp,'I-177','PEN-UAT122-01')} Después de las 20:00 o en interbancarios, revisa la fecha efectiva.${x.late?' Esta operación entró a las 20:35.':''}</div>
+    <div class="fac-note" id="cbSapNote">${fm('Agrega: nota',CB_HU.amp,'I-177','PEN-UAT122-05')} La fecha de pago iría a SAP como vencimiento.</div>
+    <div class="fac-sec">Decisión de Cobranzas</div>
+    <div class="fac-g2" id="cbDecision">
+      ${fF(`Resultado de la validación ${fm('Modifica: efecto sobre el pago',CB_HU.amp,'I-177','PEN-UAT122-06')}`,fSel(CB_RESULTS,d.res,`id="cbResult" ${dis} onchange="cbOpSet('res',this.value)"`))}
+      ${fF(`Motivo / observación${reqMot?' *':''} ${fm('Modifica',CB_HU.amp,'I-177','PEN-UAT122-06')}`,`<textarea id="cbMotivo" rows="3" ${dis} placeholder="Ingrese el motivo o la observación" onchange="cbOpSet('mot',this.value)">${esc(d.mot)}</textarea>`)}
+    </div>
+    <div class="fac-btns">${ro?`<button type="button" class="cc-btn" onclick="facClose()">Cerrar</button>`:`<button type="button" class="cc-btn" id="cbConfirm" onclick="cbOpConfirm()">Confirmar</button><button type="button" class="cc-btn" onclick="facClose()">Cancelar</button>`}</div>`, 'md');
+}
+function cbOpConfirm(){
+  const d = CB.d, o = cbOrder(d.n), x = o.ops.find(q=>q.id===d.id);
+  if(!d.num || !d.date || !d.bo || !d.br){ toast('Completa operación, fecha efectiva y ambos bancos','error'); return; }
+  if(d.cur==='PEN' && !d.jefe){ toast('Cambiar a Sol peruano requiere aprobación de jefatura','error'); return; }
+  if(d.res!=='Aprobado' && !String(d.mot).trim()){ toast('La observación es requerida','error'); return; }
+  if(CB_APPROVED.includes(d.res) && !(Number(d.reg)>0)){ toast('Ingresa el monto registrado por Cobranzas','error'); return; }
+  const prev = x.st, u = curUser();
+  x.st = d.res; x.reg = Number(d.reg)||0; x.motivo = d.mot; x.by = u; x.at = facNow(); x.conf = {num:d.num, date:d.date, bo:d.bo, br:d.br, cur:d.cur};
+  if(CB_APPROVED.includes(d.res)) x.apl = Math.min(x.apl||x.reg, x.reg);
+  o.hist.push({ts:x.at, user:u, prev, next:x.st, comment:`Operación ${d.num}${d.mot?`: ${d.mot}`:''}`});
+  cbRecalc(o); renderCb(); cbMail(o.n, x.id);
+}
+/* ---------- Vista previa del correo al cliente ---------- */
+function cbMailTxt(x){ return x.st==='Rechazado' ? 'fue rechazado' : x.st==='Aprobado' ? 'fue aprobado' : x.st==='Aprobado con observaciones' ? 'fue aprobado con observaciones' : 'sigue pendiente de revisión'; }
+function cbMail(n, id){
+  const o = cbOrder(n), x = o.ops.find(q=>q.id===id), sent = x.mail.n>0;
+  facOpen(`<h3>Vista previa del correo al cliente ${fm('',CB_HU.amp,'I-158','PEN-I158-04')}</h3>
+    <div class="fac-pdf" id="cbMailBody" style="margin-top:14px"><dl class="fac-kv"><dt>Para</dt><dd>pagos@cliente.example</dd><dt>Asunto</dt><dd>Resultado de validación de pago: ${o.n}</dd></dl><hr style="border:none;border-top:1px solid #D7DBE2;margin:12px 0">
+      <p style="margin:0 0 8px">Estimado cliente:</p><p style="margin:0 0 8px">El pago de la orden <b>${o.n}</b>, operación <b>${esc(x.conf?.num||x.num)}</b>, por <b>${cbMoney(x.conf?.cur||o.cur,x.reg||x.inf)}</b>, ${cbMailTxt(x)}.</p>
+      <dl class="fac-kv"><dt>Resultado</dt><dd id="cbMailRes">${esc(x.st)}</dd><dt>Motivo</dt><dd id="cbMailMot">${esc(x.motivo||'-')}</dd></dl></div>
+    <div class="fac-note ${sent?'warn':''}" id="cbMailCtl">${fm('Agrega: control de reenvío',CB_HU.amp,'I-158','PEN-I158-04')} ${sent?`Enviado ${x.mail.n} vez o veces, último: ${new Date(x.mail.at).toLocaleString('es-PE',{hour12:false})}.`:'Aún no enviado.'}</div>
+    <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose()">Cerrar</button><button type="button" class="cc-btn" id="cbMailSend" onclick="cbMailSend('${n}','${id}')">${sent?'Reenviar':'Enviar'}</button></div>`, 'md');
+}
+function cbMailSend(n, id){ const x = cbOrder(n).ops.find(q=>q.id===id); x.mail.n++; x.mail.at = facNow(); facClose(); toast('Envío de correo simulado','info'); renderCb(); }
+/* ---------- Reverso ---------- */
+function cbRevOpen(n){
+  const o = cbOrder(n), ops = o.ops.filter(cbOk);
+  if(!ops.length) return;
+  facOpen(`<h3>Revertir validación ${fm('',CB_HU.val,'I-158','PEN-I158-02')}</h3><div style="height:12px"></div>
+    <div class="fac-mk cb-mk" ${fb('Por validar: alcance',CB_HU.val,'I-158','PEN-JENNY-I158-01')}><dl class="fac-kv" id="cbRevFx"><dt>Connect</dt><dd>La operación pasa a Revertido, la orden a Pendiente de validación y el saldo vuelve a subir.</dd><dt>SAP</dt><dd>No se revierte sola. Se gestiona en SAP.</dd><dt>Documento</dt><dd>${esc(o.doc||'-')} no se anula de forma automática.</dd></dl></div>
+    ${ops.length>1?`<div class="fac-sec">Operación</div>${fF('Elegir',fSel(ops.map(x=>[x.id,`${x.num} · ${fMoney(x.apl)}`]),ops[0].id,`id="cbRevOp"`))}`:`<div class="fac-sec">Operación ${esc(ops[0].num)} · ${cbMoney(o.cur,ops[0].apl)}</div>`}
+    <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose()">Cancelar</button><button type="button" class="cc-btn" id="cbRevGo" onclick="cbRevGo('${n}')">Continuar</button></div>`);
+}
+function cbRevGo(n){
+  const o = cbOrder(n), sel = document.getElementById('cbRevOp'), x = sel ? o.ops.find(q=>q.id===sel.value) : o.ops.find(cbOk);
+  facClose();
+  openReason('Motivo del reverso','Revertir', txt=>{
+    const prev = x.st; x.st = 'Revertido'; x.motivo = txt; x.by = curUser(); x.at = facNow();
+    o.hist.push({ts:x.at, user:x.by, prev, next:'Revertido', comment:`Operación ${x.num}: ${txt}`});
+    const ab = CB.abonos.find(a=>a.id===x.ab), ap = ab && ab.apps.find(a=>a.doc===o.doc); if(ap) ap.rev = true;
+    cbRecalc(o); toast('Validación revertida','info'); renderCb();
+  });
+}
+/* ---------- Medios de pago (solo consulta) ---------- */
+function cbMpOpen(doc){
+  const [s,num] = doc.split('-'), d = fdByNum(doc);
+  CB.mp.f = {tipo:d?d.tipo:'', serie:s, num, socio:''}; CB.mp.doc = doc; CB.tab = 'mp';
+  if(document.querySelector('section.panel.active')?.id!=='screenCobranzas') facEnter('screenCobranzas');
+  renderCb();
+}
+function cbMpSet(k, v){ CB.mp.f[k] = v; renderCb(); }
+function cbMpSearch(){
+  const f = CB.mp.f, q = normTxt;
+  const hit = FD.list.find(d=>{ const [s,n] = d.num.split('-'); return (!f.tipo||d.tipo===f.tipo) && (!f.serie||q(s).includes(q(f.serie))) && (!f.num||q(n).includes(q(f.num))) && (!f.socio||q(d.fact).includes(q(f.socio))); });
+  CB.mp.doc = hit ? hit.num : ''; renderCb();
+  if(!hit) toast('No se encontraron resultados con los criterios seleccionados.','info');
+}
+function cbMpClear(){ CB.mp.f = {tipo:'',serie:'',num:'',socio:''}; CB.mp.doc = ''; renderCb(); }
+function cbAgent(d){ return ({'F005-00031011':'AGENCIA DE ADUANA EJEMPLO S.A.C.','F005-00031010':'AGENCIA DE ADUANA MUESTRA S.A.C.'})[d.num] || '-'; }
+function cbApps(doc){ return CB.abonos.flatMap(a=>a.apps.filter(x=>x.doc===doc).map(x=>({a,x}))); }
+function cbApplied(doc){ return cbApps(doc).filter(r=>!r.x.rev).reduce((s,r)=>s+r.x.monto,0); }
+function cbCobro(d){ const s = fdTot(d)-cbApplied(d.num); return cbApplied(d.num)===0 ? 'Pendiente' : s<.005 ? 'Cancelado' : 'Parcial'; }
+function cbMpRelated(d){
+  const set = new Set(); cbApps(d.num).forEach(r=>r.a.apps.forEach(x=>{ if(x.doc!==d.num) set.add(x.doc); }));
+  FD.list.filter(x=>x.assoc===d.num).forEach(x=>set.add(x.num)); if(d.assoc) set.add(d.assoc);
+  return [...set].map(fdByNum).filter(Boolean);
+}
+function cbMpKind(a){ const docs = a.apps.length, soc = new Set(a.apps.map(x=>x.socio)).size; return docs===1 ? 'Único' : soc>1 ? `Distribuido: ${docs} documentos, ${soc} socios` : `Distribuido: ${docs} documentos`; }
+function cbMpHtml(){
+  const f = CB.mp.f, d = CB.mp.doc && fdByNum(CB.mp.doc);
+  const filt = `<div class="fac-card" id="cbMpF"><div class="fac-head"><div><h3>Buscar Medios de pago ${fm('Agrega: consulta',CB_HU.none,'I-180','PEN-ABO-02')}</h3><div class="fac-sub">Ingrese datos para buscar</div></div></div><div class="fac-acts cb-chg">${fChgBtn()}</div>
+    <div class="fac-g4">${fF('Documento a Emitir',fSel(FD_TYPES,f.tipo,`onchange="cbMpSet('tipo',this.value)"`,'Elegir documento a emitir'))}${fF('Serie',`<input id="cbMpSerie" placeholder="Ingresar serie" value="${esc(f.serie)}" onchange="cbMpSet('serie',this.value)">`)}${fF('Número',`<input id="cbMpNum" placeholder="Ingresar número" value="${esc(f.num)}" onchange="cbMpSet('num',this.value)">`)}${fF('Socio',`<input id="cbMpSocio" placeholder="Ingresar socio" value="${esc(f.socio)}" onchange="cbMpSet('socio',this.value)">`)}</div>
+    <div class="fac-btns"><button type="button" class="cc-btn" id="cbMpBuscar" onclick="cbMpSearch()">Buscar</button><button type="button" class="cc-btn" onclick="cbMpClear()">Limpiar</button></div></div>`;
+  if(!d) return filt;
+  const rows = cbApps(d.num), tot = rows.filter(r=>!r.x.rev).reduce((s,r)=>s+r.a.monto,0), aqui = cbApplied(d.num), otros = rows.reduce((s,r)=>s+r.a.apps.filter(x=>x.doc!==d.num&&!x.rev).reduce((k,x)=>k+x.monto,0),0), saldo = Math.max(0,fdTot(d)-aqui), [ser,num] = d.num.split('-');
+  return filt + `<div class="fac-card" id="cbMpDoc"><h3>Documento Principal</h3><div style="height:12px"></div>
+      <div class="fac-mk cb-mk" ${fb('Agrega',CB_HU.none,'I-180','PEN-ABO-01')}><div class="fac-g3">
+        ${fF('Documento',`<div class="fac-range"><input disabled value="${esc(d.tipo)}"><input disabled value="${esc(ser)}"><input disabled value="${esc(num)}"></div>`)}${fRo('Fecha',fmtDate(d.date))}${fRo('Cliente',d.fact)}
+        ${fF('Monto Total',`<div class="fac-range"><input disabled value="${d.cur}"><input disabled value="${fMoney(fdTot(d))}"></div>`)}${fRo('Ag.Aduana',cbAgent(d))}${fF('Estado',`<div class="fac-range"><input disabled value="${esc(d.status)}"><input disabled id="cbMpCobro" value="${cbCobro(d)}"></div>`)}
+      </div></div></div>
+    <div class="fac-card" id="cbMpRel"><h3 style="margin-bottom:12px">Documentos Relacionados</h3><div class="fac-scroll"><table class="fac-tbl"><thead><tr><th>Documento</th><th class="num">Monto</th><th>Estado</th><th>Cliente</th><th>Agente Aduana</th></tr></thead><tbody>
+      ${cbMpRelated(d).map(x=>`<tr><td><button type="button" class="fac-link" onclick="cbMpOpen('${x.num}')">${x.num}</button></td><td class="num">${fMoney(fdTot(x))}</td><td>${esc(x.status)}</td><td>${esc(x.fact)}</td><td>${esc(cbAgent(x))}</td></tr>`).join('') || '<tr><td colspan="5" class="fac-empty">Sin documentos relacionados</td></tr>'}
+    </tbody></table></div></div>
+    <div class="fac-card" id="cbMpPag"><h3 style="margin-bottom:12px">Medios de Pago</h3><div class="fac-scroll"><table class="fac-tbl"><thead><tr><th>Tipo</th><th>Numero</th><th>Cuenta</th><th>Banco</th><th class="num">Monto</th><th class="num">En Factura</th><th>Fec. Deposito</th><th>Observaciones</th><th>Aplicación ${fm('Agrega: único o distribuido',CB_HU.none,'I-180','PEN-ABO-01')}</th></tr></thead><tbody>
+      ${rows.map(r=>`<tr><td>${esc(r.a.tipo)}</td><td>${esc(r.a.num)}</td><td>${esc(r.a.cta)}</td><td>${esc(r.a.banco)}</td><td class="num">${fMoney(r.a.monto)}</td><td class="num">${fMoney(r.x.rev?0:r.x.monto)}</td><td>${fmtDate(r.a.date)}</td><td>${esc(r.a.obs)}${r.x.rev?' <span class="fac-pill err">Revertido</span>':''}</td><td><button type="button" class="fac-link cb-dist" onclick="cbMpDist('${r.a.id}')">${esc(cbMpKind(r.a))}</button></td></tr>`).join('') || '<tr><td colspan="9" class="fac-empty">Sin pagos aplicados</td></tr>'}
+    </tbody></table></div>
+    <div class="fac-mk" id="cbMpSum" ${fb('Agrega: sin duplicar el total',CB_HU.none,'I-180','PEN-ABO-03')}><div class="fac-saldo"><div>Total de abonos<b id="cbMpTot">${cbMoney(d.cur,tot)}</b></div><div>En este documento<b id="cbMpAqui">${cbMoney(d.cur,aqui)}</b></div><div>En otros documentos<b>${cbMoney(d.cur,otros)}</b></div><div>Saldo del documento<b id="cbMpSaldo">${cbMoney(d.cur,saldo)}</b></div></div></div></div>`;
+}
+function cbMpDist(id){
+  const a = CB.abonos.find(x=>x.id===id), sum = a.apps.filter(x=>!x.rev).reduce((s,x)=>s+x.monto,0);
+  facOpen(`<h3>Abono ${esc(a.num)} ${fm('',CB_HU.none,'I-180','PEN-ABO-01')}</h3><div class="fac-sub" style="margin:4px 0 12px;font-size:12px;color:var(--cc-gray)">${esc(cbMpKind(a))}</div>
+    <div class="fac-scroll"><table class="fac-tbl" id="cbDistTbl"><thead><tr><th>Documento</th><th>Socio</th><th class="num">Aplicado</th><th>Estado</th></tr></thead><tbody>
+      ${a.apps.map(x=>`<tr><td>${esc(x.doc)}</td><td>${esc(x.socio)}</td><td class="num">${fMoney(x.rev?0:x.monto)}</td><td>${x.rev?'Revertido':'Aplicado'}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td colspan="2">Total del abono: ${cbMoney(a.cur,a.monto)}</td><td class="num" id="cbDistSum">${fMoney(sum)}</td><td></td></tr></tfoot></table></div>
+    <div class="fac-btns"><button type="button" class="cc-btn" onclick="facClose()">Cerrar</button></div>`, 'md');
+}
+/* ---------- Reportes ---------- */
+const CB_REPS = [['bl','BL/VB pendientes de cobro'],['prov','Provisiones vs documento'],['epay','Recaudación EPAY'],['det','Facturas con detracción'],['dia','Reporte diario']];
+function cbRepTab(k){ CB.rep = k; renderCb(); }
+function cbRfSet(k, v){ CB.rf[CB.rep][k] = v; renderCb(); }
+function cbRange(f){ return `${fF('Fecha inicio',`<input type="date" class="cbRepFrom" value="${f.from}" onchange="cbRfSet('from',this.value)">`)}${fF('Fecha fin',`<input type="date" class="cbRepTo" value="${f.to}" onchange="cbRfSet('to',this.value)">`)}`; }
+function cbInR(f, d){ return (!f.from || d>=f.from) && (!f.to || d<=f.to); }
+function cbSplitDoc(n){ const i = n.indexOf('-'); return [n.slice(0,i), n.slice(i+1)]; }
+function cbRepData(k){
+  const q = normTxt, f = CB.rf[k];
+  if(k==='bl'){
+    const rows = CB.bls.filter(b=>b.pay==='Liquidación pendiente' && (!f.linea || b.lin===f.linea));
+    return {cols:['Tipo','Vapor','Viaje','Manifiesto','Zarpe','Año','Mes','Operación','BL Master','BL Hijo','Agente General','Embarcador','Notificante','Consolidador','Consignatario','Condición','Terminal','Permiso','Trasbordo','Vacío','Línea','Monto USD'], num:[21], foot:[21],
+      rows:rows.map(b=>{ const d = b.emi.split('-'); return [b.tp==='Master B/L'?'Master':'Hijo',b.nave,b.nro,b.mani,fmtDate(b.emi),d[0],d[1],'Importación',b.n.slice(0,10)+'0',b.n,'COSMOS AGENCIA MARITIMA S.A.C.','EMBARCADOR DE EJEMPLO S.A.','-','-',b.cons,'FCL/FCL','DP WORLD CALLAO S.R.L.','-','No','No',b.lin,b.usd]; })};
+  }
+  if(k==='prov'){
+    const rows = FD.list.filter(d=>d.provs&&d.provs.length).flatMap(d=>d.provs.map(c=>({d,p:FP.list.find(x=>x.code===c)}))).filter(({d})=>{ const [s,n] = cbSplitDoc(d.num); return (!f.tipo||d.tipo===f.tipo)&&(!f.serie||q(s).includes(q(f.serie)))&&(!f.num||q(n).includes(q(f.num)))&&cbInR(f,d.date); });
+    return {cols:['Tipo Doc.','Serie Doc.','Número Doc.','Fecha Documento','Nave','Viaje','Arribo','Provisión Documento','Proveedor','RUC','Concepto','Soles','Dólares'], num:[11,12], foot:[11,12],
+      rows:rows.map(({d,p})=>{ const [s,n] = cbSplitDoc(d.num), l = p&&p.lines[0]||{}, t = p?fpTotal(p):0; return [d.tipo,s,n,fmtDate(d.date),d.nave,d.nro,facEta(facVoy(d.nave,d.nro)),p?p.code:'-',p?p.prov:'-',p?fdRuc(p.prov):'-',l.svc||'-',p&&p.cur==='PEN'?t:0,p&&p.cur==='PEN'?0:t]; })};
+  }
+  if(k==='epay'){
+    return {cols:['BL','BL Master','Atendido','Línea','Número Documento','ID','Cliente','F. Registro','Moneda','Monto BL','Número Operación','Banco','Monto Pago','Fecha Pago','Responsable Pago','Concepto Pago'], num:[9,12], foot:[12],
+      rows:CB.epay.filter(r=>cbInR(f,r.fp)).map(r=>[r.bl,r.mas,r.at,r.lin,r.doc,r.id,r.cli,fmtDate(r.reg),r.cur,r.mbl,r.op,r.ban,r.mp,fmtDate(r.fp),r.res,r.con])};
+  }
+  if(k==='det'){
+    const rows = ['F005-00031010','F005-00031011'].map(fdByNum).filter(d=>d&&cbInR(f,d.date));
+    return {cols:['Año','Mes','Día','Serie','Cód. Cliente','Cliente','Tipo Doc.','Nro. Documento','Tipo Operación','Condición de Pago','Fecha','Nro. Asiento','Unidad','Estado Doc.','Moneda','Importe Afecto S/','Afecto Descontado S/','Inafecto S/','Descuento S/','IGV S/','Total S/','Importe Pagado','Saldo','Agente de Aduana','Indicador Operación','Cód. Factura','Cód. Embarcador','Cód. Consignatario','ID Documento','Con Detracción','Cód. Actividad','Tipo Detracción','% Detracción'], num:[15,16,17,18,19,20,21,22], foot:[20,22],
+      rows:rows.map(d=>{ const [s,n] = cbSplitDoc(d.num), [y,m,di] = d.date.split('-'), r = d.tc||1, ruc = fdRuc(d.fact), pay = cbApplied(d.num); return [y,m,di,s,'C'+ruc,d.fact,'01',n,'0101',d.pay||'Crédito',fmtDate(d.date),'AS-'+String(1000+d.id),'Agencia',d.status,d.cur,fdNet(d)*r,0,0,0,fdIgv(d)*r,fdTot(d)*r,pay,fdTot(d)-pay,cbAgent(d),'Venta','F-'+d.id,'E-'+d.id,'C-'+d.id,String(d.id),'Sí','022','Por definir','Por definir']; })};
+  }
+  const rows = CB.orders.flatMap(o=>o.ops.filter(x=>x.at&&x.conf&&cbInR(f,x.at.slice(0,10))).map(x=>({o,x})));
+  return {cols:['Fecha validación','N° Orden','Nº operación','Cliente','Documento','Moneda','Monto registrado','Monto aplicado','Resultado','Motivo','Validado por','Correo'], num:[6,7], foot:[7], rows:rows.map(({o,x})=>[new Date(x.at).toLocaleDateString('es-PE'),o.n,x.conf.num,o.cli,o.doc||'-',x.conf.cur,x.reg,x.apl,x.st,x.motivo||'-',x.by,x.mail.n?`Enviado (${x.mail.n})`:'Sin enviar']), uniq:rows.map(({x})=>x)};
+}
+function cbRepMark(k){ return k==='bl' ? fm('Agrega',CB_HU.none,'I-181','PEN-REP-01') : k==='prov' ? fm('Agrega: vista propia, por validar equivalencia',CB_HU.none,'I-181','PEN-REP-02') : k==='epay' ? fm('Agrega',CB_HU.none,'I-181','PEN-REP-01')+' '+fm('Delimita con reporte diario',CB_HU.amp,'I-158','PEN-I158-06') : k==='det' ? fm('Agrega',CB_HU.none,'I-181','PEN-REP-01')+' '+fm('Agrega: % sin regla aprobada','HU-FAC-08','I-115','PEN-I115-01') : fm('Agrega',CB_HU.val,'I-158','PEN-I158-03')+' '+fm('Por validar: alcance',CB_HU.val,'I-158','PEN-JENNY-I158-01'); }
+function cbRepHtml(){
+  const k = CB.rep, f = CB.rf[k], data = cbRepData(k), fmtC = (v,i)=>data.num.includes(i)&&typeof v==='number' ? fMoney(v) : esc(v);
+  const filt = k==='bl' ? fF('Línea',fSel([['ZIM','ZIM'],['DMFP','DMFP']],f.linea,`id="cbRepLinea" onchange="cbRfSet('linea',this.value)"`,'Todas')) : k==='prov' ? fF('Tipo de Documento',fSel(FD_TYPES,f.tipo,`id="cbRepTipo" onchange="cbRfSet('tipo',this.value)"`,'Elegir'))+fF('Serie',`<input placeholder="Ingresar serie" value="${esc(f.serie)}" onchange="cbRfSet('serie',this.value)">`)+fF('Número',`<input placeholder="Ingresar número" value="${esc(f.num)}" onchange="cbRfSet('num',this.value)">`)+cbRange(f) : cbRange(f);
+  const foot = data.foot.map(i=>({i, v:k==='dia' && i===7 ? data.rows.reduce((a,r)=>a+r[7],0) : data.rows.reduce((a,r)=>a+(Number(r[i])||0),0)}));
+  const mapF = {}; foot.forEach(x=>mapF[x.i]=x.v);
+  const uniq = k==='dia' ? [...new Map(data.uniq.map(x=>[x.conf.num,x])).values()].reduce((a,x)=>a+x.reg,0) : null;
+  return `<div class="fac-card" style="padding:6px 24px 0;margin-bottom:16px"><div class="fac-acts" style="justify-content:space-between">
+      <div class="fac-tabs fac-mk" id="cbRepTabs" ${fb('Agrega: cuatro reportes',CB_HU.none,'I-181','PEN-REP-03')} style="margin:0;border:none">${CB_REPS.map(([id,l])=>`<button type="button" class="${k===id?'on':''}" onclick="cbRepTab('${id}')">${l}</button>`).join('')}</div>
+      <span class="fac-acts" style="padding:6px 0">${fChgBtn()}</span></div></div>
+    <div class="fac-card" id="cbRepF"><div class="fac-head"><div><h3>${CB_REPS.find(r=>r[0]===k)[1]} ${cbRepMark(k)}</h3><div class="fac-sub">Ingrese datos para buscar</div></div></div>
+      <div class="fac-g4">${filt}</div>
+      <div class="fac-btns"><button type="button" class="cc-btn" onclick="renderCb()">Buscar</button><button type="button" class="cc-btn" onclick="cbRepClear()">Limpiar</button></div></div>
+    <div class="fac-card" id="cbRepRes"><div class="fac-head"><h3>Resultados (${data.rows.length})</h3><button type="button" class="cc-btn" onclick="toast('Descarga de Excel simulada','info')">Exportar</button></div>
+      <div class="fac-scroll"><table class="fac-tbl fac-fix" id="cbRepTbl"><thead><tr>${data.cols.map((c,i)=>`<th class="${data.num.includes(i)?'num':''}">${c}${k==='bl'&&c==='Monto USD'?' '+fm('Agrega: el ejemplo no lo trae',CB_HU.none,'I-181','PEN-REP-02'):''}</th>`).join('')}</tr></thead><tbody>
+        ${data.rows.map(r=>`<tr>${r.map((v,i)=>`<td class="${data.num.includes(i)?'num':''}">${fmtC(v,i)}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${data.cols.length}" class="fac-empty">No se encontraron resultados con los criterios seleccionados.</td></tr>`}
+      </tbody>${data.rows.length&&data.foot.length?`<tfoot><tr>${data.cols.map((c,i)=>`<td class="${data.num.includes(i)?'num':''}">${i===0?'Total':i in mapF?fMoney(mapF[i]):''}</td>`).join('')}</tr></tfoot>`:''}</table></div>
+      ${k==='dia'?`<div class="fac-note" id="cbDiaUniq">Abonos únicos registrados: <b>${fMoney(uniq)}</b></div>`:''}</div>`;
+}
+function cbRepClear(){ const f = CB.rf[CB.rep]; Object.keys(f).forEach(x=>f[x]=''); renderCb(); }
+/* ---------- Notificar Devolución (Documentos Contables, única excepción en Facturación) ---------- */
+const CB_ND = {nave:'',viaje:'',puerto:'',cli:'',saldo:'',cur:'USD',mot:'',doc:'',dir:'A devolver'};
+function cbNdOpen(){ cbSeed(); Object.assign(CB_ND,{nave:'',viaje:'',puerto:'',cli:'',saldo:'',cur:'USD',mot:'',doc:'',dir:'A devolver'}); cbNdRender(); }
+function cbNdSet(k, v){
+  CB_ND[k] = v;
+  if(k==='doc'){ const d = fdByNum(v); if(d){ Object.assign(CB_ND,{nave:d.nave,viaje:d.nro,puerto:d.puerto,cli:d.fact,cur:d.cur}); } }
+  cbNdRender();
+}
+function cbNdRender(){
+  const d = CB_ND;
+  facOpen(`<h3>Notificar devolución</h3><div style="height:12px"></div>
+    <div class="fac-g2">${fF('Nave',`<input id="ndNave" placeholder="Ingresar nave" value="${esc(d.nave)}" onchange="cbNdSet('nave',this.value)">`)}${fF('Viaje',`<input id="ndViaje" placeholder="Seleccionar viaje" value="${esc(d.viaje)}" onchange="cbNdSet('viaje',this.value)">`)}${fF('Puerto',`<input placeholder="Ingresar puerto" value="${esc(d.puerto)}" onchange="cbNdSet('puerto',this.value)">`)}${fF('Cliente',`<input id="ndCli" value="${esc(d.cli)}" onchange="cbNdSet('cli',this.value)">`)}
+      ${fF('Saldo',`<div class="fac-range"><input id="ndSaldo" type="number" min="0" step="0.01" placeholder="Ingresar saldo" value="${esc(d.saldo)}" onchange="cbNdSet('saldo',this.value)"><select style="width:90px" onchange="cbNdSet('cur',this.value)">${['USD','PEN'].map(c=>`<option ${c===d.cur?'selected':''}>${c}</option>`).join('')}</select></div>`)}${fF('Motivo',`<textarea id="ndMot" rows="2" placeholder="Motivo / Observación *" onchange="cbNdSet('mot',this.value)">${esc(d.mot)}</textarea>`)}</div>
+    <div class="fac-sec">Vista previa del aviso automático ${fm('Agrega',CB_HU.ti,'I-164','PEN-JENNY-I164-01')}</div>
+    <div class="fac-g2" id="ndAuto">${fF('Documento',fSel(FD.list.filter(x=>!fdIsNc(x)).map(x=>x.num),d.doc,`id="ndDoc" onchange="cbNdSet('doc',this.value)"`,'Elegir documento'))}${fF(`Tipo ${fm('',CB_HU.ti,'I-164','PEN-I164-02')}`,fSel(['A cobrar','A devolver'],d.dir,`id="ndDir" onchange="cbNdSet('dir',this.value)"`))}</div>
+    <div class="fac-pdf" id="ndPrev" style="margin-top:10px"><dl class="fac-kv"><dt>Para</dt><dd>cobranzas@cosmos.example</dd><dt>Asunto</dt><dd>Saldo ${esc(d.dir.toLowerCase())}: ${esc(d.doc||'-')}</dd><dt>Cliente</dt><dd>${esc(d.cli||'-')}</dd><dt>Monto</dt><dd>${d.saldo?cbMoney(d.cur,d.saldo):'-'}</dd></dl></div>
+    <div class="fac-btns"><button type="button" class="cc-btn" id="ndSend" onclick="cbNdSend()">Enviar</button><button type="button" class="cc-btn pink" onclick="facClose()">Cancelar</button></div>`, 'md');
+}
+function cbNdSend(){
+  const d = CB_ND;
+  if(!d.saldo || !String(d.mot).trim()){ toast('Por favor, complete todos los campos obligatorios.','error'); return; }
+  CB.avisos.unshift({tipo:'Saldo', doc:d.doc||'-', cli:d.cli||'-', monto:Number(d.saldo), cur:d.cur, at:facNow(), dir:d.dir});
+  facClose(); toast('Notificación enviada a Cobranzas','success');
+}
+/* ---------- Documentación: espejo de la consulta de BL, con Estado Pago ---------- */
+const DB = {kind:'imp', f:{nave:'',nro:'',bl:'',ind:'',mani:'',from:'',to:'',st:'',pay:''}, prov:false, page:1, size:10};
+function openDocBl(kind, bl){
+  cbSeed(); DB.kind = kind||'imp'; DB.f = {nave:'',nro:'',bl:bl||'',ind:'',mani:'',from:'',to:'',st:'',pay:''}; DB.page = 1;
+  facEnter('screenDocBl'); renderDb();
+}
+function dbSet(k, v){ DB.f[k] = v; DB.page = 1; renderDb(); }
+function dbClear(){ Object.keys(DB.f).forEach(k=>DB.f[k]=''); renderDb(); }
+function dbGo(p, size){ if(size) DB.size = size; DB.page = p; renderDb(); }
+function renderDb(){
+  const imp = DB.kind==='imp', f = DB.f, q = normTxt, title = imp?'Documentación de Importación':'Documentación de Exportación';
+  facSetBar('screenDocBl', title, ['Inicio', imp?'Importación':'Exportación', title]);
+  const all = CB.bls.filter(b=>(!f.nave||q(b.nave).includes(q(f.nave)))&&(!f.nro||q(b.nro).includes(q(f.nro)))&&(!f.bl||q(b.n).includes(q(f.bl)))&&(!f.mani||q(b.mani).includes(q(f.mani)))&&(!f.from||b.emi>=f.from)&&(!f.to||b.emi<=f.to)&&(!f.st||b.st===f.st)&&(!f.pay||b.pay===f.pay)), list = all.slice((DB.page-1)*DB.size, DB.page*DB.size);
+  document.getElementById('dbRoot').innerHTML = `<div class="fac-card" id="dbF"><div class="fac-head"><div><h3>Consulta y carga</h3><div class="fac-sub">Ingresar datos y/o documentos</div></div></div>
+    <div class="fac-g4">${fF('Nave',`<input placeholder="Ingresar nave" value="${esc(f.nave)}" onchange="dbSet('nave',this.value)">`)}${fF('Número de Viaje',`<input placeholder="Ingresar número de viaje" value="${esc(f.nro)}" onchange="dbSet('nro',this.value)">`)}${fF(imp?'Número BL':'Número de Reserva',`<input id="dbBl" placeholder="${imp?'Ingresar número de BL':'Ingresar número de reserva'}" value="${esc(f.bl)}" onchange="dbSet('bl',this.value)">`)}${fF('Indicador',fSel(['Importación','Exportación'],f.ind,`disabled`,'Elegir indicador'))}${fF('Número de Manifiesto',`<input placeholder="Ingresar número de manifiesto" value="${esc(f.mani)}" onchange="dbSet('mani',this.value)">`)}${fF('Fecha de Emisión',`<div class="fac-range"><input type="date" value="${f.from}" onchange="dbSet('from',this.value)"><input type="date" value="${f.to}" onchange="dbSet('to',this.value)"></div>`)}${fF('Estado BL',fSel(CB_BL_ST,f.st,`onchange="dbSet('st',this.value)"`,'Elegir estado BL'))}${fF('Estado Pago',fSel(CB_BL_PAY,f.pay,`id="dbPay" onchange="dbSet('pay',this.value)"`,'Elegir estado pago'))}</div>
+    <div class="fac-btns"><button type="button" class="cc-btn" onclick="renderDb()">Buscar</button><button type="button" class="cc-btn" onclick="dbClear()">Limpiar</button></div></div>
+  <div class="fac-card" id="dbRes"><div class="fac-head"><h3>Resultados (${all.length})</h3></div><div class="fac-scroll"><table class="fac-tbl fac-fix"><thead><tr><th>Número BL</th><th>${imp?'Consignatario':'Embarcador'}</th><th>Nave</th><th>Número de Viaje</th><th>Fecha de Emisión</th><th>Número de Manifiesto</th><th>Puerto Carga</th><th>Puerto Descarga</th><th>Puerto Final</th><th>Tipo de BL</th><th>Estado BL</th><th>Estado Pago</th></tr></thead><tbody>
+    ${list.map(b=>`<tr><td>${esc(b.n)}</td><td>${esc(b.cons)}</td><td>${esc(b.nave)}</td><td>${esc(b.nro)}</td><td>${fmtDate(b.emi)}</td><td>${esc(b.mani)}</td><td>${esc(b.pc)}</td><td>${esc(b.pd)}</td><td>${esc(b.pf)}</td><td>${esc(b.tp)}</td><td>${esc(b.st)}</td><td class="dbPayCell">${esc(b.pay)}</td></tr>`).join('') || '<tr><td colspan="12" class="fac-empty">No se encontraron resultados con los criterios seleccionados.</td></tr>'}
+    </tbody></table></div><div class="cc-pager" style="border:none">${pagerHtml(all.length, DB.page, DB.size, 'dbGo')}</div></div>`;
+}
+/* ---------- Organización: espejo de Información Financiera ---------- */
+function openOrgFin(){
+  document.getElementById('orgRoot').innerHTML = `<div class="fac-card"><div class="fac-head"><div><h3>COSMOS GLOBAL LOGISTICS S.A.C</h3><div class="fac-sub">Organización</div></div></div>
+    <div class="fac-tabs"><button type="button" onclick="vyOut()">Sucursal</button><button type="button" onclick="vyOut()">Área</button><button type="button" class="on">Información Financiera</button></div>
+    <div class="fac-scroll" id="orgFin"><table class="fac-tbl"><thead><tr><th>Banco</th><th>Tipo</th><th>Cuenta</th><th>SWIFT</th><th>Codigo ERP</th><th>Moneda</th><th>Cover</th></tr></thead><tbody>
+      ${CB_ORG_FIN.map(f=>`<tr><td>${esc(f.banco)}</td><td>${esc(f.tipo)}</td><td>${esc(f.cuenta)}</td><td>${esc(f.swift)}</td><td>${esc(f.erp)}</td><td>${esc(f.moneda)}</td><td><input type="checkbox" style="width:auto" disabled ${f.cover?'checked':''}></td></tr>`).join('')}
+    </tbody></table></div></div>`;
+  facEnter('screenOrgFin'); facSetBar('screenOrgFin','Consulta Organización',['Inicio','Organización','Consulta Organización']);
+}
+/* ---------- Registro en navegación ---------- */
+const CB_IC = '<rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>';
+CC_SUBMENU['Cobranzas'] = [
+  ['Validación de pagos',"openCobranzas('val')",'<path d="M9 12l2 2 4-4"/><rect x="4" y="4" width="16" height="16" rx="3"/>',true],
+  ['Medios de pago',"openCobranzas('mp')",CB_IC,true],
+  ['Reportes',"openCobranzas('rep')",'<path d="M5 20V8M12 20V4M19 20v-9"/>',true]];
+CC_SUBMENU['Documentación'] = [
+  ['Importación > Documentos',"openDocBl('imp')",'<path d="M5 4h10l4 4v12H5z"/><path d="M15 4v4h4"/>',true],
+  ['Exportación > Documentos',"openDocBl('exp')",'<path d="M5 4h10l4 4v12H5z"/><path d="M15 4v4h4"/>',true]];
+PAGEBAR.screenCobranzas = ['Validación de Órdenes de Pagos',['Inicio','Cobranzas','Validación de Pagos']];
+PAGEBAR.screenDocBl = ['Documentación de Importación',['Inicio','Importación','Documentación de Importación']];
+PAGEBAR.screenOrgFin = ['Consulta Organización',['Inicio','Organización','Consulta Organización']];
+/* Acciones de guía: solo navegan y abren vistas, no cambian datos */
+function cgReset(){ document.querySelectorAll('.modal-bg.show').forEach(m=>m.classList.remove('show')); cbSeed(); }
+function cgEnter(){ if(document.querySelector('section.panel.active')?.id!=='screenCobranzas') facEnter('screenCobranzas'); }
+function cgVal(est){ cgReset(); CB.tab = 'val'; CB.view = 'list'; CB.sel = null; CB.f = {num:'',from:'',to:'',met:'',cur:'',est:est==null?'Pendiente de validación':est}; CB.page = 1; cgEnter(); renderCb(); }
+function cgOrd(n){ cgReset(); cbOpen(n); }
+function cgOp(n, id){ cgOrd(n); cbOpOpen(n,id); }
+function cgMail(n, id){ cgOrd(n); cbMail(n,id); }
+function cgRev(n){ const o = cbOrder(n).ops.some(cbOk) ? n : CB.orders.find(x=>x.ops.some(cbOk)).n; cgOrd(o); cbRevOpen(o); }
+function cgMp(doc){ cgReset(); cbMpOpen(doc); }
+function cgRep(k){ cgReset(); CB.tab = 'rep'; CB.rep = k; cgEnter(); renderCb(); }
+function cgBl(bl){ cgReset(); openDocBl('imp',bl); }
+const CB_END = {end:()=>{ if(document.querySelector('section.panel.active')?.id==='screenCobranzas') document.querySelectorAll('.modal-bg.show').forEach(m=>m.classList.remove('show')); }};
+const CB_GUIDES = [
+  {t:'Flujo completo de Cobranza', ...CB_END, steps:[
+    {go:()=>cgVal(), el:'#cbEst', h:'1. Órdenes pendientes', p:'Estado llega en Pendiente de validación. Basta Buscar para ver lo que falta revisar.'},
+    {go:()=>cgVal(), el:'#cbAvisos', h:'2. Aviso por constancia', p:'Cuando el cliente carga o reemplaza una constancia, el aviso aparece aquí y llega por correo.'},
+    {go:()=>cgOrd('PO-00302'), el:'#cbCond', h:'3. Abrir la orden', p:'Condición, total, conciliado y saldo reales. Enlaces al documento, a medios de pago y al Socio.'},
+    {go:()=>cgOrd('PO-00302'), el:'#cbTrans', h:'4. Transferencias', p:'Lo declarado por el cliente queda junto a lo confirmado por Cobranzas.'},
+    {go:()=>cgOp('PO-00302','b'), el:'#cbOpConf', h:'5. Confirmar los datos', p:'Número de operación, fecha efectiva, banco de origen y banco receptor en campos propios. USD por defecto.'},
+    {go:()=>cgOp('PO-00302','b'), el:'#cbDecision', h:'6. Decidir', p:'Resultado y motivo. El motivo es obligatorio si no es Aprobado.'},
+    {go:()=>cgMail('PO-00307','a'), el:'#cbMailBody', h:'7. Correo al cliente', p:'Al confirmar se ve el correo con orden, resultado y motivo guardados. Controla el reenvío.'},
+    {go:()=>cgOrd('PO-00302'), el:'#cbEjemplo', h:'8. CONTADO DOC', p:'La factura de USD 300 sigue con saldo hasta tener los USD 300 conciliados.'},
+    {go:()=>cgBl('ZIMUBOX0000012'), el:'#dbRes', h:'9. Estado Pago del BL', p:'Documentación muestra el Estado Pago que resulta de la liquidación.'},
+    {go:()=>cgMp('F005-00031011'), el:'#cbMpPag', h:'10. Medios de pago', p:'Consulta cómo se pagó un documento. No cambia aplicaciones.'},
+    {go:()=>cgRev('PO-00307'), el:'#cbRevFx', h:'11. Si la validación fue errónea', p:'Revertir pide motivo y deja claro el efecto en Connect, SAP y el documento.'},
+    {go:()=>cgRep('dia'), el:'#cbRepRes', h:'12. Cierre del día', p:'El reporte diario lista las validaciones. Los demás reportes están en las otras pestañas.'}]},
+  {t:'I-158 Avisos, correo, reverso y reporte diario', ...CB_END, steps:[
+    {go:()=>cgVal(), el:'#cbAvisos', h:'Aviso interno', p:'Pago, cliente, documento y marca de nueva versión.'},
+    {go:()=>{ cgVal(); cbAvisoOpen(0); }, el:'#cbAvisoBody', h:'Vista previa', p:'Lo que recibe Cobranzas por una constancia.'},
+    {go:()=>cgMail('PO-00307','a'), el:'#cbMailBody', h:'Correo', p:'Un correo por cada resultado, con orden, estado y motivo guardados.'},
+    {go:()=>cgMail('PO-00307','a'), el:'#cbMailCtl', h:'Reenvío', p:'Indica si ya se envió, para no duplicar.'},
+    {go:()=>cgOrd('PO-00306'), el:'#cbRevBtn', h:'Revertir validación', p:'Solo con operaciones aprobadas.'},
+    {go:()=>cgRev('PO-00307'), el:'#cbRevFx', h:'Efectos', p:'Connect, SAP y documento. Después pide el motivo.'},
+    {go:()=>cgRep('dia'), el:'#cbRepTbl', h:'Reporte diario', p:'Validaciones del periodo. Un abono distribuido no suma dos veces.'}]},
+  {t:'I-177 Datos confirmados, bancos, moneda y Excel', ...CB_END, steps:[
+    {go:()=>cgVal(), el:'#cbExpBtn', h:'Exportar', p:'Estados de documentos emitidos, con los filtros de la búsqueda.'},
+    {go:()=>cgOp('PO-00301','a'), el:'#cbOpDecl', h:'Declarados', p:'Lo que informó el cliente se conserva como antecedente.'},
+    {go:()=>cgOp('PO-00301','a'), el:'#cbOpConf', h:'Confirmados', p:'Operación, fecha efectiva y monto en campos propios.'},
+    {go:()=>cgOp('PO-00301','a'), el:'#cbBancoR', h:'Bancos', p:'Origen del catálogo de Data Maestra. Receptor de las cuentas de Organización.'},
+    {go:()=>cgOp('PO-00301','a'), el:'#cbMoneda', h:'Moneda', p:'USD por defecto. Sol peruano pide aprobación de jefatura.'},
+    {go:()=>cgOp('PO-00301','a'), el:'#cbCorte', h:'Corte de 20:00', p:'Aviso informativo, sin regla automática.'},
+    {go:()=>cgOp('PO-00301','a'), el:'#cbSapNote', h:'Destino SAP', p:'Solicitud pendiente de validar con SAP.'},
+    {go:()=>cgOp('PO-00301','a'), el:'#cbResult', h:'Resultado', p:'Mismas cuatro opciones de hoy.'}]},
+  {t:'I-178 Crédito, CONTADO DOC y CONTADO I', ...CB_END, steps:[
+    {go:()=>cgVal(), el:'#cbSaldoCol', h:'Saldo por orden', p:'Nueva columna, junto a la Condición con los dos valores nuevos.'},
+    {go:()=>cgOrd('PO-00302'), el:'#cbSaldoBox', h:'Saldo real', p:'Total, conciliado y saldo.'},
+    {go:()=>cgOrd('PO-00302'), el:'#cbEjemplo', h:'CONTADO DOC', p:'USD 300 = saldo a favor USD 100 + abono USD 200. Requiere conciliación manual.'},
+    {go:()=>cgOrd('PO-00303'), el:'#cbContadoI', h:'CONTADO I', p:'VB financiado: figura como contado, pero Cobranzas controla la cuenta por cobrar.'},
+    {go:()=>cgOrd('PO-00305'), el:'#cbCred', h:'Crédito', p:'Referencia de solo lectura al Socio. Días y límite por definir.'}]},
+  {t:'I-180 Medios de pago', ...CB_END, steps:[
+    {go:()=>cgMp('F005-00031011'), el:'#cbMpF', h:'Buscar', p:'Por tipo, serie, número y socio.'},
+    {go:()=>cgMp('F005-00031011'), el:'#cbMpDoc', h:'Documento Principal', p:'Cliente, Ag.Aduana, monto y estado.'},
+    {go:()=>cgMp('F005-00031011'), el:'#cbMpRel', h:'Documentos Relacionados', p:'Los que comparten un abono, y sus notas.'},
+    {go:()=>cgMp('F005-00031011'), el:'#cbMpPag', h:'Medios de Pago', p:'Tipo, número, cuenta, banco, monto y lo aplicado en esta factura.'},
+    {go:()=>cgMp('F005-00031011'), el:'#cbMpSum', h:'Sin duplicar', p:'El total del abono se cuenta una vez.'},
+    {go:()=>{ cgMp('F005-00031011'); cbMpDist('AB-1'); }, el:'#cbDistTbl', h:'Abono distribuido', p:'Un abono, dos documentos y dos socios.'}]},
+  {t:'I-181 Reportes', ...CB_END, steps:[
+    {go:()=>cgRep('bl'), el:'#cbRepLinea', h:'BL/VB pendientes', p:'Líneas ZIM y DMFP, con Monto USD.'},
+    {go:()=>cgRep('prov'), el:'#cbRepTbl', h:'Provisiones vs documento', p:'Relación documento, provisión y proveedor.'},
+    {go:()=>cgRep('epay'), el:'#cbRepTbl', h:'Recaudación EPAY', p:'Por día o rango.'},
+    {go:()=>cgRep('det'), el:'#cbRepTbl', h:'Facturas con detracción', p:'Para autodetracciones. El % queda sin regla.'}]},
+  {t:'I-164 Aviso de saldos de liquidación', ...CB_END, steps:[
+    {go:()=>cgVal(), el:'#cbAvisos', h:'Avisos recibidos', p:'Para contrastar con el documento.'},
+    {go:()=>{ cgVal(); cbAvisoOpen(2); }, el:'#cbAvisoBody', h:'Vista previa', p:'Documento, cliente, monto, moneda y tipo.'},
+    {go:()=>{ cgVal(); cbNdOpen(); }, el:'#ndAuto', h:'Notificar Devolución', p:'Desde Documentos Contables se mantiene el aviso manual, con la vista previa del automático.'}]}
+];
+GUIDES.screenCobranzas = CB_GUIDES;
+GUIDES.screenDocBl = CB_GUIDES;
 </script>
 <div class="cc-dd" id="ccDropdown"></div>
 <div class="tour-layer" id="tourLayer"><div class="tour-hole" id="tourHole"></div><div class="tour-pop" id="tourPop" onclick="event.stopPropagation()"></div></div>

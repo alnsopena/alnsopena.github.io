@@ -7,16 +7,17 @@ Corte: 01/11/2026. Fuentes: cert de Connect en solo lectura, Monday (6 tickets d
 - **[Observado]:** visto hoy en cert.
 - **[Código]:** leído en el respaldo del 01/10. No se probó en cert, puede diferir.
 - **[Bitácora]:** reportado en el ticket. No se reprodujo.
-- **[Adjunto]:** visto en un archivo adjunto del ticket. En este levantamiento no se revisó ningún adjunto, por eso no hay filas con esta etiqueta.
+- **[Adjunto]:** visto en archivos entregados por Alonso: `CONNECT REPORTES-VALIDACION.docx` y sus imágenes, cuatro reportes de ejemplo de Blue Ship, correo de condiciones de pago y notas de reunión del 15/10. Solo se tomó estructura y reglas, sin valores reales.
+- **[Catálogo]:** visto en `Catalogos Carga Inicial (2).xlsx`, entregado por Alonso. Si difiere de cert, manda cert.
 - **[No verificado en Connect]:** no se pudo observar. No se da por hecho.
 
 La columna PEN indica "Propuesta TI, por validar" cuando el ticket o la HU tiene el punto abierto. Ningún PEN de esta matriz está aprobado.
 
-Capturas de Connect: carpeta `docs/capturas-connect/cobranza/` del proyecto, fuera de este repo (11 archivos). Tienen datos reales, por eso no se copian al mockup.
+Capturas de Connect: carpeta `docs/capturas-connect/cobranza/` del proyecto, fuera de este repo (15 archivos). Tienen datos reales, por eso no se copian al mockup.
 
 ## 1. Hallazgos que cambian el alcance
 
-1. **El renombre ya existe en buena parte.** Cert muestra el menú **Cobranzas**, la ruta "Inicio / Cobranzas / Validación de Pagos" y textos como "Decisión de Cobranzas" y "Monto registrado por Cobranzas". Del menú cuelga una sola opción: Validación de pagos. No hay menú Tesorería. La brecha real de I-158 es el singular "Cobranza", si se confirma, y los textos que aún dicen Tesorería. La ruta técnica sigue siendo `treasury-module`, y no es visible como texto de pantalla. Ver D2.
+1. **El renombre ya existe en buena parte.** Cert muestra el menú **Cobranzas**, la ruta "Inicio / Cobranzas / Validación de Pagos" y textos como "Decisión de Cobranzas" y "Monto registrado por Cobranzas". Del menú cuelga una sola opción: Validación de pagos. No hay menú Tesorería. D2 lo cierra: el menú queda Cobranzas y no se dibuja como cambio. La ruta técnica sigue siendo `treasury-module`, y no es visible como texto de pantalla. Ver D2.
 2. **"Observado" no existe como resultado.** El combo de la operación ofrece Pendiente de revisión, Aprobado, Aprobado con observaciones y Rechazado. I-158 pide comunicar "aprobado, rechazado u observado". Ver D3.
 3. **La pantalla tiene tres niveles, no dos.** Listado de órdenes, Detalle de Orden de Pago (transferencias y liquidaciones) y modal Detalle de operación. Los campos que menciona el encargo están en el modal. Además existe **Nuevo Pago**, que ya muestra Monto total, Monto pagado y Saldo pendiente por orden.
 4. **Ya existe un aviso manual a Cobranza por devolución.** Documentos Contables tiene el botón Notificar Devolución, con modal de Nave, Viaje, Puerto, Cliente, Saldo, Moneda (USD por defecto) y Motivo, y botón Enviar. El mockup lo deja como aviso simple. I-164 pide el aviso automático, así que lo de hoy es base, no algo que se reemplace sin decisión. Ver D7.
@@ -32,8 +33,8 @@ Capturas de Connect: carpeta `docs/capturas-connect/cobranza/` del proyecto, fue
 
 | Pantalla | Elemento | Cómo está hoy en Connect | Cambio | Ticket | HU | PEN / por validar | Esfuerzo estimado para el dev |
 |---|---|---|---|---|---|---|---|
-| Menú | Nombre del módulo | [Observado] "Cobranzas" en menú y ruta de pantalla | Modificar: "Cobranza" en singular | I-158 | HU-FAC-11; el renombre solo está en bitácora del 15/10 | Propuesta TI, por validar. PEN-I158-05. Ver D2 | Bajo |
-| Menú | Textos que aún dicen Tesorería | [Código] "Notificación enviada a Tesorería" y "Notificar a Tesorería" en Documentos Contables. [No verificado en Connect] asuntos y cuerpos de correo | Modificar: cambia los textos visibles. No toca la ruta técnica | I-158 | HU-FAC-11; bitácora del 15/10 | Propuesta TI, por validar. PEN-I158-05 (superficies afectadas) | Bajo |
+| Menú | Nombre del módulo | [Observado] "Cobranzas" en menú y ruta de pantalla | Sin cambio, ya aplicado en Connect según Alonso | I-158 | HU-FAC-11; el renombre solo está en bitácora del 15/10 | Ninguno. PEN-I158-05 no se dibuja (D2) | Bajo |
+| Menú | Textos que aún dicen Tesorería | [Código] "Notificación enviada a Tesorería" y "Notificar a Tesorería" en Documentos Contables. [No verificado en Connect] asuntos y cuerpos de correo | Sin cambio, ya aplicado en Connect según Alonso | I-158 | HU-FAC-11; bitácora del 15/10 | Ninguno. PEN-I158-05 no se dibuja (D2) | Bajo |
 | Menú | Opción Validación de pagos | [Observado] única opción de Cobranzas | Sin cambio | I-158 | HU-FAC-11 | Ninguno | Bajo |
 | Menú | Opción Medios de pago | [Observado] no existe | Agregar | I-180 | Sin HU, bitácora Monday | Propuesta TI, por validar. PEN-ABO-02 (dónde se consulta) | Bajo |
 | Menú | Opción Reportes | [Observado] no existe en Cobranzas | Agregar | I-181 | Sin HU, bitácora Monday | Propuesta TI, por validar. PEN-REP-03 | Bajo |
@@ -60,9 +61,9 @@ Capturas de Connect: carpeta `docs/capturas-connect/cobranza/` del proyecto, fue
 | Detalle de Orden de Pago | Enlace al documento contable | [Observado] el número solo aparece en la grilla. El detalle no lo muestra | Agregar: enlace al documento, para el hilo Documento contable, Pago, Validación, Aplicación | I-180 | Sin HU, bitácora Monday | Propuesta TI, por validar. PEN-ABO-01 | Bajo |
 | Detalle de Orden de Pago | Reverso de validación | [Observado] no existe. [Bitácora] hoy se anula la factura a mano en SAP y Connect | Agregar: acción Revertir validación con modal de motivo y efectos en Connect, SAP y documento | I-158 | HU-FAC-11 | Propuesta TI, por validar. PEN-I158-02, PEN-JENNY-I158-01. La HU no autoriza automatizar sin reglas | Alto |
 | Detalle de Orden de Pago | Estado tras el reverso | [No verificado en Connect] no ejecuté cambios. Combo de estados sin valor de reverso | Agregar: estado Revertido y registro de quién, cuándo y motivo | I-158 | HU-FAC-11 | Propuesta TI, por validar. PEN-I158-02 | Medio |
-| Detalle de Orden de Pago | Condición y saldo real | [Observado] Monto aplicado y Monto registrado, sin saldo de la orden ni condición | Agregar: Condición, Total, Conciliado y Saldo. Ejemplo CONTADO DOC: factura USD 300 = saldo anterior USD 100 + abono USD 200. Se cancela solo con los USD 300 conciliados | I-178 | Sin HU, bitácora Monday | Propuesta TI, por validar. PEN-CRE-02 | Alto |
-| Detalle de Orden de Pago | Nota CONTADO I | [No verificado en Connect] la condición no existe en los catálogos vistos | Agregar: nota de que el pago de Cosmos a la naviera no cancela la cuenta por cobrar del cliente | I-178 | Sin HU, bitácora Monday | Propuesta TI, por validar. PEN-CRE-01, PEN-CRE-02 | Medio |
-| Detalle de Orden de Pago | Referencia a la configuración de crédito | [Observado] Socio solo tiene Condición de Pago (Contado, Crédito). Sin días ni límite en la cabecera general | Agregar: referencia de solo lectura con enlace a Socio. No se construye la pantalla | I-178 | Sin HU, bitácora Monday. Dependencia HU-DM-01 | Propuesta TI, por validar. PEN-CRE-01. Ver D9 | Bajo |
+| Detalle de Orden de Pago | Condición y saldo real | [Observado] Monto aplicado y Monto registrado, sin saldo de la orden ni condición | Agregar: Condición, Total, Conciliado y Saldo. Ejemplo CONTADO DOC, [Adjunto] confirmado: factura USD 300 = saldo a favor USD 100 + abono USD 200. Se cancela solo con los USD 300 conciliados | I-178 | Sin HU, bitácora Monday | Propuesta TI, por validar. PEN-CRE-02 | Alto |
+| Detalle de Orden de Pago | Nota CONTADO I | [No verificado en Connect] la condición no existe en los catálogos vistos | Agregar: nota. [Adjunto] VB financiado: Cosmos paga a la línea al contado y lo traslada como crédito; Cobranzas controla la cuenta por cobrar | I-178 | Sin HU, bitácora Monday | Propuesta TI, por validar. PEN-CRE-01, PEN-CRE-02 | Medio |
+| Detalle de Orden de Pago | Referencia a la configuración de crédito | [Observado] Socio solo tiene Condición de Pago (Contado, Crédito). Sin días ni límite en la cabecera general | Agregar: referencia de solo lectura con enlace a Socio. No se construye la pantalla. [Adjunto] acordado: ATC activa casilla sujeto a crédito con días y límite en el maestro; solo va en la propuesta | I-178 | Sin HU, bitácora Monday. Dependencia HU-DM-01 | Propuesta TI, por validar. PEN-CRE-01. Ver D9 | Bajo |
 
 ### 2.4 Modal Detalle de operación
 
@@ -92,21 +93,21 @@ Capturas de Connect: carpeta `docs/capturas-connect/cobranza/` del proyecto, fue
 | Pantalla | Elemento | Cómo está hoy en Connect | Cambio | Ticket | HU | PEN / por validar | Esfuerzo estimado para el dev |
 |---|---|---|---|---|---|---|---|
 | Medios de pago | Búsqueda por documento y socio | [Observado] no existe. [Bitácora] referencia en Blue Ship | Agregar | I-180 | Sin HU, bitácora Monday | Propuesta TI, por validar. PEN-ABO-02 | Medio |
-| Medios de pago | Documento principal y relacionados | [Observado] no existe | Agregar: cliente o socio, agencia, importe, estado | I-180 | Sin HU, bitácora Monday | Propuesta TI, por validar. PEN-ABO-01 | Alto |
-| Medios de pago | Pagos aplicados por medio de pago | [Observado] no existe. Cuenta origen y Monto aplicado están en otro detalle | Agregar: tipo, número de operación o documento, cuenta, banco, importe, importe aplicado, fecha de depósito, observaciones | I-180 | Sin HU, bitácora Monday | Propuesta TI, por validar. PEN-ABO-01. Campos del ticket; la captura de referencia no se revisó | Medio |
+| Medios de pago | Documento principal y relacionados | [Observado] no existe. [Adjunto] Blue Ship, imagen 5: Documento Principal (Documento en tres casillas, Fecha, Cliente, Monto Total en dos, Ag.Aduana, Estado en dos) y Documentos Relacionados (Documento, Monto, Estado, Cliente, Agente Aduana) | Agregar: cliente o socio, agencia, importe, estado | I-180 | Sin HU, bitácora Monday | Propuesta TI, por validar. PEN-ABO-01 | Alto |
+| Medios de pago | Pagos aplicados por medio de pago | [Observado] no existe. Cuenta origen y Monto aplicado están en otro detalle | Agregar: [Adjunto] Tipo, Numero, Cuenta, Banco, Monto, En Factura, Fec. Deposito, Observaciones, más columna Aplicación | I-180 | Sin HU, bitácora Monday | Propuesta TI, por validar. PEN-ABO-01. [Adjunto] el dato de abono entre socios no viaja completo a SAP; queda para evaluación del equipo de proyectos | Medio |
 | Medios de pago | Abono único vs distribuido | [Observado] no existe. [Bitácora] la aplicación entre socios no llega completa a SAP | Agregar: distingue uno o varios documentos o socios, sin duplicar el total. Ejemplo ficticio de dos socios | I-180 | Sin HU, bitácora Monday | Propuesta TI, por validar. PEN-ABO-01, PEN-ABO-02 | Alto |
 | Medios de pago | Parciales, anulaciones y reversiones | [No verificado en Connect] | Agregar: efecto en lectura. Solo consulta, no modifica aplicaciones | I-180 | Sin HU, bitácora Monday | Propuesta TI, por validar. PEN-ABO-01, PEN-ABO-03 | Medio |
 
 ### 2.7 Reportes
 
-Columnas y formato de todas estas vistas: Propuesta TI, por validar. Sin fuente confirmada.
+Columnas: [Adjunto] tomadas de los ejemplos de Blue Ship, con etiquetas legibles. Siguen como Propuesta TI, por validar. [Adjunto] Se habilitan para Cobranzas y están en evaluación técnica y de plazos.
 
 | Pantalla | Elemento | Cómo está hoy en Connect | Cambio | Ticket | HU | PEN / por validar | Esfuerzo estimado para el dev |
 |---|---|---|---|---|---|---|---|
-| Reportes | BL/VB pendientes de cobro | [Observado] no existe en menús. [Bitácora] se consulta en Blue Ship | Agregar: filtro por códigos ZIM y DMFP, importe USD | I-181 | Sin HU, bitácora Monday | Propuesta TI, por validar. PEN-REP-01, PEN-REP-02 | Medio |
-| Reportes | Provisiones vs documento por cliente | [Observado] no hay reporte visible. Existe Consulta de Provisiones. [Código] enlace Ver Provisiones dentro de un documento originado en provisión. [Bitácora] "ya existe en otro módulo", sin nombre | Agregar: acceso con enlace a lo existente, y parámetros Serie, Número, Tipo de Documento y rango de fechas si se aprueba la vista | I-181 | Sin HU, bitácora Monday | Propuesta TI, por validar. PEN-REP-02. Ver sección 4 y D5 | Medio |
-| Reportes | Recaudación EPAY | [Observado] no existe en menús | Agregar: por día o rango | I-181 | Sin HU, bitácora Monday | Propuesta TI, por validar. PEN-REP-01, PEN-I158-06 (límite con el reporte diario) | Medio |
-| Reportes | Facturas con detracción | [Observado] no existe en menús. [Código] Documentos Contables sin campo de detracción | Agregar: por rango, para autodetracciones. Sin porcentaje, porque sigue sin aprobarse en I-115 | I-181 | Sin HU, bitácora Monday | Propuesta TI, por validar. PEN-REP-01. Relacionado I-115 | Medio |
+| Reportes | BL/VB pendientes de cobro | [Observado] no existe en menús. [Bitácora] se consulta en Blue Ship | Agregar: filtro por códigos ZIM y DMFP. [Adjunto] 21 columnas del ejemplo. Monto USD no viene en el ejemplo y se suma como propuesta. No se dibujan EmbarcadorNew, NotificanteNew, ConsolidadorNew, ConsignatarioNew, CondicionALT, los cuatro EMail ni bl_type_id. Las notas traen otro código por error de transcripción: se usa DMFP | I-181 | Sin HU, bitácora Monday | Propuesta TI, por validar. PEN-REP-01, PEN-REP-02 | Medio |
+| Reportes | Provisiones vs documento por cliente | [Observado] no hay reporte visible. Existe Consulta de Provisiones. [Código] enlace Ver Provisiones dentro de un documento originado en provisión. [Bitácora] "ya existe en otro módulo", sin nombre | Agregar: vista propia. [Adjunto] Tipo Doc., Serie, Número, Fecha Documento, Nave, Viaje, Arribo, Provisión Documento, Proveedor, RUC, Concepto, Soles, Dólares. Filtros Tipo de Documento, Serie, Número, Fecha inicio y fin. [Observado] se buscó en los menús de cert y no se ubicó; Alonso tampoco lo encuentra, solo ve el Excel de Documentos Contables. [Adjunto] No se ubicó en Connect; en la reunión del 15/10 se indicó que existía: confirmar | I-181 | Sin HU, bitácora Monday | Propuesta TI, por validar. PEN-REP-02. Ver sección 4 y D5 | Medio |
+| Reportes | Recaudación EPAY | [Observado] no existe en menús | Agregar: por rango. [Adjunto] 16 columnas del ejemplo | I-181 | Sin HU, bitácora Monday | Propuesta TI, por validar. PEN-REP-01, PEN-I158-06 (límite con el reporte diario) | Medio |
+| Reportes | Facturas con detracción | [Observado] no existe en menús. [Código] Documentos Contables sin campo de detracción | Agregar: por rango, para autodetracciones. [Adjunto] 33 campos del ejemplo con etiqueta legible. % Detracción y Tipo Detracción quedan Por definir, alineado con PEN-I115-01 | I-181 | Sin HU, bitácora Monday | Propuesta TI, por validar. PEN-REP-01. Relacionado I-115 | Medio |
 | Reportes | Reporte diario de confirmaciones | [Bitácora] no existe. [Observado] no aparece en menús | Agregar: validaciones del periodo | I-158 | HU-FAC-11 | Propuesta TI, por validar. PEN-I158-03, PEN-I158-06, PEN-JENNY-I158-01. Ver D8 | Medio |
 
 ### 2.8 Aviso por saldos de liquidación
@@ -117,18 +118,52 @@ Columnas y formato de todas estas vistas: Propuesta TI, por validar. Sin fuente 
 | Documentos Contables / Cobranza | Aviso automático de saldo | [Bitácora] "No se genera la alerta" en UAT-E2E-124, sin evidencia adjunta. [No verificado en Connect] no hay ejecución acreditada | Agregar: vista previa con documento, cliente, monto, moneda y tipo a cobrar o a devolver | I-164 | HU-TI-01 | Propuesta TI, por validar. PEN-JENNY-I164-01, PEN-I164-01, PEN-I164-02 | Medio |
 | Cobranza | Consulta del aviso recibido | [No verificado en Connect] | Agregar: lista simple en Validación de pagos para contrastar con el documento | I-164 | HU-TI-01 | Propuesta TI, por validar. PEN-JENNY-I164-01 (destinatario y canal) | Medio |
 
+### 2.9 Data Maestra y bancos
+
+| Pantalla | Elemento | Cómo está hoy en Connect | Cambio | Ticket | HU | PEN / por validar | Esfuerzo estimado para el dev |
+|---|---|---|---|---|---|---|---|
+| Data Maestra > Catálogo | Bancos (Perú), código BANK | [Observado] 17 bancos: Alfin Banco, BanBif, Banco de Comercio, Banco de Crédito del Perú, Banco Falabella, Banco GNB Perú, Banco Pichincha, Banco Ripley, Bank of China (Perú), BBVA Perú, Citibank del Perú, ICBC Perú Bank, Interbank, Mibanco, Santander Perú, Scotiabank Perú, Banco de la Nacion. [Catálogo] hoja 23, igual | Sin cambio: el desplegable Banco de origen usa esta lista y orden | I-177 | HU-FAC-11, ampliación en Monday 15/10 | PEN-UAT122-04 | Bajo |
+| Data Maestra > Organización | Información Financiera | [Observado] Banco, Tipo, Cuenta, SWIFT, Codigo ERP, Moneda, Cover. Cosmos tiene tres filas: BBVA Perú, Scotiabank Perú y Banco de Crédito del Perú. Cuentas no copiadas | Sin cambio: espejo de solo lectura con cuentas ficticias. Alimenta Banco receptor | I-177 | HU-FAC-11, ampliación en Monday 15/10 | PEN-UAT122-04 | Bajo |
+| Data Maestra > Socio | Información Financiera | [Observado] pestaña con Banco, Tipo, Cuenta, Moneda. [Código] banco desde el catálogo BANK | Sin cambio funcional: en el mockup el banco deja de ser texto libre y pasa a la lista, y tres socios del hilo tienen cuenta ficticia | I-177 | HU-FAC-11, ampliación en Monday 15/10 | Ninguno | Bajo |
+| Nuevo Pago | Banco origen y Nro. Cuenta | [Código] el combo lista solo bancos de Organización > Información Financiera de Cosmos y Nro. Cuenta depende del banco. No abrí el formulario en cert | Sin cambio: se dibuja igual. Hallazgo: se rotula "origen" pero son cuentas de Cosmos, es decir, receptor. Insumo del punto abierto | I-177 | HU-FAC-11, ampliación en Monday 15/10 | PEN-UAT122-04 | Bajo |
+| Socio | Tipo de cuenta | [Catálogo] hoja 13: Cuenta corriente y Cuenta de ahorros. El mockup tiene además Cuenta de detracciones. [Catálogo] hoja 119 existe aparte; sus valores no se copiaron | Sin cambio: no se quita sin aprobación. Por decidir | Ninguno | Ninguno | Ninguno | Bajo |
+
+### 2.10 Documentación y liberación
+
+| Pantalla | Elemento | Cómo está hoy en Connect | Cambio | Ticket | HU | PEN / por validar | Esfuerzo estimado para el dev |
+|---|---|---|---|---|---|---|---|
+| Menú Documentación | Opciones | [Observado] Importación: Documentos, Transbordo, Direccionamiento. Exportación: rutas de Documentos y Corte [Código]; no desplegué su submenú | Sin cambio: espejo solo de Documentos | Contexto I-098 | HU-ATC-12 | Ninguno | Bajo |
+| Documentación de Importación y Exportación | Filtro y columna Estado Pago | [Observado] Listo para facturar, Liquidación pendiente, Liquidación pagada, Liquidación crédito. [Catálogo] hoja 114, igual. Exportación con los mismos filtros, y Número de Reserva en lugar de Número BL | Sin cambio: espejo con búsqueda y resultados, BL ficticios. Sin Cargar archivos, Transmitir ni avisos | Contexto I-098 | HU-ATC-12 | Ninguno | Bajo |
+| Documentación de Importación | Estado BL | [Observado] POR REVISAR, APROBADO, TRANSMITIDO A SUNAT, POR RECTIFICAR, Anulado. [Catálogo] hoja 26, igual | Sin cambio | Contexto I-098 | HU-ATC-12 | Ninguno | Bajo |
+| Cobranzas y Documentación | Relación Estado liquidación con Estado Pago | [No verificado en Connect] no ejecuté confirmaciones. Es inferencia | Sin cambio: el mockup simula Pago confirmado como Liquidación pagada, los demás como Liquidación pendiente, y crédito como Liquidación crédito. Por validar | Contexto I-098 | HU-ATC-12 | Ninguno | Bajo |
+| Editar BL | Recargo - Cláusula | [Observado] Condición de Pago, Lugar de Pago. [Catálogo] hoja 42: COLLECT, PREPAID. Botón Listo para facturar, no usado | Sin cambio: fuera, no toca validación de pagos | Ninguno | Ninguno | Ninguno | Bajo |
+| Transbordo, Direccionamiento, Corte | Filtros | [Observado] sin dato de pago en filtros. [Código] Corte tiene Exoneración de Pago | Sin cambio: fuera | Ninguno | Ninguno | Ninguno | Bajo |
+| Atención al cliente > Liberación de carga | Búsqueda | [Observado] Número de solicitud, Estado, Bloqueado por, BL, sin dato de pago en filtros ni columnas. [Catálogo] hoja 61: BL endosado | Sin cambio: fuera | Contexto I-098 | HU-ATC-12 | Ninguno | Bajo |
+| Atención al cliente > Gestión de suspensiones | Suspensión de clientes | [Observado] existe en `customer-service-module/suspensions/search`. Filtros Tipo de socio, Socio, Estado de suspensión, Fecha Inicio, Fecha Fin. Columnas Tipo de socio, Socio, Estado suspensión, Motivo, F. inicio, F. fin, Días suspendido, Acciones. [Adjunto] en reunión se dijo que se habilitará para ATC y Cobranzas | Sin cambio: no se dibuja | Ninguno | Ninguno | Pendiente confirmar el acceso para Cobranzas | Bajo |
+
+### 2.11 Catálogos contrastados
+
+| Pantalla | Elemento | Cómo está hoy en Connect | Cambio | Ticket | HU | PEN / por validar | Esfuerzo estimado para el dev |
+|---|---|---|---|---|---|---|---|
+| Validación de pagos | Estado de la orden | [Observado] cinco opciones. [Catálogo] hoja 77 trae además Facturado. Manda cert | Sin cambio: cinco opciones | I-177 | HU-FAC-11 | Ninguno | Bajo |
+| Detalle de operación | Resultado de la validación | [Catálogo] hoja 76 confirma las cuatro opciones de cert | Sin cambio: constante única `CB_RESULTS`. [Adjunto] sigue abierto en qué casos aplica Aprobado con observaciones y por qué Observaciones no se deshabilita con Aprobado | I-177 | HU-FAC-11, ampliación en Monday 15/10 | PEN-UAT122-06 | Bajo |
+| Validación de pagos | Método | [Catálogo] hoja 78: Transferencia bancaria, ASBANC, Crédito. Igual a cert | Sin cambio | I-177 | HU-FAC-11 | Ninguno | Bajo |
+| Validación de pagos | Moneda | [Catálogo] hoja 01: Sol peruano, Dólar estadounidense. Igual a cert. [Adjunto] USD por defecto porque todos los VB están en dólares | Sin cambio en la lista | I-177 | HU-FAC-11, ampliación en Monday 15/10 | PEN-UAT122-06 | Bajo |
+| Condición | Contado y Crédito | [Catálogo] hoja 74 solo trae Contado y Crédito. CONTADO DOC y CONTADO I no existen. [Catálogo] hoja 24 trae Crédito 15, 30, 45 y 60 días, insumo para días | Sin cambio en el catálogo. Lo nuevo sigue como propuesta. [Adjunto] abierto quién define la condición y en qué etapa, y la inclusión en la entrega | I-178 | Sin HU, bitácora Monday | PEN-CRE-01 | Bajo |
+| Documentación | Información de pago | [Catálogo] hoja 116: Pendiente de Liquidar, Liquidados sin pago, Liquidados con pago/crédito. No lo vi en pantalla | Sin cambio: no se usa | Ninguno | Ninguno | Ninguno | Bajo |
+
 ## 3. Cobertura y reconciliación de los tickets
 
 | Ticket | Monday | HU | Etapa en Monday | Estado Go Live | Filas | Observación |
 |---|---|---|---|---|---|---|
 | I-158 | 13053172344 | HU-FAC-11 | Reportado | Bloqueante | 11 | Reclasificado de No bloqueante por instrucción del 15/10 |
-| I-177 | 13301592632 | HU-FAC-11 | Reportado | Bloqueante | 17 | Prueba UAT-E2E-122, resultado Insatisfactorio el 16/09 |
+| I-177 | 13301592632 | HU-FAC-11 | Reportado | Bloqueante | 25 | Prueba UAT-E2E-122, resultado Insatisfactorio el 16/09 |
 | I-180 | 13305999538 | Sin HU | Reportado | Bloqueante | 8 | PEN-ABO-03 pide vincular HU y evaluar viabilidad |
 | I-181 | 13306017974 | Sin HU | Reportado | Bloqueante | 5 | PEN-REP-03 pide vincular HU |
-| I-178 | 13306003629 | Sin HU | Reportado | Bloqueante | 6 | Área COBRANZA, FACTURACIÓN, ATC. Emisión y permisos van fuera de esta pantalla |
+| I-178 | 13306003629 | Sin HU | Reportado | Bloqueante | 7 | Área COBRANZA, FACTURACIÓN, ATC. Emisión y permisos van fuera de esta pantalla |
 | I-164 | 13053611977 | HU-TI-01 | Reportado | Bloqueante | 3 | UAT-E2E-124 bloqueada, sin evidencia |
 
-Una fila puede sumar a más de un ticket. **Conteo de filas de la matriz: 47.** Agregar 32, Modificar 7, Quitar 0 y 8 filas sin cambio, que se dibujan igual a Connect y sin marca.
+Una fila puede sumar a más de un ticket. **Conteo de filas de la matriz: 66.** Agregar 32, Modificar 5, Quitar 0 y 29 filas sin cambio, que se dibujan igual a Connect y sin marca, o solo se registran.
 
 **Contradicciones entre encargo, bitácora y HU:**
 
@@ -151,7 +186,7 @@ No cubre el requerimiento nada de lo que hay hoy:
 - **Documento del mockup:** guarda las provisiones vinculadas, pero las muestra documento por documento y no como reporte.
 - **Connect:** el enlace Ver Provisiones [Código] muestra solo las provisiones del documento abierto. No hallé un reporte en los menús de esta sesión.
 
-Falta el punto que pide PEN-REP-02: identificar el reporte que la reunión da por existente y comprobar la equivalencia.
+Falta el punto que pide PEN-REP-02: identificar el reporte que la reunión da por existente y comprobar la equivalencia. Tampoco lo encontré en el recorrido de Data Maestra y Documentación. Por eso va como vista propia (D5 ajustada), con el formato de Blue Ship.
 
 ## 5. Tickets de contexto (no se dibujan como cambio)
 
@@ -169,9 +204,11 @@ Solo se refleja en el mockup el Método ASBANC y el Estado liquidación, tal com
 - I-178: PEN-CRE-01, PEN-CRE-02, PEN-CRE-03
 - I-164: PEN-I164-01, PEN-I164-02, PEN-JENNY-I164-01
 
-Los textos de estos PEN aún no están en `FAC_PEN`. Se agregan en la construcción, con su consulta y propuesta.
+Los textos de los PEN dibujados ya están en `FAC_PEN`, con su consulta y propuesta. No se dibujan PEN-I158-05 (D2) ni PEN-UAT122-03 (homologación para probar).
 
-## 7. Decisiones que necesito antes de tocar el HTML
+## 7. Decisiones
+
+Aprobadas por Alonso, con estos ajustes: D2, el menú queda Cobranzas, igual a Connect y sin marca. D4, además se revisó Data Maestra y Documentación (secciones 2.9 y 2.10). D5, vista propia en Reportes con el formato de Blue Ship y por validar, en lugar de solo un enlace. D10, ninguna escritura en Monday ni Notion. El texto de abajo es la recomendación original.
 
 - **D1. Ubicación del menú.** El encargo pide menú lateral, pero el mockup usa barra superior (`ccMenu`, `CC_SUBMENU`) y ya tiene el botón Cobranzas. **Recomiendo** la barra superior, con Validación de pagos, Medios de pago y Reportes como opciones de ese menú, igual que Connect. Un menú lateral sería un rediseño que el proveedor no tiene por qué hacer.
 - **D2. Nombre.** Connect dice Cobranzas y el ticket pide Cobranza. **Recomiendo** dibujar "Cobranza" con marca y PEN-I158-05, y mostrar en la marca que el valor actual es "Cobranzas". No lo presento como renombre desde Tesorería, porque eso ya no es cierto.
@@ -194,9 +231,8 @@ Los textos de estos PEN aún no están en `FAC_PEN`. Se agregan en la construcci
 - La revisión en el código corresponde al respaldo del 01/10. Cert manda cuando difieren.
 - El mockup usa el texto "Se quitó respecto a Connect actual" en `fRemoved`. Esta matriz no tiene filas Quitar: ningún ticket pide retirar un elemento de Cobranza. Si durante la construcción surge una, uso ese patrón.
 
-**Adjuntos no revisados** (no se descargaron, no hay autorización para esta tarea):
+**Adjuntos.** Alonso entregó el Word de reportes y validación, cuatro reportes de ejemplo, el catálogo de carga inicial, y las precisiones del correo de condiciones de pago y de las notas del 15/10. Sin revisar: `Plantilla_Evidencia_UAT (1).docx`, en la bitácora de I-177.
 
-- `Plantilla_Evidencia_UAT (1).docx`, en la bitácora de I-177, con dos capturas.
-- `CONNECT REPORTES-VALIDACION.docx`: Word original con las capturas de Blue Ship Medios de Pago (imagen 5), de los parámetros de reportes y de validación (imagen 7). Citado en bitácora, sin archivo listado en los comentarios ni en la columna de archivos.
-- Notas de reunión del 15/10/2026, citadas como fuente I-179, sin archivo listado.
-- `CREACION DE NUEVAS CONDICIONES DE PAGO.eml`, citado en I-178, sin archivo listado.
+**Levantamiento adicional.** Abrí en cert, sin guardar: Catálogo BANK, Organización e Información Financiera, un Socio con rol Línea naviera, Documentación de Importación y un BL, y Liberación de carga. Solo leí filtros de Exportación, Corte, Transbordo y Direccionamiento. Vi Gestión de suspensiones solo en su búsqueda, sin buscar ni abrir detalle. No abrí el formulario Nuevo Pago, Transferencia. Filtré por Estado Pago y por rol: pueden quedar recordados en la sesión.
+
+**Posibles brechas del Word, no dibujadas.** Crédito para facturación manual: lo cubre I-178 y PEN-CRE-01, no se construye (D9). Activación y suspensión de un cliente: ningún ticket del alcance la cubre, pero la pantalla existe en Atención al cliente, ver 2.10. Falta confirmar el acceso para Cobranzas.
