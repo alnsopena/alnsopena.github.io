@@ -1961,7 +1961,7 @@
         </div>
         <div class="filter-actions tf-actions"><button class="btn-corp-outline" onclick="clearVyFilters()">Limpiar</button><button class="btn-corp" onclick="renderVyList()">Buscar</button></div>
       </div>
-      <div class="results-head"><h2>Resultados <span class="count" id="vyCount"></span></h2><div class="tf-quick" id="vyQuick"></div><button class="btn-corp-outline" onclick="vyOut()">Exportar</button></div>
+      <div class="results-head"><h2>Resultados <span class="count" id="vyCount"></span></h2><div class="tf-quick" id="vyQuick"></div><button class="btn-corp-outline" id="vyExp" onclick="vyExport()">Exportar</button></div>
       <div class="results-table"><table>
         <thead><tr><th>Código de Viaje</th><th>Número de Viaje</th><th>Puerto de Operación</th><th>Nombre de la Nave</th><th>Cliente</th><th>Tipo de Servicio</th><th>ETA</th><th>ETD</th><th>PDA asociada <span class="tf-new">nuevo</span></th><th>Estado</th></tr></thead>
         <tbody id="vyResults"></tbody></table><div class="cc-pager" id="vyPager"></div></div>
@@ -1986,7 +1986,7 @@
         </div>
         <div class="filter-actions tf-actions"><button class="btn-corp-outline" onclick="clearNvFilters()">Limpiar</button><button class="btn-corp" onclick="renderNvList()">Buscar</button></div>
       </div>
-      <div class="results-head"><h2>Resultados <span class="count" id="nvCount"></span></h2><div class="tf-quick" id="nvQuick"></div><button class="btn-corp-outline" onclick="vyOut()">Exportar</button></div>
+      <div class="results-head"><h2>Resultados <span class="count" id="nvCount"></span></h2><div class="tf-quick" id="nvQuick"></div><button class="btn-corp-outline" id="nvExp" onclick="nvExport()">Exportar</button></div>
       <div class="results-table"><table>
         <thead><tr><th>Nombre de Nave</th><th>Código Lloyds (IMO)</th><th>Tipo de Nave</th><th>Bandera</th><th>Armador</th><th>Fecha de Creación</th><th class="r">LOA</th><th class="r">Manga</th><th class="r">Calado</th><th class="r">TRG</th><th class="r">TRN</th><th>Homologación <span class="tf-new">nuevo</span></th></tr></thead>
         <tbody id="nvResults"></tbody></table><div class="cc-pager" id="nvPager"></div></div>
@@ -5911,6 +5911,14 @@ function vyFiltered(){
   return VOYAGES.filter(v=>(!q('code') || normTxt(v.code).includes(q('code'))) && (!q('nro') || normTxt(v.nro).includes(q('nro'))) && (!q('nave') || normTxt(v.nave).includes(q('nave'))) &&
     (!q('cliente') || normTxt(v.cliente).includes(q('cliente'))) && (!f.tipo || v.tipo===f.tipo) && (!f.estado || v.estado===f.estado));
 }
+function vyExport(){
+  facXlsx('Viajes','Viajes',['Código de Viaje','Número de Viaje','Puerto de Operación','Nombre de la Nave','Cliente','Tipo de Servicio','ETA','ETD','PDA asociada','Estado'],
+    vyFiltered().map(v=>[v.code,v.nro,v.puerto,v.nave,v.cliente,v.tipo,vyFmt(v.eta),vyFmt(v.etd),vyPdas(v).join(', ')||'-',v.estado]));
+}
+function nvExport(){
+  facXlsx('Naves','Naves',['Nombre de Nave','Código Lloyds (IMO)','Tipo de Nave','Bandera','Armador','Fecha de Creación','LOA','Manga','Calado','TRG','TRN','Homologación'],
+    nvFiltered().map(s=>[s.name,s.imo||'-',vtypeLabel(s.vtype)||'-',s.flag||'-',s.armador||'-',vyFmt(s.created),s.loa||'-',s.manga||'-',s.calado||'-',s.grt||'-',s.trn||'-',s.estado]));
+}
 function vyPdas(v){ return [...new Set(v.rows.map(r=>r.pda).filter(Boolean))]; }
 function renderVyList(){
   const all = vyFiltered(), pages = Math.max(1, Math.ceil(all.length/vy.size)); vy.page = Math.min(Math.max(1, vy.page), pages);
@@ -8094,6 +8102,23 @@ function fdListHtml(){
 }
 function fdGo(p, size){ if(size) FD.size = size; FD.page = p; renderFd(); }
 /* ---------- Exportar Excel ---------- */
+function facXlsx(file, sheet, cols, rows, foot){
+  try{
+    const widths = cols.map((c,i)=>Math.min(46, Math.max(10, String(c).length+2, ...rows.map(r=>String(r[i]??'').length+2))));
+    const cell = v => typeof v==='number' ? {v, s:2} : (v??'');
+    const body = [cols.map(c=>({v:c, s:3})), ...rows.map(r=>r.map(cell))];
+    if(foot) body.push(foot.map((v,i)=> v==='' ? '' : {v, s: typeof v==='number' ? 4 : 1}));
+    const a = document.createElement('a'); a.href = URL.createObjectURL(buildXlsx([{name:sheet.replace(/[\\/?*:\[\]]/g,' ').slice(0,31), rows:body, widths}]));
+    a.download = `${file}_${new Date().toISOString().slice(0,10).replace(/-/g,'')}.xlsx`;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+    toast(`Excel descargado: ${rows.length} filas`,'success');
+  }catch(err){ console.error(err); toast('No se pudo exportar el Excel','error'); }
+}
+function fdExportDo(){
+  facClose();
+  facXlsx('Documentos_Contables','Documentos Contables',['Número de Documento','Documento a Emitir','Facturar a','Fecha de Emisión','Moneda','Total','RUC','Servicio facturado','Usuario emisor'],
+    fdFiltered().flatMap(d=>d.lines.map(l=>[d.num,d.tipo,d.fact,fmtDate(d.date),d.cur,fdTot(d),fdRuc(d.fact),l.svc,d.user])));
+}
 function fdExport(){
   const rows = fdFiltered().flatMap(d=>d.lines.map(l=>({d,l}))).slice(0,8);
   facOpen(`<h3>Exportar Excel ${fm('',FAC_HU.excel,'I-064','PEN-JENNY-I064-01')}</h3>
@@ -8101,7 +8126,7 @@ function fdExport(){
       <th>RUC ${fm('Agrega',FAC_HU.excel,'I-064','PEN-I064-01')}</th><th>Servicio facturado ${fm('Agrega',FAC_HU.excel,'I-064','PEN-I064-01')}</th><th>Usuario emisor ${fm('Agrega',FAC_HU.excel,'I-064')}</th></tr></thead><tbody>
       ${rows.map(({d,l})=>`<tr><td>${esc(d.num)}</td><td>${esc(d.tipo)}</td><td>${esc(d.fact)}</td><td>${fmtDate(d.date)}</td><td>${d.cur}</td><td class="num">${fMoney(fdTot(d))}</td><td>${fdRuc(d.fact)}</td><td>${esc(l.svc)}</td><td>${esc(d.user)}</td></tr>`).join('')}
     </tbody></table></div>
-    <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose()">Cerrar</button><button type="button" class="cc-btn" onclick="facClose();toast('Descarga de Excel simulada','info')">Exportar</button></div>`, 'lg');
+    <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose()">Cerrar</button><button type="button" class="cc-btn" id="facExpDo" onclick="fdExportDo()">Exportar</button></div>`, 'lg');
 }
 /* ---------- Error SAP legible ---------- */
 function fdSapErr(id){
@@ -8829,13 +8854,18 @@ function cbAvisoOpen(i){
     <div class="fac-btns">${a.order?`<button type="button" class="cc-btn ghost" onclick="facClose();cbOpen('${a.order}')">Ver orden</button>`:''}${fdByNum(a.doc)?`<button type="button" class="cc-btn ghost" onclick="facClose();cbDocOpen('${a.doc}')">Ver documento</button>`:''}<button type="button" class="cc-btn" onclick="facClose()">Cerrar</button></div>`, 'md');
 }
 /* ---------- Exportar ---------- */
+function cbExportDo(){
+  facClose();
+  facXlsx('Validacion_de_Pagos','Validación de pagos',['N° Orden','Documento','Cliente','Condición','Estado','Moneda','Monto total','Conciliado','Saldo','Estado del Documento'],
+    cbFiltered().map(o=>[o.n,o.doc||'-',o.cli,o.cond,o.est,o.cur,o.total,cbConc(o),cbSaldo(o),o.doc?cbDocStatus(o.doc):'-']));
+}
 function cbExport(){
   const rows = cbFiltered();
   facOpen(`<h3>Exportar Excel ${fm('',CB_HU.amp,'I-177','PEN-UAT122-02')}</h3>
     <div class="fac-scroll" style="margin-top:14px"><table class="fac-tbl"><thead><tr><th>N° Orden</th><th>Documento</th><th>Cliente</th><th>Condición</th><th>Estado</th><th>Moneda</th><th class="num">Monto total</th><th class="num">Conciliado</th><th class="num">Saldo</th><th>Estado del Documento</th></tr></thead><tbody>
       ${rows.map(o=>`<tr><td>${o.n}</td><td>${esc(o.doc||'-')}</td><td>${esc(o.cli)}</td><td>${esc(o.cond)}</td><td>${esc(o.est)}</td><td>${o.cur}</td><td class="num">${fMoney(o.total)}</td><td class="num">${fMoney(cbConc(o))}</td><td class="num">${fMoney(cbSaldo(o))}</td><td>${o.doc?esc(cbDocStatus(o.doc)):'-'}</td></tr>`).join('') || '<tr><td colspan="10" class="fac-empty">Sin datos</td></tr>'}
     </tbody></table></div>
-    <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose()">Cerrar</button><button type="button" class="cc-btn" onclick="facClose();toast('Descarga de Excel simulada','info')">Exportar</button></div>`, 'lg');
+    <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose()">Cerrar</button><button type="button" class="cc-btn" id="facExpDo" onclick="cbExportDo()">Exportar</button></div>`, 'lg');
 }
 /* ---------- Nuevo Pago ---------- */
 function cbNpOpen(){ CB.np.pick = {}; cbNpRender(); }
@@ -9083,11 +9113,16 @@ function cbRepHtml(){
     <div class="fac-card" id="cbRepF"><div class="fac-head"><div><h3>${CB_REPS.find(r=>r[0]===k)[1]} ${cbRepMark(k)}</h3><div class="fac-sub">Ingrese datos para buscar</div></div></div>
       <div class="fac-g4">${filt}</div>
       <div class="fac-btns"><button type="button" class="cc-btn" onclick="renderCb()">Buscar</button><button type="button" class="cc-btn" onclick="cbRepClear()">Limpiar</button></div></div>
-    <div class="fac-card" id="cbRepRes"><div class="fac-head"><h3>Resultados (${data.rows.length})</h3><button type="button" class="cc-btn" onclick="toast('Descarga de Excel simulada','info')">Exportar</button></div>
+    <div class="fac-card" id="cbRepRes"><div class="fac-head"><h3>Resultados (${data.rows.length})</h3><button type="button" class="cc-btn" id="cbRepExp" ${data.rows.length?'':'disabled'} onclick="cbRepExport()">Exportar</button></div>
       <div class="fac-scroll"><table class="fac-tbl fac-fix" id="cbRepTbl"><thead><tr>${data.cols.map((c,i)=>`<th class="${data.num.includes(i)?'num':''}">${c}${k==='bl'&&c==='Monto USD'?' '+fm('Agrega: el ejemplo no lo trae',CB_HU.none,'I-181','PEN-REP-02'):''}</th>`).join('')}</tr></thead><tbody>
         ${data.rows.map(r=>`<tr>${r.map((v,i)=>`<td class="${data.num.includes(i)?'num':''}">${fmtC(v,i)}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${data.cols.length}" class="fac-empty">No se encontraron resultados con los criterios seleccionados.</td></tr>`}
       </tbody>${data.rows.length&&data.foot.length?`<tfoot><tr>${data.cols.map((c,i)=>`<td class="${data.num.includes(i)?'num':''}">${i===0?'Total':i in mapF?fMoney(mapF[i]):''}</td>`).join('')}</tr></tfoot>`:''}</table></div>
       ${k==='dia'?`<div class="fac-note" id="cbDiaUniq">Abonos únicos registrados: <b>${fMoney(uniq)}</b></div>`:''}</div>`;
+}
+function cbRepExport(){
+  const k = CB.rep, data = cbRepData(k), name = CB_REPS.find(r=>r[0]===k)[1];
+  const foot = data.foot.length ? data.cols.map((c,i)=> i===0 ? 'Total' : data.foot.includes(i) ? data.rows.reduce((a,r)=>a+(Number(r[i])||0),0) : '') : null;
+  facXlsx('Reporte_'+normTxt(name).replace(/[^a-z0-9]+/g,'_'), name, data.cols, data.rows, foot);
 }
 function cbRepClear(){ const f = CB.rf[CB.rep]; Object.keys(f).forEach(x=>f[x]=''); renderCb(); }
 /* ---------- Notificar Devolución (Documentos Contables, única excepción en Facturación) ---------- */
@@ -9289,6 +9324,7 @@ function rlSearch(){ RL.searched = true; RL.page = 1; renderRl(); }
 function rlClear(){ RL.f = {sys:'',name:'',desc:''}; RL.searched = false; renderRl(); }
 function rlGo(p, size){ if(size) RL.size = size; RL.page = p; renderRl(); }
 function rlFiltered(){ const f = RL.f, q = normTxt; return RL_ROLES.filter(r=>(!f.sys||r.sys===f.sys)&&(!f.name||q(r.n).includes(q(f.name)))&&(!f.desc||q(r.d).includes(q(f.desc)))); }
+function rlExport(){ facXlsx('Roles','Roles',['Sistema','Nombre','Descripción'], rlFiltered().map(r=>[r.sys,r.n,r.d])); }
 function rlOut(){ toast('No disponible en este prototipo','info'); }
 function renderRl(){ if(RL.view==='detail'){ renderRlDetail(); return; }
   updatePagebar('screenRoles');
@@ -9300,7 +9336,7 @@ function renderRl(){ if(RL.view==='detail'){ renderRlDetail(); return; }
     <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th>Sistema</th><th>Nombre</th><th>Descripción</th></tr></thead><tbody>
       ${list.map(r=>`<tr><td>${esc(r.sys)}</td><td><button type="button" class="fac-link" onclick="rlOpen('${esc(r.n)}')"><b>${esc(r.n)}</b></button></td><td>${esc(r.d)}</td></tr>`).join('') || '<tr><td colspan="3" class="fac-empty">No se encontraron roles con los filtros especificados.</td></tr>'}
     </tbody></table></div>
-    <div class="fac-btns" style="justify-content:space-between;align-items:center"><button type="button" class="cc-btn" onclick="toast('Descarga de Excel simulada','info')">Exportar</button><div class="cc-pager" style="border:none">${pagerHtml(all.length, RL.page, RL.size, 'rlGo')}</div></div></div>`:''}`;
+    <div class="fac-btns" style="justify-content:space-between;align-items:center"><button type="button" class="cc-btn" id="rlExp" onclick="rlExport()">Exportar</button><div class="cc-pager" style="border:none">${pagerHtml(all.length, RL.page, RL.size, 'rlGo')}</div></div></div>`:''}`;
 }
 function rlOpen(n){ RL.sel = n; RL.view = 'detail'; RL.tab = 'menu'; RL.open = {}; if(document.querySelector('section.panel.active')?.id!=='screenRoles') facEnter('screenRoles'); renderRl(); }
 function rlBack(){ RL.view = 'list'; RL.sel = null; renderRl(); }
@@ -9341,6 +9377,7 @@ function usSearch(){ US.searched = true; US.page = 1; renderUs(); }
 function usClear(){ US.f = {email:'',name:'',ruc:'',sys:'',role:''}; US.searched = false; renderUs(); }
 function usGo(p, size){ if(size) US.size = size; US.page = p; renderUs(); }
 function usFiltered(){ const f = US.f, q = normTxt; return US_LIST.filter(u=>(!f.email||q(u.e).includes(q(f.email)))&&(!f.name||q(u.n).includes(q(f.name)))&&(!f.ruc||US_RUC.includes(f.ruc))&&(!f.role||u.roles.includes(f.role))&&(!f.sys||u.roles.some(r=>RL_ROLES.find(x=>x.n===r).sys===f.sys))); }
+function usExport(){ facXlsx('Usuarios','Usuarios',['Email','Nombre','RUC','Roles'], usFiltered().map(u=>[u.e,u.n,US_RUC,u.roles.join(', ')])); }
 function renderUs(){ if(US.view==='detail'){ renderUsDetail(); return; }
   updatePagebar('screenUsers');
   const f = US.f, all = usFiltered(), pages = Math.max(1,Math.ceil(all.length/US.size)); US.page = Math.min(US.page,pages); const list = all.slice((US.page-1)*US.size, US.page*US.size), roles = RL_ROLES.filter(r=>!f.sys||r.sys===f.sys).map(r=>r.n);
@@ -9351,7 +9388,7 @@ function renderUs(){ if(US.view==='detail'){ renderUsDetail(); return; }
     <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th>Email</th><th>Nombre</th><th>RUC</th><th>Roles</th></tr></thead><tbody>
       ${list.map(u=>`<tr><td><button type="button" class="fac-link" onclick="usOpen('${u.e}')">${esc(u.e)}</button></td><td>${esc(u.n)}</td><td>${US_RUC}</td><td>${esc(u.roles.join(', '))}</td></tr>`).join('') || '<tr><td colspan="4" class="fac-empty">No se encontraron resultados con los criterios seleccionados.</td></tr>'}
     </tbody></table></div>
-    <div class="fac-btns" style="justify-content:space-between;align-items:center"><button type="button" class="cc-btn" onclick="toast('Descarga de Excel simulada','info')">Exportar</button><div class="cc-pager" style="border:none">${pagerHtml(all.length, US.page, US.size, 'usGo')}</div></div></div>`:''}`;
+    <div class="fac-btns" style="justify-content:space-between;align-items:center"><button type="button" class="cc-btn" id="usExp" onclick="usExport()">Exportar</button><div class="cc-pager" style="border:none">${pagerHtml(all.length, US.page, US.size, 'usGo')}</div></div></div>`:''}`;
 }
 function usOpen(e){ US.sel = e; US.view = 'detail'; US.tab = 'roles'; if(document.querySelector('section.panel.active')?.id!=='screenUsers') facEnter('screenUsers'); renderUs(); }
 function usBack(){ US.view = 'list'; US.sel = null; renderUs(); }
