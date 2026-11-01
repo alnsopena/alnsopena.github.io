@@ -1214,6 +1214,10 @@
   .cb-dot.on{background:#2E9E4F}
   body.chg-on .fac-zone .cb-mk{padding:18px 8px 8px}
   .cb-chg{margin-bottom:16px}
+  .rl-tree,.rl-leaf{list-style:none;margin:0;padding:0;font-size:13.5px}
+  .rl-leaf{padding:4px 0 8px 40px}.rl-leaf li{padding:3px 0}
+  .rl-node{display:flex;align-items:center;gap:6px;padding:4px 0}
+  .rl-branch{display:flex;flex-direction:column;gap:8px}
   #aiGuide{max-height:62vh;overflow:auto}
   .fac-zone .chg-tag.fac-nb,.fac-zone .chg-tag.fac-nb.fac-pentag:hover{background:#fff;color:#6D4FC2;box-shadow:inset 0 0 0 1px #B9A5EE}
   body.chg-on .fac-zone [data-chg*="No bloqueante"]{outline:1px solid #B9A5EE!important}
@@ -1905,6 +1909,8 @@
   <section class="panel fac-screen fac-zone" id="screenCobranzas"><div id="cbRoot"></div></section>
   <section class="panel fac-screen fac-zone" id="screenDocBl"><div id="dbRoot"></div></section>
   <section class="panel fac-screen fac-zone" id="screenOrgFin"><div id="orgRoot"></div></section>
+  <section class="panel fac-screen fac-zone" id="screenRoles"><div id="rlRoot"></div></section>
+  <section class="panel fac-screen fac-zone" id="screenUsers"><div id="usRoot"></div></section>
 
   <!-- ============ SOCIOS (Data Maestra > Socio de Connect) ============ -->
   <section class="panel" id="screenPartners">
@@ -3291,7 +3297,7 @@ document.addEventListener('click', e=>{ const dd = document.getElementById('ccDr
   if(dd && dd.classList.contains('show') && !e.target.closest('#ccDropdown') && !e.target.closest('.cc-menu')) dd.classList.remove('show'); });
 window.addEventListener('scroll', ()=>document.getElementById('ccDropdown')?.classList.remove('show'), {passive:true});
 function setMenuOn(id){
-  const m = id==='screenDashboard' ? 'Dashboard' : id==='screenTariffs' ? 'Tarifa' : (id==='screenMaster' || id==='screenRequests' || id==='screenPartners' || id==='screenVessels') ? 'Data Maestra' : id==='screenVoyages' ? 'Agenciamiento' : (id==='screenProvisions' || id==='screenAccDocs') ? 'Liquidación' : id==='screenCobranzas' ? 'Cobranzas' : id==='screenDocBl' ? 'Documentación' : id==='screenOrgFin' ? 'Data Maestra' : 'PDA';
+  const m = id==='screenDashboard' ? 'Dashboard' : id==='screenTariffs' ? 'Tarifa' : (id==='screenMaster' || id==='screenRequests' || id==='screenPartners' || id==='screenVessels') ? 'Data Maestra' : id==='screenVoyages' ? 'Agenciamiento' : (id==='screenProvisions' || id==='screenAccDocs') ? 'Liquidación' : id==='screenCobranzas' ? 'Cobranzas' : id==='screenDocBl' ? 'Documentación' : id==='screenOrgFin' ? 'Data Maestra' : (id==='screenRoles' || id==='screenUsers') ? 'Seguridad' : 'PDA';
   document.querySelectorAll('#ccMenu button[data-menu]').forEach(b=>b.classList.toggle('on', b.dataset.menu===m));
 }
 function ccClock(){
@@ -9217,6 +9223,168 @@ const CB_GUIDES = [
 ];
 GUIDES.screenCobranzas = CB_GUIDES;
 GUIDES.screenDocBl = CB_GUIDES;
+/* ============================================================
+   SEGURIDAD: Usuarios y Roles y Permisos. Espejo de Connect, sin marcas.
+   Roles y permisos: nombres de Connect. Usuarios: ficticios del mockup.
+============================================================ */
+const RL_SYS = ['SION Portal Externo','SION Portal Interno'];
+const RL_MENU = [['Dashboard',['Dashboard']],['PDA',['PDA','PDA Plantilla']],['Agenciamiento',['Viaje','Itinerario']],['Tarifa',['Tarifa']],
+  ['Documentación',['Importación','Documentos','Transbordo','Direccionamiento','Exportación','Documentos','Cutoff']],
+  ['Atención al cliente',['Instrucciones','Liberación de la Carga','Direccionamiento Permanente','Direccionamiento de Vacíos','Sobreestadía','Daño de Contenedores','Gestión de Suspensiones','Reporte de Comisiones por Pagar','Aprobación de Usuarios Web']],
+  ['Liquidación',['Provisiones','Documentos Contables']],['Cobranzas',['Validación de pagos']],
+  ['Data Maestra',['Catálogo','Organización','Socio','Servicios','Nave','Tipo de cambio','Series','Plantilla Email','Días No Laborables']],['Seguridad',['Usuarios','Roles y Permisos']]];
+const RL_BRANCH = ['Callao','Paita','Ilo','Mollendo','Pisco','Salaverry','Talara','Iquitos','Supe','Malvinas','Chancay'];
+const RL_PERMS = [
+  ['Agenciamiento - Itinerario',['Acceder al módulo Importación de Itinerarios','Importar archivos de itinerario (Colibri/Albatross)']],
+  ['Agenciamiento - Viaje',['Agregar alias de naviera','Agregar asignación de práctico','Agregar asignación de remolcador','Agregar categoría','Agregar evento operativo (arribo, zarpe, etc.)','Agregar servicio','Asociar PDA a un viaje existente','Buscar y filtrar viajes','Cancelar viaje','Cargar archivos en adjuntos','Crear viaje','Editar viaje','Eliminar alias de naviera','Eliminar archivos adjuntos','Enviar correo relacionado al viaje','Exportar viajes','Generar reporte de arribo y zarpe','Generar solicitud de servicio','Ingresar al módulo Viaje','Ingresar número de manifiesto de salida','Modificar o eliminar asignación de práctico','Modificar o eliminar asignación de remolcador','Modificar o eliminar evento operativo','Modificar o eliminar servicio','Registrar o actualizar manualmente el número de manifiesto','Solicitar número de manifiesto','Ver historial y auditoría del viaje']],
+  ['Atención al cliente - Aprobación de Usuarios Web',['Aprobar solicitud de acceso web','Buscar Aprobación de Usuarios Web','Desactivar usuario externo','Descargar declaración de solicitud','Reactivar usuario externo','Rechazar solicitud de acceso web']],
+  ['Atención al cliente - Atención al cliente',['Anular Direccionamiento Permanente']],
+  ['Atención al cliente - Daño de Contenedores',['Aprobar daño de contenedor','Buscar BL asociado','Buscar daños de contenedor','Carga masiva de daños','Exonerar daño de contenedor','Guardar daño de contenedor','Notificar daño de contenedor','Rechazar daño de contenedor','Registrar nuevo daño de contenedor','Subir adjuntos del daño']],
+  ['Atención al cliente - Direccionamiento de Vacíos',['Acceso al TAB Instrucciones de Direccionamiento','Acceso al TAB Registro de Instrucciones','Activar modo gestión (aprobar/rechazar) en TAB Direccionamiento','Aprobar instrucciones en estado pendiente','Buscar instrucciones en TAB Direccionamiento','Buscar instrucciones en TAB Registro','Crear nueva instrucción en estado borrador','Descargar adjuntos en TAB Direccionamiento','Descargar adjuntos en TAB Registro','Editar instrucción en estado borrador','Eliminar adjuntos en instrucciones borrador','Eliminar instrucción en estado borrador','Enviar instrucciones borrador a aprobación','Rechazar instrucciones en estado pendiente','Subir adjuntos en instrucciones borrador','Ver adjuntos en TAB Direccionamiento','Ver adjuntos en TAB Registro','Ver historial de cambios (reservado)']],
+  ['Atención al cliente - Direccionamiento Permanente',['Agregar detalle de Direccionamiento Permanente','Buscar Direccionamiento Permanente','Crear Direccionamiento Permanente','Descargar archivo de Direccionamiento Permanente','Editar Direccionamiento Permanente','Eliminar archivos de Direccionamiento Permanente','Eliminar detalle de Direccionamiento Permanente','Guardar Direccionamiento Permanente','Ingreso a la pantalla de Direccionamiento Permanente','Subir archivos de Direccionamiento Permanente']],
+  ['Atención al cliente - Gestión de Suspensiones',['Acceder a la gestión de suspensiones.','Buscar y filtrar suspensiones.','Crear una nueva suspensión.','Editar una suspensión.','Eliminar adjuntos de suspensiones.','Liberar una suspensión.','Subir adjuntos en suspensiones.','Ver el detalle de una suspensión.','Ver el historial de suspensiones.']],
+  ['Atención al cliente - Instrucciones',['Actualizar datos masivamente','Buscar Instrucciones BL','Editar Instrucciones BL','Eliminar Adjunto','Subir Adjunto']],
+  ['Atención al cliente - Liberación de la Carga',['Aprobar Liberación de la Carga','Buscar Liberación de la Carga','Crear Liberación de la Carga','Descargar archivo de Liberación de la Carga','Editar Liberación de la Carga','Eliminar archivos de Liberación de la Carga','Eliminar Liberación de la Carga','Exportar excel de Liberación de la Carga','Guardar Liberación de la Carga','Ingreso a la pantalla de Liberación de la Carga','Subir archivos de Liberación de la Carga']],
+  ['Atención al cliente - Reporte de Comisiones por Pagar',['Buscar Reporte de Comisiones por Pagar','Descargar Reporte de Comisiones por Pagar']],
+  ['Atención al cliente - Sobreestadía',['Agregar detalle de Sobreestadía','Buscar Sobreestadía','Crear Sobreestadía','Descargar archivo de Sobreestadía','Editar Sobreestadía','Eliminar archivos de Sobreestadía','Eliminar detalle de Sobreestadía','Guardar Sobreestadía','Ingreso a la pantalla de Sobreestadía','Subir archivos de Sobreestadía']],
+  ['Cobranzas - Validación de pagos',['Acceso a validación de pagos','Buscar pagos disponibles','Buscar validaciones de pago','Ejecutar pago','Registrar nuevo pago','Subir adjuntos del pago','Validar pago','Ver comprobante de pago','Ver detalle de la validación de pago']],
+  ['Data Maestra - Catálogo',['Acceder al módulo Catálogo','Crear nuevos estatus en catálogo','Crear nuevos items en catálogo','Editar items y estatus del catálogo','Eliminar estatus del catálogo','Eliminar items del catálogo','Exportar listado de catálogos']],
+  ['Data Maestra - Días No Laborables',['Acceder al módulo Días No Laborables','Editar días no laborables']],
+  ['Data Maestra - Nave',['Acceder al módulo Nave','Crear nueva nave','Editar nave existente','Eliminar nave','Exportar listado de naves']],
+  ['Data Maestra - Organización',['Acceder al módulo Organización','Crear centro de costo en organización','Crear información financiera en organización','Crear nueva organización','Crear sucursal en organización','Editar organización existente','Eliminar centro de costo de organización','Eliminar información financiera de organización','Eliminar organización','Eliminar sucursal de organización']],
+  ['Data Maestra - Plantilla Email',['Acceder al módulo Plantilla Email','Crear nueva plantilla de email','Editar plantilla de email existente','Eliminar plantilla de email','Exportar listado de plantillas de email']],
+  ['Data Maestra - Series',['Buscar series','Editar serie','Eliminar serie','Registrar nueva serie']],
+  ['Data Maestra - Servicio Comercial',['Acceder al módulo Servicio Comercial','Crear nuevo servicio comercial','Editar servicio comercial existente','Eliminar servicio comercial','Exportar listado de servicios comerciales']],
+  ['Data Maestra - Socio',['Acceder al módulo Socio','Crear nuevo socio','Editar configuracion de sftp','Editar socio existente','Eliminar socio','Exportar listado de socios']],
+  ['Data Maestra - Tipo de cambio',['Acceder al módulo Tipo de Cambio','Crear nuevo tipo de cambio','Editar tipo de cambio existente','Eliminar tipo de cambio','Exportar listado de tipos de cambio']],
+  ['Documentación - Exportación - Cutoff',['Agregar detalle de Cutoff','Buscar Cutoff','Crear Cutoff','Editar Cutoff','Editar detalle de Cutoff','Eliminar detalle de Cutoff','Guardar Cutoff','Ingreso a la pantalla de Cutoff']],
+  ['Documentación - Exportación - Documentos',['Agregar carga líquida de Exportación','Agregar descripción de Exportación','Agregar equipo de Exportación','Agregar recargo de Exportación','Buscar Exportación','Carga de archivos en Exportación','Crear Exportación','Descargar CAL/VGM en Exportación','Editar carga líquida de Exportación','Editar descripción de Exportación','Editar equipo de Exportación','Editar Exportación','Editar recargo de Exportación','Editar y rectificar BL de exportación en flujo SUNAT (TSUNAT/TO_RECTIFY)','Eliminar carga líquida de Exportación','Eliminar descripción de Exportación','Eliminar equipo de Exportación','Eliminar Exportación','Eliminar recargo de Exportación','Enviar aviso de zarpe en Exportación','Enviar CAL/VGM en Exportación','Exportar Exportación','Guardar Exportación','Ingreso a la pantalla de Exportación','Roleo de Exportación','Transmitir a Sunat en Exportación','Ver historial del BL de exportación']],
+  ['Documentación - Importación - Direccionamiento',['Aprobar routing.','Buscar y filtrar routing.','Cierre de direccionamiento.','Modificar routing.','Rechazar routing.']],
+  ['Documentación - Importación - Documentos',['Anular transmisión SUNAT de Importación (0104)','Botón para Agregar Bultos','Botón para Agregar Equipos','Botón para Agregar Marcas y Descripciones','Botón para Agregar Recargos / Cláusulas','Botón para buscar importaciones','Botón para Cancelar Importación','Botón para cargar archivos de importaciones','Botón para crear un nuevo registro de importación','Botón para Descargar BL','Botón para descargar el documento CDL','Botón para Editar Importación','Botón para Eliminar Bultos','Botón para Eliminar Equipos','Botón para Eliminar Importación','Botón para Eliminar Marcas y Descripciones','Botón para Eliminar Recargos / Cláusulas','Botón para enviar correos electrónicos de importaciones','Botón para enviar discrepancias de importaciones','Botón para enviar el documento CDL','Botón para exportar información de importaciones','Botón para guardar importaciones','Botón para Marcar como listo para facturar','Buscar candidatos para transmisión masiva de Importación','Edición de la entidad receptora','Editar BL de importación en estado TSUNAT','Pasar BL de Importación a estado Por Rectificar','Rectificar transmisión SUNAT de Importación (0102)','Transmitir BL de Importación a SUNAT','Ver historial del BL de importación','Visualizar Descripción del Equipo','Visualizar Información de Carga Peligrosa','Visualizar Sellos del Equipo']],
+  ['Documentación - Operaciones',['Bypass para registrar manualmente transmisión 0171 como COMPLETED para permitir envío 0154']],
+  ['Documentación - Transbordo',['Buscar y filtrar BLs de Transbordo','Enviar listado de Transbordo','Ingreso a la pantalla de Transbordo','Registrar nave/viaje de conexion para BLs de Transbordo','Transferir numeracion SUNAT a BLs de Transbordo','Ver historial del BL de transbordo']],
+  ['Liquidación - Documentos Contables',['Agregar detalle de Documentos Contables','Anular Documentos Contables','Buscar Documentos Contables','Crear Documentos Contables','Editar detalle de Documentos Contables','Editar Documentos Contables','Eliminar detalle de Documentos Contables','Enviar Cover de Documentos Contables','Enviar SAP de Documentos Contables','Exportar Documentos Contables','Guardar Documentos Contables','Notificar Devolución Documentos Contables','Provisionar Documentos Contables']],
+  ['Liquidación - Provisiones',['Agregar detalle de Provisiones','Buscar Provisiones','Crear Provisiones','Editar detalle de Provisiones','Editar Provisiones','Eliminar detalle de Provisiones','Eliminar Provisiones','Expandir detalle','Guardar Provisiones','Ingreso a la pantalla de Provisiones']],
+  ['PDA - PDA',['Actualizar PDA','Agregar categoría a la PDA','Agregar servicio a la PDA','Ajustar PDA','Aprobar PDA','Buscar y filtrar PDA','Cancelar PDA','Crear o editar PDA','Crear PDA','Duplicar PDA','Editar información general de la PDA','Editar PDA','Eliminar PDA','Enviar PDA','Enviar PDA al cliente','Exportar PDA','Ingresar al módulo PDA','Ingreso a la pantalla PDA','Rechazar PDA','Ver PDA con montos (vista financiera)']],
+  ['PDA - PDA Plantilla',['Botón para agregar nueva plantilla de PDA','Botón para buscar las plantillas de PDA','Botón para exportar los resultados de la busqueda de las plantillas de PDA','Botón para limpiar los filtros de busqueda de las plantillas de PDA','Permite activar una plantilla PDA','Permite agregar un servicio a una categoría de la plantilla PDA','Permite agregar una nueva categoría de servicios en una plantilla PDA','Permite aprobar una plantilla PDA','Permite cancelar la creación de una categoría en la plantilla PDA','Permite cancelar la edición o creación de un servicio en la plantilla PDA','Permite cancelar los cambios de una plantilla PDA','Permite confirmar la creación de una categoría en la plantilla PDA','Permite editar la información de una plantilla PDA','Permite editar un servicio de la plantilla PDA','Permite eliminar un servicio de la plantilla PDA','Permite eliminar una plantilla PDA','Permite guardar la información de un servicio en la plantilla PDA','Permite guardar los cambios de una plantilla PDA','Permite inactivar una plantilla PDA']],
+  ['Seguridad - Roles y Permisos',['Acceder al módulo de Roles y Permisos.','Buscar roles y permisos.','Crear roles o permisos.','Editar roles o permisos.','Eliminar roles o permisos.','Exportar roles y permisos.']],
+  ['Seguridad - Usuarios',['Acceder al módulo de usuarios.','Buscar usuarios.','Crear usuarios.','Editar usuarios.','Eliminar usuarios.','Exportar usuarios.','Mantener roles del usuario.','Mantener series del usuario.']],
+  ['Tarifa - Tarifa',['Acceso al módulo de tarifas','Agregar servicios a la tarifa','Anular na tarifa.','Aprobar una tarifa.','Buscar tarifas','Crear tarifas','Editar tarifas','Exportar tarifas','Mantener criterios de tarifas','Mantener servicios de la tarifa','Mantener tarifas','Rechazar una tarifa.']]];
+const RL_I = 'SION Portal Interno', RL_E = 'SION Portal Externo';
+const RL_ROLES = [
+  ['ADMIN-INTERNAL','Rol administrador del Portal Interno'],['OPERATIONS-OPERATOR-PROCURATOR-CALLAO-PISCO','Rol operativo de agenciamiento - Callao y Pisco'],['OPERATIONS-OPERATOR-PROCURATOR-PAITA-TALARA','Rol operativo de agenciamiento-PAITA-TALARA'],['CUSTOMER-SERVICE-ASSISTANT-CALLAO','Rol operativo de atención al cliente - Callao'],['CUSTOMER-SERVICE-ASSISTANT-PAITA','Rol operativo de atención al cliente - Paita'],['CARGO-CONTROL-ASSISTANT-CALLAO','Rol operativo de control de carga - Callao'],['EXPORT-ASSISTANT-CALLAO','Rol operativo de exportación - Callao'],['DOCUMENTATION-ASSISTANT-PAITA','Rol operativo de exportación - Paita'],['IMPORT-ASSISTANT-CALLAO','Rol operativo de importaciones - Callao'],['TRAMP-VESSEL-ASSISTANT','Rol operativo de naves Tramps'],
+  ['SALES EXECUTIVE','Rol comercial'],['IMPORT-COORDINATOR-CALLAO','Rol operativo de importaciones - Callao'],['BILLING-HEAD','Rol de jefatura de facturación'],['OPERATIONS','Rol de operaciones'],['DOCUMENTATION-SUPERVISOR-CALLAO','Rol supervisor'],['COLLECTIONS-ANALYST',''],['COLLECTIONS-ASSISTANT',''],['COLLECTIONS-COORDINATOR',''],['CUSTOMER-SERVICE-EXECUTIVE','Ejecutiva de Línea de Atención al Cliente'],['SETTLEMENT-BILLING-CALLAO','Liquidador - Facturador - Callao'],
+  ['BILLING-COORDINATOR-CALLAO','Coordinador de Facturación-CALLAO'],['EXPORT-COORDINATOR-CALLAO','Coordinador Exportaciones - Callao'],['DOCUMENTATION-HEAD','Jefe de Documentación'],['DOCUMENTATION-SUPERVISOR-PAITA',''],['OPERATIONS-BRANCH-HEAD-MOLLENDO-MATARANI',''],['OPERATIONS-BRANCH-HEAD-PAITA','Jefe de Sucursal - Paita'],['OPERATIONS-OPERATOR-PROCURATOR-CALLAO-CHANCAY-SALAVERRY','Operador / Procurador - Callao / Chancay / Salaverry'],['SHIPPING-AGENCY-HEAD-MULTI-BRANCH','Jefe de Agenciamiento - Multisede Agenciamiento'],['SETTLEMENT-BILLING-PISCO',''],['SETTLEMENT-BILLING-PAITA-TALARA',''],
+  ['SETTLEMENT-BILLING-MOLLENDO-MATARANI',''],['SETTLEMENT-BILLING-ILO',''],['OPERATIONS-OPERATOR-PROCURATOR-IQUITOS',''],['OPERATIONS-OPERATOR-PROCURATOR-MOLLENDO-MATARANI',''],['OPERATIONS-SUPERVISOR-CALLAO-PISCO-PAITA',''],['OPERATIONS-SUPERVISOR-PAITA-TALARA',''],['OPERATIONS-SUPERVISOR-SALAVERRY-ILO',''],['OPERATIONS-SUPERVISOR-SUPE','']
+].map(([n,d])=>({sys:RL_I,n,d})).concat([['ADMIN-EXTERNAL','Rol administrador del Portal Externo'],['CUSTOMER','Rol cliente'],['CUSTOMS_BROKER','Rol agente de aduanas'],['HELP_DESK','Rol de atención al cliente'],['LOGISTIC_OPERATOR','Rol operador logístico']].map(([n,d])=>({sys:RL_E,n,d})));
+/* Permisos leídos en cert: solo estos dos roles. El resto no se carga en el prototipo. */
+const RL_READ = {
+  'ADMIN-INTERNAL':{menus:'*', groups:'*', branches:RL_BRANCH},
+  'COLLECTIONS-ANALYST':{menus:['Liquidación','Provisiones','Documentos Contables','Cobranzas','Validación de pagos'], groups:['Cobranzas - Validación de pagos','Liquidación - Documentos Contables','Liquidación - Provisiones'], branches:RL_BRANCH}};
+const RL = {f:{sys:'',name:'',desc:''}, searched:false, page:1, size:10, view:'list', sel:null, tab:'menu', open:{}};
+function openRoles(){ RL.view = 'list'; RL.sel = null; facEnter('screenRoles'); renderRl(); }
+function rlHasF(){ return Object.values(RL.f).some(Boolean); }
+function rlSet(k, v){ RL.f[k] = v; renderRl(); }
+function rlSearch(){ RL.searched = true; RL.page = 1; renderRl(); }
+function rlClear(){ RL.f = {sys:'',name:'',desc:''}; RL.searched = false; renderRl(); }
+function rlGo(p, size){ if(size) RL.size = size; RL.page = p; renderRl(); }
+function rlFiltered(){ const f = RL.f, q = normTxt; return RL_ROLES.filter(r=>(!f.sys||r.sys===f.sys)&&(!f.name||q(r.n).includes(q(f.name)))&&(!f.desc||q(r.d).includes(q(f.desc)))); }
+function rlOut(){ toast('No disponible en este prototipo','info'); }
+function renderRl(){ if(RL.view==='detail'){ renderRlDetail(); return; }
+  updatePagebar('screenRoles');
+  const f = RL.f, all = rlFiltered(), pages = Math.max(1,Math.ceil(all.length/RL.size)); RL.page = Math.min(RL.page,pages); const list = all.slice((RL.page-1)*RL.size, RL.page*RL.size);
+  document.getElementById('rlRoot').innerHTML = `<div class="fac-card" id="rlF"><div class="fac-head"><div><h3>Buscar Roles</h3><div class="fac-sub">Ingresar datos para buscar</div></div><div class="fac-acts"><button type="button" class="cc-btn" onclick="rlOut()">+ Nuevo</button></div></div>
+    <div class="fac-g3">${fF('Sistema',fSel(RL_SYS,f.sys,`id="rlSys" onchange="rlSet('sys',this.value)"`,'Seleccione un sistema'))}${fF('Nombre',`<input id="rlName" placeholder="Ingrese nombre" value="${esc(f.name)}" onchange="rlSet('name',this.value)">`)}${fF('Descripción',`<input placeholder="Ingrese descripción" value="${esc(f.desc)}" onchange="rlSet('desc',this.value)">`)}</div>
+    <div class="fac-btns"><button type="button" class="cc-btn" id="rlBuscar" ${rlHasF()?'':'disabled'} onclick="rlSearch()">Buscar</button><button type="button" class="cc-btn" ${rlHasF()||RL.searched?'':'disabled'} onclick="rlClear()">Limpiar</button></div></div>
+  ${RL.searched?`<div class="fac-card" id="rlRes"><div class="fac-head"><h3>Resultados (${all.length})</h3></div>
+    <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th>Sistema</th><th>Nombre</th><th>Descripción</th></tr></thead><tbody>
+      ${list.map(r=>`<tr><td>${esc(r.sys)}</td><td><button type="button" class="fac-link" onclick="rlOpen('${esc(r.n)}')"><b>${esc(r.n)}</b></button></td><td>${esc(r.d)}</td></tr>`).join('') || '<tr><td colspan="3" class="fac-empty">No se encontraron roles con los filtros especificados.</td></tr>'}
+    </tbody></table></div>
+    <div class="fac-btns" style="justify-content:space-between;align-items:center"><button type="button" class="cc-btn" onclick="toast('Descarga de Excel simulada','info')">Exportar</button><div class="cc-pager" style="border:none">${pagerHtml(all.length, RL.page, RL.size, 'rlGo')}</div></div></div>`:''}`;
+}
+function rlOpen(n){ RL.sel = n; RL.view = 'detail'; RL.tab = 'menu'; RL.open = {}; if(document.querySelector('section.panel.active')?.id!=='screenRoles') facEnter('screenRoles'); renderRl(); }
+function rlBack(){ RL.view = 'list'; RL.sel = null; renderRl(); }
+function rlTab(t){ RL.tab = t; renderRl(); }
+function rlToggle(k){ RL.open[k] = !RL.open[k]; renderRl(); }
+function rlTree(groups, chkG, chkC){
+  return `<ul class="rl-tree">${groups.map(([g,ch])=>`<li><div class="rl-node"><button type="button" class="fac-expbtn" onclick="rlToggle('${esc(g)}')">${RL.open[g]?'&#8964;':'&#8250;'}</button><label class="fac-chk"><input type="checkbox" disabled ${chkG(g)?'checked':''}> ${esc(g)}</label></div>
+    ${RL.open[g]?`<ul class="rl-leaf">${ch.map(c=>`<li><label class="fac-chk"><input type="checkbox" disabled ${chkC(g,c)?'checked':''}> ${esc(c)}</label></li>`).join('')}</ul>`:''}</li>`).join('')}</ul>`;
+}
+function renderRlDetail(){
+  const r = RL_ROLES.find(x=>x.n===RL.sel), rd = RL_READ[r.n], ext = r.sys===RL_E;
+  facSetBar('screenRoles','Mantenimiento de Roles',['Inicio','Roles y Permisos','Mantenimiento de Roles'],'rlBack()');
+  const mOk = x=>rd && (rd.menus==='*' || rd.menus.includes(x)), gOk = g=>rd && (rd.groups==='*' || rd.groups.includes(g));
+  const none = `<div class="fac-note" id="rlNone">Permisos de este rol no cargados en el prototipo.</div>`;
+  const body = RL.tab==='menu' ? rlTree(ext?[]:RL_MENU, g=>mOk(g), (g,c)=>mOk(c)) : RL.tab==='perm' ? rlTree(ext?[]:RL_PERMS, g=>gOk(g), g=>gOk(g))
+    : `<div class="rl-branch">${RL_BRANCH.map(b=>`<label class="fac-chk"><input type="checkbox" disabled ${rd&&rd.branches.includes(b)?'checked':''}> ${esc(b)}</label>`).join('')}</div>`;
+  document.getElementById('rlRoot').innerHTML = `<div class="fac-card" id="rlGen"><div class="fac-head"><h3>Información General</h3><div class="fac-acts"><button type="button" class="cc-btn" onclick="rlOut()">Editar</button><button type="button" class="cc-btn pink" onclick="rlOut()">Eliminar</button></div></div>
+    <div class="fac-g3">${fRo('Sistema',r.sys)}${fRo('Nombre',r.n)}${fRo('Descripción',r.d)}</div>
+    <div style="margin-top:12px"><label class="fac-chk"><input type="checkbox" disabled> Visible para Cliente Externo</label><div class="fac-sub" style="margin:4px 0 0">Habilitar este rol para que sea seleccionable en el wizard de registro del Portal Externo.</div></div></div>
+  <div class="fac-card" id="rlTabsCard"><div class="fac-tabs"><button type="button" class="${RL.tab==='menu'?'on':''}" onclick="rlTab('menu')">Menú</button><button type="button" class="${RL.tab==='perm'?'on':''}" onclick="rlTab('perm')">Permisos</button><button type="button" class="${RL.tab==='suc'?'on':''}" onclick="rlTab('suc')">Sucursales</button></div>
+    ${rd?'':none}<div id="rlBody">${body}</div></div>`;
+}
+/* ---------- Usuarios: ficticios del mockup ---------- */
+const US_RUC = '20600000001', US_SOCIO = 'COSMOS GLOBAL LOGISTICS S.A.C';
+const US_LIST = [
+  {e:'a.perez@cliente.example', n:'A. Pérez', roles:['SALES EXECUTIVE']},
+  {e:'j.ramirez@cliente.example', n:'J. Ramírez', roles:['SALES EXECUTIVE']},
+  {e:'m.rojas@cliente.example', n:'M. Rojas', roles:['OPERATIONS-OPERATOR-PROCURATOR-CALLAO-PISCO']},
+  {e:'g.zapata@cliente.example', n:'G. Zapata', roles:['OPERATIONS']},
+  {e:'p.diaz@cliente.example', n:'P. Díaz', roles:['BILLING-HEAD','SETTLEMENT-BILLING-CALLAO'], pre:'PD', sap:'30', series:[['Callao','Documentario','Factura','F005','ERP-F005'],['Callao','Documentario','Boleta','B005','ERP-B005'],['Callao','Documentario','Liquidación de Cobranza','LC51','ERP-LC51']]},
+  {e:'l.fernandez@cliente.example', n:'L. Fernández', roles:['ADMIN-INTERNAL']},
+  {e:'renzo@cliente.example', n:'Renzo', roles:['ADMIN-INTERNAL']}];
+const US = {f:{email:'',name:'',ruc:'',sys:'',role:''}, searched:false, page:1, size:10, view:'list', sel:null, tab:'roles'};
+function openUsers(){ US.view = 'list'; US.sel = null; facEnter('screenUsers'); renderUs(); }
+function usHasF(){ return Object.values(US.f).some(Boolean); }
+function usSet(k, v){ US.f[k] = v; if(k==='sys') US.f.role = ''; renderUs(); }
+function usSearch(){ US.searched = true; US.page = 1; renderUs(); }
+function usClear(){ US.f = {email:'',name:'',ruc:'',sys:'',role:''}; US.searched = false; renderUs(); }
+function usGo(p, size){ if(size) US.size = size; US.page = p; renderUs(); }
+function usFiltered(){ const f = US.f, q = normTxt; return US_LIST.filter(u=>(!f.email||q(u.e).includes(q(f.email)))&&(!f.name||q(u.n).includes(q(f.name)))&&(!f.ruc||US_RUC.includes(f.ruc))&&(!f.role||u.roles.includes(f.role))&&(!f.sys||u.roles.some(r=>RL_ROLES.find(x=>x.n===r).sys===f.sys))); }
+function renderUs(){ if(US.view==='detail'){ renderUsDetail(); return; }
+  updatePagebar('screenUsers');
+  const f = US.f, all = usFiltered(), pages = Math.max(1,Math.ceil(all.length/US.size)); US.page = Math.min(US.page,pages); const list = all.slice((US.page-1)*US.size, US.page*US.size), roles = RL_ROLES.filter(r=>!f.sys||r.sys===f.sys).map(r=>r.n);
+  document.getElementById('usRoot').innerHTML = `<div class="fac-card" id="usF"><div class="fac-head"><div><h3>Buscar Usuario</h3><div class="fac-sub">Ingrese los criterios de búsqueda para filtrar los usuarios</div></div><div class="fac-acts"><button type="button" class="cc-btn" onclick="rlOut()">+ Nuevo</button></div></div>
+    <div class="fac-g3">${fF('Email',`<input placeholder="Ingresar un email" value="${esc(f.email)}" onchange="usSet('email',this.value)">`)}${fF('Nombre',`<input id="usName" placeholder="Ingresar un nombre" value="${esc(f.name)}" onchange="usSet('name',this.value)">`)}${fF('RUC',`<input placeholder="Elegir RUC" value="${esc(f.ruc)}" onchange="usSet('ruc',this.value)">`)}${fF('Sistema',fSel(RL_SYS,f.sys,`id="usSys" onchange="usSet('sys',this.value)"`,'Elegir un sistema'))}${fF('Rol',fSel(roles,f.role,`id="usRole" onchange="usSet('role',this.value)"`,'Elegir un rol'))}</div>
+    <div class="fac-btns"><button type="button" class="cc-btn" id="usBuscar" ${usHasF()?'':'disabled'} onclick="usSearch()">Buscar</button><button type="button" class="cc-btn" ${usHasF()||US.searched?'':'disabled'} onclick="usClear()">Limpiar</button></div></div>
+  ${US.searched?`<div class="fac-card" id="usRes"><div class="fac-head"><h3>Resultados (${all.length})</h3></div>
+    <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th>Email</th><th>Nombre</th><th>RUC</th><th>Roles</th></tr></thead><tbody>
+      ${list.map(u=>`<tr><td><button type="button" class="fac-link" onclick="usOpen('${u.e}')">${esc(u.e)}</button></td><td>${esc(u.n)}</td><td>${US_RUC}</td><td>${esc(u.roles.join(', '))}</td></tr>`).join('') || '<tr><td colspan="4" class="fac-empty">No se encontraron resultados con los criterios seleccionados.</td></tr>'}
+    </tbody></table></div>
+    <div class="fac-btns" style="justify-content:space-between;align-items:center"><button type="button" class="cc-btn" onclick="toast('Descarga de Excel simulada','info')">Exportar</button><div class="cc-pager" style="border:none">${pagerHtml(all.length, US.page, US.size, 'usGo')}</div></div></div>`:''}`;
+}
+function usOpen(e){ US.sel = e; US.view = 'detail'; US.tab = 'roles'; if(document.querySelector('section.panel.active')?.id!=='screenUsers') facEnter('screenUsers'); renderUs(); }
+function usBack(){ US.view = 'list'; US.sel = null; renderUs(); }
+function usTab(t){ US.tab = t; renderUs(); }
+function renderUsDetail(){
+  const u = US_LIST.find(x=>x.e===US.sel);
+  facSetBar('screenUsers','Ver Usuario',['Inicio','Usuarios','Ver Usuario'],'usBack()');
+  const body = US.tab==='roles'
+    ? `<table class="fac-tbl"><thead><tr><th>Sistema</th><th>Rol</th></tr></thead><tbody>${u.roles.map(r=>`<tr><td>${esc(RL_ROLES.find(x=>x.n===r).sys)}</td><td><button type="button" class="fac-link" onclick="openRoles();rlOpen('${esc(r)}')">${esc(r)}</button></td></tr>`).join('')}</tbody></table>`
+    : `<table class="fac-tbl"><thead><tr><th>Sucursal</th><th>Origen de Documento</th><th>Tipo de Documento</th><th>Serie</th><th>Código ERP</th><th>Acción</th></tr></thead><tbody>${(u.series||[]).map(s=>`<tr>${s.map(c=>`<td>${esc(c)}</td>`).join('')}<td>-</td></tr>`).join('') || '<tr><td colspan="6" class="fac-empty">Sin series asignadas</td></tr>'}</tbody></table>`;
+  document.getElementById('usRoot').innerHTML = `<div class="fac-card" id="usGen"><div class="fac-head"><h3>Información General</h3><div class="fac-acts"><button type="button" class="cc-btn" onclick="rlOut()">Editar</button><button type="button" class="cc-btn pink" onclick="rlOut()">Eliminar</button></div></div>
+    <div class="fac-g2">${fRo('Usuario/Email',u.e)}${fRo('Nombre',u.n)}${fRo('Razón Social',US_SOCIO)}${fRo('Socio RUC',US_RUC)}</div>
+    <div class="fac-sec">Numeración SAP</div><div class="fac-g2">${fRo('Prefijo de Usuario',u.pre||'')}${fRo('Serie SAP',u.sap||'')}</div></div>
+  <div class="fac-card" id="usTabsCard"><div class="fac-tabs"><button type="button" class="${US.tab==='roles'?'on':''}" onclick="usTab('roles')">Roles</button><button type="button" class="${US.tab==='series'?'on':''}" onclick="usTab('series')">Series</button></div><div class="fac-scroll" id="usBody">${body}</div></div>`;
+}
+/* ---------- Registro en navegación y guías ---------- */
+CC_SUBMENU['Seguridad'] = [
+  ['Usuarios','openUsers()','<circle cx="12" cy="8" r="3.5"/><path d="M5 20c1-4 3.8-6 7-6s6 2 7 6"/>',true],
+  ['Roles y Permisos','openRoles()','<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 10h8M8 14h5"/>',true]];
+PAGEBAR.screenRoles = ['Consulta de Roles',['Inicio','Roles y Permisos','Consulta de Roles']];
+PAGEBAR.screenUsers = ['Búsqueda de Usuarios',['Inicio','Usuarios','Buscar Usuario']];
+function sgRl(){ RL.f = {sys:RL_I,name:'',desc:''}; RL.searched = true; RL.view = 'list'; RL.page = 1; renderRl(); }
+function sgUs(){ US.f = {email:'',name:'',ruc:'',sys:RL_I,role:''}; US.searched = true; US.view = 'list'; US.page = 1; renderUs(); }
+GUIDES.screenRoles = [{t:'Consultar un rol', steps:[
+  {go:()=>{ RL.view = 'list'; renderRl(); }, el:'#rlF', h:'Buscar', p:'Por Sistema, Nombre o Descripción. Buscar se activa al ingresar un dato.'},
+  {go:sgRl, el:'#rlRes', h:'Resultados', p:'Clic en el nombre para abrir el rol.'},
+  {go:()=>rlOpen('COLLECTIONS-ANALYST'), el:'#rlGen', h:'Información General', p:'Sistema, nombre y descripción.'},
+  {go:()=>{ rlOpen('COLLECTIONS-ANALYST'); rlTab('perm'); }, el:'#rlBody', h:'Menú, Permisos y Sucursales', p:'Lo que ve y puede hacer el rol, por módulo.'}]}];
+GUIDES.screenUsers = [{t:'Consultar un usuario', steps:[
+  {go:()=>{ US.view = 'list'; renderUs(); }, el:'#usF', h:'Buscar', p:'Por Email, Nombre, RUC, Sistema o Rol.'},
+  {go:sgUs, el:'#usRes', h:'Resultados', p:'Clic en el email para abrir el usuario.'},
+  {go:()=>usOpen('p.diaz@cliente.example'), el:'#usGen', h:'Información General', p:'Datos del usuario y numeración SAP.'},
+  {go:()=>usOpen('p.diaz@cliente.example'), el:'#usBody', h:'Roles y Series', p:'Roles asignados y series para emitir.'}]}];
 </script>
 <div class="cc-dd" id="ccDropdown"></div>
 <div class="tour-layer" id="tourLayer"><div class="tour-hole" id="tourHole"></div><div class="tour-pop" id="tourPop" onclick="event.stopPropagation()"></div></div>
