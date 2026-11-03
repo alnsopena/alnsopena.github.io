@@ -103,17 +103,16 @@
     };
   }
   function headPortafolio(ps) {
-    const by = s => ps.filter(p => String(p.status).toLowerCase() === s).length, closed = by('cerrado'), proc = by('en proceso'), plan = by('planificado'), other = ps.length - closed - proc - plan;
+    const by = s => ps.filter(p => String(p.status).toLowerCase() === s).length, closed = by('cerrado'), proc = by('en proceso'), plan = by('planificado'), prop = by('propuesto'), other = ps.length - closed - proc - plan - prop;
     const act = ps.filter(p => p.active), noPhase = act.filter(p => !p.phase || p.phase === 'Sin fase').length, pm = countBy(act, p => p.pmFirst || 'Sin PM');
     const crit = act.filter(p => /critical/i.test(p.priority || '')).length, flag = act.filter(p => p.risk).length;
-    const parts = [closed && plural(closed, 'entregado', 'entregados'), proc && proc + ' en curso', plan && plan + ' por arrancar', other && other + ' en otro estatus'].filter(Boolean);
+    const parts = [closed && plural(closed, 'entregado', 'entregados'), proc && proc + ' en curso', plan && plan + ' por arrancar', prop && plural(prop, 'propuesto', 'propuestos'), other && other + ' en Stand by'].filter(Boolean);
     return {
       title: 'La carta náutica',
-      sub: 'Cada isla es un PM y crece con sus proyectos. El casco muestra la fase: cuanto más completo, más avanzada. En los activos, a mayor prioridad, ícono más grande. Clic en el nombre de una isla filtra la tabla.',
+      sub: '',
       msg: '<em>' + plural(ps.length, 'proyecto', 'proyectos') + '</em>' + (parts.length ? ': ' + joinY(parts) : ''),
-      pills: [closed && { text: 'Cerrado: ' + closed, tone: 'green' }, proc && { text: 'En Proceso: ' + proc, tone: 'blue' }, plan && { text: 'Planificado: ' + plan, tone: 'amber' }, other && { text: 'Otro estatus: ' + other },
-        pm[0] && { text: 'Más activos: ' + pm.filter(x => x[1] === pm[0][1]).map(x => x[0].split(' ')[0]).join(' y ') + ' (' + pm[0][1] + ')', tone: 'blue' }, crit && { text: crit + ' activos Critical', tone: 'red' }, flag && { text: flag + ' requieren atención', tone: 'amber' }, noPhase && { text: noPhase + ' sin fase registrada', tone: 'red' }],
-      key: [{ svg: I.anchor, text: 'Ancla: entregado' }, { svg: I.hullMini, text: 'Casco a medio construir: en curso, según su fase' }, { svg: I.dash, text: 'Círculo punteado: por zarpar' }, { svg: I.flag('#D69A3C'), text: 'Banderín: bloqueo, riesgo o Fin Plan vencido' }]
+      pills: [pm[0] && { text: 'Más activos: ' + pm.filter(x => x[1] === pm[0][1]).map(x => x[0].split(' ')[0]).join(' y ') + ' (' + pm[0][1] + ')', tone: 'blue' }, crit && { text: crit + ' activos Critical', tone: 'red' }, flag && { text: flag + ' requieren atención', tone: 'amber' }, noPhase && { text: noPhase + ' sin fase registrada', tone: 'red' }],
+      key: [{ svg: I.anchor, text: 'Ancla: entregado' }, { svg: I.hullMini, text: 'Casco a medio construir: en curso, según su fase' }, { svg: I.dash, text: 'Círculo punteado: por zarpar' }, { svg: I.flag('#D69A3C'), text: 'Banderín: bloqueo, riesgo o Fin Plan vencido' }, { svg: I.hullMini, text: 'Más grande: mayor prioridad' }]
     };
   }
   function headCronograma(ps, today) {
@@ -122,7 +121,7 @@
     const in90 = withPlan.filter(p => p.plan >= today && p.plan <= lim).length, over = withPlan.filter(p => p.plan < today).length, noPlan = ps.filter(p => !p.plan).length, ok = withPlan.length - over, d = getData();
     return {
       title: 'Marea de cierres y tablero de arribos',
-      sub: 'El faro marca hoy. La marea sube con los Fin Plan de cada mes y el tablero cuenta los días que faltan para cada arribo.',
+      sub: '',
       msg: next ? 'Próximo fin planificado: <em>' + esc(next.name) + '</em>, el ' + spoken(next.plan) : 'No hay fines planificados en la vista',
       pills: [ok && { text: 'Fin Plan vigente: ' + ok, tone: 'green' }, over && { text: 'Fin Plan vencido: ' + over, tone: 'red' }, noPlan && { text: 'Sin Fin Plan: ' + noPlan, tone: 'amber' }, { text: plural(in90, 'fin planificado', 'fines planificados') + ' en 90 días', tone: 'blue' }],
       cta: noPlan && d.boardUrl ? { label: 'Completar Fin Plan en monday', href: d.boardUrl } : null,
@@ -144,7 +143,7 @@
     const capex = f.fields.find(x => x.label === 'Presupuesto CAPEX'), d = getData();
     return {
       title: 'Los frascos del registro financiero',
-      sub: 'Cada frasco muestra cuántos proyectos tienen el campo completo en monday. Los importes se consultan por proyecto.',
+      sub: '',
       msg: capex ? '<em>' + capex.count + ' de ' + f.total + '</em> proyectos con CAPEX registrado' : 'No hay campo CAPEX disponible en este corte',
       pills: f.fields.map(x => ({ text: x.label + ': ' + x.count, tone: x.count ? 'blue' : 'amber' })),
       cta: f.fields.some(x => x.count < f.total) && d.boardUrl ? { label: 'Completar datos en monday', href: d.boardUrl } : null,

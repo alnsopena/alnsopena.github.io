@@ -468,7 +468,7 @@ assert.deepEqual(Array.from(context.window.PMOData.build().projects,i=>i.id),['q
 assert.equal(context.window.PMOData.build().milestones.length,1);
 assert.deepEqual(portfolioIds(),['quick-win']);
 assert.deepEqual(Array.from(context.artFiltered('portafolio'),i=>i.id),['quick-win']);
-assert.match(h.renderResumen(),/Iniciativas activas/);
+assert.match(h.renderResumen(),/Iniciativas activas/);assert.match(h.renderResumen(),/Entregados \d{4}/);
 assert.doesNotMatch(h.renderFinanzas(),/99,999/,'Original QW amounts must not enter homologated finances');
 assert.equal(context.cosmoGuide.options({type:'project-groups'}).reduce((sum,x)=>sum+Number(x.label.match(/\d+$/)?.[0]||0),0),1);
 h.setPortfolioScope('closed');assert.equal(portfolioIds().length,0);
