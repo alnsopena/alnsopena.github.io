@@ -131,7 +131,7 @@
       return reply(isBlock ? 'Bloqueos registrados' : 'Riesgos y alertas', rows.length ? rows.length + ' proyecto(s):\n' + compact(rows, item => item.name + ' · ' + val(item, 'risk')) : 'No hay proyectos activos en esta categoría en el corte actual.', 'atencion', { issue: isBlock ? 'Bloqueos' : 'Riesgos' }, { source: 'Riesgo / Bloqueo' });
     }
     if (page.topic === 'attention-dates') {
-      const rows = activeItems.filter(item => val(item, 'plan') && h.past(val(item, 'plan')));
+      const rows = activeItems.filter(item => h.attentionReasons(item).includes('Fin Plan vencido'));
       return reply('Plazos vencidos', rows.length ? rows.length + ' proyecto(s) con Fin Plan vencido:\n' + compact(rows, item => item.name + ' · ' + h.fmtDate(val(item, 'plan'))) : 'No hay proyectos activos con Fin Plan vencido en el corte actual.', 'atencion', { issue: 'Plazos vencidos' }, { source: 'Fin Plan y Estatus' });
     }
     if (page.topic === 'attention-actions') {
