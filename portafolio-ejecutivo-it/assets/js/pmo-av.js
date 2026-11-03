@@ -85,6 +85,26 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
 .pav-mu-side .clear-filters{min-height:36px;font-size:13px}
 .cfx-muelle .pav-mu-note{max-width:none;margin-top:14px}
 @container (min-width:760px){.pav-mu-grid.has-side{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}.pav-mu-grid.has-side .pav-mu-side{padding:0 0 0 28px;border-top:0;border-left:1px solid var(--line,#e3e8eb)}}
+.cfx-cm-kpi small{display:block;margin-top:4px;font-size:12.5px;line-height:1.35;font-weight:600;color:#5F7079}
+@media(min-width:901px){.cfx-cm-kpis.pav-k3{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.pav-cm-two{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px;margin-top:14px;align-items:start}
+.pav-cm-two .delivery-card{margin:0;box-shadow:none;border:1px solid #E3DED4}
+.pav-cm-two .delivery-card .section-title{font-size:14px;line-height:1.3;letter-spacing:.06em;text-transform:uppercase;color:#5F7079;font-weight:800;margin:0 0 4px}
+@media(min-width:1100px){.pav-cm-list.pav-cols{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:32px}.pav-cm-list.pav-cols li:nth-child(2){border-top:0}}
+.pav-cm-box{background:#fff;border:1px solid #E3DED4;border-radius:14px;padding:14px 18px;margin-top:14px}
+.pav-cm-two .pav-cm-box{margin-top:0}
+.pav-cm-note{font-size:13px;color:#5F7079}
+.pav-cm-list{list-style:none;margin:6px 0 0;padding:0;display:grid}
+.pav-cm-list li{display:grid;gap:2px;padding:9px 0;border-top:1px solid #E6E1D8}
+.pav-cm-list li:first-child{border-top:0}
+.pav-cm-list b{font-size:16px;line-height:1.3}
+.pav-cm-list span{font-size:13.5px;color:#5F7079;font-weight:600}
+.pav-cm-list p{font-size:14px;line-height:1.45;color:#33464F}
+.pav-cm-list .pav-cm-date{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#9C7550}
+.pav-cm-more,.pav-cm-empty{margin-top:8px!important;font-size:13.5px;font-weight:700;color:#5F7079}
+.pav-cm-inv{display:grid;gap:2px;margin-top:14px;padding:12px 16px;border-radius:12px;background:#003D53;color:#fff}
+.pav-cm-inv b{font-size:17px}.pav-cm-inv span{font-size:13.5px;color:#CFE0E6}
+@media(max-width:900px){.pav-cm-two{grid-template-columns:minmax(0,1fr)}}
 @media print{.pav-tools,.pav-card,.pav-muelle-slot{display:none}}`;
   const st = document.createElement('style'); st.id = 'pmo-av-style'; st.textContent = css; document.head.appendChild(st);
 
@@ -118,10 +138,126 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
   }
 
   // ------------------------------------------------------------------ H · comité guiado
+  // The committee tells the Resumen's story: same model (resumenModel), order (attentionOrder), reasons (attentionWhy) and words.
+  // The engine is adapted from outside: sorted decisions in, two extra slides, and its DOM rewritten after each render.
+  const escH = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const plain = h => { const x = document.createElement('div'); x.innerHTML = h || ''; return x.textContent.replace(/\s+/g, ' ').trim(); };
+  const lowerFirst = s => s ? s.charAt(0).toLowerCase() + s.slice(1) : s;
+  const spoken = x => { const d = new Date(String(x).length === 10 ? x + 'T12:00:00Z' : x); return isNaN(d) ? '' : new Intl.DateTimeFormat('es-PE', { timeZone: 'America/Lima', day: 'numeric', month: 'long' }).format(d); };
+  const firstSentence = t => { t = String(t || '').replace(/\s+/g, ' ').trim(); const m = /^(.{20,170}?[.;])\s/.exec(t + ' '); let s = m ? m[1] : t; if (s.length > 170) s = s.slice(0, 170).replace(/\s+\S*$/, ''); return s.replace(/[.;]$/, ''); };
+  const LEVEL = { block: ['Bloqueo', '#B2493A'], risk: ['Riesgo', '#C8963E'], late: ['Plazo vencido', '#A0552E'] };
+  const STEP = { cartera: 1, semana: 2, entregas: 3, riesgos: 4, proyecto: 5, acta: 6 };
+  function comiteModel(d) {
+    const P = (0, eval)('({resumenModel,attentionOrder,attentionWhy,attentionReasons,riskPlanText,riskDaysLate,riskInfo,hasReportedRisk,priorityLabel,activeMix,riskContext,deliveryPace,deliveryChart,currentQuarter,investmentLead,weeklyMilestones,shortAnswer,weekStartLima,fmtDate,val,C,D,NO_DATA})');
+    const m = P.resumenModel(), item = new Map(m.items.map(i => [String(i.id), i])), rank = new Map(m.attention.slice().sort(P.attentionOrder).map((i, k) => [String(i.id), k]));
+    const decisions = (d.decisions || []).filter(x => rank.has(x.projectId)).sort((a, b) => rank.get(a.projectId) - rank.get(b.projectId));
+    const dd = Object.assign({}, d, { decisions }), proj = {}; d.projects.forEach(p => { proj[p.id] = p; });
+    const why = id => P.attentionWhy(item.get(id)), prio = id => P.priorityLabel(P.val(item.get(id), P.C.priority)) || '';
+    // Voice and acta: the Resumen's reasons, named by kind when the text alone does not say it ("Plazo vencido: 18 días de atraso").
+    const spokenWhy = x => { const w = plain(why(x.projectId)), lv = LEVEL[x.level] ? LEVEL[x.level][0] : ''; return lv && !w.toLowerCase().startsWith(lv.toLowerCase()) ? lv + ': ' + w : w; };
+    const count = pre => m.attention.filter(i => P.attentionReasons(i).some(r => pre === 'Fin Plan vencido' ? r === pre : r.startsWith(pre))).length;
+    const issues = { block: count('Bloqueo:'), risk: count('Riesgo:'), late: count('Fin Plan vencido') };
+    const n = m.act.length, ctx = P.riskContext(m.blockers.length, m.late), pace = P.deliveryPace(m.executedCurrent), inv = P.investmentLead(m.act);
+    const weekly = P.weeklyMilestones(m.items), up = m.upcoming;
+    const L = Object.assign({}, CosmosFx.committeeLines(dd));
+    L.cartera = 'La cartera tiene ' + n + (n === 1 ? ' iniciativa activa' : ' iniciativas activas') + (n ? ': ' + P.activeMix(m.act).split(' · ').join(', ').replace(/, ([^,]*)$/, ' y $1') : '') + '. ' +
+      (m.risks.length === 1 ? '1 activo con riesgo, ' : m.risks.length + ' activos con riesgo, ') + lowerFirst(ctx.replace(' · ', ' y ')) + '. Este año se entregaron ' + m.executedCurrent + '.';
+    L.semana = (weekly.length ? 'Actualizaciones de esta semana: ' + weekly.length + '. La más reciente: ' + weekly[0].project.name + '.' : 'Aún no hay actualizaciones registradas esta semana.') + (inv ? ' ' + inv.title + '.' : '');
+    L.entregas = 'Entregas del año: ' + m.executedCurrent + (pace ? ', ' + lowerFirst(pace) : '') + '. ' + (up.length ? 'En los próximos 90 días: ' + up.length + (up.length === 1 ? ' entrega' : ' entregas') + '. La primera, ' + up[0].name + ', el ' + spoken(P.val(up[0], P.C.plan)) + '.' : 'Sin entregas previstas en 90 días.');
+    if (decisions.length) L.riesgos = (decisions.length === 1 ? 'Este es el proyecto que necesita una decisión.' : 'Estos son los ' + decisions.length + ' proyectos que necesitan una decisión.') + (issues.block ? ' Empezamos por los bloqueos.' : ' Empezamos.');
+    L.projects = {};
+    decisions.forEach(x => {
+      const p = proj[x.projectId] || {}, s = firstSentence(p.situation);
+      L.projects[x.projectId] = [p.name + '.', spokenWhy(x) + '.', (p.sponsorName ? 'Sponsor ' + p.sponsorName + ', ' : '') + 'PM ' + (p.pmFirst || 'sin dato') + '.', prio(x.projectId) ? 'Prioridad ' + prio(x.projectId).toLowerCase() + '.' : '',
+        s ? 'Riesgo registrado: ' + s + '.' : '', p.plan ? 'Fin Plan al ' + spoken(p.plan) + '.' : 'Aún no tiene Fin Plan.', '¿Qué decide el comité?'].filter(Boolean).join(' ');
+    });
+    return { P, m, dd, proj, item, why, spokenWhy, prio, issues, ctx, pace, inv, weekly, up, lines: L };
+  }
+  // Pre-generated voices (tools/voz) read CosmosFx.voiceScript: it must list the lines the committee now says.
+  if (window.CosmosFx && CosmosFx.voiceScript && CosmosFx.committeeLines && !CosmosFx.voiceScript.pav) {
+    const baseScript = CosmosFx.voiceScript, baseLines = CosmosFx.committeeLines;
+    const all = o => [o.portada, o.cartera, o.semana, o.entregas, o.riesgos, o.acta, ...Object.values(o.projects || {})].filter(Boolean);
+    CosmosFx.voiceScript = function (d) {
+      const list = baseScript(d);
+      try { const mine = all(comiteModel(d).lines), drop = new Set(all(baseLines(d)).filter(x => !mine.includes(x))); return [...new Set(list.filter(x => !drop.has(x)).concat(mine))]; } catch (e) { return list; }
+    };
+    CosmosFx.voiceScript.pav = true;
+  }
+  function adaptComite(cm, M) {
+    const { P, m, proj, item, why, spokenWhy, prio, issues } = M, dash = P.NO_DATA;
+    const list = (rows, max, row, empty, cls) => rows.length ? '<ul class="pav-cm-list' + (cls ? ' ' + cls : '') + '">' + rows.slice(0, max).map(row).join('') + '</ul>' + (rows.length > max ? '<p class="pav-cm-more">Y ' + (rows.length - max) + ' más.</p>' : '') : '<p class="pav-cm-empty">' + empty + '</p>';
+    const slides = {
+      semana: () => {
+        const w = M.weekly, win = P.fmtDate(P.weekStartLima().toISOString()) + ' — ' + P.fmtDate(P.D.extracted_at_utc);
+        return '<p class="cfx-cm-eyebrow">2 · Esta semana</p><h2>' + (w.length ? w.length + (w.length === 1 ? ' actualización' : ' actualizaciones') + ' de esta semana' : 'Sin actualizaciones esta semana') + '</h2><p class="cfx-cm-lead">' + escH(win) + '</p>' +
+          (M.inv ? '<div class="pav-cm-inv"><b>' + escH(M.inv.title) + '</b><span>' + escH(M.inv.note) + '</span></div>' : '') +
+          '<div class="pav-cm-box">' + list(w, 4, h => { const pm = P.val(h.project, P.C.pm) || ''; return '<li><span class="pav-cm-date">' + escH(P.fmtDate(h.date.toISOString())) + '</span><b>' + escH(h.project.name) + '</b><p>' + escH(P.shortAnswer(h.text, 160)) + '</p><span>' + escH(h.author && h.author !== pm ? 'Registró ' + h.author + (pm ? ' · PM ' + pm : '') : pm || 'PM sin dato') + '</span></li>'; }, 'Aún no hay comentarios de bitácora registrados esta semana.', 'pav-cols') + '</div>';
+      },
+      entregas: () => '<p class="cfx-cm-eyebrow">3 · Entregas</p><h2>' + m.executedCurrent + (m.executedCurrent === 1 ? ' entregado en ' : ' entregados en ') + escH(m.currentYear) + '</h2><p class="cfx-cm-lead">' + escH(M.pace ? M.pace + '.' : 'Sin cierres verificables en el año.') + '</p>' +
+        '<div class="pav-cm-two">' + P.deliveryChart(m.quarterly, P.currentQuarter()) + '<div class="pav-cm-box"><h3>Próximas entregas · ' + M.up.length + '</h3><p class="pav-cm-note">En los próximos 90 días.</p>' +
+        list(M.up, 6, i => '<li><b>' + escH(i.name) + '</b><span>Fin Plan ' + escH(P.fmtDate(P.val(i, P.C.plan))) + ' · ' + escH(P.val(i, P.C.pm) || 'PM sin dato') + '</span></li>', 'Sin entregas previstas en 90 días') + '</div></div>'
+    };
+    const fix = {
+      portada: a => {
+        const t = M.dd.decisions.length, min = cm.st.secs / 60, ag = a.querySelector('.cfx-cm-agenda');
+        if (ag) ag.innerHTML = [['La cartera hoy', '2 min'], ['Esta semana', '1 min'], ['Entregas', '1 min'], ['Riesgos y bloqueos', t], ['Decisiones', t + ' × ' + min + ' min'], ['Acta', '1 min']].map(r => '<li>' + r[0] + '<span>' + r[1] + '</span></li>').join('');
+        a.querySelectorAll('.cfx-cm-setup span').forEach(s => { if (/^Duración estimada/.test(s.textContent)) s.textContent = 'Duración estimada: ' + Math.round(5 + t * min) + ' min'; });
+      },
+      cartera: a => {
+        const n = m.act.length, k = [[m.executedCurrent, 'Entregados ' + m.currentYear, M.pace, '#3F8F6B'], [n, 'Iniciativas activas', P.activeMix(m.act), '#003D53'], [m.risks.length, 'Activos con riesgo', M.ctx, '#C8963E']].concat(m.blockers.length ? [[m.blockers.length, 'Activos con bloqueo', '', '#B2493A']] : []);
+        const h = a.querySelector('h2'); if (h) h.textContent = n + (n === 1 ? ' iniciativa activa' : ' iniciativas activas') + ' en el puerto';
+        const box = a.querySelector('.cfx-cm-kpis'); if (box) { box.classList.toggle('pav-k3', k.length === 3); box.innerHTML = k.map(x => '<div class="cfx-cm-kpi"><b style="color:' + x[3] + '">' + x[0] + '</b><span>' + escH(x[1]) + '</span>' + (x[2] ? '<small>' + escH(x[2]) + '</small>' : '') + '</div>').join(''); }
+      },
+      riesgos: a => {
+        const lead = a.querySelector('.cfx-cm-lead'); if (lead) lead.textContent = [issues.block && issues.block + ' con bloqueo', issues.risk && issues.risk + ' con riesgo', issues.late && issues.late + ' con plazo vencido'].filter(Boolean).join(' · ');
+        a.querySelectorAll('.cfx-cm-card[data-id]').forEach(c => {
+          const id = c.dataset.id, p = proj[id] || {}, sp = c.querySelectorAll(':scope > span');
+          if (sp[1]) sp[1].innerHTML = why(id);
+          const sm = c.querySelector('small'); if (sm) sm.textContent = [p.phase, 'PM ' + (p.pm || 'sin dato'), prio(id) && 'Prioridad ' + prio(id)].filter(Boolean).join(' · ');
+        });
+      },
+      proyecto: (a, e) => {
+        const p = proj[e.id] || {}, i = item.get(e.id), r = P.riskInfo(i), reported = P.hasReportedRisk(i), crit = (p.issues || []).filter(x => x.critical).length;
+        const f = (t, v, cls) => '<div' + (cls ? ' class="' + cls + '"' : '') + '><dt>' + t + '</dt><dd>' + v + '</dd></div>', red = s => '<span class="cfx-cm-red">' + s + '</span>';
+        const lead = a.querySelector('.cfx-cm-lead'); if (lead) lead.innerHTML = why(e.id);
+        const dl = a.querySelector('.cfx-cm-facts'); if (!dl) return;
+        dl.innerHTML = f('Sponsor', p.sponsorName ? escH(p.sponsorName) : dash) + f('PM', p.pm ? escH(p.pm) : dash) + f('Fase', escH(p.phase || '')) + f('Prioridad', prio(e.id) ? escH(prio(e.id)) : dash) +
+          f('Avance', p.progress == null ? dash : p.progress + '%<div class="cfx-cm-bar-p"><i style="width:' + Math.max(0, Math.min(100, p.progress)) + '%"></i></div>') + f('Fin Plan', p.plan ? (P.riskDaysLate(i) > 0 ? red(escH(P.riskPlanText(i))) : escH(P.riskPlanText(i))) : red('Sin Fin Plan')) +
+          (p.provider ? f('Proveedor', escH(p.provider)) : '') + f('Datos críticos pendientes', crit ? red(crit + ' en monday') : '0') +
+          (reported ? f('Tipo de riesgo', escH(r.type || 'Pendiente de clasificar')) + f('Responsable de mitigación', escH(r.owner || 'Sin responsable')) : '') +
+          (r.description ? f('Riesgo registrado', escH(r.description), 'wide') : '') + f('Acción / decisión requerida', r.action ? escH(r.action) : reported ? red('Sin acción registrada') : 'Sin acción registrada', 'wide');
+      }
+    };
+    const render = cm._render;
+    cm._render = function (t, e) {
+      if (slides[e.k]) { const a = document.createElement('div'); a.className = 'cfx-cm-sheet'; t.appendChild(a); a.innerHTML = slides[e.k](); return; }
+      render.call(this, t, e);
+      const a = t.querySelector('.cfx-cm-sheet'); if (!a) return;
+      try { if (fix[e.k]) fix[e.k](a, e); const eb = a.querySelector('.cfx-cm-eyebrow'); if (eb && STEP[e.k]) eb.textContent = eb.textContent.replace(/^\d+(?= · )/, STEP[e.k]); } catch (err) { console.warn('[pmo-av] Ajuste del comité omitido.', err); }
+    };
+    // Acta text with the same reasons as the slides.
+    cm.actaText = function () {
+      const d = this.d, mins = x => Math.round((x || 0) / 60 * 10) / 10 + ' min';
+      return ['ACTA DEL COMITÉ DE PROYECTOS TI', 'Corte ' + (d.cutLabel || '') + ' · semana del ' + (d.week && d.week.label || ''), ''].concat((d.decisions || []).map((x, k) => {
+        const p = this.byId[x.projectId] || {}, v = this.st.dec[x.projectId] || {};
+        return (k + 1) + '. ' + p.name + ' (' + spokenWhy(x) + ')\n   Resultado: ' + (v.estado || 'Sin registrar') + '\n   Decisión: ' + (v.text || 'Sin registrar') + '\n   Responsable: ' + (v.owner || 'Sin registrar') + ' · Fecha compromiso: ' + (v.date || 'Sin registrar') + '\n   Tiempo usado: ' + mins(v.used);
+      })).join('\n');
+    };
+    // Lines, scenes and segment buttons last: if anything above failed, the engine keeps its own slides.
+    cm.lines = M.lines;
+    const at = cm.scenes.findIndex(s => s.k === 'cartera') + 1;
+    cm.scenes.splice(at, 0, { k: 'semana', label: 'Semana' }, { k: 'entregas', label: 'Entregas' });
+    const segs = cm.el.querySelector('.cfx-cm-segs'); segs.textContent = '';
+    cm.segBtns = cm.scenes.map((s, k) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = s.label; b.title = s.label; b.setAttribute('aria-label', 'Ir a ' + s.label); b.addEventListener('click', () => cm.go(k)); segs.appendChild(b); return b; });
+  }
   function openComite() {
     stopPulse();
     if (typeof window.toggleChat === 'function' && $('#project-chat:not([hidden])')) window.toggleChat(false);
-    fx.comite(getData(), {});
+    let M = null;
+    try { M = comiteModel(getData()); } catch (e) { console.warn('[pmo-av] Comité sin el modelo del Resumen.', e); }
+    const cm = fx.comite(M ? M.dd : getData(), {});
+    // The engine paints the first slide on the next frame, so the scenes can still change here.
+    if (M && cm && cm.scenes && cm.el) { try { adaptComite(cm, M); } catch (e) { console.warn('[pmo-av] Ajuste del comité omitido.', e); } }
   }
   // ------------------------------------------------------------------ I · pantalla de oficina (#pantalla)
   let pantallaOn = false;

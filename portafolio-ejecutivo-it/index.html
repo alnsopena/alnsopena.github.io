@@ -843,7 +843,8 @@
   const INVEST_UNIT=10000,INVEST_COLORS=['#003d53','#cba785','#527d8e','#9ba7aa','#6e5c83','#2f755f','#d69a3c','#7d8c94'];
   function activeInvestment(items){return PMOFinance.investment(items,C,{val,num})}
   function investmentMoney(amount,currency='USD'){return PMOFinance.money(amount,{currency},n=>new Intl.NumberFormat('es-PE',{maximumFractionDigits:0}).format(n))}
-  function investmentHeadline(act){const inv=activeInvestment(act);if(inv.rows.length<2)return'';return'<button type="button" class="card pad invest-headline" onclick="goFiltered(\'finanzas\')"><strong>'+esc(inv.leader.name)+' concentra el '+Math.round(inv.share)+'% de la inversión registrada en activos</strong><span>'+esc(investmentMoney(inv.leader.amount))+' de '+esc(investmentMoney(inv.total))+' en CAPEX más OPEX anual, solo importes en USD. Ver detalle en Finanzas.</span></button>'}
+  function investmentLead(act){const inv=activeInvestment(act);if(inv.rows.length<2)return null;return{title:inv.leader.name+' concentra el '+Math.round(inv.share)+'% de la inversión registrada en activos',note:investmentMoney(inv.leader.amount)+' de '+investmentMoney(inv.total)+' en CAPEX más OPEX anual, solo importes en USD.'}}
+  function investmentHeadline(act){const x=investmentLead(act);if(!x)return'';return'<button type="button" class="card pad invest-headline" onclick="goFiltered(\'finanzas\')"><strong>'+esc(x.title)+'</strong><span>'+esc(x.note)+' Ver detalle en Finanzas.</span></button>'}
   function investmentShip(act){const inv=activeInvestment(act);if(!inv.rows.length)return'';const rows=inv.rows.map((row,j)=>({...row,boxes:Math.max(1,Math.round(row.amount/INVEST_UNIT)),color:INVEST_COLORS[j%INVEST_COLORS.length]})),cols=16,bw=40,bh=24,gap=3,count=rows.reduce((a,r)=>a+r.boxes,0),levels=Math.ceil(count/cols),deck=levels*(bh+gap)+10,width=cols*(bw+gap)+70;let n=0,boxes='';rows.forEach(row=>{for(let b=0;b<row.boxes;b++,n++){const x=35+(n%cols)*(bw+gap),y=deck-(Math.floor(n/cols)+1)*(bh+gap);boxes+='<rect x="'+x+'" y="'+y+'" width="'+bw+'" height="'+bh+'" rx="2" fill="'+row.color+'" stroke="#162631" stroke-width="1"><title>'+esc(row.name)+'</title></rect>'}});const notes=[inv.excluded.PEN?inv.excluded.PEN+' en PEN':'',inv.excluded.unconfirmed?inv.excluded.unconfirmed+' sin moneda confirmada':'',inv.noData?inv.noData+' sin importes':''].filter(Boolean);return'<section class="card pad invest-ship"><h2 class="section-title">El peso de la inversión</h2><p class="subtle">Cada contenedor equivale a '+esc(investmentMoney(INVEST_UNIT))+' de CAPEX más OPEX anual, en proyectos activos.</p><div class="invest-stage"><svg viewBox="0 0 '+width+' '+(deck+58)+'" role="img" aria-label="'+esc(rows.map(r=>r.name+': '+r.boxes+' contenedores').join('. '))+'">'+boxes+'<path d="M6 '+deck+'H'+(width-6)+'L'+(width-44)+' '+(deck+50)+'H44Z" fill="#003d53" stroke="#162631" stroke-width="1.4"/><text x="'+width/2+'" y="'+(deck+31)+'" text-anchor="middle" fill="#fff8ec" font-family="Figtree,sans-serif" font-size="18" font-weight="800">'+esc(investmentMoney(inv.total))+' REGISTRADOS</text></svg></div><div class="invest-legend">'+rows.map(r=>'<button type="button" onclick="openProject(\''+r.id+'\')"><i style="background:'+r.color+'"></i><span>'+esc(r.name)+'</span><small>'+esc(investmentMoney(r.amount))+'</small></button>').join('')+'</div>'+(notes.length?'<p class="invest-note">Fuera de la escala: '+esc(notes.join(', '))+'.</p>':'')+'</section>'}
   function investmentInfo(i){const f=financeInfo(i);return{amount:PMOFinance.investmentAmount(f),currency:f.currency}}
   function investmentCell(i,max){const{amount,currency}=investmentInfo(i);if(!amount)return NO_DATA;const bar=currency==='USD'&&max?'<span class="invest-bar"><i style="width:'+Math.max(2,amount/max*100)+'%"></i></span>':'';return'<div class="invest-cell"><strong>'+esc(investmentMoney(amount,currency))+'</strong>'+(currency?'':'<span class="subtle">Moneda por confirmar</span>')+bar+'</div>'}
@@ -864,10 +865,15 @@
   // Mi muelle shows the same reasons without the PM (it is the reader).
   function attentionWhy(i){return attentionReasons(i).map(x=>x==='Fin Plan vencido'?(riskDaysLate(i)>0?riskDaysLate(i)+(riskDaysLate(i)===1?' día':' días')+' de atraso':'Fin Plan vencido'):esc(reasonLabel(x))).join(' · ')}
   function attentionMeta(i){return attentionWhy(i)+' · '+pmMarkup(val(i,C.pm))}
-  function renderResumen(){
+  // One source for the Resumen numbers; Comité guiado (pmo-av.js) reads the same model.
+  function resumenModel(){
     const items=initiativeItems(),act=items.filter(active),closed=items.filter(i=>val(i,C.status)==='Cerrado'),attention=act.filter(i=>attentionReasons(i).length),risks=act.filter(i=>{const x=(val(i,C.risk)||'').toLowerCase();return x.includes('riesgo')||x.includes('alerta')}),blockers=act.filter(i=>{const x=(val(i,C.risk)||'').toLowerCase();return x.includes('bloqueo')&&!x.includes('sin bloqueo')}),currentYear=String(new Date(D.extracted_at_utc).getFullYear()),executedByQuarter={};
     closed.forEach(i=>{const c=closureInfo(i),y=c&&c.year?String(c.year):'',q=c&&c.quarter?Number(c.quarter):null;if(/^\d{4}$/.test(y)&&q>=1&&q<=4)executedByQuarter[y+'-'+q]=(executedByQuarter[y+'-'+q]||0)+1});
     const quarterly=[1,2,3,4].map(q=>['T'+q+' '+currentYear,executedByQuarter[currentYear+'-'+q]||0]),executedCurrent=quarterly.reduce((a,r)=>a+r[1],0),horizon=new Date(new Date(D.extracted_at_utc).getTime()+90*864e5).toISOString().slice(0,10),upcoming=act.filter(i=>{const p=val(i,C.plan);return p&&!past(p)&&p<=horizon}).sort((a,b)=>(val(a,C.plan)||'9999').localeCompare(val(b,C.plan)||'9999')),baseline=baselineSummary(items),late=act.filter(i=>past(val(i,C.plan))&&!tentativePlan(i)).length;
+    return {items,act,closed,attention,risks,blockers,currentYear,quarterly,executedCurrent,upcoming,baseline,late};
+  }
+  function renderResumen(){
+    const {items,act,closed,attention,risks,blockers,currentYear,quarterly,executedCurrent,upcoming,baseline,late}=resumenModel();
     return head('','Resumen ejecutivo','¿Cómo vamos? Entregas del año, cartera activa y lo que requiere atención.')+
       '<section class="grid kpis">'+
         metric('Entregados '+currentYear,executedCurrent,deliveryPace(executedCurrent),'kpi-primary',"goFiltered('portafolio',{portfolioScope:'closed'})",baseline?deltaLabel(closed.length,baseline.closed):'')+
@@ -1127,13 +1133,13 @@
       }
     });
   </script>
-  <script src="assets/js/cosmos-paper-fx.min.js?v=dispatch-full-20261027" defer></script>
+  <script src="assets/js/cosmos-paper-fx.min.js?v=comite-20261103" defer></script>
   <script src="assets/js/monday-sync.js?v=20261020-verified" defer></script>
   <script src="assets/js/portal-fx.js?v=transversal-20261103" defer></script>
   <script src="assets/js/portal-related-sites.js?v=20261029" defer></script>
   <script src="assets/js/pmo-data.js?v=muelle-20261103" defer></script>
   <script src="assets/js/pmo-puerto.js?v=muelle-20261103" defer></script>
-  <script src="assets/js/pmo-av.js?v=muelle-20261103" defer></script>
+  <script src="assets/js/pmo-av.js?v=comite-20261103" defer></script>
   <script src="assets/js/pmo-art.js?v=muelle-20261103" defer></script>
   <script src="assets/js/pmo-icons.js?v=escenas-20260930" defer></script>
 </body>

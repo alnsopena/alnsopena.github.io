@@ -15,6 +15,8 @@ const replacements = [
   ['Logros de la semana', 'Actualizaciones de esta semana'],
   ['Muestra la cartera, los logros y los cierres de la semana.', 'Muestra la cartera, las actualizaciones y los cierres de la semana.'],
   ['" avance registrado":" avances registrados"', '" proyecto actualizado":" proyectos actualizados"'],
+  // Mi muelle picker: the portal names the role "PM" everywhere ("Todos los PM").
+  ['<optgroup label="Project managers">', '<optgroup label="PM">'],
 ];
 for (const [before, after] of replacements) {
   if (!source.includes(before) && !source.includes(after)) throw new Error('Texto de Paper FX no encontrado: ' + before);
