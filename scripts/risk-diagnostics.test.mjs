@@ -178,26 +178,36 @@ test('origin cards, URL, storage, reset, preventive filters, detail delay tones 
   assert.match(escaped, /&lt;img/);
 });
 
-test('desk actions wrap completely, grow each paper card and leave no decorative tools column', () => {
+test('desk actions keep three lines with a link to the sheet, rows share one height, missing owners are flagged', () => {
   const rendererContext = { module: { exports: {} } };
   vm.runInNewContext(fs.readFileSync(new URL('portafolio-ejecutivo-it/assets/js/dispatch-layout.js', root), 'utf8'), rendererContext);
   const renderer = rendererContext.module.exports;
-  const painted = [], ctx = { save() {}, restore() {}, measureText: text => ({ width: text.length * 6.5 }), fillText(text) { painted.push(text); } };
+  const painted = [], noop = () => {}, ctx = { save: noop, restore: noop, beginPath: noop, roundRect: noop, fill: noop, stroke: noop, fillRect: noop, measureText: text => ({ width: text.length * 6.5 }), fillText(text) { painted.push(text); } };
   const action = 'Entregar cronograma detallado en Excel, confirmar responsables y completar todas las validaciones. '.repeat(5) + 'FIN COMPLETO ' + 'URLLARGASINESPACIOS'.repeat(12);
-  const projects = [{ id: 'long', name: 'Proyecto con acción extensa', actionOwner: action }, { id: 'short', name: 'Proyecto breve', actionOwner: 'Validar acta.' }];
+  const projects = [{ id: 'long', name: 'Proyecto con acción extensa', risk: 'risk', actionText: action, owner: '', actionOwner: action }, { id: 'short', name: 'Proyecto breve', risk: 'risk', actionText: 'Validar acta.', owner: 'Valeria Hermoza', actionOwner: 'Validar acta.' }];
   const original = JSON.stringify(projects);
   for (const width of [300, 375, 800, 1200]) {
     const scene = { ctx, w: width, items: projects };
     renderer.layout(scene);
     assert.equal(scene.tools, 0);
-    assert.ok(scene.detailHeights.long > scene.detailHeights.short);
-    assert.equal(scene.detailActions.long.join('').replace(/\s/g, ''), action.replace(/\s/g, ''));
+    // One column on phones: each card keeps its own height; otherwise the row shares the tallest one.
+    if (width < 600) assert.ok(scene.detailHeights.long > scene.detailHeights.short); else assert.equal(scene.detailHeights.long, scene.detailHeights.short);
+    assert.equal(scene.detailActions.long.length, 3);
+    assert.match(scene.detailActions.long[2], /…$/);
+    assert.ok(action.replace(/\s/g, '').startsWith(scene.detailActions.long.join('').replace(/\s|…/g, '')));
+    assert.equal(JSON.stringify(scene.detailActions.short), JSON.stringify(['Validar acta.']));
     assert.ok(scene.detailActions.long.every(text => ctx.measureText(text).width <= scene.card.w - 22));
     assert.ok(Object.values(scene.pos).every(pos => pos.x - scene.card.w / 2 >= 0 && pos.x + scene.card.w / 2 <= width));
     painted.length = 0;
     renderer.draw(scene, { ctx, alpha: 1, line() {} }, projects[0], 0, 0, scene.card.w, 70, { inkSoft: 'ink', navy3: 'navy' });
-    assert.equal(painted.slice(1).join('').replace(/\s/g, ''), action.replace(/\s/g, ''));
-    assert.doesNotMatch(painted.join(''), /…/);
+    assert.ok(painted.includes('Ver más en la ficha ›'));
+    assert.ok(painted.includes('Sin responsable'));
+    assert.ok(painted.indexOf('Acción:') < painted.indexOf(scene.detailActions.long[0]));
+    painted.length = 0;
+    renderer.draw(scene, { ctx, alpha: 1, line() {} }, projects[1], 0, 0, scene.card.w, 70, { inkSoft: 'ink', navy3: 'navy' });
+    assert.ok(painted.includes('Validar acta.'));
+    assert.ok(!painted.includes('Ver más en la ficha ›') && !painted.includes('Sin responsable'));
+    assert.ok(painted.some(text => text.startsWith('Responsable: ')));
   }
   assert.equal(JSON.stringify(projects), original);
   // The vendor keeps its original layout unless the portal explicitly opts in.
@@ -207,6 +217,6 @@ test('desk actions wrap completely, grow each paper card and leave no decorative
   const sandbox = { Ut: class {}, window: { PMODispatchLayout: renderer } };
   vm.runInNewContext('globalThis.Desk=' + vendor.slice(start, end), sandbox);
   const scene = new sandbox.Desk(); Object.assign(scene, { ctx, w: 800, items: projects, o: { fullActions: true, hideTools: true } });
-  scene.layout(); assert.equal(scene.tools, 0); assert.ok(scene.height(800) > 320);
+  scene.layout(); assert.equal(scene.tools, 0); assert.equal(scene.height(800), renderer.height(scene, 800)); assert.notEqual(scene.height(800), 320);
   scene.o = {}; assert.equal(scene.height(800), 320);
 });

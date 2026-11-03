@@ -99,13 +99,13 @@
       sub: g('riskConclusion')(items || []),
       msg: '',
       pills: [],
-      key: [{ svg: I.ribbon('#B2493A') + I.detenido, text: 'Cinta roja y sello DETENIDO: bloqueo' }, { svg: I.ribbon('#D69A3C'), text: 'Cinta ámbar: riesgo' }, { svg: I.ribbon('#C2633F'), text: 'Cinta óxido: Fin Plan vencido' }],
+      key: [{ svg: I.ribbon('#A63F31') + I.detenido, text: 'Cinta roja y sello DETENIDO: bloqueo' }, { svg: I.ribbon('#8A5A10'), text: 'Cinta ámbar: riesgo' }, { svg: I.ribbon('#9E4A2B'), text: 'Cinta óxido: Fin Plan vencido' }, { svg: I.alert, text: 'Sin responsable: falta decidir quién mitiga' }],
       empty: 'Con estos filtros, ningún proyecto requiere atención'
     };
   }
   function headPortafolio(ps) {
     const by = s => ps.filter(p => String(p.status).toLowerCase() === s).length, closed = by('cerrado'), proc = by('en proceso'), plan = by('planificado'), prop = by('propuesto'), other = ps.length - closed - proc - plan - prop;
-    const act = ps.filter(p => p.active), noPhase = act.filter(p => !p.phase || p.phase === 'Sin fase').length, pm = countBy(act, p => p.pmFirst || 'Sin PM');
+    const act = ps.filter(p => p.active), noPhase = act.filter(p => !p.phase || p.phase === 'Sin fase').length, pm = countBy(act, p => p.pmFirst), noPm = ps.filter(p => !p.pmFirst).length;
     const crit = act.filter(p => /critical/i.test(p.priority || '')).length, flag = act.filter(p => p.risk).length;
     // The "Más activos" chip names each PM with the same two words the chart prints on the island.
     const parts = [closed && plural(closed, 'cerrado', 'cerrados'), proc && proc + ' en curso', plan && plan + ' por arrancar', prop && plural(prop, 'propuesto', 'propuestos'), other && other + ' en Stand by'].filter(Boolean);
@@ -114,6 +114,8 @@
       sub: '',
       msg: '<em>' + plural(ps.length, 'proyecto', 'proyectos') + '</em>' + (parts.length ? ': ' + joinY(parts) : ''),
       pills: [pm[0] && { text: 'Más activos: ' + joinY(pm.filter(x => x[1] === pm[0][1]).map(x => x[0].split(' ').slice(0, 2).join(' '))) + ' (' + pm[0][1] + ')', tone: 'blue' }, crit && { text: plural(crit, 'activo crítico', 'activos críticos'), tone: 'red' }, flag && { text: flag + ' requieren atención', tone: 'amber' }, noPhase && { text: noPhase + ' sin fase registrada', tone: 'red' }],
+      // The bubble adds what the headline does not say; without PM gaps it stays silent.
+      tell: noPm ? plural(noPm, 'proyecto', 'proyectos') + ' sin PM asignado: están en el aviso bajo la carta.' : '',
       key: [{ svg: I.anchor, text: 'Ancla: entregado' }, { svg: I.hullMini, text: 'Casco a medio construir: en curso, según su fase' }, { svg: I.dash, text: 'Círculo punteado: por zarpar' }, { svg: I.flag('#D69A3C'), text: 'Banderín: bloqueo, riesgo o Fin Plan vencido' }, { svg: I.hullMini, text: 'Más grande: mayor prioridad' }]
     };
   }
@@ -127,6 +129,8 @@
       msg: next ? 'Próximo fin planificado: <em>' + esc(next.name) + '</em>, el ' + spoken(next.plan) : 'No hay fines planificados en la vista',
       pills: [ok && { text: 'Fin Plan vigente: ' + ok, tone: 'green' }, over && { text: 'Fin Plan vencido: ' + over, tone: 'red' }, noPlan && { text: 'Sin Fin Plan: ' + noPlan, tone: 'amber' }, { text: plural(in90, 'fin planificado', 'fines planificados') + ' en 90 días', tone: 'blue' }],
       cta: noPlan && d.boardUrl ? { label: 'Completar Fin Plan en monday', href: d.boardUrl } : null,
+      // The headline already names the next arrival: the bubble points at what needs a date instead.
+      tell: noPlan || over ? joinY([noPlan && noPlan + ' sin Fin Plan', over && over + ' con Fin Plan vencido'].filter(Boolean)) + '. Toca un arribo para abrir su ficha.' : '',
       key: [{ svg: I.lighthouse, text: 'Faro: hoy' }, { svg: I.tide, text: 'Altura de la marea: cierres del mes' }, { svg: I.flapY, text: 'Amarillo: 7 días o menos' }, { svg: I.flapR, text: 'Rojo: vencido o sin Fin Plan' }]
     };
   }
@@ -274,6 +278,60 @@
     };
     scene.wake(.2);
   }
+  // The desk is the visual summary; the detailed list below starts folded and remembers the reader's choice.
+  let attentionListOpen = false;
+  function foldAttentionList(main, scene) {
+    const list = main.querySelector('[data-attention-detail]');
+    if (!list || !scene || !scene.box) return;
+    list.open = attentionListOpen;
+    list.addEventListener('toggle', () => { attentionListOpen = list.open; });
+  }
+  // A project without PM is a gap to fix, not a person: it is listed apart, with a link to its sheet.
+  function noPmNotice(scene, ps) {
+    const missing = ps.filter(p => !p.pmFirst);
+    if (!scene || !scene.box || !missing.length) return;
+    const note = document.createElement('div'); note.className = 'pav-nopm'; note.setAttribute('role', 'note');
+    const chip = p => '<button type="button" data-id="' + esc(p.id) + '">' + esc(p.name) + '</button>', SHOWN = 8;
+    note.innerHTML = '<strong>Sin PM asignado · ' + missing.length + '</strong><span class="pav-nopm-note">Asigna un PM en monday.</span><span class="pav-nopm-list">' +
+      missing.slice(0, SHOWN).map(chip).join('') + '</span>' + (missing.length > SHOWN ? '<details class="pav-nopm-more"><summary>Ver ' + (missing.length - SHOWN) + ' más</summary><span class="pav-nopm-list">' + missing.slice(SHOWN).map(chip).join('') + '</span></details>' : '');
+    note.querySelectorAll('[data-id]').forEach(button => button.addEventListener('click', () => open(button.dataset.id)));
+    (scene.keyEl && scene.keyEl.parentNode === scene.box ? scene.keyEl : null) ? scene.box.insertBefore(note, scene.keyEl) : scene.box.appendChild(note);
+  }
+  // Arrivals board: project names in normal type inside one slot (dates, status and PM keep their flaps).
+  // Geometry mirrors the arrivals board of Paper FX 2.5.0; the full name stays in the tooltip and the table.
+  function arrivalNames(scene) {
+    if (!scene || typeof scene.drawLive !== 'function') return scene;
+    const original = scene.drawLive;
+    const fit = (ctx, text, width) => { let value = String(text || ''); if (ctx.measureText(value).width <= width) return value; while (value && ctx.measureText(value + '…').width > width) value = value.slice(0, -1).trimEnd(); return value + '…'; };
+    scene.drawLive = function (pen, elapsed, time, frame) {
+      const result = original.call(this, pen, elapsed, time, frame);
+      if (!this.board || !this.rowsAll || !this.tideH) return result;
+      const ctx = pen.ctx, mob = this.mob, rowH = mob ? 30 : 32, tile = mob ? 7.6 : 13, gap = mob ? 1 : 1.5, pad = mob ? 14 : 22, sep = mob ? 7 : 12, width = this.w - 20, cell = tile + gap;
+      const nameCells = mob ? Math.max(8, Math.floor((width - 2 * pad - 13 * cell - 2 * sep) / cell)) : Math.max(10, Math.floor((width - 60 - 24 * cell - 36) / cell));
+      const dateX = 10 + pad, nameX = dateX + 6 * cell + sep, nameW = nameCells * cell - gap, pmX = nameX + nameW + gap + sep + 8 * cell + sep, pmW = 10 * cell - gap, top = this.tideH + 6, slotH = rowH - 8;
+      const next = (this.withPlan || []).find(p => p.plan >= this.today), font = mob ? '700 11.5px Figtree, "Segoe UI", sans-serif' : '700 13.5px Figtree, "Segoe UI", sans-serif';
+      const slot = (x, y, w, text, color, at, hot) => {
+        ctx.save(); ctx.globalAlpha = pen.alpha;
+        ctx.fillStyle = hot ? '#1D3746' : '#0A161D'; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, slotH, 2.5); else ctx.rect(x, y, w, slotH); ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,.06)'; ctx.fillRect(x, y, w, slotH / 2);
+        const alpha = this.quiet ? 1 : Math.max(0, Math.min(1, (frame - at) / .3));
+        if (alpha > 0) { ctx.globalAlpha = pen.alpha * alpha; ctx.font = font; ctx.fillStyle = color; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(fit(ctx, text, w - 14), x + 7, y + slotH / 2 + .5); }
+        ctx.restore();
+      };
+      this.board.forEach((p, index) => {
+        const y = top + 50 + index * rowH, late = this.days(p.plan) < 0;
+        slot(nameX, y, nameW, p.name, late ? '#F2A08F' : p === next ? '#F5D98C' : '#F3EDE3', this.firstAt + .7 + .12 * index, this.isHot(p.id));
+        if (!mob && p.pmFirst) slot(pmX, y, pmW, String(p.pmFirst).split(' ')[0], '#B9CBD4', this.firstAt + .8 + .12 * index, this.isHot(p.id));
+      });
+      if (this.noPlan && this.noPlan.length) {
+        const y = top + 50 + this.board.length * rowH + (this.rowsAll.length > this.board.length ? 22 : 0) + 2;
+        slot(dateX, y, nameX + nameW - dateX, 'Sin Fin Plan: ' + this.noPlan.length + (this.noPlan.length === 1 ? ' proyecto' : ' proyectos'), '#F2A08F', this.firstAt + 1.4, false);
+      }
+      return result;
+    };
+    scene.wake(.2);
+    return scene;
+  }
   function mount() {
     const main = document.getElementById('main'), view = (g('state') || {}).view; if (!main) return;
     if (current && !document.body.contains(current.box)) { current.destroy(); current = null; }
@@ -287,16 +345,23 @@
     const o = { cardClass: cfg.cardClass, onSelect: open };
     const mark = h => { if (filteredView && view !== 'atencion') { h.pills = [{ text: 'Vista filtrada' }].concat(h.pills || []); if (h.empty && !items.length) h.msg = h.empty; } const t = toggleBtn(view, pl.charts); if (t) h.actions = [t]; return h; };
     let h;
-    if (view === 'atencion') { const ps = toProjects(items); h = mark(headAtencion(ps, items)); const dossiers = ps.map(p => Object.assign({}, p, { actionOwner: [p.action, p.mitigationOwner ? 'Responsable: ' + p.mitigationOwner : 'Sin responsable'].filter(Boolean).join(' · '), planLabel: p.planLabel + (g('riskDaysLate')(items.find(item => String(item.id) === p.id)) > 0 ? ' · ' + g('riskDaysLate')(items.find(item => String(item.id) === p.id)) + ' días de atraso' : '') })); current = fx.despacho(pl.slot, { items: dossiers }, Object.assign(o, { head: h, fullActions: true, hideTools: true })); dispatchDates(current, items); }
+    if (view === 'atencion') { const ps = toProjects(items); h = mark(headAtencion(ps, items)); const dossiers = ps.map(p => Object.assign({}, p, { actionText: p.action, owner: p.mitigationOwner, actionOwner: [p.action, p.mitigationOwner ? 'Responsable: ' + p.mitigationOwner : 'Sin responsable'].filter(Boolean).join(' · '), planLabel: p.planLabel + (g('riskDaysLate')(items.find(item => String(item.id) === p.id)) > 0 ? ' · ' + g('riskDaysLate')(items.find(item => String(item.id) === p.id)) + ' días de atraso' : '') })); current = fx.despacho(pl.slot, { items: dossiers }, Object.assign(o, { head: h, fullActions: true, hideTools: true })); dispatchDates(current, items); foldAttentionList(main, current); }
     else if (view === 'portafolio') { const ps = toProjects(items); h = mark(headPortafolio(ps)); const phases = g('orderedPhases') ? g('orderedPhases')({}).map(r => r[0]) : getData().phases;
-      current = sizeByPriority(fx.carta(pl.slot, { items: ps, phases }, Object.assign(o, { head: h, onPM: grp => { const cnt = {}; grp.list.forEach(p => cnt[p.pm] = (cnt[p.pm] || 0) + 1); const pm = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0]; if (pm && typeof window.setFilter === 'function') window.setFilter('pm', pm); } }))); }
-    else if (view === 'cronograma') { const ps = toProjects(items), today = todayLima(); h = mark(headCronograma(ps, today)); current = fx.arribos(pl.slot, { items: ps, today }, Object.assign(o, { head: h })); }
+      current = sizeByPriority(fx.carta(pl.slot, { items: ps.filter(p => p.pmFirst), phases }, Object.assign(o, { head: h, onPM: grp => { const cnt = {}; grp.list.forEach(p => cnt[p.pm] = (cnt[p.pm] || 0) + 1); const pm = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0]; if (pm && typeof window.setFilter === 'function') window.setFilter('pm', pm); } }))); noPmNotice(current, ps); }
+    else if (view === 'cronograma') { const ps = toProjects(items), today = todayLima(); h = mark(headCronograma(ps, today)); current = arrivalNames(fx.arribos(pl.slot, { items: ps, today }, Object.assign(o, { head: h }))); }
     else if (view === 'finanzas') { const f = finCoverage(items || []); h = mark(headFinanzas(f)); current = coverageFrascos(pl.slot, f, h, items || []); }
-    if (h) tell(view, strip(h.msg));
+    if (h) tell(view, h.tell);
   }
   const css = document.createElement('style'); css.id = 'pmo-art-style';
   css.textContent = `.pav-art-slot{margin:0 0 18px}body.committee-mode .pav-art-slot{margin-bottom:24px}.pav-charts-classic[hidden]{display:none!important}
 .pav-scene-acts{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.pav-scene-legend{row-gap:6px;min-width:0;max-width:100%}.pav-scene-legend span{min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.pav-nopm{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;margin:12px 0 10px;padding:10px 14px;border:1.5px dashed #b2493a;border-radius:10px;background:#fdf1ee;color:#7c2a1f;font:600 12.5px/1.4 Figtree,'Segoe UI',sans-serif}
+.pav-nopm strong{font-weight:800;color:#8e2f22}.pav-nopm-note{color:#7c2a1f}
+.pav-nopm-list{display:flex;flex-wrap:wrap;gap:6px;flex:1 1 100%}
+.pav-nopm-list button{min-height:28px;padding:3px 10px;border:1px solid #e3b4aa;border-radius:999px;background:#fff;color:#5e2018;font:700 12px/1.25 Figtree,'Segoe UI',sans-serif;text-align:left;cursor:pointer;max-width:100%;overflow-wrap:anywhere}
+.pav-nopm-more{flex:1 1 100%}.pav-nopm-more>summary{cursor:pointer;font-weight:800;color:#8e2f22;margin-bottom:6px}
+.pav-nopm-list button:hover{border-color:#b2493a;background:#fff7f5}.pav-nopm-list button:focus-visible{outline:3px solid #CBA785;outline-offset:2px}
 .pav-scene-ghost{min-height:34px;padding:0 12px;border:1px solid #b7c5cc;background:#f7fafb;color:#17354a;font:700 12px/1.1 Figtree,'Segoe UI',sans-serif;cursor:pointer;transition:background-color .18s ease,border-color .18s ease,color .18s ease}
 .pav-scene-ghost:hover{background:#eaf0f3;border-color:#7893a2}
 .pav-scene-ghost:focus-visible{outline:3px solid #CBA785;outline-offset:2px}
