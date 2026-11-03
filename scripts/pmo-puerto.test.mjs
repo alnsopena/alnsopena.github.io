@@ -76,6 +76,11 @@ const rankedDock = {
 puerto.priorityDock(rankedDock); rankedDock.draw(); rankedDock._legend();
 assert.deepEqual(Array.from(rankedPaint, item => item.status), ['Critical', 'High', 'Medium', 'Low', 'En Proceso'], 'paint each container by its monday priority');
 assert.equal(ranked[1].status, 'Stand by', 'never alter real status values');
+const sizes = ['Critical ⚠️️', 'High', 'Medium', 'Low'].map(priority => puerto.priorityScale({ active: true, priority }));
+assert.deepEqual(sizes, [...sizes].sort((a, b) => b - a), 'higher priority means a larger chart icon');
+assert.equal(new Set(sizes).size, 4);
+assert.equal(puerto.priorityScale({ active: false, priority: 'Critical' }), 1, 'closed projects keep their size');
+assert.equal(puerto.priorityScale({ active: true, priority: '' }), 1);
 rankedDock.pos = { a: { y: 90 }, b: { y: 50 } }; rankedDock.draw();
 assert.deepEqual(Array.from(rankedPaint, item => item.id).slice(0, 3), ['c', 'd', 'e'], 'paint unplaced items without moving their order');
 assert.equal(rankedPaint.findIndex(item => item.id === 'b') < rankedPaint.findIndex(item => item.id === 'a'), true, 'paint upper rows first so flags stay visible');

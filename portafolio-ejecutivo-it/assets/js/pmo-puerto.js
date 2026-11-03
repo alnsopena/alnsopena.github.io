@@ -14,6 +14,8 @@
   const slots = count => Array.from({ length: count }, (_, index) => ({ col: index % 6, row: Math.floor(index / 6) }));
   const PRIORITIES = [['Critical', 'danger'], ['High', 'warn'], ['Medium', 'navy3'], ['Low', 'steel']];
   const priorityOf = item => PRIORITIES.find(([name]) => String(item.priority || '').toLowerCase().includes(name.toLowerCase()))?.[0] || '';
+  const PRIORITY_SCALE = { Critical: 1.6, High: 1.25, Medium: 1, Low: .8 };
+  const priorityScale = item => (item.active && PRIORITY_SCALE[priorityOf(item)]) || 1;
   const FLAG_LEGEND = /^(Bloqueo|Riesgo|Plazo vencido)/;
   const flagIcon = color => '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1v12" stroke="#162631" stroke-width="1.4" stroke-linecap="round"/><path d="M3 1.5l9 3-9 3z" fill="' + color + '" stroke="#162631" stroke-width=".9" stroke-linejoin="round"/></svg>';
 
@@ -168,7 +170,7 @@
     style.textContent = `.pav-delivery-layer{position:absolute;inset:0;pointer-events:none}.pav-cargo-hit{position:absolute;pointer-events:auto;cursor:help;background:transparent;border:0;border-radius:2px;padding:0;z-index:2}.pav-cargo-hit:hover,.pav-cargo-hit:focus-visible,.pav-cargo-hit.is-selected{outline:3px solid #e9c46a;outline-offset:2px;background:#fff3}.pav-cargo-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}.pav-puerto .cfx-tip{z-index:4;max-width:min(290px,calc(100% - 8px));overflow-wrap:anywhere;pointer-events:none}.pav-delivery-foot{display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;margin-top:12px;color:var(--navy3,#003d53)}.pav-delivery-caption{display:grid;gap:3px;flex:1 1 300px}.pav-delivery-caption strong{font-size:15px}.pav-delivery-caption>span{font-size:12px;color:var(--muted)}.pav-delivery-pages{display:flex;align-items:center;gap:8px;font-size:12px}.pav-delivery-pages button{min-width:44px;min-height:44px;background:#f5efe4;border:1px solid #cba785;color:#003d53;font:700 18px Figtree,sans-serif}.pav-delivery-list{width:100%;font-size:13px}.pav-delivery-list summary{cursor:pointer;padding:10px 0;font-weight:700;text-decoration:underline;text-underline-offset:3px}.pav-delivery-list>div{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:8px;padding:8px 0}.pav-delivery-list button{display:grid;gap:4px;min-height:72px;text-align:left;padding:12px;border:1px solid var(--line,#d6dfe3);background:#fbfaf6;color:#003d53;font:13px Figtree,sans-serif;cursor:pointer;overflow-wrap:anywhere}.pav-delivery-kind{font-size:10px;text-transform:uppercase;letter-spacing:.06em;font-weight:800;color:#6d604b}.pav-delivery-list button>span:last-child{font-size:11px;color:var(--muted)}.pav-delivery-foot button:focus-visible,.pav-delivery-list summary:focus-visible{outline:3px solid #cba785;outline-offset:3px}@media(max-width:599px){.pav-delivery-caption>span{line-height:1.5}.pav-delivery-list summary{min-height:44px;display:list-item;align-content:center}}`;
     document.head.appendChild(style);
   }
-  const api = { enhance, closed, portData, slots, label, priorityOf, priorityDock, ambientMotion, pageSize: PAGE };
+  const api = { enhance, closed, portData, slots, label, priorityOf, priorityScale, priorityDock, ambientMotion, pageSize: PAGE };
   root.PMOPuerto = api;
   if (typeof module === 'object' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

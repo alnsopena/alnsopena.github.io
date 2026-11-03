@@ -61,6 +61,20 @@
   };
 
   // Mismo conjunto de proyectos que muestra cada módulo (réplica exacta de los filtros del portal).
+  // The chart recomputes its pins on every layout, so the priority size is applied after each one.
+  function sizeByPriority(scene) {
+    const layout = scene.layout, scale = window.PMOPuerto && window.PMOPuerto.priorityScale;
+    if (!scale) return scene;
+    // Larger icons need more room: pins spread from the island's center so they stay readable.
+    const SPREAD = 1.22;
+    const apply = () => scene.isles.forEach(isle => isle.list.forEach(p => {
+      const pin = scene.pins[p.id]; if (!pin) return;
+      pin.s *= scale(p); pin.x = isle.cx + (pin.x - isle.cx) * SPREAD; pin.y = isle.cy + (pin.y - isle.cy) * SPREAD;
+    }));
+    scene.layout = function () { layout.apply(this, arguments); apply(); };
+    apply(); scene.wake(.4);
+    return scene;
+  }
   function viewItems(view) {
     const D = g('D'), st = g('state') || {}, nq = g('normalizeQuery') || (s => String(s || '').toLowerCase()), acf = g('applyCommonFilters'), ar = g('attentionReasons'), sb = g('scheduleBucket'), act = g('active');
     const search = i => !st.search || nq(i.name).includes(nq(st.search));
@@ -95,7 +109,7 @@
     const parts = [closed && plural(closed, 'entregado', 'entregados'), proc && proc + ' en curso', plan && plan + ' por arrancar', other && other + ' en otro estatus'].filter(Boolean);
     return {
       title: 'La carta náutica',
-      sub: 'Cada isla es un PM y crece con sus proyectos. El casco muestra la fase: cuanto más completo, más avanzada. Clic en el nombre de una isla filtra la tabla.',
+      sub: 'Cada isla es un PM y crece con sus proyectos. El casco muestra la fase: cuanto más completo, más avanzada. En los activos, a mayor prioridad, ícono más grande. Clic en el nombre de una isla filtra la tabla.',
       msg: '<em>' + plural(ps.length, 'proyecto', 'proyectos') + '</em>' + (parts.length ? ': ' + joinY(parts) : ''),
       pills: [closed && { text: 'Cerrado: ' + closed, tone: 'green' }, proc && { text: 'En Proceso: ' + proc, tone: 'blue' }, plan && { text: 'Planificado: ' + plan, tone: 'amber' }, other && { text: 'Otro estatus: ' + other },
         pm[0] && { text: 'Más activos: ' + pm.filter(x => x[1] === pm[0][1]).map(x => x[0].split(' ')[0]).join(' y ') + ' (' + pm[0][1] + ')', tone: 'blue' }, crit && { text: crit + ' activos Critical', tone: 'red' }, flag && { text: flag + ' requieren atención', tone: 'amber' }, noPhase && { text: noPhase + ' sin fase registrada', tone: 'red' }],
@@ -272,7 +286,7 @@
     let h;
     if (view === 'atencion') { const ps = toProjects(items); h = mark(headAtencion(ps, items)); const dossiers = ps.map(p => Object.assign({}, p, { actionOwner: [p.action, p.mitigationOwner ? 'Responsable: ' + p.mitigationOwner : 'Sin responsable'].filter(Boolean).join(' · '), planLabel: p.planLabel + (g('riskDaysLate')(items.find(item => String(item.id) === p.id)) > 0 ? ' · ' + g('riskDaysLate')(items.find(item => String(item.id) === p.id)) + ' días de atraso' : '') })); current = fx.despacho(pl.slot, { items: dossiers }, Object.assign(o, { head: h, fullActions: true, hideTools: true })); dispatchDates(current, items); }
     else if (view === 'portafolio') { const ps = toProjects(items); h = mark(headPortafolio(ps)); const phases = g('orderedPhases') ? g('orderedPhases')({}).map(r => r[0]) : getData().phases;
-      current = fx.carta(pl.slot, { items: ps, phases }, Object.assign(o, { head: h, onPM: grp => { const cnt = {}; grp.list.forEach(p => cnt[p.pm] = (cnt[p.pm] || 0) + 1); const pm = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0]; if (pm && typeof window.setFilter === 'function') window.setFilter('pm', pm); } })); }
+      current = sizeByPriority(fx.carta(pl.slot, { items: ps, phases }, Object.assign(o, { head: h, onPM: grp => { const cnt = {}; grp.list.forEach(p => cnt[p.pm] = (cnt[p.pm] || 0) + 1); const pm = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0]; if (pm && typeof window.setFilter === 'function') window.setFilter('pm', pm); } }))); }
     else if (view === 'cronograma') { const ps = toProjects(items), today = todayLima(); h = mark(headCronograma(ps, today)); current = fx.arribos(pl.slot, { items: ps, today }, Object.assign(o, { head: h })); }
     else if (view === 'finanzas') { const f = finCoverage(items || []); h = mark(headFinanzas(f)); current = coverageFrascos(pl.slot, f, h, items || []); }
     if (h) tell(view, strip(h.msg));
