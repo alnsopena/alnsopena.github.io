@@ -1,0 +1,53 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+
+const base = new URL('../portafolio-ejecutivo-it/', import.meta.url);
+const source = name => fs.readFileSync(new URL('assets/js/' + name, base), 'utf8');
+const load = name => { const context = { module: { exports: {} } }; vm.runInNewContext(source(name), context); return context.module.exports; };
+const puerto = load('pmo-puerto.js');
+const html = fs.readFileSync(new URL('index.html', base), 'utf8');
+const snapshot = html.match(/<script type="application\/json" id="snapshot">([\s\S]*?)<\/script>/);
+const start = html.indexOf("  'use strict';", snapshot.index), end = html.indexOf('  let cosmoGuide=', start);
+const context = {
+  document: { getElementById: id => id === 'snapshot' ? { textContent: snapshot[1] } : null },
+  localStorage: { getItem: () => null, setItem() {} }, location: { search: '', pathname: '/', hash: '' },
+  URLSearchParams, Intl, Date, Set, Map, Number, String, Object, Array,
+  PMOFinance: load('finance-model.js'), PMORiskDiagnostics: load('risk-diagnostics.js')
+};
+context.window = context;
+vm.runInNewContext(html.slice(start, end), context);
+vm.runInNewContext(source('pmo-data.js'), context);
+if (process.env.PMO_PUERTO_FIXTURE) {
+  const fixture = fs.readFileSync(process.env.PMO_PUERTO_FIXTURE, 'utf8').replace(/^\uFEFF/, '');
+  context.fixture = JSON.parse(fixture.startsWith('<') ? fixture.match(/<script type="application\/json" id="snapshot">([\s\S]*?)<\/script>/)[1] : fixture);
+  vm.runInNewContext('D=fixture', context);
+}
+const totals = {};
+for (const scope of ['all', 'projects', 'quick-wins']) {
+  vm.runInNewContext('state.initiativeScope=' + JSON.stringify(scope), context);
+  const data = context.PMOData.build(), before = JSON.stringify(data);
+  const expected = vm.runInNewContext('initiativeItems().filter(i=>val(i,C.status)==="Cerrado"&&String(closureInfo(i)?.year)===String(new Date(D.extracted_at_utc).getFullYear())).map(i=>String(i.id))', context);
+  const actual = puerto.closed(data);
+  assert.deepEqual(Array.from(actual, p => p.id), Array.from(expected), scope + ': cargo must exactly match effective closures');
+  if (scope !== 'all') assert.ok(actual.every(p => p.initiativeClass === (scope === 'projects' ? 'Proyecto' : 'Quick win')));
+  assert.equal(new Set(actual.map(p => p.id)).size, actual.length);
+  assert.equal(puerto.closed(data, p => p.id === actual[0]?.id).length, actual.length ? 1 : 0, 'personal filter must also constrain cargo');
+  const adapted = puerto.portData(data);
+  assert.equal(JSON.stringify(data), before, 'scene must not mutate the source contract');
+  assert.equal(adapted.projects, data.projects);
+  if (!data.projects.some(p => p.active && p.phase === 'Cierre')) assert.ok(!adapted.phases.includes('Cierre'));
+  totals[scope] = actual.length;
+}
+assert.equal(totals.all, totals.projects + totals['quick-wins']);
+const edge = { totals: { year: 2026 }, phases: ['Propuesta', 'Cierre'], projects: [
+  { id: 'active', active: true, phase: 'Cierre', status: 'En Proceso', closedYear: 2026 },
+  { id: 'prior-year', active: false, status: 'Cerrado', closedYear: 2025 },
+  { id: 'undated', active: false, status: 'Cerrado', closedYear: null },
+  { id: 'cancelled', active: false, status: 'Cancelado', closedYear: 2026 }
+] };
+assert.equal(puerto.closed(edge).length, 0, 'never invent a closure from inactive status, missing year or another year');
+assert.ok(puerto.portData(edge).phases.includes('Cierre'), 'future active closing work must retain its actual phase');
+assert.equal(new Set(puerto.slots(puerto.pageSize).map(p => p.col + ':' + p.row)).size, puerto.pageSize);
+assert.equal(puerto.slots(0).length, 0);
+console.log('Puerto: cierre efectivo, clases, año, filtro personal, carga única y fuente intacta verificados.', totals);

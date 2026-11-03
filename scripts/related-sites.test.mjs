@@ -92,3 +92,35 @@ test('an open view follows the new monday cut, keeps an unchanged page loaded, a
   data = { ...data, sites: [] }; handlers['portfolio:data-updated']();
   assert.equal(dialog.open, false); assert.equal(frame.attributes.src, undefined);
 });
+
+const driveBoard = { columns: [{ id: model.driveColumnId, title: 'Carpeta de Drive', type: 'link' }] };
+const driveItem = value => ({ id: 'p1', name: 'Proyecto <seguro>', column_values: { [model.driveColumnId]: value } });
+test('Drive link reads typed values, serialized values and raw API URL behind a display label', () => {
+  const url = 'https://drive.google.com/drive/folders/verified_ID?resourcekey=keep_me';
+  for (const value of [{ url, text: 'Carpeta' }, JSON.stringify({ url, text: 'Carpeta' }), url, 'Carpeta - ' + url]) assert.equal(model.drive(driveItem(value), driveBoard).url, url);
+  const raw = [{ id: 'p1', column_values: [{ id: model.driveColumnId, value: JSON.stringify({ url, text: 'Carpeta' }) }] }];
+  assert.equal(model.drive(driveItem('Carpeta'), driveBoard, raw).url, url);
+  const renamed = { columns: [{ id: 'replacement', title: 'Carpeta de Drive' }] };
+  assert.equal(model.drive({ id: 'p1', column_values: { replacement: { url } } }, renamed).url, url);
+  assert.equal(model.drive(driveItem('Carpeta'), driveBoard, [{ id: 'p1', column_values: {} }]), null);
+});
+test('Drive access is hidden when empty, reflects edits and clearing, and preserves the existing websites', () => {
+  const raw = [{ id: 'p1', column_values: [{ id: model.driveColumnId, value: JSON.stringify({ url: 'https://drive.google.com/drive/folders/old_ID' }) }] }];
+  for (const value of [null, '', undefined]) { assert.equal(model.driveMarkup(driveItem(value), driveBoard, raw), ''); assert.equal(model.driveShortcut(driveItem(value), driveBoard, raw), ''); }
+  const data = driveItem({ url: 'https://drive.google.com/drive/u/0/folders/first_ID' });
+  assert.match(model.driveMarkup(data, driveBoard), /Abrir carpeta de Drive ↗/);
+  data.column_values[model.driveColumnId] = { url: 'https://drive.google.com/open?id=second_ID' };
+  assert.match(model.driveShortcut(data, driveBoard), /id=second_ID/);
+  assert.match(model.driveMarkup(data, driveBoard), /target="_blank" rel="noopener noreferrer"/);
+  assert.match(model.driveMarkup(data, driveBoard), /Proyecto &lt;seguro&gt;/);
+  assert.doesNotMatch(model.driveMarkup(data, driveBoard), /iframe|data-related-open/);
+  const both = item('Incidencias | https://example.com/'); both.column_values[model.driveColumnId] = data.column_values[model.driveColumnId];
+  assert.equal(model.project(both, { columns: [...board.columns, ...driveBoard.columns] }).sites.length, 1);
+});
+test('Drive access never substitutes another host, a file, an unsafe URL or an ungrounded parent folder', () => {
+  for (const url of ['javascript:alert(1)', 'https://drive.google.com.evil.test/drive/folders/x', 'https://example.com/folder', 'https://drive.google.com/file/d/x/view', 'https://drive.google.com/drive/my-drive', 'https://user:password@drive.google.com/drive/folders/x']) assert.equal(model.drive(driveItem({url}), driveBoard), null);
+  assert.equal(model.drive({ id: 'old' }, { columns: [] }), null);
+  const html = fs.readFileSync(new URL('portafolio-ejecutivo-it/index.html', root), 'utf8');
+  assert.match(html, /projectDriveMarkup\(i\)/); assert.match(html, /projectDriveShortcut\(i\)/);
+  assert.match(html, /driveMarkup\(item,D\.board,D\.raw_items\)/);
+});

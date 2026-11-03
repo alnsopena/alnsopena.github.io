@@ -5,6 +5,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
   const columnId = 'long_text_mm8k6c9s';
+  const driveColumnId = 'link_mm8r9xq2';
   // This existing app uses an authenticated session. Keep its login in its own
   // tab, without weakening cookies or changing the app's access settings.
   const separateTabHosts = new Set(['cosmos-monday-proxy.alonsostef2006.workers.dev']);
@@ -60,5 +61,44 @@
     const n = project(item, board).sites.length;
     return n ? '<button type="button" class="related-sites-shortcut" data-related-project="' + escape(item.id) + '" aria-label="Webs relacionadas de ' + escape(item.name) + '">Webs <span>' + n + '</span> ↗</button>' : '';
   }
-  return Object.freeze({ columnId, safeUrl, parse, project, markup, shortcut, escape });
+  function linkValue(value) {
+    if (typeof value === 'string') {
+      const s = value.trim();
+      if (s.startsWith('{')) { try { return linkValue(JSON.parse(s)); } catch { return null; } }
+      const display = s.match(/^(.*?) - (https:\/\/\S+)$/);
+      if (display) return { url: display[2], text: display[1] };
+      return /^https?:\/\//i.test(s) ? { url: s, text: '' } : null;
+    }
+    return value && typeof value === 'object' && typeof value.url === 'string' ? value : null;
+  }
+  function drive(item, board, rawItems) {
+    const col = (board?.columns ?? []).find(c => c.id === driveColumnId)
+      ?? (board?.columns ?? []).find(c => String(c.title ?? '').toLowerCase().trim() === 'carpeta de drive');
+    const id = col?.id ?? driveColumnId, values = item?.column_values ?? {}, value = values[id];
+    if (Object.hasOwn(values, id) && (value == null || value === '')) return null;
+    let candidate = linkValue(value);
+    if (!candidate) {
+      const raw = (Array.isArray(rawItems) ? rawItems : []).find(r => String(r.id) === String(item?.id));
+      const cell = (Array.isArray(raw?.column_values) ? raw.column_values : []).find(c => c.id === id);
+      candidate = linkValue(cell?.value) ?? linkValue(cell?.text);
+    }
+    const url = safeUrl(candidate?.url);
+    if (!url || url.hostname !== 'drive.google.com' ||
+        !(/^\/drive\/(?:u\/\d+\/)?folders\/[A-Za-z0-9_-]+\/?$/.test(url.pathname)
+          || (url.pathname === '/open' && /^[A-Za-z0-9_-]+$/.test(url.searchParams.get('id') ?? '')))) return null;
+    return { url: url.href, label: typeof candidate.text === 'string' ? candidate.text : '' };
+  }
+  function driveLink(item, board, rawItems, compact) {
+    const folder = drive(item, board, rawItems); if (!folder) return '';
+    return '<a class="' + (compact ? 'related-sites-shortcut project-drive-shortcut' : 'related-site-external project-drive-link')
+      + '" href="' + escape(folder.url) + '" target="_blank" rel="noopener noreferrer" aria-label="Abrir carpeta de Drive de ' + escape(item.name) + '">'
+      + '<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 7V5h7l2 3h9v12H3Z"/></svg>'
+      + (compact ? 'Drive ↗' : 'Abrir carpeta de Drive ↗') + '</a>';
+  }
+  function driveMarkup(item, board, rawItems) {
+    const link = driveLink(item, board, rawItems, false);
+    return link ? '<section class="fieldgroup project-drive" aria-label="Carpeta del proyecto"><h3>Carpeta del proyecto</h3>' + link + '</section>' : '';
+  }
+  return Object.freeze({ columnId, driveColumnId, safeUrl, parse, project, markup, shortcut, escape, drive, driveMarkup,
+    driveShortcut: (item, board, rawItems) => driveLink(item, board, rawItems, true) });
 });

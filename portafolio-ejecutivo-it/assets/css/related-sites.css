@@ -9,6 +9,8 @@
 .related-site-view{background:var(--navy3);border-color:var(--navy3);color:#fff}
 .related-sites-shortcut{display:flex;width:max-content;margin-top:7px;min-height:30px;padding:5px 9px;font-size:11px}
 .related-sites-shortcut span{font-variant-numeric:tabular-nums}
+.project-resource-shortcuts{display:flex;flex-wrap:wrap;gap:6px}.project-resource-shortcuts:empty{display:none}
+.project-drive-link{margin-top:10px;gap:8px}.project-drive-shortcut svg,.project-drive-link svg{flex-shrink:0}
 .related-site-actions :focus-visible,.related-sites-shortcut:focus-visible,.related-web-dialog :focus-visible{outline:3px solid var(--sand);outline-offset:3px}
 .related-web-dialog{width:calc(100vw - 32px);max-width:1800px;height:calc(100dvh - 32px);max-height:none;padding:0;margin:auto;border:1px solid var(--line);border-radius:8px;background:var(--white);color:var(--ink);font-family:Figtree,"Segoe UI",sans-serif;overflow:hidden;box-shadow:0 20px 70px #021e2f55}
 .related-web-dialog::backdrop{background:#021e2fcc}

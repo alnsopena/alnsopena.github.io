@@ -167,10 +167,11 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
     const d = getData(), kpis = main.querySelector('.grid.kpis');
     if (cfg.puerto && kpis && !main.querySelector('.pav-puerto')) {
       const c = card('pav-puerto', 'Puerto de la cartera',
-        'Cada contenedor es un proyecto activo, atracado en su fase. Pasa el cursor o toca uno para ver el detalle.',
+        'En el muelle, las iniciativas activas por fase. En el barco, los proyectos y quick wins entregados en el año. Pasa el cursor, enfoca o toca sus contenedores para identificarlos.',
         '<button type="button" class="pav-btn" data-pav="pulso">' + ICON.pulso + 'Escuchar el pulso</button>');
       kpis.after(c);
       const person = selectedMuellePerson(d), onlyMine = selectedMuelleOnly(), pu = puerto = fx.puerto(c.querySelector('.pav-slot'), d, { onSelect: open, filter: person && onlyMine ? mineFilter(person) : null });
+      if (window.PMOPuerto) window.PMOPuerto.enhance(pu);
       if (person) person.ids.forEach((id, k) => setTimeout(() => pu.highlight(id), 1400 + k * 180));
       const b = c.querySelector('[data-pav=pulso]');
       b.addEventListener('click', safe(() => { b.disabled = true; pu.pulse({ force: true, onEnd: () => { b.disabled = false; } }); }, 'pulso'));

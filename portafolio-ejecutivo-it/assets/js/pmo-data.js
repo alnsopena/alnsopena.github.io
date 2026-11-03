@@ -31,7 +31,7 @@
       const issues = call('regularizationIssues', i) || [];
       const pm = val(i, C.pm) || '';
       return {
-        id: String(i.id), name: i.name, url: i.url, status: val(i, C.status) || 'Sin estatus', active: active(i),
+        id: String(i.id), name: i.name, url: i.url, initiativeClass: call('initiativeClass', i) || 'Proyecto', status: val(i, C.status) || 'Sin estatus', active: active(i),
         phase: val(i, C.phase) || 'Sin fase', pm, pmFirst: firstPm(pm), pmColor: pm && has('pmColor') ? call('pmColor', firstPm(pm)) : null,
         sponsor: val(i, C.sponsor) || '', sponsorName: personFromEmail(val(i, C.sponsor)), priority: val(i, C.priority) || '',
         progress: num(i, C.progress), progressPlan: num(i, C.progressPlan), progressDelta: (call('progressInfo', i) || {}).delta ?? null, plan, planLabel: dLabel(plan),
