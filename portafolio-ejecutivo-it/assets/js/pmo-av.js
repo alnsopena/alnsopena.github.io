@@ -16,7 +16,7 @@
     comite: true,          // H · Comité guiado (botón en la barra y en modo comité)
     pantalla: true,        // I · Pantalla de oficina: se abre con …/portafolio-ejecutivo-it/#pantalla
     logo: 'assets/cosmos-logo-white.png',
-    voz: 'assets/voz/manifest.json',   // audios pregenerados (voz Paloma). Si no existe, se usa la voz del navegador
+    voz: 'assets/voz/manifest.json',   // audios pregenerados (voz Paloma). Sin frases en el manifiesto, se usa la voz del navegador
 
     url: location.host + location.pathname.replace(/index\.html$/, ''),
     fullUrl: location.origin + location.pathname.replace(/index\.html$/, '')
@@ -74,7 +74,8 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
     parte: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 9.5l4 2.5-4 2.5z" fill="currentColor"/></svg>',
     comite: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M10 8.5l4 1.5-4 1.5z"/></svg>',
     tv: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="12" rx="2"/><path d="M8 21h8M9 2.5l3 2.5 3-2.5"/></svg>',
-    pulso: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l2.5-6 4 12 2.5-6H21"/></svg>'
+    pulso: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l2.5-6 4 12 2.5-6H21"/></svg>',
+    detener: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6.5" y="6.5" width="11" height="11" rx="2" fill="currentColor"/></svg>'
   };
 
   // ------------------------------------------------------------------ barra superior
@@ -92,6 +93,7 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
     if (fx.sound && !fx.sound.enabled) fx.sound.setEnabled(true);
   }
   function openParte() {
+    stopPulse();
     if (typeof window.toggleChat === 'function' && $('#project-chat:not([hidden])')) window.toggleChat(false);
     const back = document.activeElement;
     fx.parte(getData(), { logo: cfg.logo, url: cfg.url, voice: true }).then(() => back && back.focus && back.focus({ preventScroll: true }));
@@ -99,6 +101,7 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
 
   // ------------------------------------------------------------------ H · comité guiado
   function openComite() {
+    stopPulse();
     if (typeof window.toggleChat === 'function' && $('#project-chat:not([hidden])')) window.toggleChat(false);
     fx.comite(getData(), {});
   }
@@ -170,25 +173,63 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
     const slot = main.querySelector('#pav-personal-dock');
     if (slot) mountMuelleCard(slot, getData());
   }
-  function autoPulse(card, button) {
-    const play = () => { if (card.isConnected && !button.disabled) button.click(); };
-    if (navigator.userActivation && navigator.userActivation.isActive) { setTimeout(play, 1200); return; }
-    const once = () => { document.removeEventListener('pointerdown', once, true); document.removeEventListener('keydown', once, true); setTimeout(play, 300); };
-    document.addEventListener('pointerdown', once, true); document.addEventListener('keydown', once, true);
+  // ------------------------------------------------------------------ pulso: suena cada vez que se entra a Resumen y se corta al salir
+  const AUTO_OVERLAYS = '.cfx-bot', USER_OVERLAYS = '.cfx-parte,.cfx-cm,.cfx-px,dialog[open]';
+  const pulse = { on: false, token: 0, cancel: null };
+  const inResumen = () => ((g('state') || {}).view || 'resumen') === 'resumen' && puerto && puerto.el.isConnected && puerto.el.getClientRects().length > 0;   // hidden in committee mode
+  function paintPulseButtons() {
+    document.querySelectorAll('[data-pav=pulso]').forEach(b => { b.innerHTML = (pulse.on ? ICON.detener : ICON.pulso) + (pulse.on ? 'Detener pulso' : 'Escuchar el pulso'); b.setAttribute('aria-pressed', String(pulse.on)); });
+  }
+  function startPulse() {
+    cancelAutoPulse();
+    if (pulse.on || !inResumen()) return;
+    const token = ++pulse.token; pulse.on = true; paintPulseButtons();
+    puerto.pulse({ force: true, onEnd: () => { if (token === pulse.token) { pulse.on = false; paintPulseButtons(); } } });
+  }
+  function stopPulse() {
+    cancelAutoPulse();
+    if (!pulse.on) return;
+    pulse.token++; pulse.on = false; paintPulseButtons();
+    // The notes are scheduled ahead on the shared AudioContext: closing it is the only way to cut them. The engine builds a new one on the next sound.
+    const s = fx.sound;
+    if (s && s.ctx) { try { s.ctx.close(); } catch (_) { /* ya cerrado */ } s.ctx = s.master = s.comp = s.rec = s.verb = s.verbGain = s.voiceGain = null; }
+  }
+  function cancelAutoPulse() { if (pulse.cancel) { pulse.cancel(); pulse.cancel = null; } }
+  // Browsers only allow sound after a first gesture on the page: until then the pulse waits for the first click or key.
+  function autoPulse() {
+    cancelAutoPulse();
+    let timer = 0, tries = 0;
+    const off = () => { document.removeEventListener('pointerdown', once, true); document.removeEventListener('keydown', once, true); clearTimeout(timer); };
+    const play = () => {
+      timer = 0;
+      if (!inResumen() || pulse.on || document.querySelector(USER_OVERLAYS)) { off(); pulse.cancel = null; return; }
+      if (fx.introRunning || document.querySelector(AUTO_OVERLAYS)) { if (++tries < 50) timer = setTimeout(play, 1200); return; }
+      startPulse();
+    };
+    const once = e => {
+      document.removeEventListener('pointerdown', once, true); document.removeEventListener('keydown', once, true);
+      if (e.target && e.target.closest && e.target.closest('[data-pav=pulso]')) { pulse.cancel = null; return; }   // the button itself starts it
+      timer = setTimeout(play, 350);
+    };
+    pulse.cancel = off;
+    const ua = navigator.userActivation, ctx = fx.sound && fx.sound.ctx;
+    if ((ua && ua.hasBeenActive) || (ctx && ctx.state === 'running')) timer = setTimeout(play, 1200);
+    else { document.addEventListener('pointerdown', once, true); document.addEventListener('keydown', once, true); }
   }
   function mountResumen(main, entering) {
     const d = getData(), kpis = main.querySelector('.grid.kpis');
     if (cfg.puerto && kpis && !main.querySelector('.pav-puerto')) {
       const c = card('pav-puerto', 'Puerto de la cartera',
-        'En el muelle, las iniciativas activas por fase. En el barco, los proyectos y quick wins entregados en el año. Pasa el cursor, enfoca o toca sus contenedores para identificarlos.',
+        'En el muelle, las iniciativas activas por fase. En el barco, los proyectos y quick wins entregados en el año. Toca un contenedor o abre las listas de abajo para ver cada nombre.',
         '<button type="button" class="pav-btn" data-pav="pulso">' + ICON.pulso + 'Escuchar el pulso</button>');
       kpis.after(c);
       const person = selectedMuellePerson(d), onlyMine = selectedMuelleOnly(), pu = puerto = fx.puerto(c.querySelector('.pav-slot'), d, { onSelect: open, filter: person && onlyMine ? mineFilter(person) : null });
       if (window.PMOPuerto) window.PMOPuerto.enhance(pu);
       if (person) person.ids.forEach((id, k) => setTimeout(() => pu.highlight(id), 1400 + k * 180));
       const b = c.querySelector('[data-pav=pulso]');
-      b.addEventListener('click', safe(() => { b.disabled = true; pu.pulse({ force: true, onEnd: () => { b.disabled = false; } }); }, 'pulso'));
-      if (entering) autoPulse(c, b);
+      paintPulseButtons();
+      b.addEventListener('click', safe(() => { if (pulse.on) stopPulse(); else startPulse(); }, 'pulso'));
+      if (entering) autoPulse();
     }
     if (cfg.aduanaResumen && d.aduana && d.aduana.totalProjects && !main.querySelector('.pav-aduana-mini')) {
       const anchor = main.querySelector('.decision-list') || main.querySelector('.executive-charts') || kpis; if (!anchor) return;
@@ -220,6 +261,7 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
   function mount() {
     const main = $('#main'), view = (g('state') || {}).view || 'resumen'; if (!main) return;
     const entering = view !== lastView; lastView = view;
+    if (view !== 'resumen') stopPulse();
     if (view === 'muelle') mountMuellePage(main);
     else { if (muelleObserver) { muelleObserver.disconnect(); muelleObserver = null; } if (view === 'resumen') mountResumen(main, entering); else if (view === 'regularizacion') mountRegularizacion(main); }
   }
@@ -229,6 +271,7 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
   // ------------------------------------------------------------------ botadura de cierres nuevos
   function botadura() {
     if (pantallaOn || !cfg.botadura || document.hidden || document.body.classList.contains('committee-mode')) return;
+    if (pulse.on) { setTimeout(safe(botadura, 'botadura'), 2500); return; }   // the celebration waits for the pulse to finish
     const list = fx.newClosures(getData(), { firstVisitWeek: true });
     if (list.length) fx.botadura(list.slice(0, 3));
   }

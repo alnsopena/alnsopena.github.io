@@ -39,7 +39,7 @@ for (const [real, planned, delta] of [[65,100,-35],[70,60,10],[0,0,0],[0,40,-40]
   const item=progressItem(real,planned),result=h.progressInfo(item),markup=h.progressSummary(item);
   assert.equal(result.delta,delta,`Comparison ${real}/${planned}`);
   assert.doesNotMatch(markup,/NaN|Infinity|undefined/);
-  if(delta===null) assert.match(markup,/Diferencia: Sin dato/);
+  if(delta===null) assert.match(markup,/Diferencia: <span class="no-data"[^>]*>—<\/span>/);
 }
 assert.equal(h.C.plan,'date_mkzrb4nr');
 assert.equal(h.progressPercent(0),'0%');
