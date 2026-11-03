@@ -31,4 +31,19 @@ for (const [before, after] of replacements) {
   if (!source.includes(before) && !source.includes(after)) throw new Error('Texto de Paper FX no encontrado: ' + before);
   source = source.replaceAll(before, after);
 }
+// Port dock: the only behavior hook. CosmosFx.draw is a copy of the internal pen kit, so the container a dock
+// item is drawn with cannot be swapped from outside. scene.boxFor(item) may return another painter with the same
+// signature as draw.box (pmo-puerto.js: short container for quick wins); without it the engine draws as before.
+const dockBox = ['k.box(t,c,h-m,n.u,{col:nt(e.status,a),', '(this.boxFor&&this.boxFor(e)||k.box)(t,c,h-m,n.u,{col:nt(e.status,a),'];
+if (!source.includes(dockBox[0]) && !source.includes(dockBox[1])) throw new Error('Contenedor del muelle de Paper FX no encontrado');
+source = source.replaceAll(dockBox[0], dockBox[1]);
+// Port berth plates (desktop and mobile) count containers as "proyectos"; scene.countLabel(items) may name the
+// mix instead (pmo-puerto.js: "N iniciativas", or "N proyectos" / "N quick wins" when there is a single kind).
+for (const [before, after] of [
+  ['ot(t,l?l+(1===l?" proyecto":" proyectos"):"libre"', 'ot(t,l?this.countLabel?this.countLabel(this.byPhase[s]||[]):l+(1===l?" proyecto":" proyectos"):"libre"'],
+  ['ot(t,d?d+(1===d?" proyecto":" proyectos"):n.sub||"libre"', 'ot(t,d?this.countLabel?this.countLabel(this.byPhase[s]||[]):d+(1===d?" proyecto":" proyectos"):n.sub||"libre"'],
+]) {
+  if (!source.includes(before) && !source.includes(after)) throw new Error('Rótulo de fase del puerto de Paper FX no encontrado: ' + before);
+  source = source.replaceAll(before, after);
+}
 fs.writeFileSync(file, source);

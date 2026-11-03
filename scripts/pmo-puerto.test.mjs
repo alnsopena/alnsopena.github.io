@@ -38,6 +38,18 @@ for (const scope of ['all', 'projects', 'quick-wins']) {
   assert.equal(adapted.projects, data.projects);
   if (!data.projects.some(p => p.active && p.phase === 'Cierre')) assert.ok(!adapted.phases.includes('Cierre'));
   totals[scope] = actual.length;
+  // Container length follows the initiative class; the split never changes the total and matches Comité guiado's count.
+  const shortCount = actual.filter(puerto.isShort).length, mix = puerto.mixLabel(actual);
+  assert.equal(shortCount, actual.filter(p => p.initiativeClass === 'Quick win').length);
+  const comite = vm.runInNewContext('(()=>{const m=resumenModel(),done=m.closed.filter(i=>{const c=closureInfo(i);return c&&String(c.year)===m.currentYear&&c.quarter>=1&&c.quarter<=4});return{total:m.executedCurrent,done:done.length,qw:done.filter(i=>initiativeClass(i)==="Quick win").length}})()', context);
+  assert.equal(comite.done, comite.total, scope + ': the committee split adds up to Entregados');
+  assert.equal(comite.qw, shortCount, scope + ': committee and ship count the same quick wins');
+  if (scope === 'all' && shortCount && shortCount < actual.length) assert.equal(mix, (actual.length - shortCount) + ' proyecto' + (actual.length - shortCount === 1 ? '' : 's') + ' y ' + shortCount + ' quick win' + (shortCount === 1 ? '' : 's'));
+  else assert.equal(mix, '', scope + ': a single kind is already the total');
+  const stowed = puerto.stowOrder(actual);
+  assert.equal(stowed.length, actual.length);
+  assert.ok(stowed.findIndex(puerto.isShort) === -1 || stowed.slice(stowed.findIndex(puerto.isShort)).every(puerto.isShort), 'ship: long containers in the lower tiers');
+  puerto.activeByPhase(data).forEach(g => { const first = g.items.findIndex(puerto.isShort); assert.ok(first === -1 || g.items.slice(first).every(puerto.isShort), scope + ': list follows dock stowage in ' + g.phase); });
 }
 assert.equal(totals.all, totals.projects + totals['quick-wins']);
 const edge = { totals: { year: 2026 }, phases: ['Propuesta', 'Cierre'], projects: [
@@ -58,7 +70,7 @@ let paintItems;
 const dock = {
   items: activeItems,
   draw() { paintItems = this.items; },
-  _legend() { this.leg = { children: ['Planificado', 'Propuesto', 'Riesgo', 'Atraso', 'Neblina'].map(label => ({ remove() { remainingLegend.push(label); } })) }; }
+  _legend() { this.leg = { children: ['Planificado', 'Propuesto', 'Riesgo', 'Atraso', 'Neblina'].map(label => ({ remove() { remainingLegend.push(label); } })), insertAdjacentHTML() {} }; }
 };
 puerto.priorityDock(dock); dock.draw(); dock._legend();
 assert.deepEqual(Array.from(paintItems, item => item.status), ['En Proceso', 'En Proceso']);
@@ -71,7 +83,7 @@ let rankedPaint, legendHtml = '';
 const rankedDock = {
   items: ranked,
   draw() { rankedPaint = this.items; },
-  _legend() { this.leg = { children: [{ remove() {} }, { remove() {} }], insertAdjacentHTML(position, html) { legendHtml = html; } }; }
+  _legend() { this.leg = { children: [{ remove() {} }, { remove() {} }], insertAdjacentHTML(position, html) { legendHtml += html; } }; }
 };
 puerto.priorityDock(rankedDock); rankedDock.draw(); rankedDock._legend();
 assert.deepEqual(Array.from(rankedPaint, item => item.status), ['Critical', 'High', 'Medium', 'Low', 'En Proceso'], 'paint each container by its monday priority');
@@ -107,4 +119,53 @@ intersection([{ isIntersecting: true }]); media.matches = true; assert.equal(mov
 media.matches = false; moving.quiet = true; assert.equal(moving.busy(100004), false);
 moving.quiet = false; moving.el.isConnected = false; assert.equal(moving.busy(100005), false);
 moving.destroy(); assert.equal(disconnected, true); assert.equal(listeners.size, 0);
-console.log('Puerto: cierre efectivo, clases, año, filtro personal, carga única y fuente intacta verificados.', totals);
+
+// Quick win = short (20-foot) container, project = long (40-foot): dock, ship, hit test and legend.
+const qwA = { id: 'q1', name: 'A', initiativeClass: 'Quick win', status: 'En Proceso', noFinPlan: true }, prB = { id: 'p1', name: 'B', initiativeClass: 'Proyecto', status: 'En Proceso' }, qwC = { id: 'q2', name: 'C', initiativeClass: 'Quick win', status: 'En Proceso' }, prD = { id: 'p2', name: 'D', initiativeClass: 'Proyecto', status: 'En Proceso' };
+assert.deepEqual(Array.from(puerto.stowOrder([qwA, prB, qwC, prD]), p => p.id), ['p1', 'p2', 'q1', 'q2'], 'stowage keeps each kind in its order');
+const berth = { byPhase: { Ejecución: [qwA, prB, qwC, prD] }, pos: { q1: { x: 1 }, p1: { x: 2 }, q2: { x: 3 }, p2: { x: 4 } } };
+puerto.stowDock(berth);
+assert.deepEqual([berth.pos.p1.x, berth.pos.p2.x, berth.pos.q1.x, berth.pos.q2.x], [1, 2, 3, 4], 'dock: projects take the lower slots, same slot set');
+assert.deepEqual(Array.from(berth.byPhase['Ejecución'], p => p.id), ['p1', 'p2', 'q1', 'q2']);
+const phased = puerto.activeByPhase({ phases: ['Ejecución'], projects: [qwA, prB].map(p => ({ ...p, active: true, phase: 'Ejecución' })) });
+assert.deepEqual(Array.from(phased[0].items, p => p.id), ['p1', 'q1'], 'accessible list order matches the dock');
+
+let boxCalls = [], shortLegend = '';
+const mixed = {
+  items: [qwA, prB], o: {}, cur: { q1: { x: 100, y: 200, u: 10 }, p1: { x: 300, y: 200, u: 10 } },
+  draw() { boxCalls = this.items.map(item => [item.id, typeof this.boxFor(item), item.noFinPlan, item.shortFog]); },
+  _legend() { this.leg = { children: [{ remove() {} }], insertAdjacentHTML(position, html) { if (position === 'beforeend') shortLegend += html; } }; }
+};
+puerto.priorityDock(mixed); mixed.draw(null, 0, 1); mixed._legend();
+assert.deepEqual(boxCalls, [['q1', 'function', false, true], ['p1', 'object', undefined, undefined]], 'quick wins get the short painter and its own fog; projects keep the engine box');
+assert.equal(mixed.boxFor, null, 'the painter hook only lives during the dock draw');
+assert.equal(qwA.noFinPlan, true, 'real items keep their Fin Plan flag');
+assert.equal(mixed.hitTest(100 + 18, 190)?.id, 'q1');
+assert.equal(mixed.hitTest(100 + 20, 190), null, 'outside the short container there is nothing to hit');
+assert.equal(mixed.hitTest(300 + 28, 190)?.id, 'p1');
+assert.equal(mixed.hitTest(100, 230), null);
+assert.deepEqual(shortLegend.match(/Contenedor (corto|largo): (quick win|proyecto)/g), ['Contenedor corto: quick win', 'Contenedor largo: proyecto']);
+assert.match(shortLegend, /<svg width="14"[\s\S]*<svg width="21"/, 'short icon is narrower than the long one');
+let onlyShort = '';
+const qwOnly = { items: [qwC], o: {}, draw() {}, _legend() { this.leg = { children: [{ remove() {} }], insertAdjacentHTML(position, html) { if (position === 'beforeend') onlyShort += html; } }; } };
+puerto.priorityDock(qwOnly); qwOnly._legend();
+assert.match(onlyShort, /Contenedor corto/); assert.doesNotMatch(onlyShort, /Contenedor largo/, 'legend follows the scope filter');
+assert.doesNotMatch(legendHtml, /Contenedor corto/, 'no short-container entry without quick wins');
+
+// shortBox: a 3.8 × 3.6 unit body (the engine box is 6 × 3.6), one rib per side and the same face.
+const shapes = [], lines = [], ctxCalls = [];
+const fakeCtx = new Proxy({}, { get: (_, name) => (...args) => ctxCalls.push(name) , set: () => true });
+const pen = { ctx: fakeCtx, shape: (pts, opt) => shapes.push({ pts, opt }), line: (pts, opt) => lines.push({ pts, opt }) };
+const fxContext = { module: { exports: {} }, CosmosFx: { draw: { PAL: { steel: '#4F7A8B', ink: '#162631', cream: '#FFF8EC' } } } };
+vm.runInNewContext(source('pmo-puerto.js'), fxContext);
+fxContext.module.exports.shortBox(pen, 0, 0, 10, { col: '#2F755F' });
+const bbox = pts => ({ w: Math.max(...pts.map(p => p[0])) - Math.min(...pts.map(p => p[0])), h: Math.max(...pts.map(p => p[1])) - Math.min(...pts.map(p => p[1])) });
+assert.deepEqual(bbox(shapes[0].pts), { w: 38, h: 36 }, 'short body: 3.8 by 3.6 units');
+assert.deepEqual(bbox(shapes[1].pts), { w: 23, h: 22 }, 'same face panel as the long container');
+assert.equal(lines.filter(l => l.opt.alpha === .6).length, 2, 'one rib per side');
+assert.ok(ctxCalls.includes('ellipse') && ctxCalls.includes('save') && ctxCalls.includes('restore'), 'shadow and eyes, balanced canvas state');
+const bundle = fs.readFileSync(new URL('assets/js/cosmos-paper-fx.min.js', base), 'utf8');
+assert.match(bundle, /\(this\.boxFor&&this\.boxFor\(e\)\|\|k\.box\)\(t,c,h-m,n\.u,/, 'engine hook from scripts/patch-paper-fx-labels.mjs');
+assert.equal(bundle.split('this.countLabel?this.countLabel(this.byPhase[s]||[])').length - 1, 2, 'desktop and mobile berth plates use the count hook');
+assert.deepEqual([[qwA, prB, qwC], [prB], [prB, prD], [qwA], [qwA, qwC]].map(puerto.countLabel), ['3 iniciativas', '1 proyecto', '2 proyectos', '1 quick win', '2 quick wins']);
+console.log('Puerto: cierre efectivo, clases, año, filtro personal, carga única, fuente intacta y contenedores corto/largo verificados.', totals);

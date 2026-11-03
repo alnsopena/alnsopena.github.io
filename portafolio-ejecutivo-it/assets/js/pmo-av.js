@@ -136,7 +136,8 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
     stopPulse();
     if (typeof window.toggleChat === 'function' && $('#project-chat:not([hidden])')) window.toggleChat(false);
     const back = document.activeElement;
-    fx.parte(getData(), { logo: cfg.logo, url: cfg.url, voice: true }).then(() => back && back.focus && back.focus({ preventScroll: true }));
+    // The weekly video skips the data customs scene: without aduana the engine leaves out its slide, line and voice.
+    fx.parte({ ...getData(), aduana: null }, { logo: cfg.logo, url: cfg.url, voice: true }).then(() => back && back.focus && back.focus({ preventScroll: true }));
   }
 
   // ------------------------------------------------------------------ H · comité guiado
@@ -150,7 +151,7 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
   const LEVEL = { block: ['Bloqueo', '#B2493A'], risk: ['Riesgo', '#C8963E'], late: ['Plazo vencido', '#A0552E'] };
   const STEP = { cartera: 1, semana: 2, entregas: 3, riesgos: 4, proyecto: 5, acta: 6 };
   function comiteModel(d) {
-    const P = (0, eval)('({resumenModel,attentionOrder,attentionWhy,attentionReasons,riskPlanText,riskDaysLate,riskInfo,hasReportedRisk,priorityLabel,activeMix,riskContext,deliveryPace,deliveryChart,currentQuarter,investmentLead,weeklyMilestones,shortAnswer,weekStartLima,fmtDate,val,C,D,NO_DATA})');
+    const P = (0, eval)('({resumenModel,attentionOrder,attentionWhy,attentionReasons,riskPlanText,riskDaysLate,riskInfo,hasReportedRisk,priorityLabel,activeMix,riskContext,deliveryPace,deliveryChart,currentQuarter,investmentLead,weeklyMilestones,shortAnswer,weekStartLima,fmtDate,val,C,D,NO_DATA,initiativeClass,closureInfo})');
     const m = P.resumenModel(), item = new Map(m.items.map(i => [String(i.id), i])), rank = new Map(m.attention.slice().sort(P.attentionOrder).map((i, k) => [String(i.id), k]));
     const decisions = (d.decisions || []).filter(x => rank.has(x.projectId)).sort((a, b) => rank.get(a.projectId) - rank.get(b.projectId));
     const dd = Object.assign({}, d, { decisions }), proj = {}; d.projects.forEach(p => { proj[p.id] = p; });
@@ -161,11 +162,15 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
     const issues = { block: count('Bloqueo:'), risk: count('Riesgo:'), late: count('Fin Plan vencido') };
     const n = m.act.length, ctx = P.riskContext(m.blockers.length, m.late), pace = P.deliveryPace(m.executedCurrent), inv = P.investmentLead(m.act);
     const weekly = P.weeklyMilestones(m.items), up = m.upcoming;
+    // Same closures as m.executedCurrent (year and quarter of the cut), split by kind: "14 proyectos y 11 quick wins".
+    const done = m.closed.filter(i => { const c = P.closureInfo(i); return c && String(c.year) === m.currentYear && c.quarter >= 1 && c.quarter <= 4; });
+    const doneQw = done.filter(i => P.initiativeClass(i) === 'Quick win').length, donePr = done.length - doneQw;
+    const mix = doneQw && donePr ? donePr + (donePr === 1 ? ' proyecto' : ' proyectos') + ' y ' + doneQw + (doneQw === 1 ? ' quick win' : ' quick wins') : '';
     const L = Object.assign({}, CosmosFx.committeeLines(dd));
     L.cartera = 'La cartera tiene ' + n + (n === 1 ? ' iniciativa activa' : ' iniciativas activas') + (n ? ': ' + P.activeMix(m.act).split(' · ').join(', ').replace(/, ([^,]*)$/, ' y $1') : '') + '. ' +
       (m.risks.length === 1 ? '1 activo con riesgo, ' : m.risks.length + ' activos con riesgo, ') + lowerFirst(ctx.replace(' · ', ' y ')) + '. Este año se entregaron ' + m.executedCurrent + '.';
     L.semana = (weekly.length ? 'Actualizaciones de esta semana: ' + weekly.length + '. La más reciente: ' + weekly[0].project.name + '.' : 'Aún no hay actualizaciones registradas esta semana.') + (inv ? ' ' + inv.title + '.' : '');
-    L.entregas = 'Entregas del año: ' + m.executedCurrent + (pace ? ', ' + lowerFirst(pace) : '') + '. ' + (up.length ? 'En los próximos 90 días: ' + up.length + (up.length === 1 ? ' entrega' : ' entregas') + '. La primera, ' + up[0].name + ', el ' + spoken(P.val(up[0], P.C.plan)) + '.' : 'Sin entregas previstas en 90 días.');
+    L.entregas = 'Entregas del año: ' + m.executedCurrent + (mix ? ' (' + mix + ')' : '') + (pace ? ', ' + lowerFirst(pace) : '') + '. ' + (up.length ? 'En los próximos 90 días: ' + up.length + (up.length === 1 ? ' entrega' : ' entregas') + '. La primera, ' + up[0].name + ', el ' + spoken(P.val(up[0], P.C.plan)) + '.' : 'Sin entregas previstas en 90 días.');
     if (decisions.length) L.riesgos = (decisions.length === 1 ? 'Este es el proyecto que necesita una decisión.' : 'Estos son los ' + decisions.length + ' proyectos que necesitan una decisión.') + (issues.block ? ' Empezamos por los bloqueos.' : ' Empezamos.');
     L.projects = {};
     decisions.forEach(x => {
@@ -173,7 +178,7 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
       L.projects[x.projectId] = [p.name + '.', spokenWhy(x) + '.', (p.sponsorName ? 'Sponsor ' + p.sponsorName + ', ' : '') + 'PM ' + (p.pmFirst || 'sin dato') + '.', prio(x.projectId) ? 'Prioridad ' + prio(x.projectId).toLowerCase() + '.' : '',
         s ? 'Riesgo registrado: ' + s + '.' : '', p.plan ? 'Fin Plan al ' + spoken(p.plan) + '.' : 'Aún no tiene Fin Plan.', '¿Qué decide el comité?'].filter(Boolean).join(' ');
     });
-    return { P, m, dd, proj, item, why, spokenWhy, prio, issues, ctx, pace, inv, weekly, up, lines: L };
+    return { P, m, dd, proj, item, why, spokenWhy, prio, issues, ctx, pace, inv, weekly, up, mix, lines: L };
   }
   // Pre-generated voices (tools/voz) read CosmosFx.voiceScript: it must list the lines the committee now says.
   if (window.CosmosFx && CosmosFx.voiceScript && CosmosFx.committeeLines && !CosmosFx.voiceScript.pav) {
@@ -195,7 +200,7 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
           (M.inv ? '<div class="pav-cm-inv"><b>' + escH(M.inv.title) + '</b><span>' + escH(M.inv.note) + '</span></div>' : '') +
           '<div class="pav-cm-box">' + list(w, 4, h => { const pm = P.val(h.project, P.C.pm) || ''; return '<li><span class="pav-cm-date">' + escH(P.fmtDate(h.date.toISOString())) + '</span><b>' + escH(h.project.name) + '</b><p>' + escH(P.shortAnswer(h.text, 160)) + '</p><span>' + escH(h.author && h.author !== pm ? 'Registró ' + h.author + (pm ? ' · PM ' + pm : '') : pm || 'PM sin dato') + '</span></li>'; }, 'Aún no hay comentarios de bitácora registrados esta semana.', 'pav-cols') + '</div>';
       },
-      entregas: () => '<p class="cfx-cm-eyebrow">3 · Entregas</p><h2>' + m.executedCurrent + (m.executedCurrent === 1 ? ' entregado en ' : ' entregados en ') + escH(m.currentYear) + '</h2><p class="cfx-cm-lead">' + escH(M.pace ? M.pace + '.' : 'Sin cierres verificables en el año.') + '</p>' +
+      entregas: () => '<p class="cfx-cm-eyebrow">3 · Entregas</p><h2>' + m.executedCurrent + (m.executedCurrent === 1 ? ' entregado en ' : ' entregados en ') + escH(m.currentYear) + '</h2><p class="cfx-cm-lead">' + escH((M.mix ? M.mix + '. ' : '') + (M.pace ? M.pace + '.' : 'Sin cierres verificables en el año.')) + '</p>' +
         '<div class="pav-cm-two">' + P.deliveryChart(m.quarterly, P.currentQuarter()) + '<div class="pav-cm-box"><h3>Próximas entregas · ' + M.up.length + '</h3><p class="pav-cm-note">En los próximos 90 días.</p>' +
         list(M.up, 6, i => '<li><b>' + escH(i.name) + '</b><span>Fin Plan ' + escH(P.fmtDate(P.val(i, P.C.plan))) + ' · ' + escH(P.val(i, P.C.pm) || 'PM sin dato') + '</span></li>', 'Sin entregas previstas en 90 días') + '</div></div>'
     };
