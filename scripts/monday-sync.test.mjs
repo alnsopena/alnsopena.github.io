@@ -25,8 +25,14 @@ test('sync uses identity gate and starts only data sync, without a PPT or leaked
  assert.doesNotMatch(JSON.stringify(result),/SECRET-TEST|Bearer/);
  assert.equal(context.requestMondaySync(id).ok,true);assert.equal(calls.length,1,'Repeated request ID must not dispatch twice');
 });
+test('any COSMOS account can refresh data, but only the PMO list keeps PPT access',()=>{
+ const {context,calls}=setup({email:'gerente@cosmos.com.pe',allowed:'pmo@cosmos.com.pe'});
+ assert.equal(context.requestMondaySync(id).ok,true);assert.equal(context.getMondaySyncStatus(id).ok,true);assert.equal(calls.length>=1,true);
+ assert.throws(()=>context.requirePmoUser_(),/Acceso denegado/);
+ assert.equal(context.requireCosmosUser_(),'gerente@cosmos.com.pe');
+});
 test('unauthorized identities and malformed request IDs cannot start a run or read its status',()=>{
- for(const options of [{email:''},{email:'x@example.com'},{email:'other@cosmos.com.pe'},{allowed:''}]){
+ for(const options of [{email:''},{email:'x@example.com'},{email:'otro@cosmos.com.pe.evil.test'}]){
   const {context,calls}=setup(options);assert.equal(context.requestMondaySync(id).ok,false);assert.equal(context.getMondaySyncStatus(id).ok,false);assert.equal(calls.length,0);
  }
  const {context,calls}=setup();assert.equal(context.requestMondaySync('bad-id').ok,false);assert.equal(calls.length,0);

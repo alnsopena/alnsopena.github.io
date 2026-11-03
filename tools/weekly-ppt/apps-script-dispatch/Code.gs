@@ -19,8 +19,10 @@ const PMO_DISPATCH = Object.freeze({
 
 function doGet(e) {
   try {
-    requirePmoUser_();
-    if (e && e.parameter && e.parameter.mode === 'sync') {
+    // Refreshing the portal data is open to any COSMOS account; PPT drafts stay with the PMO list.
+    const sync = e && e.parameter && e.parameter.mode === 'sync';
+    if (sync) requireCosmosUser_(); else requirePmoUser_();
+    if (sync) {
       const requestId = String(e.parameter.request_id || '');
       if (!validRequestId_(requestId)) throw new Error('Solicitud inválida');
       const page = HtmlService.createTemplateFromFile('Sync');
@@ -396,11 +398,16 @@ function validRunId_(value) {
   return typeof value === 'string' && /^[1-9]\d{0,19}$/.test(value);
 }
 
-function requirePmoUser_() {
+function requireCosmosUser_() {
   const email = String(Session.getActiveUser().getEmail() || '').trim().toLowerCase();
   if (!email || !email.endsWith('@' + PMO_DISPATCH.domain)) {
     throw new Error('Acceso denegado');
   }
+  return email;
+}
+
+function requirePmoUser_() {
+  const email = requireCosmosUser_();
   const raw = PropertiesService.getScriptProperties().getProperty('PMO_ALLOWED_EMAILS') || '';
   const allowed = raw.split(/[\s,;]+/).map(function (entry) {
     return entry.trim().toLowerCase();

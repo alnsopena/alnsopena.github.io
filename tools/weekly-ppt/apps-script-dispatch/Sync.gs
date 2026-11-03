@@ -1,8 +1,8 @@
-/** Synchronization uses the existing PMO identity gate and Actions-only credential. */
+/** Synchronization is open to any COSMOS account and uses the Actions-only credential. */
 function requestMondaySync(requestId) {
   let email;
-  try { email = requirePmoUser_(); } catch (_) {
-    return { ok: false, phase: 'failed', message: 'Tu cuenta no está autorizada en el servicio PMO.' };
+  try { email = requireCosmosUser_(); } catch (_) {
+    return { ok: false, phase: 'failed', message: 'Inicia sesión con tu cuenta @cosmos.com.pe.' };
   }
   if (!validRequestId_(requestId)) return { ok: false, phase: 'failed', message: 'Solicitud inválida.' };
   const lock = LockService.getScriptLock();
@@ -39,8 +39,8 @@ function requestMondaySync(requestId) {
 }
 
 function getMondaySyncStatus(requestId) {
-  try { requirePmoUser_(); } catch (_) {
-    return { ok: false, phase: 'failed', message: 'Tu cuenta no está autorizada en el servicio PMO.' };
+  try { requireCosmosUser_(); } catch (_) {
+    return { ok: false, phase: 'failed', message: 'Inicia sesión con tu cuenta @cosmos.com.pe.' };
   }
   const props = PropertiesService.getScriptProperties();
   const record = readSyncRequest_(props, requestId);

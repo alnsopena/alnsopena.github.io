@@ -3,7 +3,7 @@
 <title>COSMOS · Sincronizar Monday</title>
 <style>
 body{margin:0;background:#f3f7f8;color:#14384b;font:16px/1.6 Arial,sans-serif}main{max-width:600px;margin:40px auto;padding:28px}h1{font-size:30px;line-height:1.2}small{color:#527281}#state{padding:20px;background:white;border:1px solid #c9dbe0;border-radius:12px}button{padding:12px 18px;background:#064e62;color:white;border:0;border-radius:8px;font-weight:bold;cursor:pointer}[hidden]{display:none!important}.pulse{height:5px;background:#d0e2e6;overflow:hidden;border-radius:5px}.pulse:after{content:'';display:block;height:100%;width:35%;background:#08798c;animation:load 1.4s ease-in-out infinite}body[data-phase=failed] #state{border-color:#a44636;color:#8b3028}body[data-phase=published] #state{border-color:#257555}body[data-phase=failed] .pulse,body[data-phase=published] .pulse{display:none}@keyframes load{from{transform:translateX(-100%)}to{transform:translateX(400%)}}@media(prefers-reduced-motion:reduce){.pulse:after{animation:none}}
-</style></head><body data-phase="connecting"><main><small>COSMOS · Servicio privado PMO</small><h1>Sincronizar Monday</h1>
+</style></head><body data-phase="connecting"><main><small>COSMOS · Servicio interno</small><h1>Sincronizar Monday</h1>
 <div id="state" role="status" aria-live="polite">Conectando con el portafolio…</div><div class="pulse" aria-hidden="true"></div>
 <p>El portafolio mostrará el progreso y cargará las actualizaciones cuando estén publicadas.</p><p id="detail">Puedes mantener esta ventana abierta mientras termina.</p>
 <button id="start" hidden>Iniciar sincronización</button><button id="check" hidden>Comprobar estado</button>
@@ -26,7 +26,7 @@ function poll() {
 }
 function start() {
  if(started)return;started=true;document.getElementById('start').hidden=true;
- if(accessError){show({ok:false,phase:'failed',message:'Tu cuenta no está autorizada en el servicio PMO de COSMOS.'});document.getElementById('detail').textContent='Usa una cuenta autorizada. No se inició ninguna sincronización.';return;}
+ if(accessError){show({ok:false,phase:'failed',message:'Inicia sesión con tu cuenta @cosmos.com.pe.'});document.getElementById('detail').textContent='Usa una cuenta autorizada. No se inició ninguna sincronización.';return;}
  show({ok:true,phase:'connecting',message:'Enviando la solicitud de sincronización…'});
  google.script.run.withSuccessHandler(function(result){show(result);if(result.ok)poll();else document.getElementById('detail').textContent='Vuelve al portafolio para reintentar.';}).withFailureHandler(function(){show({ok:false,phase:'failed',message:'No se pudo iniciar la sincronización. Vuelve al portafolio y reintenta.'});}).requestMondaySync(requestId);
 }
