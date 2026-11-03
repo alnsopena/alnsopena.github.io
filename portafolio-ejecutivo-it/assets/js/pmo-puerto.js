@@ -6,18 +6,25 @@
   const closed = (data, filter) => data.projects.filter(p => !p.active && String(p.status).toLowerCase() === 'cerrado' && String(p.closedYear) === String(data.totals.year) && (!filter || filter(p)));
   const label = p => p.initiativeClass === 'Quick win' ? 'Quick win' : 'Proyecto';
   const dateLabel = p => p.closedAt ? new Intl.DateTimeFormat('es-PE', { timeZone: 'America/Lima', day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(p.closedAt + 'T12:00:00Z')) : String(p.closedYear);
-  // Keep a future active initiative in its actual phase; only the empty closing berth is redundant.
-  const portData = (data, filter) => ({ ...data, phases: data.phases.filter(phase => phase !== 'Cierre' || data.projects.some(p => p.active && p.phase === phase && (!filter || filter(p)))) });
+  // Only berths with active work are drawn; an empty view keeps its route instead of an empty scene.
+  const portData = (data, filter) => {
+    const used = data.phases.filter(phase => data.projects.some(p => p.active && p.phase === phase && (!filter || filter(p))));
+    return { ...data, phases: used.length ? used : data.phases.filter(phase => phase !== 'Cierre') };
+  };
   const slots = count => Array.from({ length: count }, (_, index) => ({ col: index % 6, row: Math.floor(index / 6) }));
   const PRIORITIES = [['Critical', 'danger'], ['High', 'warn'], ['Medium', 'navy3'], ['Low', 'steel']];
   const priorityOf = item => PRIORITIES.find(([name]) => String(item.priority || '').toLowerCase().includes(name.toLowerCase()))?.[0] || '';
+  const FLAG_LEGEND = /^(Bloqueo|Riesgo|Plazo vencido)/;
+  const flagIcon = color => '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1v12" stroke="#162631" stroke-width="1.4" stroke-linecap="round"/><path d="M3 1.5l9 3-9 3z" fill="' + color + '" stroke="#162631" stroke-width=".9" stroke-linejoin="round"/></svg>';
 
   function priorityDock(scene) {
     const draw = scene.draw, legend = scene._legend;
     scene.draw = function () {
       const items = this.items;
       // Paint-only copies: the engine colors by status, so real values stay for hit testing, tooltips and every other module.
-      this.items = items.map(item => ({ ...item, status: priorityOf(item) || 'En Proceso' }));
+      // Top rows paint first so a lower container's flag stays in front of the one above it.
+      const rowY = item => this.pos?.[item.id]?.y ?? 0;
+      this.items = items.map(item => ({ ...item, status: priorityOf(item) || 'En Proceso' })).sort((a, b) => rowY(a) - rowY(b));
       try { return draw.apply(this, arguments); } finally { this.items = items; }
     };
     scene._legend = function () {
@@ -27,6 +34,10 @@
       [...this.leg.children].slice(0, statuses).forEach(entry => entry.remove());
       const used = PRIORITIES.filter(([name]) => this.items.some(item => priorityOf(item) === name));
       if (used.length) this.leg.insertAdjacentHTML('afterbegin', used.map(([name, color]) => '<span><i style="background:' + root.CosmosFx?.draw?.PAL?.[color] + '"></i>' + name + '</span>').join(''));
+      this.leg.querySelectorAll?.('span').forEach(entry => {
+        const swatch = entry.querySelector('i');
+        if (swatch && FLAG_LEGEND.test(entry.textContent)) swatch.outerHTML = flagIcon(swatch.style.background);
+      });
     };
   }
 
@@ -130,8 +141,7 @@
       slots(visible.length).forEach(({ col, row }, index) => {
         const project = visible[index], left = -.3 * size + col * .091 * size, top = -.088 * size - (row + 1) * height;
         const color = project.initiativeClass === 'Quick win' ? pal.sandDk : pal.ok;
-        pen.shape([[left, top], [left + width, top], [left + width, top + height], [left, top + height]], { unit: Math.max(1.2, size * .008), fill: color, pool: pal.cream, sw: .85, sdx: .3, sdy: .4, j: .2 });
-        for (const part of [.3, .7]) pen.line([[left + width * part, top + height * .2], [left + width * part, top + height * .8]], { unit: 1, sw: .6, col: pal.inkSoft, curv: 0, rim: false });
+        draw.box(pen, left + width / 2, top + height, width / 6, { col: color, eyes: 'arc', noShadow: true });
         const cx = left + width / 2, cy = top + height / 2, button = buttons[index];
         if (button) Object.assign(button.style, { left: (x + cx * Math.cos(rot) - cy * Math.sin(rot)) + 'px', top: (baseline + cx * Math.sin(rot) + cy * Math.cos(rot)) + 'px', width: width + 'px', height: height + 'px', transform: 'translate(-50%,-50%) rotate(' + rot + 'rad)' });
       });

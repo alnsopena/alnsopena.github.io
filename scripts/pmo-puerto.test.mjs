@@ -47,7 +47,8 @@ const edge = { totals: { year: 2026 }, phases: ['Propuesta', 'Cierre'], projects
   { id: 'cancelled', active: false, status: 'Cancelado', closedYear: 2026 }
 ] };
 assert.equal(puerto.closed(edge).length, 0, 'never invent a closure from inactive status, missing year or another year');
-assert.ok(puerto.portData(edge).phases.includes('Cierre'), 'future active closing work must retain its actual phase');
+assert.deepEqual(puerto.portData(edge).phases, ['Cierre'], 'hide free berths and keep active closing work in its actual phase');
+assert.deepEqual(puerto.portData({ phases: ['Propuesta', 'Cierre'], projects: [] }).phases, ['Propuesta'], 'an empty view keeps its route');
 assert.equal(new Set(puerto.slots(puerto.pageSize).map(p => p.col + ':' + p.row)).size, puerto.pageSize);
 assert.equal(puerto.slots(0).length, 0);
 
@@ -75,6 +76,9 @@ const rankedDock = {
 puerto.priorityDock(rankedDock); rankedDock.draw(); rankedDock._legend();
 assert.deepEqual(Array.from(rankedPaint, item => item.status), ['Critical', 'High', 'Medium', 'Low', 'En Proceso'], 'paint each container by its monday priority');
 assert.equal(ranked[1].status, 'Stand by', 'never alter real status values');
+rankedDock.pos = { a: { y: 90 }, b: { y: 50 } }; rankedDock.draw();
+assert.deepEqual(Array.from(rankedPaint, item => item.id).slice(0, 3), ['c', 'd', 'e'], 'paint unplaced items without moving their order');
+assert.equal(rankedPaint.findIndex(item => item.id === 'b') < rankedPaint.findIndex(item => item.id === 'a'), true, 'paint upper rows first so flags stay visible');
 assert.deepEqual(legendHtml.match(/(Critical|High|Medium|Low)/g), ['Critical', 'High', 'Medium', 'Low'], 'legend lists priorities in board order');
 
 let intersection, paints = 0, disconnected = false;
