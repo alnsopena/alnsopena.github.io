@@ -50,4 +50,34 @@ assert.equal(puerto.closed(edge).length, 0, 'never invent a closure from inactiv
 assert.ok(puerto.portData(edge).phases.includes('Cierre'), 'future active closing work must retain its actual phase');
 assert.equal(new Set(puerto.slots(puerto.pageSize).map(p => p.col + ':' + p.row)).size, puerto.pageSize);
 assert.equal(puerto.slots(0).length, 0);
+
+const activeItems = [{ id: 'planned', status: 'Planificado', phase: 'Planificación', risk: 'risk', noFinPlan: true }, { id: 'proposed', status: 'Propuesto', phase: 'Propuesta', risk: 'late' }];
+const sourceItems = JSON.stringify(activeItems), remainingLegend = [];
+let paintItems;
+const dock = {
+  items: activeItems,
+  draw() { paintItems = this.items; },
+  _legend() { this.leg = { children: ['Planificado', 'Propuesto', 'Riesgo', 'Atraso', 'Neblina'].map(label => ({ remove() { remainingLegend.push(label); } })) }; }
+};
+puerto.uniformDock(dock); dock.draw(); dock._legend();
+assert.deepEqual(Array.from(paintItems, item => item.status), ['En Proceso', 'En Proceso']);
+assert.deepEqual(Array.from(paintItems, item => [item.phase, item.risk, item.noFinPlan]), activeItems.map(item => [item.phase, item.risk, item.noFinPlan]));
+assert.equal(dock.items, activeItems); assert.equal(JSON.stringify(activeItems), sourceItems);
+assert.deepEqual(remainingLegend, ['Planificado', 'Propuesto'], 'remove only status colors; retain risk, delay and fog legends');
+
+let intersection, paints = 0, disconnected = false;
+const listeners = new Map(), media = { matches: false, addEventListener() {}, removeEventListener() {} };
+const doc = { hidden: false, addEventListener(event, fn) { listeners.set(event, fn); }, removeEventListener(event) { listeners.delete(event); } };
+const moving = { el: { isConnected: true }, cv: {}, quiet: false, wake() {}, paint() { paints++; }, destroy() {} };
+puerto.ambientMotion(moving, { document: doc, matchMedia: () => media, IntersectionObserver: class { constructor(callback) { intersection = callback; } observe() {} disconnect() { disconnected = true; } } });
+assert.equal(moving.busy(100), false);
+intersection([{ isIntersecting: true }]);
+assert.equal(moving.busy(100000), true, 'visible port stays animated beyond idle timeout without pointer events');
+moving.paint(); assert.equal(paints, 1);
+doc.hidden = true; assert.equal(moving.busy(100001), false); moving.paint(); assert.equal(paints, 1);
+doc.hidden = false; intersection([{ isIntersecting: false }]); assert.equal(moving.busy(100002), false); moving.paint(); assert.equal(paints, 1);
+intersection([{ isIntersecting: true }]); media.matches = true; assert.equal(moving.busy(100003), false);
+media.matches = false; moving.quiet = true; assert.equal(moving.busy(100004), false);
+moving.quiet = false; moving.el.isConnected = false; assert.equal(moving.busy(100005), false);
+moving.destroy(); assert.equal(disconnected, true); assert.equal(listeners.size, 0);
 console.log('Puerto: cierre efectivo, clases, año, filtro personal, carga única y fuente intacta verificados.', totals);
