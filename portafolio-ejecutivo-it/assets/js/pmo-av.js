@@ -67,6 +67,24 @@ body.committee-mode #pav-comite{background:var(--sand);border-color:var(--sand);
 body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
 .pav-muelle-slot{margin:0 0 18px}
 .cfx-muelle{grid-template-columns:minmax(0,1fr)!important}.cfx-muelle .cfx-mu-cosmo{display:none!important}.cfx-muelle .cfx-mu-list,.cfx-muelle .cfx-mu-actions{grid-column:1}.cfx-muelle label[for="cfx-mu-alias"],.cfx-muelle #cfx-mu-alias{display:none!important}
+.pav-muelle-slot{container-type:inline-size}
+.pav-mu-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:18px 32px;align-items:start}
+.pav-mu-hello{display:flex;flex-direction:column;gap:6px;min-width:0}
+.pav-mu-hello .cfx-mu-actions{margin-top:8px}
+.pav-mu-side{min-width:0;padding-top:16px;border-top:1px solid var(--line,#e3e8eb)}
+.pav-mu-side .split-title{align-items:flex-start;margin-bottom:10px}
+.pav-mu-side .section-title{font-size:16px;margin:0}
+.pav-mu-list{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:6px}
+.pav-mu-row{display:grid;gap:3px;width:100%;text-align:left;border:1px solid #E3E8EB;background:#fff;border-radius:10px;padding:9px 12px;font:600 13.5px/1.35 Figtree,"Segoe UI",system-ui,sans-serif;color:#021E2F;cursor:pointer}
+.pav-mu-row:hover{border-color:#003D53}
+.pav-mu-row:focus-visible{outline:3px solid var(--sand,#CBA785);outline-offset:2px}
+.pav-mu-name{display:flex;align-items:baseline;gap:8px;min-width:0;overflow-wrap:anywhere}
+.pav-mu-name i{flex:none;width:9px;height:9px;border-radius:50%;transform:translateY(-1px)}
+.pav-mu-why{display:flex;align-items:center;gap:6px;padding-left:17px;color:#5F7079;font-weight:500;font-size:12.5px}
+.pav-mu-why svg{flex:none}
+.pav-mu-side .clear-filters{min-height:36px;font-size:13px}
+.cfx-muelle .pav-mu-note{max-width:none;margin-top:14px}
+@container (min-width:760px){.pav-mu-grid.has-side{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}.pav-mu-grid.has-side .pav-mu-side{padding:0 0 0 28px;border-top:0;border-left:1px solid var(--line,#e3e8eb)}}
 @media print{.pav-tools,.pav-card,.pav-muelle-slot{display:none}}`;
   const st = document.createElement('style'); st.id = 'pmo-av-style'; st.textContent = css; document.head.appendChild(st);
 
@@ -150,13 +168,82 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
       d.projects.forEach(project => { add(project.sponsorName, 'sponsor', project.id); add(project.pm, 'pm', project.id); });
       (d.contributors || []).forEach(person => (person.ids || []).forEach(id => add(person.name, 'contributor', id)));
       const person = people.get(prefs.who);
-      return person ? { ...person, roles: [...person.roles], ids: [...person.ids] } : null;
+      if (!person) return null;
+      const found = { ...person, roles: [...person.roles], ids: [...person.ids] };
+      return { ...found, ids: PMOData.personProjects ? PMOData.personProjects(d, found).map(p => p.id) : found.ids };
     } catch (_) { return null; }
+  }
+  // ------------------------------------------------------------------ Mi muelle: same rules, order and texts as the Resumen
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  const muelleKey = () => (fx.o && fx.o.storageKey || 'cosmos-fx') + '-muelle';
+  const plural = (n, a, b) => n + ' ' + (n === 1 ? a : b);
+  function muelleSummary(d, person) {
+    const items = new Map((g('initiativeItems')() || []).map(i => [String(i.id), i])), item = p => items.get(p.id), order = g('attentionOrder'), past = g('past');
+    const mine = PMOData.personProjects(d, person), act = mine.filter(p => p.active);
+    const decide = act.filter(p => p.reasons.length && item(p)).sort((a, b) => order(item(a), item(b)));
+    // "Next" means from the cut onwards, like Próximas entregas; overdue plans are already in decide.
+    const next = act.filter(p => p.plan && !past(p.plan)).sort((a, b) => a.plan.localeCompare(b.plan) || a.name.localeCompare(b.name, 'es'))[0] || null;
+    return { mine, act, decide, next, item, done: mine.filter(p => p.delivered), noPlan: act.filter(p => p.noFinPlan).length, crit: act.reduce((s, p) => s + p.issues.filter(x => x.critical).length, 0) };
+  }
+  function muelleRow(p, item) {
+    const P = window.PMOPuerto, i = item(p), level = p.risk === 'block' || p.risk === 'risk' ? p.risk : null, pal = (window.CosmosFx && CosmosFx.draw && CosmosFx.draw.PAL) || {};
+    const color = P && P.priorityColor ? P.priorityColor(p) : '#003d53', prio = p.priority && P ? P.priorityLabel(p.priority) : '';
+    const flag = level && P && P.flagIcon ? P.flagIcon(level === 'block' ? pal.danger || '#B2493A' : pal.warn || '#C8963E') : '';
+    return '<li><button type="button" class="pav-mu-row" data-id="' + esc(p.id) + '"><span class="pav-mu-name"><i style="background:' + esc(color) + '" aria-hidden="true"></i>' + esc(p.name) + '</span><span class="pav-mu-why">' + flag + '<span>' + g('attentionWhy')(i) + (prio ? ' · Prioridad ' + esc(String(prio).toLowerCase()) : '') + '</span></span></button></li>';
+  }
+  // Replaces the engine's welcome (this = the muelle scene): two columns, greeting on the left and decisions on the right.
+  function muelleWelcome(card, box, person) {
+    const prefs = this._get(), d = this.d, m = muelleSummary(d, person), first = prefs.alias || person.name.split(' ')[0], year = d.totals.year, a = m.decide.length;
+    const hour = Number(new Intl.DateTimeFormat('es-PE', { timeZone: 'America/Lima', hour: 'numeric', hourCycle: 'h23' }).format(new Date()));
+    const hello = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches';
+    const line = !m.act.length ? 'No tienes proyectos activos en este corte.' : a ? (a === 1 ? '1 de tus proyectos espera una decisión.' : a + ' de tus proyectos esperan una decisión.') : 'Ninguno de tus proyectos espera una decisión.';
+    const roles = person.roles || [], pm = roles.includes('pm'), sponsor = roles.includes('sponsor');
+    const role = sponsor && pm ? 'sponsor y PM' : sponsor ? 'sponsor' : pm ? 'PM' : 'persona con actividad';
+    const chips = [m.act.length && [plural(m.act.length, 'proyecto activo', 'proyectos activos'), '#003D53'],
+      m.done.length && [plural(m.done.length, 'ejecutado', 'ejecutados') + ' en ' + year, '#3F8F6B'],
+      m.next && ['Próxima entrega: ' + m.next.name + ', ' + m.next.planLabel, '#CBA785'],
+      m.noPlan && [m.noPlan + ' sin Fin Plan', '#9AA7AD'],
+      m.crit && [plural(m.crit, 'dato crítico pendiente', 'datos críticos pendientes') + ' en monday', '#B2493A']].filter(Boolean);
+    const pms = [...new Set(m.decide.map(p => p.pm))], filters = pms.length === 1 && pms[0] ? { pm: pms[0] } : {};
+    const side = a ? '<aside class="pav-mu-side" aria-label="Esperan una decisión"><div class="split-title"><div><h3 class="section-title">Esperan una decisión</h3><p class="section-note">Del asunto más grave al menos grave.</p></div><span class="count">' + a + '</span></div><ul class="pav-mu-list">' + m.decide.slice(0, 3).map(p => muelleRow(p, m.item)).join('') + '</ul>' + (a > 3 ? '<p class="brief-more">Y ' + (a - 3) + ' más.</p>' : '') + '<button type="button" class="clear-filters" data-a="atencion">Ver en Riesgos y decisiones</button></aside>' : '';
+    box.innerHTML = '<div class="pav-mu-grid' + (side ? ' has-side' : '') + '"><div class="pav-mu-hello"><h2>' + hello + ', ' + esc(first) + '. ' + esc(line) + '</h2><p>Tu muelle como ' + role + ': ' + plural(m.mine.length, 'proyecto', 'proyectos') + ' del tablero. Datos del corte ' + esc(d.cutLabel || '') + '.</p>' +
+      '<div class="cfx-mu-chips">' + chips.map(c => '<span class="cfx-mu-chip"><i style="background:' + c[1] + '"></i>' + esc(c[0]) + '</span>').join('') + '</div>' +
+      '<div class="cfx-mu-actions">' + (pm && this.o.onPortfolio ? '<button type="button" class="cfx-mu-btn" data-a="port">Ver mis proyectos en Portafolio</button>' : '') + '<button type="button" class="cfx-mu-link" data-a="change">No soy ' + esc(first) + '</button></div></div>' + side + '</div>';
+    box.querySelectorAll('.pav-mu-row').forEach(b => b.addEventListener('click', () => this.o.onSelect && this.o.onSelect(b.dataset.id)));
+    const port = box.querySelector('[data-a=port]'); if (port) port.addEventListener('click', () => this.o.onPortfolio(person));
+    const risks = box.querySelector('[data-a=atencion]'); if (risks) risks.addEventListener('click', () => window.goFiltered('atencion', filters));
+    box.querySelector('[data-a=change]').addEventListener('click', () => { this._set({ who: null, alias: null, only: false }); if (this.o.onFilter) this.o.onFilter(null); this.render(); });
+    const note = document.createElement('p'); note.className = 'cfx-mu-note pav-mu-note'; note.textContent = 'Mi muelle es una vista personal guardada en este navegador; no es un inicio de sesión.'; card.appendChild(note);
+  }
+  // One alphabetical list without repeats: a sponsor who is also PM appears once.
+  function muellePicker(base) {
+    return function (box) {
+      base.call(this, box);
+      const select = box.querySelector('select'), seen = new Set(); if (!select) return;
+      const people = this.people.filter(p => !seen.has(p.key) && seen.add(p.key)).sort((a, b) => a.name.localeCompare(b.name, 'es'));
+      select.innerHTML = '<option value="">Soy…</option>' + people.map(p => '<option value="' + esc(p.key) + '">' + esc(p.name) + '</option>').join('');
+    };
+  }
+  // ?myPm=Nombre opens that person's dock (accents and case ignored); an unknown name shows the picker.
+  function muelleFromUrl(d) {
+    let wanted = ''; try { wanted = new URLSearchParams(location.search).get('myPm') || ''; } catch (_) { return; }
+    if (!wanted.trim() || !window.CosmosFx || !CosmosFx.muellePeople) return;
+    const person = CosmosFx.muellePeople(d).find(p => p.key === personKey(wanted));
+    try { const prefs = JSON.parse(localStorage.getItem(muelleKey()) || '{}'); if (prefs.who === (person ? person.key : null) && !prefs.dismissed) return; localStorage.setItem(muelleKey(), JSON.stringify(Object.assign(prefs, { who: person ? person.key : null, alias: null, dismissed: 0 }))); } catch (_) { /* almacenamiento opcional del navegador */ }
+  }
+  // The URL keeps the chosen person so a reload or a copied link opens the same dock.
+  function syncMuellePm(person) {
+    const state = g('state'); if (!state) return;
+    const name = person ? person.name : '';
+    if ((state.myPm || '') === name) return;
+    state.myPm = name; try { localStorage.setItem('portfolio-my-pm', name); } catch (_) { /* almacenamiento opcional del navegador */ }
+    if (typeof window.syncUrl === 'function') window.syncUrl();
   }
   function mountMuelleCard(slot, d) {
     if (!cfg.muelle || !fx.muelle || !slot || slot.dataset.mounted === 'true') return;
     slot.dataset.mounted = 'true';
     clearMuelleAlias();
+    muelleFromUrl(d);
     const removeCopyLink = () => slot.querySelectorAll('.cfx-mu-actions button[data-a="link"]').forEach(button => button.remove());
     if (muelleObserver) muelleObserver.disconnect();
     muelleObserver = new MutationObserver(removeCopyLink);
@@ -165,8 +252,11 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
         cardClass: 'card pad', onSelect: open,
         onFilter: person => setPuertoFilter(person),
         onPortfolio: person => { const pms = {}; d.projects.filter(p => person.ids.includes(p.id) && p.pm && p.pm.includes(person.name)).forEach(p => pms[p.pm] = (pms[p.pm] || 0) + 1); const pm = Object.keys(pms).sort((a, b) => pms[b] - pms[a])[0] || person.name; window.goFiltered('portafolio', { pm }); },
-        onChange: person => { if (person && puerto && puerto.el.isConnected) { puerto.o.filter = muelle.onlyMine ? mineFilter(person) : null; puerto.update(d); person.ids.forEach((id, k) => setTimeout(() => puerto.highlight(id), 900 + k * 180)); } }
+        onChange: person => { syncMuellePm(person); if (person && puerto && puerto.el.isConnected) { puerto.o.filter = muelle.onlyMine ? mineFilter(person) : null; puerto.update(d); person.ids.forEach((id, k) => setTimeout(() => puerto.highlight(id), 900 + k * 180)); } }
       });
+    // The engine renders in its constructor: the first time, patch its class and draw again with the portal's rules.
+    const proto = Object.getPrototypeOf(muelle);
+    if (proto && !proto.pavAligned) { proto.pavAligned = true; proto._welcome = muelleWelcome; proto._picker = muellePicker(proto._picker); muelle.render(); }
     removeCopyLink();
   }
   function mountMuellePage(main) {

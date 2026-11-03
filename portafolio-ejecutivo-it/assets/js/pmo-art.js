@@ -46,6 +46,7 @@
     pipe: '<svg viewBox="0 0 18 14" aria-hidden="true"><rect x="1" y="5" width="16" height="5" rx="2" fill="#8FA3AC"/><path d="M3 7.5h3M9 7.5h3" stroke="#FFF8EC" stroke-width="1.4"/></svg>',
     stamp: '<svg viewBox="0 0 18 14" aria-hidden="true"><circle cx="9" cy="7" r="5.5" fill="none" stroke="#2F755F" stroke-width="1.6"/></svg>',
     dash: '<svg viewBox="0 0 18 14" aria-hidden="true"><circle cx="9" cy="7" r="5.5" fill="none" stroke="#9AA7AD" stroke-width="1.3" stroke-dasharray="2 2"/></svg>',
+    alert: '<svg viewBox="0 0 18 14" aria-hidden="true"><circle cx="9" cy="7" r="5.6" fill="#B2493A" stroke="#021E2F" stroke-width=".6"/><text x="9" y="10.1" font-size="8.5" font-weight="900" text-anchor="middle" fill="#FFF8EC">!</text></svg>',
     ribbon: c => '<svg viewBox="0 0 18 14" aria-hidden="true"><rect x="2" y="1" width="14" height="12" rx="1.5" fill="#FBF6EC" stroke="#021E2F" stroke-width=".8"/><rect x="2" y="1" width="14" height="4" fill="' + c + '"/></svg>',
     detenido: '<svg viewBox="0 0 18 14" aria-hidden="true"><rect x="1.5" y="3" width="15" height="8" fill="none" stroke="#B2493A" stroke-width="1.4" transform="rotate(-10 9 7)"/></svg>',
     ask: '<svg viewBox="0 0 18 14" aria-hidden="true"><circle cx="9" cy="7" r="5.6" fill="#FDF1EE" stroke="#162631" stroke-width=".8"/><text x="9" y="10" font-size="8" font-weight="900" text-anchor="middle" fill="#B2493A">?</text></svg>',
@@ -215,18 +216,20 @@
       const cut = String((g('D') || {}).extracted_at_utc || '');
       const prev = main.querySelector('.pav-art-personal'); if (prev && prev.dataset.who === String(who || '') && prev.dataset.cut === cut) return; if (prev) { if (prev._c) prev._c.destroy(); personalCurrent = null; prev.remove(); }
       if (!person) return;
-      const mine = d.projects.filter(p => person.ids.includes(p.id)), act = mine.filter(p => p.active), yr = String(d.totals.year);
+      // Same projects and rules as the greeting above: led or sponsored, delivered as in "Entregados <año>".
+      const mine = PMOData.personProjects ? PMOData.personProjects(d, person) : d.projects.filter(p => person.ids.includes(p.id)), act = mine.filter(p => p.active), yr = String(d.totals.year);
       const fmt = iso => iso ? new Intl.DateTimeFormat('es-PE', { timeZone: 'America/Lima', day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(iso + 'T12:00:00Z')) : '';
-      const done = mine.filter(p => !p.active && String(p.closedYear) === yr).map(p => Object.assign({}, p, { closedLabel: fmt(p.closedAt) || yr }));
+      const done = mine.filter(p => p.delivered).map(p => Object.assign({}, p, { closedLabel: fmt(p.closedAt) || yr }));
       const roles = person.roles || [], role = roles.includes('sponsor') && roles.includes('pm') ? 'Sponsor y PM' : roles.includes('sponsor') ? 'Sponsor' : roles.includes('pm') ? 'Project manager' : 'Persona con actividad';
-      const decide = act.filter(p => p.risk).length, noPlan = act.filter(p => p.noFinPlan).length;
+      const decide = act.filter(p => p.risk).length;
       const slot2 = document.createElement('div'); slot2.className = 'pav-art-personal'; slot2.dataset.who = who; slot2.dataset.cut = cut; slot2.style.marginTop = '18px'; dock.after(slot2);
       slot2._c = fx.pasaporte(slot2, { pasaporte: { name: person.name, alias: st.alias, role, year: yr, cutLabel: d.cutLabel, done, active: act, decide } }, {
         cardClass: cfg.cardClass, onSelect: open,
         head: { title: 'Tu pasaporte del puerto', sub: 'Un sello por cada proyecto tuyo ejecutado en ' + yr + '. Los círculos punteados esperan su sello.',
           msg: '<em>' + plural(done.length, 'sello', 'sellos') + '</em> en ' + yr + (act.length ? ' y ' + plural(act.length, 'proyecto', 'proyectos') + ' por sellar' : ''),
-          pills: [{ text: role, tone: 'blue' }, decide && { text: plural(decide, 'espera una decisión', 'esperan una decisión'), tone: 'red' }, noPlan && { text: noPlan + ' sin Fin Plan', tone: 'amber' }],
-          key: [{ svg: I.stamp, text: 'Sello: ejecutado en el año' }, { svg: I.dash, text: 'Punteado: activo, por sellar' }, { svg: I.flag('#A44737'), text: '"!": riesgo o bloqueo' }] } });
+          // Decisions and missing Fin Plan are already in the greeting and in the passport numbers: only the role goes here.
+          pills: [{ text: role, tone: 'blue' }],
+          key: [{ svg: I.stamp, text: 'Sello: ejecutado en el año' }, { svg: I.dash, text: 'Punteado: activo, por sellar' }].concat(decide ? [{ svg: I.alert, text: '"!": espera una decisión' }] : []) } });
       personalCurrent = slot2._c;
     }, 'pasaporte');
     paint();

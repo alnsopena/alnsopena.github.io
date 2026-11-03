@@ -41,6 +41,8 @@
         reasons, action: val(i, C.action) || '', riskType: val(i, C.riskType) || '', mitigationOwner: val(i, C.mitigationOwner) || '',
         provider: val(i, C.provider) || '', type: val(i, C.type) || '', situation: C.situation ? (val(i, C.situation) || '') : '',
         closedAt: closure && closure.date ? closure.date : null, closedYear: closure ? closure.year : null,
+        // Same rule as "Entregados <año>" in the Resumen: closed, with a closure year and quarter in the cut's year.
+        delivered: !!(val(i, C.status) === 'Cerrado' && closure && String(closure.year) === String(year) && Number(closure.quarter) >= 1 && Number(closure.quarter) <= 4),
         issues: issues.map(x => ({ category: x.category, field: x.field, critical: !!x.critical }))
       };
     });
@@ -114,5 +116,13 @@
       baseline: call('baselineSummary', D.items), boardUrl: D.board && D.board.url
     };
   }
-  window.PMOData = { build };
+  // Mi muelle: "your projects" are the ones you lead or sponsor; comments only count for people without a role on the board.
+  const nameKey = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  function personProjects(d, person) {
+    if (!d || !person) return [];
+    const key = nameKey(person.name), named = list => String(list || '').split(/\s*,\s*/).some(x => x && nameKey(x) === key);
+    const owner = (person.roles || []).some(r => r === 'pm' || r === 'sponsor'), ids = new Set((person.ids || []).map(String));
+    return d.projects.filter(p => owner ? named(p.pm) || named(p.sponsorName) : ids.has(p.id));
+  }
+  window.PMOData = { build, personProjects };
 })();
