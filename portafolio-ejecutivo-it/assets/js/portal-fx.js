@@ -8,17 +8,26 @@
   const mobileBar = $('#mobile-bar');
   const mobileBarHeight = mobileBar ? mobileBar.getBoundingClientRect().height || 64 : 64;
 
-  const summary = () => {
-    const activeItems = initiativeItems().filter(active);
-    const attention = activeItems.filter(item => attentionReasons(item).length).length;
-    const block = activeItems.filter(item => attentionReasons(item).some(reason => reason.startsWith('Bloqueo:'))).length;
-    const risk = Math.max(0, attention - block);
-    return {
-      block,
-      risk,
-      text: `${activeItems.length} activos · ${attention} requieren atención${block ? ` · ${block} con bloqueo` : ''}`
-    };
-  };
+  // Cosmo's proactive bubble: one good and true fact about the screen (cosmo-guide.js highlight), or nothing.
+  // Warnings stay in each screen's content; the bubble never opens on its own with bad news.
+  const currentView = () => { try { return state.view || 'resumen'; } catch (error) { return 'resumen'; } };
+  function muellePerson() {
+    try {
+      const prefs = JSON.parse(localStorage.getItem((fx.o && fx.o.storageKey || 'cosmos-fx') + '-muelle') || '{}');
+      if (!prefs.who || prefs.dismissed || !window.pmoAv || !window.PMOData || !window.CosmosFx.muellePeople) return null;
+      const d = window.pmoAv.data(), person = window.CosmosFx.muellePeople(d).find(p => p.key === prefs.who);
+      return person ? { person: person.name, ids: window.PMOData.personProjects(d, person).map(p => p.id) } : null;
+    } catch (error) { return null; }
+  }
+  function positiveText(view) {
+    try {
+      if (typeof cosmoGuide === 'undefined' || !cosmoGuide || typeof cosmoGuide.highlight !== 'function') return '';
+      return cosmoGuide.highlight(view, view === 'muelle' ? (muellePerson() || {}) : {}) || '';
+    } catch (error) { console.warn('[cosmos-paper-fx] Dato positivo omitido.', error); return ''; }
+  }
+  const reducedMotion = () => !!(fx && fx.reduced) || (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const told = new Set();
+  let positiveTimer = 0;
 
   // A smaller dock covers less of the last table column; on mobile it sits right above the bottom bar.
   const DOCK = { right: 18, bottom: 16, size: 64 }, DOCK_MOBILE = { right: 8, bottom: mobileBarHeight + 8, size: 46 };
@@ -91,14 +100,14 @@
   const filterValue = (key, value) => ['status', 'priority', 'schedule', 'issue'].includes(key) ? value : '';
   after('render', decorate);
   after('renderPortBody', decorate);
-  after('go', () => { if (!hasFilterEmpty()) emit('view'); });
+  after('go', () => { if (!hasFilterEmpty()) emit('view'); schedulePositive(currentView()); });
   after('setFilter', (key, value) => {
     const el = filterElement();
     if (!value) emit('filter:clear', { el });
     else if (!hasFilterEmpty()) emit('filter', { el, value: filterValue(key, value) });
   });
   after('clearFilters', () => emit('filter:clear', { el: filterElement() }));
-  after('setInitiativeScope', () => emit('status', summary()));
+  after('setInitiativeScope', () => schedulePositive(currentView(), { force: true, delay: 700 }));
   after('setExecutivePreset', value => {
     if (value) emit('filter', { el: filterElement(), value });
     else emit('filter:clear', { el: filterElement() });
@@ -129,6 +138,8 @@
     return say(text, opts);
   };
   window.addEventListener('scroll', () => { if (Math.abs((window.scrollY || 0) - sayY) > 140) fx.bubble.classList.remove('on'); }, { passive: true });
+  // Any tap or key also clears it, so it never sits over what the reader is about to use.
+  ['pointerdown', 'keydown'].forEach(type => document.addEventListener(type, () => fx.bubble.classList.remove('on'), { passive: true, capture: true }));
 
   // Fold Cosmo into a small tab. Captions and guided scenes live in the same root, so only the dock and bubble hide.
   const FOLD_KEY = 'portfolio-cosmo-folded';
@@ -163,6 +174,24 @@
   document.body.appendChild(fold);
   syncFold();
 
+  // Once per screen and session, a moment after entering it; never over the chat, a dialog, a guided scene or committee mode.
+  function schedulePositive(view, opts = {}) {
+    clearTimeout(positiveTimer);
+    if (!opts.force && told.has(view)) return;
+    positiveTimer = window.setTimeout(() => {
+      if (fx.introRunning) { schedulePositive(view, Object.assign({}, opts, { delay: 900 })); return; }
+      if (currentView() !== view || !fx.isEnabled() || folded || chatOpen() || document.hidden || document.body.classList.contains('committee-mode') || $('dialog[open],.cfx-parte,.cfx-cm,.cfx-px')) return;
+      if (!opts.force) {
+        told.add(view);
+        try { if (sessionStorage.getItem('cosmo-positive-' + view)) return; sessionStorage.setItem('cosmo-positive-' + view, '1'); } catch (error) {}
+      }
+      const text = positiveText(view);
+      if (!text) return;
+      if (reducedMotion()) fx.say(text);
+      else emit('status', { text });
+    }, opts.delay === undefined ? 1500 : opts.delay);
+  }
+
   const updateVisibility = () => fx.setVisible(!document.body.classList.contains('committee-mode'));
   after('toggleFullscreen', () => {
     if (document.body.classList.contains('committee-mode') && chatOpen()) window.toggleChat(false);
@@ -179,7 +208,7 @@
     if (!$('#more-sheet').hidden && chatOpen()) window.toggleChat(false);
   });
   document.addEventListener('fullscreenchange', updateVisibility);
-  window.addEventListener('portfolio:data-updated', () => emit('status', summary()));
+  window.addEventListener('portfolio:data-updated', () => schedulePositive(currentView(), { force: true, delay: 700 }));
   window.addEventListener('beforeprint', () => fx.setVisible(false));
   window.addEventListener('afterprint', updateVisibility);
 
@@ -196,7 +225,5 @@
   updateVisibility();
   decorate();
   emit('intro');
-  window.setTimeout(() => {
-    if (fx.isEnabled()) emit('status', summary());
-  }, fx.introRunning ? 3300 : 700);
+  schedulePositive(currentView(), { delay: fx.introRunning ? 3300 : 900 });
 })();

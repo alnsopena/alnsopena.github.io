@@ -21,7 +21,7 @@ assert.ok(start >= 0 && end > start, 'Deben existir las funciones base del porta
 const mainEnd = html.indexOf('  </script>', end);
 assert.ok(mainEnd > end);
 new vm.Script(html.slice(start, mainEnd));
-const script = html.slice(start, end) + '\n globalThis.guideTest={initiativeClass,initiativeItems,scopedSnapshot,setInitiativeScope,initiativeSelector,renderResumen,openProject,C,val,num,auditSummary,auditGroupMatch,setAuditFilter,projectAuditMarkup,boardAuditIssues,milestoneValue,fieldValue,portfolioBaseItems,filtered,setPortfolioScope,portfolioScopeBar,riskInfo,riskDetails,hasReportedRisk,filteredAttentionItems,clearFilters,goFiltered,progressInfo,progressPercent,progressDelta,progressSummary,portTable,renderCronograma,fmtDate,fmtNum,financeInfo,financeMoney,go,nav,render,refreshMondayData,financeAmountChart,financeExecutionChart,financeExcessChart,renderFinanzas,renderAtencion,regularizationIssues,projectUpdateEntries,shortAnswer,weeklyMilestones,weeklyCard,weekStartLima,cutIsStale,attentionReasons,closureInfo,closureLabel,closureSourceLabel,past};';
+const script = html.slice(start, end) + '\n globalThis.guideTest={initiativeClass,initiativeItems,scopedSnapshot,setInitiativeScope,initiativeSelector,renderResumen,openProject,C,val,num,auditSummary,auditGroupMatch,setAuditFilter,projectAuditMarkup,boardAuditIssues,milestoneValue,fieldValue,portfolioBaseItems,filtered,setPortfolioScope,portfolioScopeBar,riskInfo,riskDetails,hasReportedRisk,filteredAttentionItems,clearFilters,goFiltered,progressInfo,progressPercent,progressDelta,progressSummary,portTable,renderCronograma,fmtDate,fmtNum,financeInfo,financeMoney,go,nav,render,refreshMondayData,financeAmountChart,financeExecutionChart,financeExcessChart,renderFinanzas,renderAtencion,regularizationIssues,projectUpdateEntries,shortAnswer,weeklyMilestones,weeklyCard,weekStartLima,cutIsStale,attentionReasons,closureInfo,closureLabel,closureSourceLabel,past,active,scheduleBucket,tentativePlan,inactivePm:INACTIVE_PM};';
 const context = {
   document: { getElementById: id => id === 'snapshot' ? { textContent: snapshot[1] } : null },
   localStorage: { getItem: () => null, setItem: () => {} },
@@ -60,11 +60,15 @@ const financialProject = D.items.find(item => [h.C.capex, h.C.capexCommitted, h.
 assert.ok(cosmos && withAction && closed && financialProject, 'El corte debe incluir proyectos para los casos funcionales');
 
 const home = options({ type: 'home' });
-assert.equal(home.length, 4);
+assert.equal(home.length, 6);
 assert.ok(home.some(x => x.label === 'Actualizaciones de esta semana'));
 assert.ok(home.some(x => x.page.type === 'project-groups'));
-assert.ok(!home.some(x => /PM|escribir/i.test(x.label)), 'No debe existir una ruta por PM ni redacción libre');
-assert.ok(!html.includes('id="chat-input"'), 'La caja de texto debe desaparecer');
+assert.ok(home.some(x => x.page.topic === 'weekly-changes'), 'Qué cambió desde el lunes está en la portada');
+assert.ok(home.some(x => x.page.type === 'alerts'), 'Las alertas calculadas están en el menú');
+assert.ok(!home.some(x => /PM|escribir/i.test(x.label)), 'No debe existir una ruta por PM en la portada');
+assert.ok(html.includes('id="chat-input"') && html.includes('onsubmit="return chatAsk(event)"'), 'La pregunta libre vive junto a los botones');
+assert.ok(html.includes('id="chat-options"'), 'Los botones del menú se conservan');
+assert.ok(/<script src="assets\/js\/cosmo-knowledge\.js\?v=[^"]+"><\/script>/.test(html), 'cosmo-knowledge.js se carga en la portada');
 
 const groups = options({ type: 'project-groups' });
 assert.ok(groups.length >= 1);
@@ -223,8 +227,11 @@ context.URL = URL;
 context.CustomEvent = class { constructor(type, options) { this.type = type; this.detail = options.detail; } };
 context.innerWidth = 390;
 context.createCosmoGuide = createGuide;
+context.createCosmoKnowledge = createKnowledge;
 context.chatPath = [{ type: 'home' }];
 context.cosmoGuide = null;
+context.cosmoKnowledge = null;
+context.chatContext = { project: null };
 context.baseSnapshot = structuredClone(D);
 const latest = structuredClone(D);
 latest.extracted_at_utc = new Date().toISOString();
@@ -495,3 +502,6 @@ if(process.env.PMO_AUDIT_FIXTURE){
  h.setInitiativeScope('all');
 }
 console.log('Quick wins: scope, audiovisual totals, Cosmo, preserved history and financial isolation verified.');
+
+// Cosmo: free questions, changes since Monday, calculated alerts and the positive bubble.
+await (await import('./test-cosmo-asistente.mjs')).run({ D, h: context.guideTest, createGuide, createKnowledge, html, context });

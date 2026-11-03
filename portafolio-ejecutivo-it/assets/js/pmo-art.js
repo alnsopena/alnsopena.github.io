@@ -115,8 +115,8 @@
       sub: '',
       msg: '<em>' + plural(ps.length, 'proyecto', 'proyectos') + '</em>' + (parts.length ? ': ' + joinY(parts) : ''),
       pills: [pm[0] && { text: 'Más activos: ' + joinY(pm.filter(x => x[1] === pm[0][1]).map(x => x[0].split(' ').slice(0, 2).join(' '))) + ' (' + pm[0][1] + ')', tone: 'blue' }, crit && { text: plural(crit, 'activo crítico', 'activos críticos'), tone: 'red' }, flag && { text: flag + ' requieren atención', tone: 'amber' }, noPhase && { text: noPhase + ' sin fase registrada', tone: 'red' }],
-      // The bubble adds what the headline does not say; without PM gaps it stays silent.
-      tell: noPm ? plural(noPm, 'proyecto', 'proyectos') + ' sin PM asignado: están en el aviso bajo la carta.' : '',
+      // Cosmo's proactive bubble only gives good news (portal-fx.js); missing PMs stay in the notice under the chart.
+      tell: '',
       key: [...(gone ? [{ svg: I.box('#8a969c'), text: 'PM no vigente: usuario dado de baja en monday' }] : []), { svg: I.anchor, text: 'Ancla: entregado' }, { svg: I.hullMini, text: 'Casco a medio construir: en curso, según su fase' }, { svg: I.dash, text: 'Círculo punteado: por zarpar' }, { svg: I.flag('#D69A3C'), text: 'Banderín: bloqueo, riesgo o Fin Plan vencido' }, { svg: I.hullMini, text: 'Más grande: mayor prioridad' }]
     };
   }
@@ -130,8 +130,8 @@
       msg: next ? 'Próximo fin planificado: <em>' + esc(next.name) + '</em>, el ' + spoken(next.plan) : 'No hay fines planificados en la vista',
       pills: [ok && { text: 'Fin Plan vigente: ' + ok, tone: 'green' }, over && { text: 'Fin Plan vencido: ' + over, tone: 'red' }, noPlan && { text: 'Sin Fin Plan: ' + noPlan, tone: 'amber' }, { text: plural(in90, 'fin planificado', 'fines planificados') + ' en 90 días', tone: 'blue' }],
       cta: noPlan && d.boardUrl ? { label: 'Completar Fin Plan en monday', href: d.boardUrl } : null,
-      // The headline already names the next arrival: the bubble points at what needs a date instead.
-      tell: noPlan || over ? joinY([noPlan && noPlan + ' sin Fin Plan', over && over + ' con Fin Plan vencido'].filter(Boolean)) + '. Toca un arribo para abrir su ficha.' : '',
+      // Cosmo's proactive bubble only gives good news (portal-fx.js); missing and overdue dates stay in the pills.
+      tell: '',
       key: [{ svg: I.lighthouse, text: 'Faro: hoy' }, { svg: I.tide, text: 'Altura de la marea: cierres del mes' }, { svg: I.flapY, text: 'Amarillo: 7 días o menos' }, { svg: I.flapR, text: 'Rojo: vencido o sin Fin Plan' }]
     };
   }

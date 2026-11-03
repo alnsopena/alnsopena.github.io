@@ -385,13 +385,21 @@
     .summary-static-row:hover{border-color:#e1e6ea;background:#fff}
     .chat-fallback{position:fixed;right:22px;bottom:22px;z-index:80;min-height:48px;padding:0 16px;border:1px solid #cba785;border-radius:12px;background:#07394e;color:#fff;box-shadow:0 18px 45px -18px rgba(2,29,42,.75);cursor:pointer;font-weight:800}
     .chat-fallback[hidden]{display:none}
-    .project-chat{position:fixed;right:22px;bottom:168px;z-index:90;width:min(410px,calc(100vw - 32px));height:min(360px,calc(100vh - 188px));overflow:hidden;border:1px solid #b9c7ce;border-radius:18px;background:#fff;box-shadow:0 28px 80px -24px rgba(0,27,41,.65);transform-origin:90% 100%}
+    .project-chat{position:fixed;right:22px;bottom:168px;z-index:90;width:min(410px,calc(100vw - 32px));height:min(430px,calc(100vh - 188px));overflow:hidden;border:1px solid #b9c7ce;border-radius:18px;background:#fff;box-shadow:0 28px 80px -24px rgba(0,27,41,.65);transform-origin:90% 100%}
     .project-chat[hidden]{display:none}
     .project-chat:not([hidden]){animation:chat-reveal .32s cubic-bezier(.2,.8,.2,1) both}
     @keyframes chat-reveal{from{opacity:0;transform:translateY(18px) scale(.94)}to{opacity:1;transform:none}}
     .chat-shell{height:100%;display:grid;grid-template-rows:auto auto minmax(0,1fr)}
     .project-chat.list-view{height:min(520px,calc(100vh - 188px))}
-    .project-chat.answer-view{height:min(450px,calc(100vh - 188px))}
+    .project-chat.answer-view{height:min(470px,calc(100vh - 188px))}
+    .chat-ask{display:flex;gap:7px;margin-top:9px;flex:none}
+    .chat-ask input{flex:1;min-width:0;min-height:38px;padding:0 11px;border:1px solid #c6d5db;border-radius:8px;background:#fff;color:#163f52;font-size:12px}
+    .chat-ask input:focus{border-color:#b68a62;outline:2px solid rgba(182,138,98,.35);outline-offset:1px}
+    .chat-ask button{flex:none;min-height:38px;padding:0 12px;border:1px solid #0a4b61;border-radius:8px;background:#07394e;color:#fff;cursor:pointer;font-size:11px;font-weight:800}
+    .chat-ask button:focus-visible{outline:2px solid #b68a62;outline-offset:2px}
+    .chat-suggest{display:grid;grid-template-columns:1fr;gap:6px;margin-top:10px}
+    .chat-suggest .chat-option{min-height:36px}
+    .project-chat .chat-message.user{margin-bottom:10px}
     .project-chat.answer-view .chat-shell{grid-template-rows:auto minmax(0,1fr) auto}
     .chat-head{display:flex;align-items:center;gap:12px;padding:14px 15px;background:linear-gradient(115deg,#002f43,#0a4d62);color:#fff}
     .chat-head strong{display:block;font-size:14px}.chat-head span{display:block;margin-top:2px;color:#c9d7dc;font-size:10px}
@@ -420,7 +428,7 @@
     .chat-guide-empty{margin:0;color:#5d7180;font-size:11px;line-height:1.5}
     .dialog-updates{display:grid;gap:10px}.dialog-update{padding:11px 0;border-bottom:1px solid #e5ebee}.dialog-update:last-child{border-bottom:0}.dialog-update time{display:block;margin-bottom:4px;color:#637b87;font-size:11px;font-weight:800}.dialog-update p{margin:0;color:#344b5a;font-size:12px;line-height:1.5;white-space:pre-line}
     .chat-message strong.chat-answer-title{display:block;margin-bottom:7px;color:#0b4155;font-size:12px}
-    @media(max-width:800px){.milestone-list{grid-template-columns:1fr}.milestone-item:nth-last-child(-n+2){border-bottom:1px solid #e4e9ec}.milestone-item:last-child{border-bottom:0}.milestone-head{display:block}.milestone-window{display:block;margin-top:9px}.chat-fallback{right:10px;bottom:calc(78px + env(safe-area-inset-bottom))}.project-chat{right:8px;bottom:calc(182px + env(safe-area-inset-bottom));width:calc(100vw - 16px);height:min(360px,calc(100vh - 202px - env(safe-area-inset-bottom)));border-radius:16px}.project-chat.list-view{height:min(500px,calc(100vh - 202px - env(safe-area-inset-bottom)))}.project-chat.answer-view{height:min(460px,calc(100vh - 202px - env(safe-area-inset-bottom)))}}
+    @media(max-width:800px){.milestone-list{grid-template-columns:1fr}.milestone-item:nth-last-child(-n+2){border-bottom:1px solid #e4e9ec}.milestone-item:last-child{border-bottom:0}.milestone-head{display:block}.milestone-window{display:block;margin-top:9px}.chat-fallback{right:10px;bottom:calc(78px + env(safe-area-inset-bottom))}.project-chat{right:8px;bottom:calc(182px + env(safe-area-inset-bottom));width:calc(100vw - 16px);height:min(430px,calc(100vh - 202px - env(safe-area-inset-bottom)));border-radius:16px}.chat-ask input{font-size:16px}.project-chat.list-view{height:min(500px,calc(100vh - 202px - env(safe-area-inset-bottom)))}.project-chat.answer-view{height:min(460px,calc(100vh - 202px - env(safe-area-inset-bottom)))}}
     @media print{.chat-fallback,.project-chat{display:none!important}}
     @media(prefers-reduced-motion:reduce){.project-chat:not([hidden]){animation:none}}
   </style>
@@ -722,6 +730,7 @@
       <nav class="chat-guide" aria-label="Opciones de Cosmo">
         <div class="chat-guide-nav"><button type="button" id="chat-back" onclick="chatGoBack()" disabled>← Atrás</button><span id="chat-location">Inicio</span><button type="button" id="chat-home" onclick="chatGoHome()" hidden>Inicio</button></div>
         <div class="chat-guide-options" id="chat-options"></div>
+        <form class="chat-ask" id="chat-ask" onsubmit="return chatAsk(event)" autocomplete="off"><label class="sr-only" for="chat-input">Escribe tu pregunta</label><input id="chat-input" type="text" maxlength="240" placeholder="O escribe tu pregunta…" enterkeyhint="send"><button type="submit">Preguntar</button></form>
       </nav>
     </div>
   </section>
@@ -732,7 +741,8 @@
   <link rel="stylesheet" href="assets/css/related-sites.css?v=20261102-drive">
   <script src="assets/js/related-sites.js?v=20261102-drive"></script>
   <script src="assets/js/dispatch-layout.js?v=riesgos-20261103"></script>
-  <script src="assets/js/cosmo-guide.js?v=propuestas-20261102"></script>
+  <script src="assets/js/cosmo-guide.js?v=cosmo-libre-20261103"></script>
+  <script src="assets/js/cosmo-knowledge.js?v=cosmo-libre-20261103"></script>
   <script>
   'use strict';
   let D=JSON.parse(document.getElementById('snapshot').textContent);
@@ -788,7 +798,7 @@
   function initiativeItems(){return D.items.filter(i=>state.initiativeScope==='quick-wins'?initiativeClass(i)==='Quick win':state.initiativeScope==='projects'?initiativeClass(i)==='Proyecto':true)}
   function scopedSnapshot(){return {...D,items:initiativeItems()}}
   function initiativeSelector(){return '<div class="initiative-selector" role="group" aria-label="Ver cartera"><span class="control-label" aria-hidden="true">Cartera</span><div class="segmented">'+[['all','Todos'],['projects','Proyectos'],['quick-wins','Quick wins']].map(([id,label])=>'<button type="button" aria-pressed="'+(state.initiativeScope===id)+'" onclick="setInitiativeScope(\''+id+'\')">'+label+'</button>').join('')+'</div><span class="initiative-count">'+initiativeItems().length+' iniciativas</span></div>'}
-  function setInitiativeScope(value){state.initiativeScope=['all','projects','quick-wins'].includes(value)?value:'all';clearFilters();cosmoGuide=typeof createCosmoGuide==='function'?createCosmoGuide(scopedSnapshot(),C,{val,num,fmtDate,fmtNum,financeInfo,financeMoney,riskInfo,progressInfo,progressPercent,progressDelta,projectUpdateEntries,shortAnswer,weeklyMilestones,attentionReasons,closureInfo,closureLabel,closureSourceLabel,past}):null;chatPath.splice(0,chatPath.length,{type:'home'});if(typeof renderChatGuide==='function')renderChatGuide();const dialog=document.getElementById('project-dialog');if(dialog.open)dialog.close();updateCutDisplay();nav()}
+  function setInitiativeScope(value){state.initiativeScope=['all','projects','quick-wins'].includes(value)?value:'all';clearFilters();rebuildCosmo();chatPath.splice(0,chatPath.length,{type:'home'});if(typeof renderChatGuide==='function')renderChatGuide();const dialog=document.getElementById('project-dialog');if(dialog.open)dialog.close();updateCutDisplay();nav()}
   const active=i=>val(i,C.status)!=='Cerrado';
   const past=x=>x&&new Date(x+'T23:59:59Z')<new Date(D.extracted_at_utc);
   function closureInfo(i){const real=val(i,C.real);if(real){const year=Number(String(real).slice(0,4)),month=Number(String(real).slice(5,7)),quarter=Number.isFinite(month)?Math.ceil(month/3):null;return{date:real,year:Number.isFinite(year)?year:null,quarter,source:'fin_real'}}const h=D.closure_history&&D.closure_history[String(i.id)];if(!h)return null;const year=Number(h.year),quarter=Number(h.quarter);return{...h,year:Number.isFinite(year)?year:null,quarter:Number.isFinite(quarter)?quarter:null}}
@@ -1096,7 +1106,7 @@
   function applyMondaySnapshot(latest){
     D=latest;
     if(chatPath.some(page=>page.id&&!D.items.some(item=>String(item.id)===String(page.id))))chatPath.splice(0,chatPath.length,{type:'home'});
-    cosmoGuide=typeof createCosmoGuide==='function'?createCosmoGuide(scopedSnapshot(),C,{val,num,fmtDate,fmtNum,financeInfo,financeMoney,riskInfo,progressInfo,progressPercent,progressDelta,projectUpdateEntries,shortAnswer,weeklyMilestones,attentionReasons,closureInfo,closureLabel,closureSourceLabel,past}):null;
+    rebuildCosmo();
     nav();render();
     if(typeof renderChatGuide==='function')renderChatGuide();
     const dialog=document.getElementById('project-dialog');
@@ -1136,12 +1146,16 @@
   function normalizeQuery(value){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()}
   function projectUpdateEntries(project){const ids=new Set([String(project.id),...(project.subitems||[]).map(sub=>String(sub.id))]),entries=[];(D.updates||[]).forEach(update=>{if(!ids.has(String(update.item_id)))return;entries.push({text:update.text_body,date:update.created_at,author:update.creator?.name||''});(update.replies||[]).forEach(reply=>entries.push({text:reply.text_body,date:reply.created_at,author:reply.creator?.name||update.creator?.name||''}))});return entries.filter(x=>x.text&&x.date).sort((a,b)=>new Date(b.date)-new Date(a.date))}
   function shortAnswer(value,max=520){const clean=cleanUpdateText(value);return clean.length>max?clean.slice(0,max-1)+'…':clean}
-  let cosmoGuide=typeof createCosmoGuide==='function'?createCosmoGuide(scopedSnapshot(),C,{val,num,fmtDate,fmtNum,financeInfo,financeMoney,riskInfo,progressInfo,progressPercent,progressDelta,projectUpdateEntries,shortAnswer,weeklyMilestones,attentionReasons,closureInfo,closureLabel,closureSourceLabel,past}):null;
+  // Cosmo's menu and free questions share the same scoped cut and the portal's own rules.
+  function cosmoHelpers(){return{val,num,fmtDate,fmtNum,financeInfo,financeMoney,riskInfo,progressInfo,progressPercent,progressDelta,projectUpdateEntries,shortAnswer,weeklyMilestones,attentionReasons,closureInfo,closureLabel,closureSourceLabel,past,active,scheduleBucket,tentativePlan,regularizationIssues,weekStartLima,inactivePm:INACTIVE_PM}}
+  function rebuildCosmo(){const snap=scopedSnapshot(),helpers=cosmoHelpers();cosmoGuide=typeof createCosmoGuide==='function'?createCosmoGuide(snap,C,helpers):null;cosmoKnowledge=cosmoGuide&&typeof createCosmoKnowledge==='function'?createCosmoKnowledge(snap,C,helpers,cosmoGuide):null;chatContext.project=null}
+  let cosmoGuide=null,cosmoKnowledge=null;const chatContext={project:null};rebuildCosmo();
   const chatPath=[{type:'home'}];
   function chatCurrent(){return chatPath[chatPath.length-1]}
   function chatNavigate(page){chatPath.push(page);renderChatGuide()}
   function chatGoBack(){if(chatPath.length>1){chatPath.pop();renderChatGuide()}}
   function chatGoHome(){chatPath.splice(0,chatPath.length,{type:'home'});renderChatGuide()}
+  function chatAsk(event){event?.preventDefault?.();const input=document.getElementById('chat-input'),question=(input?.value||'').trim();if(!question)return false;if(!cosmoKnowledge){input.value='';return false}const ctx={project:chatContext.project,myPm:state.myPm},prior=chatContext.project;cosmoKnowledge.ask(question,ctx);chatContext.project=ctx.project||null;input.value='';chatPath.push({type:'ask',q:question,ctx:prior});renderChatGuide();return false}
   function chatOpenModule(answer){
     toggleChat(false);
     goFiltered(answer.module,answer.filters||{});
@@ -1152,9 +1166,10 @@
     const card=document.createElement('article');card.className='chat-message guide-answer';
     const title=document.createElement('strong');title.className='chat-answer-title';title.textContent=answer.title;card.appendChild(title);
     const body=document.createElement('div');body.className='chat-answer-body';body.textContent=answer.text;colorPmText(body);card.appendChild(body);
-    const source=document.createElement('span');source.className='chat-source';source.textContent='monday · '+(answer.source||'tablero de proyectos');card.appendChild(source);
+    if(answer.source||answer.module){const source=document.createElement('span');source.className='chat-source';source.textContent='monday · '+(answer.source||'tablero de proyectos');card.appendChild(source)}
     if(answer.module){const link=document.createElement('button');link.type='button';link.className='chat-module-link';link.textContent='Ver en '+({resumen:'Resumen ejecutivo',atencion:'Riesgos y decisiones',portafolio:'Portafolio',cronograma:'Cronograma',finanzas:'Finanzas'}[answer.module]||'el portal')+' ↗';link.addEventListener('click',()=>chatOpenModule(answer));card.appendChild(link)}
-    if(answer.offerEmail&&answer.project){const mail=document.createElement('button');mail.type='button';mail.className='chat-mail';mail.textContent='Preparar consulta al responsable ↗';mail.addEventListener('click',()=>prepareProjectEmail(answer.project,answer.title));card.appendChild(mail)}
+    if(answer.suggest?.length){const list=document.createElement('div');list.className='chat-suggest';list.setAttribute('role','group');list.setAttribute('aria-label','Opciones sugeridas');answer.suggest.forEach(s=>{const b=document.createElement('button');b.type='button';b.className='chat-option';b.textContent=s.label;b.addEventListener('click',()=>chatNavigate(s.page));list.appendChild(b)});card.appendChild(list)}
+    if(answer.offerEmail&&answer.project){const mail=document.createElement('button');mail.type='button';mail.className='chat-mail';mail.textContent='Preparar consulta al responsable ↗';mail.addEventListener('click',()=>prepareProjectEmail(answer.project,answer.question||answer.title));card.appendChild(mail)}
     return card;
   }
   function renderChatGuide(){
@@ -1162,15 +1177,16 @@
     if(!box||!options)return;
     box.replaceChildren();options.replaceChildren();
     if(!cosmoGuide){const error=document.createElement('p');error.className='chat-guide-empty';error.textContent='Las opciones de Cosmo no están disponibles en este momento. El resto del portal sigue funcionando.';box.appendChild(error);back.disabled=true;home.hidden=true;return}
-    const page=chatCurrent(),answer=page.type==='answer'?cosmoGuide.answer(page):null;
+    const page=chatCurrent(),answer=page.type==='answer'?cosmoGuide.answer(page):page.type==='ask'?(cosmoKnowledge?.ask(page.q,{project:page.ctx,myPm:state.myPm})||{title:'Pregunta',text:'No pude leer la pregunta. Prueba con otras palabras o usa el menú.',question:page.q}):null;
     document.getElementById('project-chat').classList.toggle('answer-view',!!answer);
     document.getElementById('project-chat').classList.toggle('list-view',page.type==='project-list');
     back.disabled=chatPath.length===1;home.hidden=chatPath.length===1;location.textContent=answer?.title||cosmoGuide.title(page);
+    if(page.type==='ask'){const asked=document.createElement('p');asked.className='chat-message user';asked.textContent=page.q;box.appendChild(asked)}
     if(answer){box.appendChild(chatAnswerCard(answer))}
     else if(page.type==='home'){const prompt=document.createElement('p');prompt.className='chat-guide-empty';prompt.textContent='¿Qué quieres consultar?';box.appendChild(prompt)}
     const choices=cosmoGuide.options(page);options.classList.toggle('list-mode',page.type==='project-list');
-    choices.forEach(choice=>{const button=document.createElement('button');button.type='button';button.className='chat-option'+(page.type==='home'&&choice.page.type==='project-groups'?' wide':'');button.textContent=choice.label;button.addEventListener('click',()=>chatNavigate(choice.page));options.appendChild(button)});
-    if(page.type==='answer')options.setAttribute('aria-hidden','true');else options.removeAttribute('aria-hidden');
+    choices.forEach(choice=>{const button=document.createElement('button');button.type='button';button.className='chat-option'+(choice.wide||(page.type==='home'&&choice.page.type==='project-groups')?' wide':'');button.textContent=choice.label;button.addEventListener('click',()=>chatNavigate(choice.page));options.appendChild(button)});
+    if(answer)options.setAttribute('aria-hidden','true');else options.removeAttribute('aria-hidden');
     box.scrollTop=0;options.scrollTop=0;
   }
   function toggleChat(force){const panel=document.getElementById('project-chat'),fallback=document.getElementById('chat-fallback'),open=typeof force==='boolean'?force:panel.hidden;panel.hidden=!open;fallback?.setAttribute('aria-expanded',String(open));if(open){renderChatGuide();setTimeout(()=>document.querySelector('#chat-options .chat-option')?.focus(),60)}}
@@ -1214,14 +1230,14 @@
       }
     });
   </script>
-  <script src="assets/js/cosmos-paper-fx.min.js?v=entregados-20261103" defer></script>
+  <script src="assets/js/cosmos-paper-fx.min.js?v=contenedores-20261103" defer></script>
   <script src="assets/js/monday-sync.js?v=20261020-verified" defer></script>
-  <script src="assets/js/portal-fx.js?v=transversal-20261103" defer></script>
+  <script src="assets/js/portal-fx.js?v=cosmo-positivo-20261103" defer></script>
   <script src="assets/js/portal-related-sites.js?v=20261029" defer></script>
   <script src="assets/js/pmo-data.js?v=muelle-20261103" defer></script>
-  <script src="assets/js/pmo-puerto.js?v=entregados-20261103" defer></script>
-  <script src="assets/js/pmo-av.js?v=pm-no-vigente-20261103" defer></script>
-  <script src="assets/js/pmo-art.js?v=pm-no-vigente-20261103" defer></script>
+  <script src="assets/js/pmo-puerto.js?v=contenedores-20261103" defer></script>
+  <script src="assets/js/pmo-av.js?v=contenedores-20261103" defer></script>
+  <script src="assets/js/pmo-art.js?v=cosmo-positivo-20261103" defer></script>
   <script src="assets/js/pmo-icons.js?v=escenas-20260930" defer></script>
 </body>
 </html>
