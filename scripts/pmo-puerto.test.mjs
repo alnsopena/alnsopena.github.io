@@ -88,7 +88,9 @@ assert.deepEqual({ ...puerto.faceFlags({}) }, { risk: false });
 rankedDock.pos = { a: { y: 90 }, b: { y: 50 } }; rankedDock.draw();
 assert.deepEqual(Array.from(rankedPaint, item => item.id).slice(0, 3), ['c', 'd', 'e'], 'paint unplaced items without moving their order');
 assert.equal(rankedPaint.findIndex(item => item.id === 'b') < rankedPaint.findIndex(item => item.id === 'a'), true, 'paint upper rows first so flags stay visible');
-assert.deepEqual(legendHtml.match(/(Critical|High|Medium|Low)/g), ['Critical', 'High', 'Medium', 'Low'], 'legend lists priorities in board order');
+assert.deepEqual(legendHtml.match(/(Crítica|Alta|Media|Baja)/g), ['Crítica', 'Alta', 'Media', 'Baja'], 'legend lists priorities in board order, in Spanish');
+assert.doesNotMatch(legendHtml, /Critical|High|Medium|Low/, 'monday values are not shown in English');
+assert.deepEqual(['Critical ⚠️️', 'High', 'Medium', 'Low', 'Sin prioridad'].map(puerto.priorityLabel), ['Crítica', 'Alta', 'Media', 'Baja', 'Sin prioridad']);
 
 let intersection, paints = 0, disconnected = false;
 const listeners = new Map(), media = { matches: false, addEventListener() {}, removeEventListener() {} };

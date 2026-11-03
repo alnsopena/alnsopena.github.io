@@ -20,11 +20,13 @@
     };
   };
 
+  // A smaller dock covers less of the last table column; on mobile it sits right above the bottom bar.
+  const DOCK = { right: 18, bottom: 16, size: 64 }, DOCK_MOBILE = { right: 8, bottom: mobileBarHeight + 8, size: 46 };
   let fx;
   try {
     fx = window.cosmosFx = window.CosmosFx.create({
-      dock: { right: 22, bottom: 22, size: 84 },
-      dockMobile: { right: 10, bottom: mobileBarHeight + 14, size: 58 },
+      dock: DOCK,
+      dockMobile: DOCK_MOBILE,
       intro: 'session',
       motion: 'auto',
       idleFps: 0,
@@ -116,6 +118,51 @@
   });
 
   const chatOpen = () => !!$('#project-chat:not([hidden])');
+
+  // The bubble never stays over the data: it closes after a few seconds or once the reader scrolls away.
+  const say = fx.say.bind(fx);
+  let sayY = 0;
+  fx.say = function (text, options) {
+    sayY = window.scrollY || 0;
+    const opts = Object.assign({}, options);
+    opts.ms = Math.min(opts.ms || 2200 + 35 * String(text || '').length, 5000);
+    return say(text, opts);
+  };
+  window.addEventListener('scroll', () => { if (Math.abs((window.scrollY || 0) - sayY) > 140) fx.bubble.classList.remove('on'); }, { passive: true });
+
+  // Fold Cosmo into a small tab. Captions and guided scenes live in the same root, so only the dock and bubble hide.
+  const FOLD_KEY = 'portfolio-cosmo-folded';
+  let folded = false;
+  try { folded = localStorage.getItem(FOLD_KEY) === '1'; } catch (error) {}
+  const fold = document.createElement('button');
+  fold.type = 'button';
+  fold.className = 'cosmo-min-toggle';
+  function placeFold() {
+    const dock = window.innerWidth < 800 ? DOCK_MOBILE : DOCK, height = 1.62 * dock.size;
+    // Beside Cosmo's shoulder, clear of the bubble that opens above the dock.
+    fold.style.setProperty('--cm-right', (folded ? dock.right + 6 : Math.max(4, dock.right - 6)) + 'px');
+    fold.style.setProperty('--cm-bottom', (folded ? dock.bottom : dock.bottom + Math.round(height * .5)) + 'px');
+  }
+  function syncFold() {
+    const label = folded ? 'Mostrar a Cosmo' : 'Ocultar a Cosmo';
+    fold.classList.toggle('is-min', folded);
+    fold.setAttribute('aria-label', label);
+    fold.title = label;
+    fold.innerHTML = folded ? '<span aria-hidden="true">‹</span> Cosmo' : '<span aria-hidden="true">–</span>';
+    fx.root.classList.toggle('cosmo-folded', folded);
+    placeFold();
+  }
+  fold.addEventListener('click', () => {
+    folded = !folded;
+    try { localStorage.setItem(FOLD_KEY, folded ? '1' : '0'); } catch (error) {}
+    if (folded && chatOpen()) window.toggleChat(false);
+    if (folded) fx.bubble.classList.remove('on');
+    syncFold();
+  });
+  window.addEventListener('resize', placeFold);
+  document.body.appendChild(fold);
+  syncFold();
+
   const updateVisibility = () => fx.setVisible(!document.body.classList.contains('committee-mode'));
   after('toggleFullscreen', () => {
     if (document.body.classList.contains('committee-mode') && chatOpen()) window.toggleChat(false);

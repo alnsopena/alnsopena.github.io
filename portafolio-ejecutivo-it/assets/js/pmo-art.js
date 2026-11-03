@@ -106,12 +106,13 @@
     const by = s => ps.filter(p => String(p.status).toLowerCase() === s).length, closed = by('cerrado'), proc = by('en proceso'), plan = by('planificado'), prop = by('propuesto'), other = ps.length - closed - proc - plan - prop;
     const act = ps.filter(p => p.active), noPhase = act.filter(p => !p.phase || p.phase === 'Sin fase').length, pm = countBy(act, p => p.pmFirst || 'Sin PM');
     const crit = act.filter(p => /critical/i.test(p.priority || '')).length, flag = act.filter(p => p.risk).length;
+    // The "Más activos" chip names each PM with the same two words the chart prints on the island.
     const parts = [closed && plural(closed, 'cerrado', 'cerrados'), proc && proc + ' en curso', plan && plan + ' por arrancar', prop && plural(prop, 'propuesto', 'propuestos'), other && other + ' en Stand by'].filter(Boolean);
     return {
       title: 'La carta náutica',
       sub: '',
       msg: '<em>' + plural(ps.length, 'proyecto', 'proyectos') + '</em>' + (parts.length ? ': ' + joinY(parts) : ''),
-      pills: [pm[0] && { text: 'Más activos: ' + pm.filter(x => x[1] === pm[0][1]).map(x => x[0].split(' ')[0]).join(' y ') + ' (' + pm[0][1] + ')', tone: 'blue' }, crit && { text: crit + ' activos Critical', tone: 'red' }, flag && { text: flag + ' requieren atención', tone: 'amber' }, noPhase && { text: noPhase + ' sin fase registrada', tone: 'red' }],
+      pills: [pm[0] && { text: 'Más activos: ' + joinY(pm.filter(x => x[1] === pm[0][1]).map(x => x[0].split(' ').slice(0, 2).join(' '))) + ' (' + pm[0][1] + ')', tone: 'blue' }, crit && { text: plural(crit, 'activo crítico', 'activos críticos'), tone: 'red' }, flag && { text: flag + ' requieren atención', tone: 'amber' }, noPhase && { text: noPhase + ' sin fase registrada', tone: 'red' }],
       key: [{ svg: I.anchor, text: 'Ancla: entregado' }, { svg: I.hullMini, text: 'Casco a medio construir: en curso, según su fase' }, { svg: I.dash, text: 'Círculo punteado: por zarpar' }, { svg: I.flag('#D69A3C'), text: 'Banderín: bloqueo, riesgo o Fin Plan vencido' }, { svg: I.hullMini, text: 'Más grande: mayor prioridad' }]
     };
   }
