@@ -184,7 +184,7 @@
         const cx = left + width / 2, cy = top + height / 2, button = buttons[index];
         if (button) Object.assign(button.style, { left: (x + cx * Math.cos(rot) - cy * Math.sin(rot)) + 'px', top: (baseline + cx * Math.sin(rot) + cy * Math.cos(rot)) + 'px', width: width + 'px', height: height + 'px', transform: 'translate(-50%,-50%) rotate(' + rot + 'rad)' });
       });
-      const title = list.length + ' ejecutados ' + this.d.totals.year;
+      const title = list.length + ' entregados ' + this.d.totals.year;
       ctx.font = '800 13px Figtree, "Segoe UI", sans-serif';
       const bannerW = ctx.measureText(title).width + 24, bannerX = Math.min(.40 * size, this.w - x - 14), bannerY = -.44 * size;
       pen.line([[bannerX, -.09 * size], [bannerX, bannerY - 6]], { unit: 1.4, sw: 1, curv: 0 });

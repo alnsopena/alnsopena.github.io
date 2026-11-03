@@ -17,6 +17,15 @@ const replacements = [
   ['" avance registrado":" avances registrados"', '" proyecto actualizado":" proyectos actualizados"'],
   // Mi muelle picker: the portal names the role "PM" everywhere ("Todos los PM").
   ['<optgroup label="Project managers">', '<optgroup label="PM">'],
+  // The portal counts the year's closures as "Entregados <año>": port ship sign, KPIs, Mi muelle, passport and voice say the same.
+  ['l+" ejecutados "+o.totals.year', 'l+" entregados "+o.totals.year'],
+  ['"ejecutados "+i.year,e.ok', '"entregados "+i.year,e.ok'],
+  ['" ejecutados en "+i.year+"."', '" entregados en "+i.year+"."'],
+  ['" ejecutado"+(1===o.closedYear.length?"":"s")+" en "', '" entregado"+(1===o.closedYear.length?"":"s")+" en "'],
+  ['"ejecutados en "+e.year,"#3F8F6B"', '"entregados en "+e.year,"#3F8F6B"'],
+  ['", ejecutado "+(t.closedLabel', '", entregado "+(t.closedLabel'],
+  ['u?"ejecutados":"ejecutados "+(h.year||"")', 'u?"entregados":"entregados "+(h.year||"")'],
+  ['" con riesgo. Este año se ejecutaron "', '" con riesgo. Este año se entregaron "'],
 ];
 for (const [before, after] of replacements) {
   if (!source.includes(before) && !source.includes(after)) throw new Error('Texto de Paper FX no encontrado: ' + before);

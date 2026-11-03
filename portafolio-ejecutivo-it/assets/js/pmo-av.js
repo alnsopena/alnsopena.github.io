@@ -105,6 +105,8 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
 .pav-cm-inv{display:grid;gap:2px;margin-top:14px;padding:12px 16px;border-radius:12px;background:#003D53;color:#fff}
 .pav-cm-inv b{font-size:17px}.pav-cm-inv span{font-size:13.5px;color:#CFE0E6}
 @media(max-width:900px){.pav-cm-two{grid-template-columns:minmax(0,1fr)}}
+/* Cosmo's subtitle sits in the strip below the sheet: the bubble drops to Cosmo's base and the scene reserves its full height, so long slides are never covered. */
+@media(min-width:901px){.cfx-cm .cfx-cm-scene{padding-bottom:136px}.cfx-cm .cfx-cm-bubble{margin-bottom:8px}}
 @media print{.pav-tools,.pav-card,.pav-muelle-slot{display:none}}`;
   const st = document.createElement('style'); st.id = 'pmo-av-style'; st.textContent = css; document.head.appendChild(st);
 
@@ -336,7 +338,7 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
     const roles = person.roles || [], pm = roles.includes('pm'), sponsor = roles.includes('sponsor');
     const role = sponsor && pm ? 'sponsor y PM' : sponsor ? 'sponsor' : pm ? 'PM' : 'persona con actividad';
     const chips = [m.act.length && [plural(m.act.length, 'proyecto activo', 'proyectos activos'), '#003D53'],
-      m.done.length && [plural(m.done.length, 'ejecutado', 'ejecutados') + ' en ' + year, '#3F8F6B'],
+      m.done.length && [plural(m.done.length, 'entregado', 'entregados') + ' en ' + year, '#3F8F6B'],
       m.next && ['Próxima entrega: ' + m.next.name + ', ' + m.next.planLabel, '#CBA785'],
       m.noPlan && [m.noPlan + ' sin Fin Plan', '#9AA7AD'],
       m.crit && [plural(m.crit, 'dato crítico pendiente', 'datos críticos pendientes') + ' en monday', '#B2493A']].filter(Boolean);
