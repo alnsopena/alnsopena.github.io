@@ -24,6 +24,13 @@
   if (cfg.off) return;
   const fx = window.cosmosFx;
   if (!fx || !window.PMOData || typeof fx.puerto !== 'function') { console.warn('[pmo-av] Falta cosmosFx v2 o PMOData; se omiten los componentes.'); return; }
+  // Every dock the engine draws (Comité guiado, pantalla de oficina) uses the Resumen's priority colors and flags.
+  const basePuerto = fx.puerto.bind(fx);
+  fx.puerto = function () {
+    const scene = basePuerto.apply(null, arguments);
+    if (window.PMOPuerto && window.PMOPuerto.priorityDock) { window.PMOPuerto.priorityDock(scene); if (scene.d && scene.setData) scene.setData(window.PMOPuerto.portData(scene.d, scene.o && scene.o.filter), true); else if (scene._legend) scene._legend(); if (scene.wake) scene.wake(.3); }
+    return scene;
+  };
 
   const $ = s => document.querySelector(s);
   const g = name => { try { return (0, eval)(name); } catch (e) { return undefined; } };   // variables `let` del portal
@@ -163,7 +170,13 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
     const slot = main.querySelector('#pav-personal-dock');
     if (slot) mountMuelleCard(slot, getData());
   }
-  function mountResumen(main) {
+  function autoPulse(card, button) {
+    const play = () => { if (card.isConnected && !button.disabled) button.click(); };
+    if (navigator.userActivation && navigator.userActivation.isActive) { setTimeout(play, 1200); return; }
+    const once = () => { document.removeEventListener('pointerdown', once, true); document.removeEventListener('keydown', once, true); setTimeout(play, 300); };
+    document.addEventListener('pointerdown', once, true); document.addEventListener('keydown', once, true);
+  }
+  function mountResumen(main, entering) {
     const d = getData(), kpis = main.querySelector('.grid.kpis');
     if (cfg.puerto && kpis && !main.querySelector('.pav-puerto')) {
       const c = card('pav-puerto', 'Puerto de la cartera',
@@ -175,6 +188,7 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
       if (person) person.ids.forEach((id, k) => setTimeout(() => pu.highlight(id), 1400 + k * 180));
       const b = c.querySelector('[data-pav=pulso]');
       b.addEventListener('click', safe(() => { b.disabled = true; pu.pulse({ force: true, onEnd: () => { b.disabled = false; } }); }, 'pulso'));
+      if (entering) autoPulse(c, b);
     }
     if (cfg.aduanaResumen && d.aduana && d.aduana.totalProjects && !main.querySelector('.pav-aduana-mini')) {
       const anchor = main.querySelector('.decision-list') || main.querySelector('.executive-charts') || kpis; if (!anchor) return;
@@ -202,10 +216,12 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
       c.appendChild(f);
     }
   }
+  let lastView = null;
   function mount() {
     const main = $('#main'), view = (g('state') || {}).view || 'resumen'; if (!main) return;
+    const entering = view !== lastView; lastView = view;
     if (view === 'muelle') mountMuellePage(main);
-    else { if (muelleObserver) { muelleObserver.disconnect(); muelleObserver = null; } if (view === 'resumen') mountResumen(main); else if (view === 'regularizacion') mountRegularizacion(main); }
+    else { if (muelleObserver) { muelleObserver.disconnect(); muelleObserver = null; } if (view === 'resumen') mountResumen(main, entering); else if (view === 'regularizacion') mountRegularizacion(main); }
   }
   const after = (name, fn) => { const o = window[name]; if (typeof o !== 'function') return; window[name] = function () { const r = o.apply(this, arguments); safe(fn, name)(); return r; }; };
   after('render', mount);

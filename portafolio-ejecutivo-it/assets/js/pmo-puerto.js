@@ -16,26 +16,18 @@
   const priorityOf = item => PRIORITIES.find(([name]) => String(item.priority || '').toLowerCase().includes(name.toLowerCase()))?.[0] || '';
   const PRIORITY_SCALE = { Critical: 1.6, High: 1.25, Medium: 1, Low: .8 };
   const priorityScale = item => (item.active && PRIORITY_SCALE[priorityOf(item)]) || 1;
-  const faceFlags = item => {
-    const reasons = item.reasons || [];
-    return { late: reasons.includes('Fin Plan vencido'), risk: reasons.some(reason => /^(Riesgo|Bloqueo):/.test(reason)) };
-  };
+  // Overdue dates are not shown in the dock: only risks and blocks get a flag and a surprised face.
+  const faceFlags = item => ({ risk: (item.reasons || []).some(reason => /^(Riesgo|Bloqueo):/.test(reason)) });
   // The engine's face cannot be configured from outside, so the expression is drawn over it, on the same face panel.
   function paintFaces(scene, pen) {
     const pal = root.CosmosFx?.draw?.PAL, ctx = pen?.ctx;
     if (!pal || !ctx || scene.mob) return;
     scene.items.forEach(item => {
-      const { late, risk } = faceFlags(item), at = scene.cur?.[item.id];
-      if ((!late && !risk) || !at) return;
+      const { risk } = faceFlags(item), at = scene.cur?.[item.id];
+      if (!risk || !at) return;
       const u = at.u, patch = (x, y, rx, ry, color) => { ctx.beginPath(); ctx.ellipse(x * u, y * u, rx * u, ry * u, 0, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill(); };
       ctx.save(); ctx.translate(at.x, at.y);
-      if (late) for (const side of [-1, 1]) {
-        const x = .45 * side;
-        patch(x, -2.15, .32, .4, pal.cream);
-        pen.line([[(x - .2) * u, -2.36 * u], [(x + .2) * u, -1.94 * u]], { unit: .36 * u, sw: 1, col: pal.ink, curv: 0, rim: false });
-        pen.line([[(x + .2) * u, -2.36 * u], [(x - .2) * u, -1.94 * u]], { unit: .36 * u, sw: 1, col: pal.ink, curv: 0, rim: false });
-      }
-      if (risk) { patch(0, -1.42, .42, .22, pal.cream); patch(0, -1.36, .17, .21, pal.ink); }
+      patch(0, -1.42, .42, .22, pal.cream); patch(0, -1.36, .17, .21, pal.ink);
       ctx.restore();
     });
   }
@@ -43,13 +35,15 @@
   const flagIcon = color => '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1v12" stroke="#162631" stroke-width="1.4" stroke-linecap="round"/><path d="M3 1.5l9 3-9 3z" fill="' + color + '" stroke="#162631" stroke-width=".9" stroke-linejoin="round"/></svg>';
 
   function priorityDock(scene) {
+    if (scene.priorityDock) return scene;
+    scene.priorityDock = true;
     const draw = scene.draw, legend = scene._legend;
     scene.draw = function () {
       const items = this.items;
       // Paint-only copies: the engine colors by status, so real values stay for hit testing, tooltips and every other module.
       // Top rows paint first so a lower container's flag stays in front of the one above it.
       const rowY = item => this.pos?.[item.id]?.y ?? 0;
-      this.items = items.map(item => ({ ...item, status: priorityOf(item) || 'En Proceso' })).sort((a, b) => rowY(a) - rowY(b));
+      this.items = items.map(item => ({ ...item, status: priorityOf(item) || 'En Proceso', risk: item.risk === 'late' ? null : item.risk })).sort((a, b) => rowY(a) - rowY(b));
       try { return draw.apply(this, arguments); } finally { this.items = items; paintFaces(this, arguments[0]); }
     };
     scene._legend = function () {
@@ -62,8 +56,7 @@
       this.leg.querySelectorAll?.('span').forEach(entry => {
         const swatch = entry.querySelector('i');
         if (swatch && FLAG_LEGEND.test(entry.textContent)) swatch.outerHTML = flagIcon(swatch.style.background);
-        // A container shows one flag; a late project that is also at risk carries the risk flag.
-        if (/^Plazo vencido/.test(entry.textContent) && entry.lastChild) entry.lastChild.textContent = entry.lastChild.textContent.replace('Plazo vencido', 'Solo plazo vencido');
+        if (/^Plazo vencido/.test(entry.textContent)) entry.remove();
       });
     };
   }

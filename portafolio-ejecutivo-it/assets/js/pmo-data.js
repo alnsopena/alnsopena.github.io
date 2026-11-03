@@ -73,11 +73,15 @@
     let phases = (call('orderedPhases', phaseMap) || Object.entries(phaseMap)).map(x => x[0]);
     if (phaseMap['Sin fase'] && !phases.includes('Sin fase')) phases = ['Sin fase', ...phases];
     // decisiones: proyectos activos con motivos de atención (misma regla del portal)
-    const decisions = act.filter(p => p.reasons.length).map(p => ({
+    // Same order as Riesgos y decisiones: blocks, risks, then dates; within each, by priority.
+    const levelRank = { block: 0, risk: 1, late: 2 }, priorityRank = p => { const k = ['critical', 'high', 'medium', 'low'].findIndex(x => String(p.priority || '').toLowerCase().includes(x)); return k < 0 ? 4 : k; };
+    const decisions = act.filter(p => p.reasons.length).sort((a, b) => (levelRank[a.risk] ?? 3) - (levelRank[b.risk] ?? 3) || priorityRank(a) - priorityRank(b)).map(p => ({
       projectId: p.id, project: p.name, level: p.risk, reasons: p.reasons, action: p.action, owner: p.mitigationOwner, riskType: p.riskType, pm: p.pmFirst,
       date: null, dateLabel: '', dateSpoken: ''
-    })).sort((a, b) => ({ block: 0, late: 1, risk: 2 }[a.level] ?? 3) - ({ block: 0, late: 1, risk: 2 }[b.level] ?? 3));
-    const upcoming = act.filter(p => p.plan).sort((a, b) => a.plan.localeCompare(b.plan)).slice(0, 5)
+    }));
+    // "Next" means from the cut onwards; overdue dates are already in decisions.
+    const cutDay = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Lima' }).format(new Date(D.extracted_at_utc));
+    const upcoming = act.filter(p => p.plan && p.plan >= cutDay).sort((a, b) => a.plan.localeCompare(b.plan)).slice(0, 5)
       .map(p => ({ projectId: p.id, project: p.name, pm: p.pmFirst, pmColor: p.pmColor, date: p.plan, dateLabel: p.planLabel, dateSpoken: dSpoken(p.plan) }));
     const milestones = (call('weeklyMilestones', D.items) || []).map(m => ({ projectId: String(m.project.id), project: m.project.name, text: call('shortAnswer', m.text, 180) || m.text, date: m.date, dateLabel: dLabel(m.date), author: m.author, pm: firstPm(val(m.project, C.pm)) }));
     const closedThisWeek = projects.filter(p => p.closedAt && new Date(p.closedAt + 'T12:00:00-05:00') >= weekStart && new Date(p.closedAt + 'T12:00:00-05:00') <= now);
