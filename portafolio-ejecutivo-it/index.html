@@ -589,7 +589,7 @@
     /* Missing values read as a grey dash; the audit badge remains the single warning. */
     .no-data{color:#9aa7b1;font-weight:600;cursor:help}
     /* One text color for PM names; pmColor stays for avatars and islands. */
-    .pm-name{color:var(--navy3);font-weight:700}
+    .pm-name{color:var(--navy3);font-weight:700}.pm-inactive{color:#6b777d;font-style:italic;font-weight:650}
     /* Mobile cards: values inside a box keep the value style, not the grey uppercase label style. */
     .datebox strong span{display:inline;font-size:inherit;text-transform:none;font-weight:inherit;color:inherit}
     .datebox .pm-name{color:var(--navy3)}
@@ -742,7 +742,10 @@
   let pmoUnlocked=false;
    let state={view:'resumen',initiativeScope:'all',search:'',status:'',priority:'',pm:'',phase:'',schedule:'',issue:'',portfolioScope:'active',auditFilter:'',riskType:'',mitigationOwner:'',riskOrigin:'',financeCurrency:'',execPreset:'',myPm:'',regSearch:'',regPm:'',regCategory:'',regGroup:'pm'};
   const esc=x=>String(x??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  const val=(i,id)=>{const x=i?.column_values?.[id];if(x&&typeof x==='object'&&Array.isArray(x.personsAndTeams)&&!x.personsAndTeams.length)return null;return x===null||x===undefined||String(x).trim()===''?null:String(x).trim()};
+  // monday renames a removed user to "Miembro eliminado" and drops the name: as PM it reads "PM no vigente".
+  // The no-break space keeps the label whole on the chart, which prints only the first two words of an island.
+  const INACTIVE_PM='PM no vigente';
+  const val=(i,id)=>{const x=i?.column_values?.[id];if(x&&typeof x==='object'&&Array.isArray(x.personsAndTeams)&&!x.personsAndTeams.length)return null;const v=x===null||x===undefined||String(x).trim()===''?null:String(x).trim();return v&&id===C.pm?v.replace(/miembro eliminado/gi,INACTIVE_PM):v};
   const num=(i,id)=>{const x=val(i,id);if(x===null)return null;const n=Number(x);return Number.isFinite(n)?n:null};
   // Percentages are reported by the PM for the cut; never infer them from dates or phases.
   function progressInfo(i){
@@ -841,11 +844,11 @@
   const PM_COLORS={
     'Juan Pablo Arbulú':'#006476','Carlos Caycho Martinez':'#865020','Valeria Hermoza':'#7c2e66',
     'Walter Gonzales':'#364ca0','Alonso Pena':'#a44737','Milagros Cheel':'#635087',
-    'Pierre Lozano':'#2e6b49','Miembro eliminado':'#536577'
+    'Pierre Lozano':'#2e6b49','Miembro eliminado':'#536577',[INACTIVE_PM]:'#8a969c'
   };
   const PM_FALLBACK=['#006476','#7c2e66','#865020','#364ca0','#a44737','#635087','#2e6b49'];
   function pmColor(name){if(PM_COLORS[name])return PM_COLORS[name];let hash=0;for(const char of name)hash=(hash*31+char.codePointAt(0))>>>0;return PM_FALLBACK[hash%PM_FALLBACK.length]}
-  function pmMarkup(value){if(!value)return'<span class="pm-unknown">PM sin dato</span>';return String(value).split(/\s*,\s*/).map(name=>'<span class="pm-name" style="--pm-color:'+pmColor(name)+'">'+esc(name)+'</span>').join(', ')}
+  function pmMarkup(value){if(!value)return'<span class="pm-unknown">PM sin dato</span>';return String(value).split(/\s*,\s*/).map(name=>name===INACTIVE_PM?'<span class="pm-name pm-inactive" style="--pm-color:'+pmColor(name)+'" title="Usuario dado de baja en monday">'+esc(name)+'</span>':'<span class="pm-name" style="--pm-color:'+pmColor(name)+'">'+esc(name)+'</span>').join(', ')}
   function colorPmText(element){const names=Object.keys(PM_COLORS).sort((a,b)=>b.length-a.length);const escaped=names.map(name=>name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));const re=new RegExp(escaped.join('|'),'gi');const source=element.textContent,fragment=document.createDocumentFragment();let start=0;for(const match of source.matchAll(re)){fragment.append(document.createTextNode(source.slice(start,match.index)));const name=names.find(value=>value.toLowerCase()===match[0].toLowerCase())||match[0],span=document.createElement('span');span.className='pm-name';span.style.setProperty('--pm-color',pmColor(name));span.textContent=match[0];fragment.append(span);start=match.index+match[0].length}fragment.append(document.createTextNode(source.slice(start)));element.replaceChildren(fragment)}
   const projectButton=i=>'<button class="project-link" onclick="openProject(\''+i.id+'\')">'+esc(i.name)+'</button>';
   // The portfolio class switch sits next to each title; the weekly PPT does not depend on it.
@@ -1014,7 +1017,7 @@
       line('Importes incompletos',incomplete)+line('Sin importes',noAmounts);
   }
 
-  function personIsInactive(value){return !!value&&(/miembro eliminado/i.test(value)||(D.people_directory||[]).some(person=>person.is_deleted&&normalizeQuery(person.name)===normalizeQuery(value)))}
+  function personIsInactive(value){return !!value&&(/miembro eliminado|pm no\svigente/i.test(value)||(D.people_directory||[]).some(person=>person.is_deleted&&normalizeQuery(person.name)===normalizeQuery(value)))}
   function dateKey(value){if(!value||!/^\d{4}-\d{2}-\d{2}$/.test(value))return null;const date=new Date(value+'T12:00:00Z');return Number.isFinite(date.getTime())&&date.toISOString().slice(0,10)===value?value:null}
   function formulaMissingColumns(id){const column=D.board.columns.find(c=>c.id===id),formula=column?.settings?.formula;if(!formula)return [];const known=new Set(D.board.columns.flatMap(c=>[c.id,c.title]));return [...new Set(Array.from(formula.matchAll(/\{([^}]+)\}/g),match=>match[1]).filter(ref=>!known.has(ref)))]}
   function boardAuditIssues(){return hasColumn(C.milestonesRate)&&formulaMissingColumns(C.milestonesRate).length?[{label:'Hitos en fecha: no calculable',detail:'La fórmula de Monday referencia columnas que ya no están disponibles. Falta restablecer la configuración del indicador.'}]:[]}
@@ -1217,8 +1220,8 @@
   <script src="assets/js/portal-related-sites.js?v=20261029" defer></script>
   <script src="assets/js/pmo-data.js?v=muelle-20261103" defer></script>
   <script src="assets/js/pmo-puerto.js?v=entregados-20261103" defer></script>
-  <script src="assets/js/pmo-av.js?v=entregados-20261103" defer></script>
-  <script src="assets/js/pmo-art.js?v=entregados-20261103" defer></script>
+  <script src="assets/js/pmo-av.js?v=pm-no-vigente-20261103" defer></script>
+  <script src="assets/js/pmo-art.js?v=pm-no-vigente-20261103" defer></script>
   <script src="assets/js/pmo-icons.js?v=escenas-20260930" defer></script>
 </body>
 </html>

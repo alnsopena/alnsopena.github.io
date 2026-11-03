@@ -358,7 +358,8 @@ body.committee-mode .pav-card,body.committee-mode .pav-muelle-slot{display:none}
     return function (box) {
       base.call(this, box);
       const select = box.querySelector('select'), seen = new Set(); if (!select) return;
-      const people = this.people.filter(p => !seen.has(p.key) && seen.add(p.key)).sort((a, b) => a.name.localeCompare(b.name, 'es'));
+      // Nobody "is" a removed monday user: that PM stays off the list.
+      const people = this.people.filter(p => !/^(pm.no.vigente|miembro.eliminado)$/.test(p.key) && !seen.has(p.key) && seen.add(p.key)).sort((a, b) => a.name.localeCompare(b.name, 'es'));
       select.innerHTML = '<option value="">Soy…</option>' + people.map(p => '<option value="' + esc(p.key) + '">' + esc(p.name) + '</option>').join('');
     };
   }
