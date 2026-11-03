@@ -142,10 +142,13 @@ test('origin cards, URL, storage, reset, preventive filters, detail delay tones 
   const projects = [fixture('a', {}, 'Proveedor'), fixture('b', {}, 'Proveedor'), fixture('c', { [c.plan]: '2026-10-22' }, 'Sponsor / Gerencia'), fixture('d'), fixture('soon', { [c.risk]: 'Sin bloqueo', [c.plan]: '2026-10-29', [c.phase]: 'Ejecución' }, 'Equipo TI')];
   const data = p.getSnapshot(); p.setSnapshot({ ...data, items: projects, extracted_at_utc: cut, updates: [] });
   assert.equal(api.riskAttentionItems().length, 4);
+  assert.match(api.renderAtencion(), /Riesgos · 4/);
   const markup = api.renderRiskDiagnostics(api.riskAttentionItems());
   assert.equal((markup.match(/class="risk-origin(?: unclassified)?"/g) || []).length, 5);
   assert.match(markup, /--share:50%/);
   assert.match(markup, /Próximos 5 días hábiles/);
+  const mostly = api.renderRiskDiagnostics([projects[0], projects[3], fixture('e'), fixture('f')]);
+  assert.equal((mostly.match(/class="risk-origin(?: unclassified)?"/g) || []).length, 2, 'hide empty origins while most are unclassified');
   assert.match(api.riskDelayBadge(projects[0]), /red/);
   assert.match(api.riskDelayBadge(projects[2]), /amber/);
   assert.equal(api.riskDelayBadge(fixture('no-date', { [c.plan]: null })), '');
