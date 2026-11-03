@@ -37,5 +37,25 @@
     return fields.map(([label, key]) => label + ': ' + money(financials[key], financials, format))
       .concat([financials.currency ? 'Moneda: ' + financials.currency : 'Moneda por confirmar', financials.taxBasis || 'IGV por confirmar']);
   }
-  return { project, money, lines };
+  // CAPEX original plus annual OPEX, the only two amounts every project can compare on the same scale.
+  function investmentAmount(financials) {
+    const parts = [financials.capex, financials.opexAnnual].filter(value => value !== null && value > 0);
+    return parts.length ? cents(parts.reduce((sum, value) => sum + value, 0)) : 0;
+  }
+  // Only USD is added up: currencies are never converted and an unconfirmed one is never assumed.
+  function investment(items, C, helpers = {}) {
+    const rows = [], excluded = { PEN: 0, unconfirmed: 0 };
+    let noData = 0;
+    items.forEach(item => {
+      const financials = project(item, C, helpers), amount = investmentAmount(financials);
+      if (!amount) noData++;
+      else if (financials.currency === 'USD') rows.push({ id: String(item.id), name: item.name, amount });
+      else if (financials.currency === 'PEN') excluded.PEN++;
+      else excluded.unconfirmed++;
+    });
+    rows.sort((a, b) => b.amount - a.amount || a.name.localeCompare(b.name, 'es'));
+    const total = cents(rows.reduce((sum, row) => sum + row.amount, 0));
+    return { rows, total, leader: rows[0] || null, share: rows.length && total ? rows[0].amount / total * 100 : null, excluded, noData };
+  }
+  return { project, money, lines, investmentAmount, investment };
 });

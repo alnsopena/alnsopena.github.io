@@ -84,7 +84,7 @@ function portal() {
   let data = JSON.parse(snapshot[1]);
   if (process.env.RISK_TEST_SNAPSHOT_PATH) data = JSON.parse(fs.readFileSync(process.env.RISK_TEST_SNAPSHOT_PATH, 'utf8'));
   const context = {
-    PMORiskDiagnostics: model, PMOFinance: { project() { return { invalidFields: [] }; } },
+    PMORiskDiagnostics: model, PMOFinance: { project() { return { invalidFields: [] }; }, investmentAmount() { return 0; }, investment() { return { rows: [], excluded: {}, noData: 0 }; } },
     document: { getElementById: id => id === 'snapshot' ? { textContent: JSON.stringify(data) } : element(id), querySelector: () => element('scope') },
     localStorage: { getItem: k => storage.get(k) ?? null, setItem: (k, v) => storage.set(k, v) },
     location: { search: '', pathname: '/portafolio-ejecutivo-it/', hash: '' }, history: { replaceState(_s, _t, url) { context.lastUrl = url; } },

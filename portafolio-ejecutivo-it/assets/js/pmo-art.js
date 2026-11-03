@@ -149,7 +149,7 @@
       pills: f.fields.map(x => ({ text: x.label + ': ' + x.count, tone: x.count ? 'blue' : 'amber' })),
       cta: f.fields.some(x => x.count < f.total) && d.boardUrl ? { label: 'Completar datos en monday', href: d.boardUrl } : null,
       key: [{ svg: I.coins('#E3BE62', '#9C7A2E'), text: 'Nivel del frasco: proyectos con dato' }, { svg: I.crane, text: 'Grúa: el registro sigue avanzando' }],
-      note: 'La moneda no está definida en monday; por eso no se suman importes.'
+      note: 'Las monedas no se convierten: solo se suman importes en USD confirmados.'
     };
   }
 

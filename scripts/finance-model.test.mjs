@@ -71,3 +71,15 @@ test('Totals use cents and ignore obsolete manually reported deviations', () => 
   assert.equal(f.excess, .1);
   assert.equal(f.legacyDeviation, 999);
 });
+
+// Investment scale: USD only, never converted, and every left-out project is counted.
+{
+  const model = vm.runInNewContext('var module={exports:{}};'+fs.readFileSync(new URL('../portafolio-ejecutivo-it/assets/js/finance-model.js', import.meta.url),'utf8')+';module.exports');
+  const Cols = { capex: 'c', capexExecuted: 'e', capexCommitted: 'p', opexAnnual: 'o', currency: 'm', taxBasis: 't', legacyBudgetDeviation: 'l' };
+  const row = (id, c, o, m) => ({ id, name: id, column_values: { c, o, m } });
+  const inv = model.investment([row('small', 100, 0, 'USD'), row('big', 700, 200, 'USD'), row('soles', 500, 0, 'PEN'), row('unknown', 900, 0, 'Por confirmar'), row('empty', null, null, 'USD'), row('zero', 0, 0, 'USD')], Cols);
+  assert.deepEqual(Array.from(inv.rows, r => [r.id, r.amount]), [['big', 900], ['small', 100]]);
+  assert.equal(inv.total, 1000); assert.equal(inv.leader.id, 'big'); assert.equal(inv.share, 90);
+  assert.equal(inv.excluded.PEN, 1); assert.equal(inv.excluded.unconfirmed, 1); assert.equal(inv.noData, 2);
+  assert.equal(model.investment([], Cols).leader, null); assert.equal(model.investment([], Cols).share, null);
+}
