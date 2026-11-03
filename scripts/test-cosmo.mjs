@@ -383,7 +383,7 @@ assert.match(h.portfolioScopeBar(),/aria-pressed="true"[^>]*>Cerrados/);
 vm.runInNewContext('state.search="Proyecto C";state.pm="Alonso Pena"',context);
 h.setPortfolioScope('active');assert.equal(portfolioIds().length,0,'Search and PM are preserved');
 h.clearFilters();assert.equal(portfolioIds().length,3);
-h.setPortfolioScope('active');h.goFiltered('portafolio',{status:'Cerrado'});
+h.setPortfolioScope('active');h.goFiltered('portafolio',{portfolioScope:'closed'});
 assert.deepEqual(portfolioIds(),['closed'],'Navigation from a closed-project KPI resets the active scope');
 // Audit checks diagnose source data without changing project status, dates or owners.
 context.qualityCut=structuredClone(riskLatest);
@@ -417,7 +417,7 @@ assert.equal(qualitySummary.find(x=>x.label==='Fechas').count,2,'Count projects,
 assert.match(h.projectAuditMarkup(context.qualityCut.items[2]),/Inicio posterior a Fin Plan/);
 assert.equal(JSON.stringify(context.qualityCut),beforeQuality,'Audit rendering cannot alter source data');
 h.clearFilters();assert.equal(portfolioIds().length,5);
-h.setAuditFilter('Riesgos');h.goFiltered('portafolio',{status:'Cerrado'});
+h.setAuditFilter('Riesgos');h.goFiltered('portafolio',{portfolioScope:'closed'});
 assert.equal(vm.runInNewContext('state.auditFilter',context),'','KPI navigation resets the quality filter');
 // Missing formula references are a board configuration issue, not thirty duplicated item issues.
 context.milestoneCut=structuredClone(context.qualityCut);

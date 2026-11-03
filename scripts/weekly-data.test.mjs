@@ -100,3 +100,13 @@ test('corte privado conserva el mismo ID de extracción para PPT y snapshot', ()
   assert.equal(cut.projects[0].updates[1].id, 'u2');
   assert.equal(cut.activity.coverage.complete, true);
 });
+
+test('deriva el estatus desde Fase Actual sin ocultar proyectos', async () => {
+  const { statusFromPhase, withDerivedStatus } = await import('./status-from-phase.mjs');
+  const expected = { Propuesta: 'Propuesto', 'Evaluación': 'Propuesto', 'Planificación': 'Planificado', 'Ejecución': 'En Proceso', 'Pruebas UAT': 'En Proceso', Despliegue: 'En Proceso', 'Estabilización': 'En Proceso', 'Stand by': 'Stand by', Cierre: 'Cerrado' };
+  for (const [phase, status] of Object.entries(expected)) assert.equal(statusFromPhase(phase), status);
+  const source = { id: '1', column_values: { status: 'Planificado', color_mm6kg2n5: 'Propuesta' } };
+  assert.equal(withDerivedStatus(source).column_values.status, 'Propuesto');
+  assert.equal(source.column_values.status, 'Planificado', 'no altera el ítem original');
+  for (const phase of [null, '', 'Fase nueva']) assert.equal(withDerivedStatus({ column_values: { status: 'En Proceso', color_mm6kg2n5: phase } }).column_values.status, 'En Proceso');
+});

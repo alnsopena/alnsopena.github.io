@@ -5,6 +5,7 @@ import { buildWeeklyCut, businessWeek, getActivityPages } from './weekly-data.mj
 import { getAllUpdates, fetchWithRetry, decodeMcpToolResult } from './monday-api-read.mjs';
 import { updatesDigest } from './verify-portfolio-published.mjs';
 import { withRiskOrigin } from './risk-origin.mjs';
+import { withDerivedStatus } from './status-from-phase.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUTPUT = path.join(ROOT, '_site');
@@ -130,7 +131,7 @@ async function fetchSnapshot(token, previous) {
   const subitemBoardResult = await client.callTool('get_board_info', { boardId: SUBITEM_BOARD_ID });
   const board = boardResult.board ?? boardResult;
   const subitemBoard = subitemBoardResult.board ?? subitemBoardResult;
-  const items = (await getAllItems(client)).map(withRiskOrigin);
+  const items = (await getAllItems(client)).map(withRiskOrigin).map(withDerivedStatus);
   if (!items.length) throw new Error('La lectura completa devolvió cero proyectos');
 
   const mainUpdates = await getAllUpdates(client, BOARD_ID);

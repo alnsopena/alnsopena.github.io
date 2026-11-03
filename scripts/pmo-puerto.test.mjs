@@ -59,11 +59,23 @@ const dock = {
   draw() { paintItems = this.items; },
   _legend() { this.leg = { children: ['Planificado', 'Propuesto', 'Riesgo', 'Atraso', 'Neblina'].map(label => ({ remove() { remainingLegend.push(label); } })) }; }
 };
-puerto.uniformDock(dock); dock.draw(); dock._legend();
+puerto.priorityDock(dock); dock.draw(); dock._legend();
 assert.deepEqual(Array.from(paintItems, item => item.status), ['En Proceso', 'En Proceso']);
 assert.deepEqual(Array.from(paintItems, item => [item.phase, item.risk, item.noFinPlan]), activeItems.map(item => [item.phase, item.risk, item.noFinPlan]));
 assert.equal(dock.items, activeItems); assert.equal(JSON.stringify(activeItems), sourceItems);
 assert.deepEqual(remainingLegend, ['Planificado', 'Propuesto'], 'remove only status colors; retain risk, delay and fog legends');
+
+const ranked = [{ id: 'a', status: 'En Proceso', priority: 'Critical ⚠️️' }, { id: 'b', status: 'Stand by', priority: 'High' }, { id: 'c', status: 'En Proceso', priority: 'Medium' }, { id: 'd', status: 'En Proceso', priority: 'Low' }, { id: 'e', status: 'En Proceso', priority: '' }];
+let rankedPaint, legendHtml = '';
+const rankedDock = {
+  items: ranked,
+  draw() { rankedPaint = this.items; },
+  _legend() { this.leg = { children: [{ remove() {} }, { remove() {} }], insertAdjacentHTML(position, html) { legendHtml = html; } }; }
+};
+puerto.priorityDock(rankedDock); rankedDock.draw(); rankedDock._legend();
+assert.deepEqual(Array.from(rankedPaint, item => item.status), ['Critical', 'High', 'Medium', 'Low', 'En Proceso'], 'paint each container by its monday priority');
+assert.equal(ranked[1].status, 'Stand by', 'never alter real status values');
+assert.deepEqual(legendHtml.match(/(Critical|High|Medium|Low)/g), ['Critical', 'High', 'Medium', 'Low'], 'legend lists priorities in board order');
 
 let intersection, paints = 0, disconnected = false;
 const listeners = new Map(), media = { matches: false, addEventListener() {}, removeEventListener() {} };

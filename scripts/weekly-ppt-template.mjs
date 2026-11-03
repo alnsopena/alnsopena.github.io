@@ -174,8 +174,9 @@ export function annexSlide(xml, cutInfo, model) {
 }
 export function guideSlide(xml, cutInfo) {
   xml = cut(xml, cutInfo); xml = text(xml, 4, 'Guía de llenado de la ficha'); xml = text(xml, 5, 'Mismo formato, datos de monday y un único corte');
-  xml = text(xml, 7, 'Estado de monday'); xml = text(xml, 20, 'Fases de monday'); xml = text(xml, 33, 'Reglas'); xml = text(xml, 36, 'Antes de enviar, revisa');
-  const states = [['En Proceso', 'Estatus registrado'], ['Planificado', 'Estatus registrado'], ['Stand by', 'Estatus registrado'], ['Propuesto', 'Estatus registrado'], ['To Be Process', 'Estatus registrado'], ['Cerrado', 'Estatus registrado']];
+  xml = text(xml, 7, 'Estado según la fase'); xml = text(xml, 20, 'Fases de monday'); xml = text(xml, 33, 'Reglas'); xml = text(xml, 36, 'Antes de enviar, revisa');
+  const states = [['Propuesto', 'Propuesta y Evaluación'], ['Planificado', 'Planificación'], ['En Proceso', 'Ejecución a Estabilización'], ['Stand by', 'Stand by'], ['Cerrado', 'Cierre']];
+  xml = drop(xml, [18, 19]);
   states.forEach((s, i) => { xml = text(xml, 9 + i * 2, s); xml = fill(xml, 8 + i * 2, C.ink); });
   const phases = ['Propuesta', 'Evaluación', 'Planificación', 'Ejecución', 'Pruebas UAT', 'Despliegue', 'Estabilización', 'Cierre'];
   const circle = [...xml.matchAll(shapes)].map(m => m[0]).find(s => shapeId(s) === '21');
@@ -189,7 +190,7 @@ export function guideSlide(xml, cutInfo) {
   });
   xml = text(xml, 34, [
     'Una ficha por proyecto seleccionado y máximo un anexo.', 'Fin Plan es el Go-Live. Fin Real es el cierre efectivo.',
-    'Estatus, riesgo y ocho fases conservan los valores de monday.', 'Ejecutado es CAPEX pagado. OPEX anual va separado.',
+    'Fase y riesgo conservan los valores de monday.', 'Ejecutado es CAPEX pagado. OPEX anual va separado.',
     'Moneda del proyecto: USD o PEN, sin conversiones.', 'Sin dato: Por definir. Nunca asumir cero ni ausencia de riesgo.',
     'Hitos y acciones se mantienen en subelementos.', 'Cronograma base se conserva. Previsto y real son distintos.',
     'Situación: última bitácora al corte. Texto íntegro en notas.'
