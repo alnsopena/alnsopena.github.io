@@ -106,7 +106,7 @@
     const by = s => ps.filter(p => String(p.status).toLowerCase() === s).length, closed = by('cerrado'), proc = by('en proceso'), plan = by('planificado'), prop = by('propuesto'), other = ps.length - closed - proc - plan - prop;
     const act = ps.filter(p => p.active), noPhase = act.filter(p => !p.phase || p.phase === 'Sin fase').length, pm = countBy(act, p => p.pmFirst || 'Sin PM');
     const crit = act.filter(p => /critical/i.test(p.priority || '')).length, flag = act.filter(p => p.risk).length;
-    const parts = [closed && plural(closed, 'entregado', 'entregados'), proc && proc + ' en curso', plan && plan + ' por arrancar', prop && plural(prop, 'propuesto', 'propuestos'), other && other + ' en Stand by'].filter(Boolean);
+    const parts = [closed && plural(closed, 'cerrado', 'cerrados'), proc && proc + ' en curso', plan && plan + ' por arrancar', prop && plural(prop, 'propuesto', 'propuestos'), other && other + ' en Stand by'].filter(Boolean);
     return {
       title: 'La carta náutica',
       sub: '',
@@ -279,7 +279,7 @@
     if (view === 'muelle') return mountMuelle(main);
     if (!['atencion', 'portafolio', 'cronograma', 'finanzas'].includes(view)) return;
     const items = viewItems(view), pl = place(main, view); if (!pl) return;
-    const st = g('state') || {}, filteredView = ['search', 'status', 'priority', 'pm', 'phase', 'schedule', 'issue', 'riskType', 'mitigationOwner', 'riskOrigin', 'auditFilter'].some(k => st[k]) || ['projects','quick-wins'].includes(st.initiativeScope) || (view === 'portafolio' && ['active','closed'].includes(st.portfolioScope));
+    const st = g('state') || {}, filteredView = ['search', 'status', 'priority', 'pm', 'phase', 'schedule', 'issue', 'riskType', 'mitigationOwner', 'riskOrigin', 'auditFilter'].some(k => st[k]) || ['projects','quick-wins'].includes(st.initiativeScope) || (view === 'portafolio' && ['all','closed'].includes(st.portfolioScope));
     const o = { cardClass: cfg.cardClass, onSelect: open };
     const mark = h => { if (filteredView && view !== 'atencion') { h.pills = [{ text: 'Vista filtrada' }].concat(h.pills || []); if (h.empty && !items.length) h.msg = h.empty; } const t = toggleBtn(view, pl.charts); if (t) h.actions = [t]; return h; };
     let h;

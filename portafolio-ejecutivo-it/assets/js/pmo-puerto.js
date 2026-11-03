@@ -39,6 +39,8 @@
       this.leg.querySelectorAll?.('span').forEach(entry => {
         const swatch = entry.querySelector('i');
         if (swatch && FLAG_LEGEND.test(entry.textContent)) swatch.outerHTML = flagIcon(swatch.style.background);
+        // A container shows one flag; a late project that is also at risk carries the risk flag.
+        if (/^Plazo vencido/.test(entry.textContent) && entry.lastChild) entry.lastChild.textContent = entry.lastChild.textContent.replace('Plazo vencido', 'Solo plazo vencido');
       });
     };
   }

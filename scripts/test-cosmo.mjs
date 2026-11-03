@@ -276,7 +276,7 @@ assert.ok(element('main').innerHTML.includes('Decisión renovada para comité'))
 h.go('portafolio');
 assert.ok(element('port-body').innerHTML.includes('97%'));
 assert.match(element('port-body').innerHTML,/−3 p.p./);
-h.go('cronograma');
+vm.runInNewContext('state.cronoAll=true',context);h.go('cronograma');
 assert.match(element('main').innerHTML,/−3 p.p./);
 assert.ok(element('main').innerHTML.includes(h.fmtDate('2099-12-31')));
 h.go('ppt');
@@ -382,7 +382,7 @@ h.setPortfolioScope('closed');assert.deepEqual(portfolioIds(),['closed']);
 assert.match(h.portfolioScopeBar(),/aria-pressed="true"[^>]*>Cerrados/);
 vm.runInNewContext('state.search="Proyecto C";state.pm="Alonso Pena"',context);
 h.setPortfolioScope('active');assert.equal(portfolioIds().length,0,'Search and PM are preserved');
-h.clearFilters();assert.equal(portfolioIds().length,3);
+h.clearFilters();assert.deepEqual(portfolioIds(),['active','planned'],'Clearing filters returns to the active default');
 h.setPortfolioScope('active');h.goFiltered('portafolio',{portfolioScope:'closed'});
 assert.deepEqual(portfolioIds(),['closed'],'Navigation from a closed-project KPI resets the active scope');
 // Audit checks diagnose source data without changing project status, dates or owners.
@@ -473,11 +473,12 @@ assert.doesNotMatch(h.renderFinanzas(),/99,999/,'Original QW amounts must not en
 assert.equal(context.cosmoGuide.options({type:'project-groups'}).reduce((sum,x)=>sum+Number(x.label.match(/\d+$/)?.[0]||0),0),1);
 h.setPortfolioScope('closed');assert.equal(portfolioIds().length,0);
 h.setInitiativeScope('projects');
+assert.deepEqual(portfolioIds(),['legacy-project'],'Changing the class returns to the active default');h.setPortfolioScope('all');
 assert.deepEqual(portfolioIds(),['legacy-project','new-project']);
 assert.equal(context.window.PMOData.build().milestones.length,0,'QW activity must not leak into project-only summaries');
 assert.equal(context.window.PMOData.build().totals.total,2);
 assert.equal(context.cosmoGuide.options({type:'project-groups'}).reduce((sum,x)=>sum+Number(x.label.match(/\d+$/)?.[0]||0),0),2);
-h.setInitiativeScope('all');assert.equal(portfolioIds().length,3);
+h.setInitiativeScope('all');h.setPortfolioScope('all');assert.equal(portfolioIds().length,3);
 assert.equal(JSON.stringify(context.initiativeCut),initiativeBefore);
 if(process.env.PMO_AUDIT_FIXTURE){
  context.migratedCut={...D,...JSON.parse(fs.readFileSync(process.env.PMO_AUDIT_FIXTURE,'utf8').replace(/^\uFEFF/,''))};
