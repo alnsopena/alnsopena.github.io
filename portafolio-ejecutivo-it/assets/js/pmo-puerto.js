@@ -263,20 +263,24 @@
       const width = .085 * size, height = .052 * size;
       ctx.save(); ctx.translate(x, baseline); ctx.rotate(rot);
       // One container per bay, centered; long ones are stowed in the lower tiers.
-      const bays = slots(visible.length), bayOf = new Map(stowOrder(visible).map((p, index) => [p.id, index])), unit = width / 6;
+      const bays = slots(visible.length), bayOf = new Map(stowOrder(visible).map((p, index) => [p.id, index])), unit = width / 6, tops = [];
       visible.forEach((project, index) => {
         const { col, row } = bays[bayOf.get(project.id)], short = isShort(project), left = -.3 * size + col * .091 * size, top = -.088 * size - (row + 1) * height;
         const cx = left + width / 2, cy = top + height / 2, boxW = short ? 2 * SHORT_HALF * unit : width, button = buttons[index];
         // Every delivery in the same closed-green: the kind is told by length alone.
         (short ? shortBox : draw.box)(pen, cx, top + height, unit, { col: pal.ok, eyes: 'arc', noShadow: true });
+        if (row === Math.floor((visible.length - 1 - col) / 6)) tops.push({ x: cx, y: top, u: unit });
         if (button) Object.assign(button.style, { left: (x + cx * Math.cos(rot) - cy * Math.sin(rot)) + 'px', top: (baseline + cx * Math.sin(rot) + cy * Math.cos(rot)) + 'px', width: boxW + 'px', height: height + 'px', transform: 'translate(-50%,-50%) rotate(' + rot + 'rad)' });
       });
+      const pole = Math.min(.40 * size, this.w - x - 14);
+      // Seasonal dressing (pmo-fiestas.js) goes over the cargo and under the banner.
+      this.onShip?.(pen, { size, pole, tops });
       // Banner: the year's total and, below it, the split by kind when both are on board.
       const title = list.length + ' entregados ' + this.d.totals.year, sub = mixLabel(list);
       ctx.font = '600 11px Figtree, "Segoe UI", sans-serif';
       const subW = sub ? ctx.measureText(sub).width : 0;
       ctx.font = '800 13px Figtree, "Segoe UI", sans-serif';
-      const bannerH = sub ? 40 : 26, bannerW = Math.max(ctx.measureText(title).width, subW) + 24, bannerX = Math.min(.40 * size, this.w - x - 14), bannerY = -.44 * size;
+      const bannerH = sub ? 40 : 26, bannerW = Math.max(ctx.measureText(title).width, subW) + 24, bannerX = pole, bannerY = -.44 * size;
       pen.line([[bannerX, -.09 * size], [bannerX, bannerY - 6]], { unit: 1.4, sw: 1, curv: 0 });
       pen.shape([[bannerX, bannerY], [bannerX - bannerW, bannerY], [bannerX - bannerW + 7, bannerY + bannerH / 2], [bannerX - bannerW, bannerY + bannerH], [bannerX, bannerY + bannerH]], { unit: 1.2, fill: pal.sand, pool: pal.cream, sw: .9, j: .2 });
       ctx.fillStyle = pal.navy; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(title, bannerX - bannerW + 13, bannerY + 13);
@@ -290,6 +294,7 @@
     scene.destroy = function () { foot.remove(); return original.destroy.call(this); };
     scene.setData(scene.d, true);
     ambientMotion(scene);
+    root.PMOFiestas?.decorate(scene, root.PMOFiestas.current());
     return scene;
   }
 
@@ -298,7 +303,7 @@
     style.textContent = `.pav-delivery-layer{position:absolute;inset:0;pointer-events:none}.pav-cargo-hit{position:absolute;pointer-events:auto;cursor:help;background:transparent;border:0;border-radius:2px;padding:0;z-index:2}.pav-cargo-hit:hover,.pav-cargo-hit:focus-visible,.pav-cargo-hit.is-selected{outline:3px solid #e9c46a;outline-offset:2px;background:#fff3}.pav-cargo-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}.pav-puerto .cfx-tip{z-index:4;max-width:min(290px,calc(100% - 8px));overflow-wrap:anywhere;pointer-events:none}.pav-delivery-foot{display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;margin-top:12px;color:var(--navy3,#003d53)}.pav-delivery-caption{display:grid;gap:3px;flex:1 1 300px}.pav-delivery-caption strong{font-size:15px}.pav-delivery-caption>span{font-size:12px;color:var(--muted)}.pav-delivery-pages{display:flex;align-items:center;gap:8px;font-size:12px}.pav-delivery-pages button{min-width:44px;min-height:44px;background:#f5efe4;border:1px solid #cba785;color:#003d53;font:700 18px Figtree,sans-serif}.pav-delivery-list,.pav-active-list{width:100%;font-size:13px}.pav-active-list summary{cursor:pointer;padding:10px 0 0;font-weight:700;text-decoration:underline;text-underline-offset:3px}.pav-active-list>div{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr));gap:14px;padding:10px 0 4px}.pav-active-list h3{margin:0 0 6px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#6d604b}.pav-active-list section{display:grid;align-content:start;gap:6px}.pav-active-list button{display:grid;gap:2px;min-height:44px;text-align:left;padding:8px 10px;border:1px solid var(--line,#d6dfe3);border-radius:8px;background:#fff;color:#003d53;font:13px Figtree,sans-serif;cursor:pointer;overflow-wrap:anywhere}.pav-active-list button:hover{border-color:#003d53}.pav-active-list strong{display:flex;gap:7px;align-items:baseline}.pav-active-list strong i{flex:none;width:9px;height:9px;border-radius:2px}.pav-active-list button>span{font-size:11px;color:var(--muted);padding-left:16px}.pav-active-list summary:focus-visible,.pav-active-list button:focus-visible{outline:3px solid #cba785;outline-offset:3px}.pav-delivery-list summary{cursor:pointer;padding:10px 0;font-weight:700;text-decoration:underline;text-underline-offset:3px}.pav-delivery-list>div{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:8px;padding:8px 0}.pav-delivery-list button{display:grid;gap:4px;min-height:72px;text-align:left;padding:12px;border:1px solid var(--line,#d6dfe3);background:#fbfaf6;color:#003d53;font:13px Figtree,sans-serif;cursor:pointer;overflow-wrap:anywhere}.pav-delivery-kind{font-size:10px;text-transform:uppercase;letter-spacing:.06em;font-weight:800;color:#6d604b}.pav-delivery-list button>span:last-child{font-size:11px;color:var(--muted)}.pav-delivery-foot button:focus-visible,.pav-delivery-list summary:focus-visible{outline:3px solid #cba785;outline-offset:3px}@media(max-width:599px){.pav-delivery-caption>span{line-height:1.5}.pav-delivery-list summary{min-height:44px;display:list-item;align-content:center}}`;
     document.head.appendChild(style);
   }
-  const api = { enhance, closed, portData, activeByPhase, slots, stowOrder, stowDock, mixLabel, countLabel, isShort, shortBox, containerIcon, label, priorityOf, priorityLabel, priorityScale, priorityColor, flagIcon, faceFlags, priorityDock, ambientMotion, pageSize: PAGE };
+  const api = { enhance, rr, ell, closed, portData, activeByPhase, slots, stowOrder, stowDock, mixLabel, countLabel, isShort, shortBox, containerIcon, label, priorityOf, priorityLabel, priorityScale, priorityColor, flagIcon, faceFlags, priorityDock, ambientMotion, pageSize: PAGE };
   root.PMOPuerto = api;
   if (typeof module === 'object' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);
