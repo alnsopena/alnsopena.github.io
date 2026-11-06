@@ -4440,7 +4440,7 @@ function canAdjust(){ return canChangeStatus() && state.status!=='Aprobada' && s
 function adjOrigSnap(s){
   const f = getFormula(s), r = baseEval(s, f);
   return {formula:clone(f), plain:formulaPlain(f), text:formulaText(s), rate:s.rate, qty:s.qty, min:Number(s.min)||0,
-          value: !missingDim(s,f) && r.ok ? r.value : null};
+          value: !missingDim(s,f) && r.ok ? r.value : null, raw: !missingDim(s,f) && r.ok ? (r.minApplied ? r.raw : r.value) : null};
 }
 /* La línea como estaba antes del Monto fijo */
 function adjOriginal(x){ const o = x.adj.orig; return {...x, adj:null, frozenF:o.formula, rate:o.rate, qty:o.qty, min:o.min}; }
@@ -4449,8 +4449,8 @@ function openAdj(id){
   adjId = id;
   const a = s.adj || {}, ro = !canAdjust(), o = isFixed(s) ? a.orig : adjOrigSnap(s), g = k=>document.getElementById(k);
   g('adjSvc').textContent = s.name;
-  g('adjCalc').innerHTML = `Por fórmula: <b>${esc(o.plain)}</b> = <b>${o.value==null ? 'Por confirmar' : fmtCur(o.value, s.currency)}</b> sin IGV`
-    + (o.min ? ` · Mínimo ${fmtCur(o.min, s.currency)}` : '');
+  g('adjCalc').innerHTML = `Por fórmula: <b>${esc(o.plain)}</b> = <b>${o.raw==null ? 'Por confirmar' : fmtCur(o.raw, s.currency)}</b> sin IGV`
+    + (o.min ? ` · Mínimo ${fmtCur(o.min, s.currency)}` : '') + (o.value!=null && o.value!==o.raw ? ` · <b>Se cobra ${fmtCur(o.value, s.currency)}</b>` : '');
   g('adjAmtLabel').textContent = `Importe sin IGV (${s.currency}) *`;
   g('adjFixed').checked = isFixed(s); g('adjHide').checked = !!a.hideFormula;
   g('adjAmt').value = isFixed(s) ? a.amount : ''; g('adjGlosa').value = a.glosa || ''; g('adjReason').value = a.reason || '';
