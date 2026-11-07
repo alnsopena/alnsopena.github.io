@@ -884,6 +884,22 @@
   .row-note:empty{display:none}
   .tag-mini.warnb{background:#fffbeb;color:#92400e;font-weight:700}
   .pd-note{font-size:8.5px;color:#7A5B3C;font-style:italic;margin-top:2px}
+  /* Ajuste de línea */
+  .btn-adj{width:28px;height:28px;border:1.5px solid #CCCFCE;border-radius:8px;background:#fff;color:var(--indigo);cursor:pointer;
+    font-size:15px;font-weight:700;line-height:1;display:inline-flex;align-items:center;justify-content:center;transition:.15s;padding:0;font-family:inherit}
+  .btn-adj:hover{border-color:var(--indigo);background:#E9F0F2}
+  .btn-adj.on{background:#8A4B08;border-color:#8A4B08;color:#fff}
+  .tag-mini.adj{background:#FDF1E3;color:#8A4B08;font-weight:700}
+  .adj-calc{background:#F4F6F6;border-radius:10px;padding:10px 14px;font-size:13px;color:#334155;margin-bottom:14px}
+  .adj-opt{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--text);cursor:pointer;margin:12px 0 8px}
+  .adj-msg{font-size:12.5px;color:#92400e;margin:4px 0 8px}
+  .adj-msg:empty{display:none}
+  .adj-by{font-size:12px;color:#5B6E78;margin-top:10px}
+  .adj-by:empty{display:none}
+  .adj-del{margin-right:auto}
+  .adj-sum{background:#FDF1E3;border-radius:10px;padding:10px 14px;font-size:13px;color:#5c3a10;margin-bottom:14px}
+  .adj-sum:empty{display:none}
+  .adj-sum ul{margin:6px 0 0 16px}
   .pd-fx{font-size:8.5px;color:#7A5B3C;margin-top:2px}
   .ct-tbl input[type=date]{padding:5px 6px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:12px}
   .ct-tbl select{padding:5px 6px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:12px;max-width:180px}
@@ -2239,6 +2255,7 @@
   <div class="modal">
     <h3 id="stTitle"></h3>
     <div class="modal-sub" id="stSub"></div>
+    <div class="adj-sum" id="stAdj"></div>
     <div class="field"><label id="stLabel"></label><textarea id="stText" rows="3"></textarea></div>
     <div class="actions">
       <button class="btn btn-ghost" onclick="closeModal('stModal')">Cancelar</button>
@@ -2263,6 +2280,28 @@
     <div class="actions">
       <button class="btn btn-ghost" onclick="closeModal('assocModal')">Cancelar</button>
       <button class="btn btn-primary" id="amOk" onclick="confirmAssocPda()" disabled>Asociar PDA</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal ajuste de línea -->
+<div class="modal-bg" id="adjModal">
+  <div class="modal">
+    <h3>Ajuste de línea</h3>
+    <div class="modal-sub" id="adjSvc"></div>
+    <div class="adj-calc" id="adjCalc"></div>
+    <label class="adj-opt"><input type="checkbox" id="adjFixed" onchange="adjSync()"> Monto fijo en esta línea</label>
+    <div class="field" id="adjAmtBox"><label id="adjAmtLabel"></label><input id="adjAmt" inputmode="decimal" oninput="adjSync()"></div>
+    <div class="adj-msg" id="adjMsg"></div>
+    <label class="adj-opt"><input type="checkbox" id="adjHide" onchange="adjSync()"> No imprimir fórmula</label>
+    <div class="field"><label>Glosa impresa *</label><input id="adjGlosa" maxlength="80" placeholder="Ej. Tarifa acordada"></div>
+    <div class="field"><label>Motivo / nota interna * <span class="hint" style="margin:0">(no sale en el PDF)</span></label>
+      <textarea id="adjReason" rows="2" placeholder="Ej. Tarifa negociada con el cliente por correo del 05/11"></textarea></div>
+    <div class="adj-by" id="adjBy"></div>
+    <div class="actions">
+      <button class="link-btn danger adj-del" id="adjDel" onclick="removeAdj()">Quitar ajuste</button>
+      <button class="btn btn-ghost" onclick="closeModal('adjModal')">Cerrar</button>
+      <button class="btn btn-primary" id="adjSave" onclick="saveAdj()">Guardar</button>
     </div>
   </div>
 </div>
@@ -2770,11 +2809,11 @@ function applyClientTariffs(lines, announce){
     const wasClient = x.rateBaseSrc==='cliente';
     x.tariffTo = null; x.tariffExpired = null; x.tariffSoon = false;
     if(t && tariffStatus(t).applies){
-      if(!x.rateLocked) x.rate = t.rate;
+      if(!x.rateLocked && !isFixed(x)) x.rate = t.rate;
       x.rateBase = t.rate; x.rateBaseSrc = 'cliente'; x.tariffTo = t.to; x.tariffSoon = tariffStatus(t).k==='porvencer'; n++;
     } else {
       // si venía de la tarifa pactada de otro cliente, vuelve a la del catálogo
-      if(wasClient && m && !x.rateLocked) x.rate = x.tplRate ?? sysRate(m);
+      if(wasClient && m && !x.rateLocked && !isFixed(x)) x.rate = x.tplRate ?? sysRate(m);
       x.rateBase = x.tplRate ?? (m ? sysRate(m) : x.rate);
       x.rateBaseSrc = x.tplRate!=null ? 'plantilla' : m ? 'catalogo' : 'manual';
       if(t) x.tariffExpired = t.to;
@@ -3026,7 +3065,7 @@ function newLine(m, extra){ const r = sysRate(m);
 function applySystemRates(what){
   let n = 0;
   state.services.forEach(x=>{
-    const m = masterCatalog().find(c=>c.id===x.id); if(!m) return;
+    const m = masterCatalog().find(c=>c.id===x.id); if(!m || isFixed(x)) return;
     if((what==='origin' && m.rateByOrigin) || (what==='port' && m.rateByPort)){
       const r = sysRate(m); if(r!==x.rate){ x.rate = r; x.rateBase = r; x.rateBaseSrc = 'catalogo'; n++; }
     }
@@ -3091,6 +3130,8 @@ function shipDisplayName(){
 ============================================================ */
 /* La fórmula viva está en el maestro; la línea guarda una copia de respaldo */
 function getFormula(item){
+  if(isFixed(item)) return formulaFromCalc('rate_qty');   // Monto fijo: importe × 1
+  if(item.frozenF) return item.frozenF;
   const m = masterCatalog().find(x=>x.id===item.id);
   return (m && m.formula) || item.formula || formulaFromCalc('rate_qty');
 }
@@ -3104,7 +3145,7 @@ function lineCtx(item){
 function baseEval(item, formula){
   const r = evalFormula(formula || getFormula(item), lineCtx(item));
   if(!r.ok) return r;
-  const min = Number(item.min)||0;
+  const min = isFixed(item) ? 0 : Number(item.min)||0;   // el Monto fijo reemplaza el mínimo
   if(min > 0 && r.value < min) return {ok:true, value:min, minApplied:true, raw:r.value};
   return r;
 }
@@ -3131,18 +3172,20 @@ function formulaText(item){
   if(!r.ok) return `Fórmula con error en el maestro: ${r.error}`;
   const sym = item.currency==='PEN' ? 'S/' : '$';
   const v = item.vatOn ? Number(item.vat)||0 : 0;
-  let txt = formulaWithValues(f, ctx, sym);
+  let txt = isFixed(item) ? `Monto fijo ${sym}${fmtNum(item.adj.amount)}` : formulaWithValues(f, ctx, sym);
   if(r.minApplied) txt = `MÁX(${txt} ; mínimo ${sym}${fmtNum(item.min)})`;
+  const ox = isFixed(item) ? ` · Por fórmula: ${item.adj.orig.value==null ? 'por confirmar' : sym+fmtNum(item.adj.orig.value)}` : '';
   if(v){
     if(f.some(t=>t.t==='op' && (t.v==='+' || t.v==='-'))) txt = `(${txt})`;
     txt += ` × (1+${v})`;
   }
   const raw = r.value*(1+v), ex = currentExRate()||1;
-  if(item.currency==='PEN') return `${txt} = S/ ${raw.toFixed(2)} ÷ T/C ${ex} = ${(raw/ex).toFixed(2)} USD`;
-  return `${txt} = ${raw.toFixed(2)} USD`;
+  if(item.currency==='PEN') return `${txt} = S/ ${raw.toFixed(2)} ÷ T/C ${ex} = ${(raw/ex).toFixed(2)} USD${ox}`;
+  return `${txt} = ${raw.toFixed(2)} USD${ox}`;
 }
 /* Fórmula en palabras (sin números de la PDA): Tarifa × Cantidad (Horas) × Eslora (LOA) + IGV 18% */
 function formulaDescriptive(item){
+  if(isFixed(item)) return `Monto fijo (por fórmula: ${item.adj.orig.plain})`;
   const f = getFormula(item), type = activeCatalogKey();
   const DESC = {grt:'Arqueo bruto (GRT)', loa:'Eslora (LOA)', weight:'Peso (TM)', volume:'Volumen (m³)'};
   let txt = joinParts(f, f.map(tk=>{
@@ -3184,8 +3227,9 @@ function effQty(x){
 /* Costo del proveedor en USD (misma fórmula con la tarifa del proveedor; sin IGV ni mínimo) */
 function lineCost(item){
   if(item.cost===undefined || item.cost===null || item.cost==='') return null;
-  const f = getFormula(item); if(missingDim(item,f)) return null;
-  const r = evalFormula(f, lineCtx({...item, rate:Number(item.cost)||0}));
+  const src = isFixed(item) ? adjOriginal(item) : item;   // el costo sigue la fórmula original
+  const f = getFormula(src); if(missingDim(src,f)) return null;
+  const r = evalFormula(f, lineCtx({...src, rate:Number(item.cost)||0}));
   if(!r.ok) return null;
   return r.value / (item.currency==='PEN' ? (currentExRate()||1) : 1);
 }
@@ -3194,15 +3238,18 @@ function pdaAnalytics(){
   let net=0, baseNet=0, cost=0, withCost=0, changed=0;
   state.services.filter(x=>x.enabled).forEach(x=>{
     const p = lineParts(x); if(p.pending) return;
-    const b = lineParts({...x, rate: x.rateBase ?? x.rate});
+    const o = isFixed(x) ? adjOriginal(x) : x;
+    const b = lineParts({...o, rate: o.rateBase ?? o.rate});
     net += p.net; baseNet += b.net;
-    if(Math.abs((Number(x.rate)||0) - (Number(x.rateBase ?? x.rate)||0)) > 1e-9) changed++;
+    if(isFixed(x) ? Math.abs(p.net-b.net) > 0.005 : Math.abs((Number(x.rate)||0) - (Number(x.rateBase ?? x.rate)||0)) > 1e-9) changed++;
     const c = lineCost(x); if(c!==null){ cost += c; withCost++; }
   });
   return {net, baseNet, diff:net-baseNet, diffPct: baseNet ? (net-baseNet)/baseNet : 0, cost, margin:net-cost,
           marginPct: net ? (net-cost)/net : 0, changed};
 }
 function varianceHtml(x){
+  if(isFixed(x)){ const v = x.adj.orig.value, d = v ? (x.adj.amount-v)/v : 0;
+    return v ? `<span class="${d>0?'v-up':'v-down'}">${d>0?'▲':'▼'} ${Math.abs(d*100).toFixed(1)}% vs fórmula</span>` : ''; }
   const base = Number(x.rateBase), rate = Number(x.rate);
   if(!base && base!==0) return '';
   if(Math.abs(rate-base) < 1e-9){
@@ -3616,7 +3663,7 @@ function templateFromPda(){
     sucursal: SUCURSALES.includes(v.port) ? v.port : 'Callao', vtype: ship ? ship.vtype : '',
     port: v.port, terminal: v.terminal, cargo: v.cargo, operation: v.operation, notes:'', origin: v.origin||'intl', remarks: state.remarks||'',
     terrestrial: mar ? null : clone(state.terrestrial),
-    services: state.services.map(x=>({id:x.id, enabled:x.enabled, rate:x.rate, qty:x.qty, vat: x.vatOn ? x.vat : 0, supplier:x.supplier,
+    services: state.services.map(x=>({id:x.id, enabled:x.enabled, rate:isFixed(x)?x.adj.orig.rate:x.rate, qty:isFixed(x)?x.adj.orig.qty:x.qty, vat: x.vatOn ? x.vat : 0, supplier:x.supplier,
       ...(x.min ? {min:x.min} : {}), ...(x.note ? {note:x.note} : {}), custom: x.id.startsWith('custom_') ? clone(x) : null})) };
 }
 function openTplEditor(id, fromPda){
@@ -4198,7 +4245,10 @@ function badgesHtml(s){
   return (s.vatOn ? `<span class="tag-mini igv" style="margin-left:6px">IGV ${(s.vat*100).toFixed(0)}%</span>` : '') +
     (s.rateBaseSrc==='cliente' ? `<span class="tag-mini pact" title="Tarifa pactada con el cliente, vigente hasta ${esc(s.tariffTo||'')}">Pactada${s.tariffSoon?' · por vencer':''}</span>` : '') +
     (s.tariffExpired ? `<span class="tag-mini warnb" title="La tarifa pactada con el cliente venció el ${esc(s.tariffExpired)}. Se usa la tarifa del catálogo.">Pactada vencida ${esc(s.tariffExpired)}</span>` : '') +
-    (s.min ? `<span class="tag-mini noigv" title="Mínimo del servicio">Mín. ${curSym(s.currency)}${fmtNum(s.min)}</span>` : '') +
+    (s.min && !isFixed(s) ? `<span class="tag-mini noigv" title="Mínimo del servicio">Mín. ${curSym(s.currency)}${fmtNum(s.min)}</span>` : '') +
+    (isFixed(s) ? `<span class="tag-mini adj" title="${esc(s.adj.reason)}">Ajustada</span>` : '') +
+    (isFixed(s) && !Number(s.adj.orig.rate) ? `<span class="tag-mini adj" title="Sin tarifa en el catálogo: importe ingresado a mano">Manual</span>` : '') +
+    (s.adj && !isFixed(s) ? `<span class="tag-mini adj" title="${esc(s.adj.reason)}">Fórmula oculta</span>` : '') +
     catFlagsHtml(s) +
     (supplierPending(s.supplier) ? `<span class="tag-mini warnb">Proveedor por homologar</span>` : '') +
     (s.enabled ? '' : `<span class="tag-mini off">INACTIVO</span>`);
@@ -4237,14 +4287,17 @@ function totalCellHtml(s){
 /* ============ CELDAS TIPO EXCEL ============ */
 function rateCellHtml(s){
   return `<div class="cell-wrap">
-    <div class="cell-box ${s.rateLocked?'ro':''}"><span class="cell-cur">${curSym(s.currency)}</span>
+    <div class="cell-box ${s.rateLocked||isFixed(s)?'ro':''}"><span class="cell-cur">${curSym(s.currency)}</span>
       <input class="cell-in" id="cr_${s.id}" data-col="rate" data-id="${s.id}" inputmode="decimal" value="${s.rate}"
-        ${s.rateLocked?'readonly title="Tarifa bloqueada por el Mantenedor de tarifas"':''}>
+        ${isFixed(s)?'readonly title="Monto fijo: se cambia en Ajuste de línea"':s.rateLocked?'readonly title="Tarifa bloqueada por el Mantenedor de tarifas"':''}>
       ${lockBtnHtml(s)}</div>
     <div class="cell-msg" id="crm_${s.id}"></div>
     </div>`;
 }
 function qtyCellHtml(s){
+  if(isFixed(s)) return `<div class="cell-wrap"><div class="cell-box ro" title="Monto fijo: se cambia en Ajuste de línea">
+      <input class="cell-in" data-col="qty" data-id="${s.id}" id="cq_${s.id}" value="1" readonly tabindex="-1"></div>
+      <div class="cell-msg info">Monto fijo</div></div>`;
   const f = getFormula(s);
   if(!f.some(t=>t.t==='f' && t.k==='qty')){
     // La fórmula no usa "Cantidad": se muestra la cantidad efectiva (TM, contenedores, suma alzada)
@@ -4334,6 +4387,7 @@ function rowService(s){
       <td class="comment-cell" id="frm_${s.id}">${formulaText(s)}</td>
       <td><div class="row-actions">
         <button class="btn-edit ${isOpen?'on':''}" tabindex="-1" onclick="toggleEdit('${s.id}')" title="${isOpen?'Cerrar':'Moneda, unidad e IGV'}">${isOpen?'▲':ICON.edit}</button>
+        <button class="btn-adj ${s.adj?'on':''}" tabindex="-1" onclick="openAdj('${s.id}')" title="Ajuste de línea">±</button>
         <button class="btn-del" tabindex="-1" onclick="removeService('${s.id}')" title="Quitar servicio">✕</button>
       </div></td>
     </tr>`;
@@ -4375,6 +4429,95 @@ function previewHtml(s){
   return `Total línea: <b>${fmt(calcItem(s))}</b>${s.enabled?'':' · <span style="color:#991b1b;font-weight:700">inactiva (no suma)</span>'}<br>${formulaText(s)}`;
 }
 
+/* ============================================================
+   AJUSTE DE LÍNEA: Monto fijo y No imprimir fórmula
+   Nada se sobrescribe sin rastro: la línea guarda la fórmula y el cálculo originales,
+   quién, cuándo y por qué. El total sigue siendo tarifa × cantidad.
+============================================================ */
+let adjId = null;
+function isFixed(x){ return !!x && !!x.adj && x.adj.mode==='fixed'; }
+function canAdjust(){ return canChangeStatus() && state.status!=='Aprobada' && state.status!=='Anulada'; }
+function adjOrigSnap(s){
+  const f = getFormula(s), r = baseEval(s, f);
+  return {formula:clone(f), plain:formulaPlain(f), text:formulaText(s), rate:s.rate, qty:s.qty, min:Number(s.min)||0,
+          value: !missingDim(s,f) && r.ok ? r.value : null, raw: !missingDim(s,f) && r.ok ? (r.minApplied ? r.raw : r.value) : null};
+}
+/* La línea como estaba antes del Monto fijo */
+function adjOriginal(x){ const o = x.adj.orig; return {...x, adj:null, frozenF:o.formula, rate:o.rate, qty:o.qty, min:o.min}; }
+function openAdj(id){
+  const s = state.services.find(x=>x.id===id); if(!s) return;
+  adjId = id;
+  const a = s.adj || {}, ro = !canAdjust(), o = isFixed(s) ? a.orig : adjOrigSnap(s), g = k=>document.getElementById(k);
+  g('adjSvc').textContent = s.name;
+  g('adjCalc').innerHTML = `Por fórmula: <b>${esc(o.plain)}</b> = <b>${o.raw==null ? 'Por confirmar' : fmtCur(o.raw, s.currency)}</b> sin IGV`
+    + (o.min ? ` · Mínimo ${fmtCur(o.min, s.currency)}` : '') + (o.value!=null && o.value!==o.raw ? ` · <b>Se cobra ${fmtCur(o.value, s.currency)}</b>` : '');
+  g('adjAmtLabel').textContent = `Importe sin IGV (${s.currency}) *`;
+  g('adjFixed').checked = isFixed(s); g('adjHide').checked = !!a.hideFormula;
+  g('adjAmt').value = isFixed(s) ? a.amount : ''; g('adjGlosa').value = a.glosa || ''; g('adjReason').value = a.reason || '';
+  ['adjAmt','adjGlosa','adjReason'].forEach(k=>{ g(k).disabled = ro; });
+  g('adjHide').disabled = ro; g('adjFixed').disabled = ro || !!s.rateLocked;
+  g('adjBy').textContent = (a.by ? `Último ajuste: ${a.by} · ${new Date(a.ts).toLocaleString('es-PE')}` : '')
+    + (ro ? `${a.by ? ' · ' : ''}Solo lectura: ${canChangeStatus() ? 'para ajustar, vuelve la PDA a pendiente' : 'lo ajustan Comercial y Gerencia'}` : '');
+  g('adjSave').style.display = ro ? 'none' : '';
+  g('adjDel').style.display = s.adj && !ro ? '' : 'none';
+  adjSync();
+  g('adjModal').classList.add('show');
+}
+function adjSync(){
+  const s = state.services.find(x=>x.id===adjId); if(!s) return;
+  const g = k=>document.getElementById(k), fixed = g('adjFixed').checked, ro = !canAdjust();
+  const o = isFixed(s) ? s.adj.orig : adjOrigSnap(s), amt = parseNum(g('adjAmt').value);
+  g('adjAmtBox').style.display = fixed ? '' : 'none';
+  if(fixed) g('adjHide').checked = true;
+  g('adjHide').disabled = fixed || ro;
+  if(!ro && (fixed || g('adjHide').checked) && !g('adjGlosa').value) g('adjGlosa').value = state.lang==='en' ? 'Agreed rate' : 'Tarifa acordada';
+  g('adjMsg').textContent = s.rateLocked ? 'Tarifa bloqueada por el Mantenedor de tarifas: no admite Monto fijo.'
+    : fixed && o.min && amt>0 && amt<o.min ? `Queda debajo del mínimo (${fmtCur(o.min, s.currency)}). Se mostrará al aprobar.` : '';
+}
+function saveAdj(){
+  const s = state.services.find(x=>x.id===adjId); if(!s) return;
+  if(!canAdjust()){ toast('No se puede ajustar en este estado','error'); return; }
+  const g = k=>document.getElementById(k), fixed = g('adjFixed').checked && !s.rateLocked, hide = g('adjHide').checked;
+  const glosa = g('adjGlosa').value.trim(), reason = g('adjReason').value.trim(), raw = g('adjAmt').value;
+  if(!fixed && !hide){ toast('Marca Monto fijo o No imprimir fórmula','error'); return; }
+  if(fixed && (cellError(raw) || !(parseNum(raw)>0))){ toast('Ingresa un importe mayor a cero','error'); g('adjAmt').focus(); return; }
+  if(!glosa){ toast('La glosa impresa es obligatoria','error'); g('adjGlosa').focus(); return; }
+  if(!reason){ toast('El motivo es obligatorio','error'); g('adjReason').focus(); return; }
+  const prev = s.adj, wasFixed = isFixed(s), o = wasFixed ? prev.orig : adjOrigSnap(s), amt = fixed ? parseNum(raw) : null;
+  const cur = s.currency, money = v=>v==null ? 'por confirmar' : `${cur} ${fmtNum(v)}`, user = curUser();
+  if(fixed){ s.rate = amt; s.qty = 1; }
+  else if(wasFixed){ s.rate = o.rate; s.qty = o.qty; }
+  s.adj = {mode:fixed?'fixed':null, hideFormula:true, amount:amt, glosa, reason, orig:fixed?o:null, by:user, ts:new Date().toISOString()};
+  log('Ajuste', (fixed
+    ? `Monto fijo en "${s.name}": ${wasFixed ? `de ${money(prev.amount)} a ${money(amt)}` : `${money(o.value)} por fórmula (${o.plain}) → ${money(amt)}`}`
+    : `No imprimir fórmula en "${s.name}"${wasFixed ? `: se quitó el Monto fijo y vuelve a ${money(o.value)}` : ''}`)
+    + ` · Glosa: ${glosa} · Motivo: ${reason}`, user);
+  closeModal('adjModal'); renderStep2();
+  toast('Ajuste guardado','success');
+}
+function removeAdj(){
+  const s = state.services.find(x=>x.id===adjId); if(!s || !s.adj) return;
+  if(!canAdjust()){ toast('No se puede ajustar en este estado','error'); return; }
+  const a = s.adj;
+  if(isFixed(s)){ s.rate = a.orig.rate; s.qty = a.orig.qty; }
+  s.adj = null;
+  log('Ajuste', `Quitó el ajuste de "${s.name}"` + (a.mode==='fixed' ? `: ${s.currency} ${fmtNum(a.amount)} → vuelve a la fórmula (${a.orig.plain})` : ': la fórmula vuelve a imprimirse'), curUser());
+  closeModal('adjModal'); renderStep2();
+  toast('Ajuste quitado','info');
+}
+/* Resumen para quien aprueba */
+function adjSummary(){
+  const list = state.services.filter(x=>x.enabled && x.adj);
+  if(!list.length) return {n:0, html:''};
+  const usd = (x,v)=>x.currency==='PEN' ? v/(currentExRate()||1) : v;
+  const diff = list.filter(x=>isFixed(x) && x.adj.orig.value!=null).reduce((t,x)=>t+usd(x, x.adj.amount-x.adj.orig.value), 0);
+  const li = list.map(x=>{ const a = x.adj;
+    const what = isFixed(x) ? `${a.orig.value==null ? 'por confirmar' : fmtCur(a.orig.value,x.currency)} → ${fmtCur(a.amount,x.currency)}${a.orig.min && a.amount<a.orig.min ? ' (debajo del mínimo)' : ''}` : 'Fórmula oculta';
+    return `<li><b>${esc(x.name)}:</b> ${what} · ${esc(a.reason)} · ${esc(a.by)}</li>`; }).join('');
+  return {n:list.length, html:`<b>${list.length} línea${list.length>1?'s':''} con ajuste</b>`
+    + (list.some(isFixed) ? ` · Diferencia vs fórmula: ${diff<0?'−':'+'}${fmt(Math.abs(diff))} sin IGV` : '') + `<ul>${li}</ul>`};
+}
+
 /* ---- Abrir / cerrar edición (acordeón: una línea a la vez) ---- */
 function toggleEdit(id){
   state.editingId = state.editingId === id ? null : id;
@@ -4390,6 +4533,7 @@ function updLive(id,key,val){
   const s = state.services.find(x=>x.id===id);
   if(!s || state.status==='Anulada') return;
   if(key==='rate' && s.rateLocked) return;
+  if((key==='rate' || key==='qty') && isFixed(s)) return;
   s[key] = (key==='unit' || key==='note') ? val : (key==='cost' && String(val).trim()==='') ? null : parseNum(val);
   if(key==='vat') s.vatOn = s.vat>0;
   refreshLine(s);
@@ -4473,6 +4617,7 @@ function toggleVAT(id){
 function updCurrency(id, cur){
   const s = state.services.find(x=>x.id===id);
   if(!s) return;
+  if(isFixed(s)){ toast('Quita el ajuste para cambiar la moneda','info'); renderStep2(); return; }
   log('Edición', `Moneda de "${s.name}": ${s.currency} → ${cur}`);
   s.currency = cur;
   renderStep2();
@@ -6461,20 +6606,24 @@ function exportRows(){
   ];
   const cols = ['Sección','Código SAP','Concepto','Concepto (EN)','Proveedor','Tipo proveedor','Moneda','Tarifa base','Origen tarifa base',
                 'Tarifa','Variación %','Cantidad','Unidad','Mínimo','Fórmula','Cálculo','IGV %','Total USD',
-                'Comentario','Estado línea','Tarifa bloqueada','Origen línea'];
+                'Comentario','Estado línea','Tarifa bloqueada','Origen línea',
+                'Ajuste','Monto fijo','Fórmula original','Cálculo original','Glosa impresa','Motivo / nota interna','Ajustado por','Fecha de ajuste'];
   const lines = [];
   catList().forEach(cat=> state.services.filter(x=>x.cat===cat).forEach(x=>{
     const pp = lineParts(x);
     const base = Number(x.rateBase ?? x.rate);
     lines.push([catLabel(cat), x.sap||'', x.name, x.nameEn||'', x.supplier||'', providerType(x.supplier), x.currency,
-      N4(base), x.rateBaseSrc==='cliente' ? 'Pactada con el cliente' : x.rateBaseSrc==='manual' ? 'Manual' : x.rateBaseSrc==='plantilla' ? 'Plantilla' : 'Catálogo',
-      N4(x.rate), {v: base ? (Number(x.rate)-base)/base*100 : 0, s:2}, N4(effQty(x)), x.unit||'', x.min ? N4(x.min) : '',
+      N4(base), isFixed(x) && !Number(x.adj.orig.rate) ? 'Manual' : x.rateBaseSrc==='cliente' ? 'Pactada con el cliente' : x.rateBaseSrc==='manual' ? 'Manual' : x.rateBaseSrc==='plantilla' ? 'Plantilla' : 'Catálogo',
+      N4(x.rate), {v: isFixed(x) ? (x.adj.orig.value ? (x.adj.amount-x.adj.orig.value)/x.adj.orig.value*100 : 0) : base ? (Number(x.rate)-base)/base*100 : 0, s:2}, N4(effQty(x)), x.unit||'', x.min ? N4(x.min) : '',
       formulaPlain(getFormula(x)), formulaText(x),
       {v:x.vatOn?Number(x.vat)*100:0, s:2}, N(pp.total),
       x.note||'',
       !x.enabled ? 'Inactiva' : pp.pending ? 'Por confirmar' : 'Activa',
       x.rateLocked ? 'Sí' : 'No',
-      x.id.startsWith('custom_') ? 'Personalizado' : x.auto ? 'Automático por tipo de carga' : x.fromRequest ? 'Nuevo servicio '+x.fromRequest : 'Catálogo']);
+      x.id.startsWith('custom_') ? 'Personalizado' : x.auto ? 'Automático por tipo de carga' : x.fromRequest ? 'Nuevo servicio '+x.fromRequest : 'Catálogo',
+      isFixed(x) ? 'Monto fijo' : x.adj ? 'Fórmula oculta' : printView(x) ? 'Tarifa mínima' : '',
+      isFixed(x) ? N4(x.adj.amount) : '', isFixed(x) ? x.adj.orig.plain : '', isFixed(x) ? x.adj.orig.text : '',
+      x.adj ? x.adj.glosa : '', x.adj ? x.adj.reason : '', x.adj ? x.adj.by : '', x.adj ? new Date(x.adj.ts).toLocaleString('es-PE') : '']);
   }));
   const t = sumParts(state.services);
   const a = pdaAnalytics();
@@ -6486,7 +6635,7 @@ function exportRows(){
     ...state.traceability.slice().reverse().map(x=>[new Date(x.ts).toLocaleString('es-PE'), x.user, x.action, x.detail, x.pda||''])];
   return [
     {name:'Desglose', rows:[...head, cols.map(H), ...lines, ...totals],
-     widths:[24,12,38,32,28,11,8,11,18,11,10,10,14,10,30,46,7,13,14,13,36,13,12,22]},
+     widths:[24,12,38,32,28,11,8,11,18,11,10,10,14,10,30,46,7,13,14,13,36,13,14,12,30,46,24,36,28,20]},
     {name:'Trazabilidad', rows:trace, widths:[20,28,14,70,22]}
   ];
 }
@@ -6558,6 +6707,14 @@ function fxCell(lang){
   return fmtNum(currentExRate());
 }
 function usd(n){ return 'USD '+Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+/* Cómo se imprime la línea cuando no sale la fórmula: glosa, importe × 1 y total */
+function printView(x, lang){
+  const f = getFormula(x); if(missingDim(x,f)) return null;
+  const be = baseEval(x,f); if(!be.ok) return null;
+  if(x.adj && x.adj.hideFormula) return {glosa:x.adj.glosa, rate:be.value};
+  if(be.minApplied) return {glosa:lang==='en' ? 'Minimum rate' : 'Tarifa mínima', rate:be.value};
+  return null;
+}
 function tariffTxt(sv){ return `${sv.currency} ${Number(sv.rate||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:4})}`; }
 
 function buildPdfDocument(){
@@ -6597,15 +6754,14 @@ function buildPdfDocument(){
       if(x.currency==='PEN') anyPen = true;
       const f = getFormula(x);
       const showF = true;   // desglose completo: la línea de cálculo sale en todos los conceptos
-      const be = baseEval(x, f);
-      const minTxt = be.minApplied ? (lang==='en' ? ` (minimum ${x.currency} ${fmtNum(x.min)} applied)` : ` (se aplica mínimo ${x.currency} ${fmtNum(x.min)})`) : '';
-      const hint = !pp.pending && showF ? `<div class="pd-f">${esc(formulaWithValues(f, lineCtx(x), x.currency+' ', lang))}${minTxt}</div>` : '';
+      const pv = printView(x, lang);
+      const hint = pv ? `<div class="pd-f">${esc(pv.glosa)}</div>` : !pp.pending && showF ? `<div class="pd-f">${esc(formulaWithValues(f, lineCtx(x), x.currency+' ', lang))}</div>` : '';
       /* Si la fórmula no usa "Cantidad" (ej. carga por TM o por contenedor), se muestra la cantidad efectiva */
-      const qtyShown = effQty(x);
+      const qtyShown = pv ? 1 : effQty(x);
       const vatTd = `<td class="r">${x.vatOn && Number(x.vat)>0 ? Math.round(x.vat*100)+'%' : `<span class="pd-na">${T.noVat}</span>`}</td>`;
       return `<tr>
         <td>${esc(svcName(x,lang))}${hint}${x.note ? `<div class="pd-note">${esc(x.note)}</div>` : ''}</td>
-        <td class="r">${tariffTxt(x)}</td>
+        <td class="r">${tariffTxt(pv ? {...x, rate:pv.rate} : x)}</td>
         <td class="r">${fmtNum(qtyShown)}</td>
         <td>${esc(unitLabel(x,lang))}</td>
         ${vatTd}
@@ -6651,8 +6807,8 @@ function buildPdfDocument(){
 function annexCalc(x, lang){
   const f = getFormula(x), ctx = lineCtx(x), be = baseEval(x, f);
   if(!be.ok) return '';
-  let t = formulaWithValues(f, ctx, x.currency+' ', lang);
-  if(be.minApplied) t = `${lang==='en'?'MAX':'MÁX'}(${t} ; ${lang==='en'?'minimum':'mínimo'} ${x.currency} ${fmtNum(x.min)})`;
+  const pv = printView(x, lang);
+  let t = pv ? (x.vatOn && Number(x.vat)>0 ? `${pv.glosa}: ${x.currency} ${fmtNum(pv.rate)}` : pv.glosa) : formulaWithValues(f, ctx, x.currency+' ', lang);
   const v = x.vatOn ? Number(x.vat)||0 : 0, gross = be.value*(1+v);
   if(v) t = `${/[+−-]/.test(t) ? '('+t+')' : t} × (1 + ${lang==='en'?'VAT':'IGV'} ${Math.round(v*100)}%)`;
   t += ` = ${x.currency} ${fmtNum(+gross.toFixed(2))}`;
@@ -6767,7 +6923,7 @@ function renderTimelineOld(){
 /* ---------- Observación: marca independiente del estado ---------- */
 function pdaSnapshot(){
   return JSON.stringify({c:state.client.name, v:state.vessel, t:state.terrestrial, fx:[currentExRate(), state.fxPref], pay:state.payment, rem:state.remarks,
-    s:state.services.map(x=>({id:x.id, n:x.name, e:x.enabled, r:x.rate, q:x.qty, cu:x.currency, vo:x.vatOn, va:x.vat, u:x.unit, no:x.note, co:x.cost}))});
+    s:state.services.map(x=>({id:x.id, n:x.name, e:x.enabled, r:x.rate, q:x.qty, cu:x.currency, vo:x.vatOn, va:x.vat, u:x.unit, no:x.note, co:x.cost, aj:x.adj ? [x.adj.mode, x.adj.amount, x.adj.glosa, x.adj.reason] : null}))});
 }
 function obsChanges(){
   if(!state.obs) return {count:0, text:''};
@@ -6844,6 +7000,7 @@ function openStatusModal(kind){
   document.getElementById('stLabel').textContent = c.label;
   const ta = document.getElementById('stText'); ta.value = ''; ta.placeholder = c.ph;
   const ok = document.getElementById('stOk'); ok.textContent = c.btn; ok.className = 'btn ' + c.cls;
+  document.getElementById('stAdj').innerHTML = kind==='approve' ? adjSummary().html : '';
   document.getElementById('stModal').classList.add('show');
   setTimeout(()=>ta.focus(), 40);
 }
@@ -6860,7 +7017,8 @@ function approvePda(note){
   const user = curUser();
   state.status = 'Aprobada'; state.reopen = null;
   state.approval = {note:note||'', by:user, ts:new Date().toISOString()};
-  log('Aprobada', 'Estado: Pendiente de aprobación → Aprobada' + (note ? ` · Nota: ${note}` : ''), user);
+  const adjN = adjSummary().n;
+  log('Aprobada', 'Estado: Pendiente de aprobación → Aprobada' + (note ? ` · Nota: ${note}` : '') + (adjN ? ` · Con ${adjN} línea(s) ajustada(s)` : ''), user);
   snapApprovedPda();
   notifyAndGenerateOS(user);
   renderStep3();
@@ -7017,6 +7175,9 @@ const GUIDES = {
       {el:()=>gq('#calcSections tr:not(.disabled):not(.edit-row) td:nth-child(3)'), h:'Tarifa', p:'Escribe la nueva tarifa. Con candado, solo la cambia el Mantenedor de tarifas.'},
       {el:()=>gq('#calcSections tr:not(.disabled):not(.edit-row) td:nth-child(4)'), h:'Cantidad', p:'Se multiplica según la fórmula del servicio.'},
       {el:()=>gq('#calcSections .btn-edit'), h:'Más opciones', p:'Moneda, unidad, IGV y de qué tarifa sale el precio.'}]},
+    {t:'Ajustar una línea', steps:[
+      {el:()=>gq('#calcSections .btn-adj'), h:'Ajuste de línea', p:'Monto fijo o No imprimir fórmula. Pide glosa y motivo.'},
+      {el:()=>gq('#calcSections tr:not(.disabled):not(.edit-row) td:nth-child(5)'), h:'Rastro', p:'Se guardan la fórmula y el cálculo originales. Quien aprueba ve los ajustes.'}]},
     {t:'Preregistrar un proveedor', steps:[
       {el:()=>gq('#calcSections tr:not(.edit-row) td:nth-child(6) select'), h:'Proveedor', p:'Si no está, elige "+ Preregistrar proveedor". Puedes seguir trabajando.'},
       {el:'[data-menu="Data Maestra"]', h:'Homologación', p:'Se homologa en Data Maestra > Socio. Es requisito para aprobar la PDA.'}]},
