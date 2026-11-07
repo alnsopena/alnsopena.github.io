@@ -124,5 +124,25 @@
     const owner = (person.roles || []).some(r => r === 'pm' || r === 'sponsor'), ids = new Set((person.ids || []).map(String));
     return d.projects.filter(p => owner ? named(p.pm) || named(p.sponsorName) : ids.has(p.id));
   }
-  window.PMOData = { build, personProjects };
+  // Nobody "is" a removed monday user: "PM no vigente" and "Miembro eliminado" never get a dock, by list or by link.
+  const isRemovedPerson = keyOrName => /^(pm no vigente|miembro eliminado)$/.test(nameKey(String(keyOrName || '').replace(/\./g, ' ')));
+  // The portal's vocabulary: "iniciativas" when a set mixes projects and quick wins; "proyectos" or "quick wins" when it has one kind.
+  function kindOf(list) {
+    const all = list || [], qw = all.filter(p => p && p.initiativeClass === 'Quick win').length, pr = all.length - qw;
+    return qw && pr || !all.length ? { one: 'iniciativa', many: 'iniciativas', fem: true } : qw ? { one: 'quick win', many: 'quick wins', fem: false } : { one: 'proyecto', many: 'proyectos', fem: false };
+  }
+  const countOf = (n, kind) => n + ' ' + (n === 1 ? kind.one : kind.many);
+  // Adjective that agrees with the kind and the count: agree(1, iniciativas, 'activo') → 'activa'; agree(2, proyectos, 'cerrado') → 'cerrados'.
+  const agree = (n, kind, word) => word.replace(/o$/, kind.fem ? 'a' : 'o') + (n === 1 ? '' : 's');
+  // The dock's total and the parts it is made of: active, delivered this year (as in "Entregados <año>"), delivered in an
+  // earlier year, and closed without a closure date or year. The parts always add up to the total.
+  function muelleCounts(d, person) {
+    const mine = personProjects(d, person), year = Number(d && d.totals ? d.totals.year : NaN);
+    const active = mine.filter(p => p.active), delivered = mine.filter(p => !p.active && p.delivered), rest = mine.filter(p => !p.active && !p.delivered);
+    const earlier = rest.filter(p => p.closedYear != null && Number(p.closedYear) < year), noDate = rest.filter(p => !earlier.includes(p));
+    return { mine, total: mine.length, active, delivered, earlier, noDate, kind: kindOf(mine) };
+  }
+  // Passport figures, the same on desktop and mobile: "1 activa", "8 entregadas en 2026", "1 espera decisión".
+  const passportFigures = (active, delivered, decide, kind, year) => [[active, agree(active, kind, 'activo')], [delivered, agree(delivered, kind, 'entregado') + ' en ' + year], [decide, decide === 1 ? 'espera decisión' : 'esperan decisión']];
+  window.PMOData = { build, personProjects, isRemovedPerson, kindOf, countOf, agree, muelleCounts, passportFigures };
 })();

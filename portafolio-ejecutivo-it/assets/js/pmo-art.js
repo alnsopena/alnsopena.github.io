@@ -213,11 +213,35 @@
 
   // ------------------------------------------------------------------ Mi muelle: el pasaporte del puerto (solo sus proyectos)
   let personalObs = null, personalCurrent = null;
+  // Stamp names (bundle hook, see scripts/patch-paper-fx-labels.mjs): whole words in two lines, or three in smaller type,
+  // instead of dropping whatever did not fit in two. Only a very long name ends in "…", at a word boundary.
+  function stampLines(ctx, text, r) {
+    const font = size => '800 ' + size + 'px Figtree, sans-serif', words = String(text || '').split(/\s+/).filter(Boolean);
+    // Three lines sit lower in the stamp, where round and octagonal stamps are narrower.
+    const wrap = (size, width = 1.5 * r) => {
+      ctx.save(); ctx.font = font(size);
+      const fits = s => ctx.measureText(s).width <= width, ls = []; let line = '';
+      words.forEach(w => { const next = line ? line + ' ' + w : w; if (line && !fits(next)) { ls.push(line); line = w; } else line = next; });
+      if (line) ls.push(line);
+      const ok = ls.every(fits); ctx.restore(); return { ls, ok };
+    };
+    const place = (ls, size) => { const step = 1.15 * size; return { ls, font: font(size), y: .04 * r - (ls.length - 1) * step / 2, step }; };
+    const big = Math.max(8, .19 * r), small = Math.max(7, .14 * r);
+    for (const max of [2, 3]) for (let s = big; s >= small - 1e-6; s -= .5) { const w = wrap(s, max === 2 ? 1.5 * r : 1.35 * r); if (w.ok && w.ls.length <= max) return place(w.ls, s); }
+    const width = 1.35 * r, ls = wrap(small, width).ls.slice(0, 3);
+    if (words.join(' ') !== ls.join(' ')) {
+      ctx.save(); ctx.font = font(small);
+      let last = ls[ls.length - 1];
+      while (last.includes(' ') && ctx.measureText(last + '…').width > width) last = last.replace(/\s+\S+$/, '');
+      ls[ls.length - 1] = last + '…'; ctx.restore();
+    }
+    return place(ls, small);
+  }
   function mountMuelle(main) {
     const dock = main.querySelector('#pav-personal-dock') || main.querySelector('.pav-muelle-slot'); if (!dock) return;
     const paint = safe(() => {
       const d = getData(); let st = {}; try { st = JSON.parse(localStorage.getItem(((fx.o && fx.o.storageKey) || 'cosmos-fx') + '-muelle') || '{}'); } catch (e) { }
-      const who = st.who, person = who && window.CosmosFx.muellePeople ? window.CosmosFx.muellePeople(d).find(x => x.key === who) : null;
+      const who = st.who && !(PMOData.isRemovedPerson && PMOData.isRemovedPerson(st.who)) ? st.who : null, person = who && window.CosmosFx.muellePeople ? window.CosmosFx.muellePeople(d).find(x => x.key === who) : null;
       const cut = String((g('D') || {}).extracted_at_utc || '');
       const prev = main.querySelector('.pav-art-personal'); if (prev && prev.dataset.who === String(who || '') && prev.dataset.cut === cut) return; if (prev) { if (prev._c) prev._c.destroy(); personalCurrent = null; prev.remove(); }
       if (!person) return;
@@ -227,14 +251,18 @@
       const done = mine.filter(p => p.delivered).map(p => Object.assign({}, p, { closedLabel: fmt(p.closedAt) || yr }));
       const roles = person.roles || [], role = roles.includes('sponsor') && roles.includes('pm') ? 'Sponsor y PM' : roles.includes('sponsor') ? 'Sponsor' : roles.includes('pm') ? 'PM' : 'Persona con actividad';
       const decide = act.filter(p => p.risk).length;
+      // Same word as the greeting: "iniciativas" if the dock mixes projects and quick wins; labels agree with it and with the count.
+      const kind = PMOData.kindOf ? PMOData.kindOf(mine) : { one: 'proyecto', many: 'proyectos', fem: false }, agree = (n, w) => PMOData.agree ? PMOData.agree(n, kind, w) : w + (n === 1 ? '' : 's');
+      const figures = PMOData.passportFigures ? PMOData.passportFigures(act.length, done.length, decide, kind, yr) : null;
       const slot2 = document.createElement('div'); slot2.className = 'pav-art-personal'; slot2.dataset.who = who; slot2.dataset.cut = cut; slot2.style.marginTop = '18px'; dock.after(slot2);
-      slot2._c = fx.pasaporte(slot2, { pasaporte: { name: person.name, alias: st.alias, role, year: yr, cutLabel: d.cutLabel, done, active: act, decide } }, {
+      slot2._c = fx.pasaporte(slot2, { pasaporte: { name: person.name, alias: st.alias, role, year: yr, cutLabel: d.cutLabel, done, active: act, decide, figures } }, {
         cardClass: cfg.cardClass, onSelect: open,
-        head: { title: 'Tu pasaporte del puerto', sub: 'Un sello por cada proyecto tuyo entregado en ' + yr + '. Los círculos punteados esperan su sello.',
-          msg: '<em>' + plural(done.length, 'entregado', 'entregados') + '</em> en ' + yr + (act.length ? ' y ' + plural(act.length, 'proyecto', 'proyectos') + ' por sellar' : ''),
+        head: { title: 'Tu pasaporte del puerto', sub: 'Un sello por cada ' + kind.one + (kind.fem ? ' tuya entregada' : ' tuyo entregado') + ' en ' + yr + '. Los círculos punteados esperan su sello.',
+          msg: '<em>' + done.length + ' ' + agree(done.length, 'entregado') + '</em> en ' + yr + (act.length ? ' y ' + act.length + ' ' + (act.length === 1 ? kind.one : kind.many) + ' por sellar' : ''),
           // Decisions and missing Fin Plan are already in the greeting and in the passport numbers: only the role goes here.
           pills: [{ text: role, tone: 'blue' }],
           key: [{ svg: I.stamp, text: 'Sello: entregado en el año' }, { svg: I.dash, text: 'Punteado: activo, por sellar' }].concat(decide ? [{ svg: I.alert, text: '"!": espera una decisión' }] : []) } });
+      if (slot2._c) slot2._c.stampLines = stampLines;
       personalCurrent = slot2._c;
     }, 'pasaporte');
     paint();
