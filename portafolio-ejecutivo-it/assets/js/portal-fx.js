@@ -15,6 +15,7 @@
     try {
       const prefs = JSON.parse(localStorage.getItem((fx.o && fx.o.storageKey || 'cosmos-fx') + '-muelle') || '{}');
       if (!prefs.who || prefs.dismissed || !window.pmoAv || !window.PMOData || !window.CosmosFx.muellePeople) return null;
+      if (window.PMOData.isRemovedPerson && window.PMOData.isRemovedPerson(prefs.who)) return null;
       const d = window.pmoAv.data(), person = window.CosmosFx.muellePeople(d).find(p => p.key === prefs.who);
       return person ? { person: person.name, ids: window.PMOData.personProjects(d, person).map(p => p.id) } : null;
     } catch (error) { return null; }
@@ -169,6 +170,7 @@
     if (folded && chatOpen()) window.toggleChat(false);
     if (folded) fx.bubble.classList.remove('on');
     syncFold();
+    syncMuelleRoom();
   });
   window.addEventListener('resize', placeFold);
   document.body.appendChild(fold);
@@ -187,10 +189,83 @@
       }
       const text = positiveText(view);
       if (!text) return;
-      if (reducedMotion()) fx.say(text);
-      else emit('status', { text });
+      if (onMuelleMobile()) { pendingText = text; syncMuelleRoom(); return; }
+      showPositive(text);
     }, opts.delay === undefined ? 1500 : opts.delay);
   }
+  function showPositive(text) {
+    if (reducedMotion()) fx.say(text);
+    else emit('status', { text });
+  }
+
+  // Mi muelle on a phone: Cosmo and its bubble never sit on the dock's content. The page gets room at the end for them;
+  // while Cosmo's corner is over text or a control, he steps aside to the right edge (still tappable), and the positive
+  // bubble waits until the reader stops on a stretch where it covers nothing.
+  const CONTENT = '#main button,#main a[href],#main select,#main input,#main h2,#main h3,#main p,#main li,#main canvas,#main .cfx-mu-chip';
+  const dock = fx.root.querySelector('.cfx-dock');
+  const ASIDE_X = 58;
+  let pendingText = '', aside = false, roomFrame = 0;
+  const onMuelleMobile = () => window.innerWidth < 800 && currentView() === 'muelle' && !!dock;
+  const overlaps = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+  const coversContent = rect => $$(CONTENT).some(el => {
+    if (el.closest('.cfx-sr')) return false;
+    const r = el.getBoundingClientRect();
+    return r.width > 1 && r.height > 1 && overlaps(r, rect);
+  });
+  // Where Cosmo stands when he is not aside.
+  function homeRect() {
+    const r = (fx.hit && fx.hit.offsetHeight ? fx.hit : dock).getBoundingClientRect(), dx = aside ? ASIDE_X : 0;
+    return { left: r.left - dx, right: r.right - dx, top: r.top, bottom: r.bottom };
+  }
+  function bubbleRect(text) {
+    const b = fx.bubble, on = b.classList.contains('on');
+    if (!on && text) b.textContent = text;
+    const r = b.getBoundingClientRect(), d = homeRect();
+    return { left: Math.min(r.left, d.left), right: Math.max(r.right, d.right), top: Math.min(r.top, d.top), bottom: Math.max(r.bottom, d.bottom) };
+  }
+  function setAside(value) {
+    if (aside === value) return;
+    aside = value;
+    document.body.classList.toggle('cfx-cosmo-aside', value);
+  }
+  function syncMuelleRoom() {
+    cancelAnimationFrame(roomFrame);
+    roomFrame = requestAnimationFrame(() => {
+      const on = onMuelleMobile() && fx.isEnabled() && !folded;
+      document.body.classList.toggle('cfx-muelle-room', on);
+      if (!on) { setAside(false); return; }
+      const bar = mobileBar ? mobileBar.getBoundingClientRect().top : window.innerHeight;
+      document.body.style.setProperty('--cfx-muelle-room', Math.max(0, Math.round(bar - bubbleRect(pendingText).top + 16)) + 'px');
+      setAside(coversContent(homeRect()));
+      if (fx.bubble.classList.contains('on') && (aside || coversContent(bubbleRect()))) fx.bubble.classList.remove('on');
+      tryPending();
+    });
+  }
+  function tryPending() {
+    if (!pendingText || scrolling) return;
+    if (!onMuelleMobile() || !fx.isEnabled() || folded || chatOpen() || document.hidden || $('dialog[open],.cfx-parte,.cfx-cm,.cfx-px')) return;
+    if (aside || coversContent(bubbleRect(pendingText))) return;
+    const text = pendingText; pendingText = '';
+    showPositive(text);
+  }
+  // The bubble only opens once the reader has stopped scrolling.
+  let scrollIdle = 0, scrolling = false;
+  window.addEventListener('scroll', () => {
+    if (!onMuelleMobile()) return;
+    scrolling = true; clearTimeout(scrollIdle);
+    scrollIdle = setTimeout(() => { scrolling = false; syncMuelleRoom(); }, 250);
+    syncMuelleRoom();
+  }, { passive: true });
+  window.addEventListener('resize', syncMuelleRoom);
+  after('render', syncMuelleRoom);
+  after('go', () => { pendingText = ''; syncMuelleRoom(); });
+  // The dock below the greeting (passport, picker, folded link) is drawn after render.
+  new MutationObserver(() => { if (onMuelleMobile()) syncMuelleRoom(); }).observe(document.getElementById('main') || document.body, { childList: true, subtree: true });
+  const roomStyle = document.createElement('style');
+  roomStyle.textContent = '@media (max-width:799px){body.cfx-muelle-room #main::after{content:"";display:block;height:var(--cfx-muelle-room,0px)}' +
+    'body.cfx-cosmo-aside .cfx-dock{transform:translateX(' + ASIDE_X + 'px)}body.cfx-cosmo-aside .cosmo-min-toggle{opacity:0;pointer-events:none}' +
+    '.cfx-dock{transition:transform .25s ease}}@media (prefers-reduced-motion:reduce){.cfx-dock{transition:none}}';
+  document.head.appendChild(roomStyle);
 
   const updateVisibility = () => fx.setVisible(!document.body.classList.contains('committee-mode'));
   after('toggleFullscreen', () => {
@@ -202,7 +277,8 @@
     if (open && typeof window.closeMore === 'function') window.closeMore();
     fx.hit.setAttribute('aria-expanded', String(open));
     fx.hit.setAttribute('aria-label', open ? 'Cerrar asistente Cosmo' : 'Abrir asistente Cosmo');
-    if (!open && document.activeElement?.classList.contains('chat-close')) fx.hit.focus({ preventScroll: true });
+    // Closing from inside the panel (its close button or Escape on a menu option) gives the focus back to Cosmo.
+    if (!open && (document.activeElement?.classList.contains('chat-close') || $('#project-chat')?.contains(document.activeElement))) fx.hit.focus({ preventScroll: true });
   });
   after('openMore', () => {
     if (!$('#more-sheet').hidden && chatOpen()) window.toggleChat(false);
