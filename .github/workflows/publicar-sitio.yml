@@ -1,0 +1,65 @@
+name: Publicar sitio
+# Publica en GitHub Pages la página personal, el mockup PDA y la redirección del Portafolio Ejecutivo IT.
+# Desde el 7/11/2026 el portafolio vive en https://cosmos-portafolio-it.web.app/ (repo privado alonsocosmos/portafolio-ejecutivo-it).
+# Este sitio es público: nunca debe llevar datos del portafolio.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "foto.jpg"
+      - "pda-mockup/**"
+      - "portafolio-ejecutivo-it/**"
+      - ".github/workflows/publicar-sitio.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar sitio
+        uses: actions/checkout@v4
+
+      - name: Armar el sitio público
+        run: |
+          mkdir -p _site/portafolio-ejecutivo-it
+          cp index.html _site/
+          if [ -f foto.jpg ]; then cp foto.jpg _site/; fi
+          cp portafolio-ejecutivo-it/index.html _site/portafolio-ejecutivo-it/
+          cp -r pda-mockup _site/
+
+      - name: Comprobar que no se publican datos del portafolio
+        run: |
+          if grep -rIlE '"column_values"|"text_body"|"people_directory"|id="snapshot"' _site; then
+            echo "El sitio público contiene datos del portafolio. No se publica."
+            exit 1
+          fi
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Empaquetar el sitio
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publicar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
