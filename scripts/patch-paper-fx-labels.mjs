@@ -24,7 +24,6 @@ const replacements = [
   ['" ejecutado"+(1===o.closedYear.length?"":"s")+" en "', '" entregado"+(1===o.closedYear.length?"":"s")+" en "'],
   ['"ejecutados en "+e.year,"#3F8F6B"', '"entregados en "+e.year,"#3F8F6B"'],
   ['", ejecutado "+(t.closedLabel', '", entregado "+(t.closedLabel'],
-  ['u?"ejecutados":"ejecutados "+(h.year||"")', 'u?"entregados":"entregados "+(h.year||"")'],
   ['" con riesgo. Este año se ejecutaron "', '" con riesgo. Este año se entregaron "'],
 ];
 for (const [before, after] of replacements) {
@@ -45,5 +44,37 @@ for (const [before, after] of [
 ]) {
   if (!source.includes(before) && !source.includes(after)) throw new Error('Rótulo de fase del puerto de Paper FX no encontrado: ' + before);
   source = source.replaceAll(before, after);
+}
+// Mi muelle passport. Each entry lists the vendor text, any earlier patched text and, last, the current text.
+const passport = [
+  // Figures: the same labels on desktop and mobile, singular when the count is 1. pasaporte.figures (pmo-art.js) may
+  // name them with the portal's vocabulary; a long label wraps inside its column instead of running into the next.
+  ['Cifras del pasaporte', [
+    'const C=[[h.active?h.active.length:0,"activos"],[h.done?h.done.length:0,u?"ejecutados":"ejecutados "+(h.year||"")],[h.decide||0,u?"por decidir":"esperan decisión"]]',
+    'const C=[[h.active?h.active.length:0,"activos"],[h.done?h.done.length:0,u?"entregados":"entregados "+(h.year||"")],[h.decide||0,u?"por decidir":"esperan decisión"]]',
+    'const C=h.figures||[[h.active?h.active.length:0,h.active&&1===h.active.length?"activo":"activos"],[h.done?h.done.length:0,(h.done&&1===h.done.length?"entregado":"entregados")+" en "+(h.year||"")],[h.decide||0,1===h.decide?"espera decisión":"esperan decisión"]]']],
+  ['Rótulo de las cifras', [
+    'f(t[1],s,d.y+(u?196:208),{size:10.5,w:700,col:r.inkSoft})',
+    'Dt(l,t[1],(d.w-44)/3-8,"700 10.5px Figtree, sans-serif").forEach((x,k)=>f(x,s,d.y+(u?196:208)+13*k,{size:10.5,w:700,col:r.inkSoft}))']],
+  // Stamp names: scene.stampLines(ctx, name, r) may return {ls, font, y, step} so a long name is not cut after two lines.
+  ['Nombre del sello', [
+    'a=Dt(e,Pt(c.name),1.5*i,o).slice(0,2);e.font=o,a.forEach((t,s)=>e.fillText(t,0,.08*-i+s*i*.24))',
+    'a=this.stampLines&&this.stampLines(e,Pt(c.name),i)||{ls:Dt(e,Pt(c.name),1.5*i,o).slice(0,2),font:o,y:.08*-i,step:.24*i};e.font=a.font,a.ls.forEach((t,s)=>e.fillText(t,0,a.y+s*a.step))']],
+  // Stamp inks: red is the portal's alert color, so that stamp is drawn in the action blue instead.
+  ['Tinta de los sellos', [
+    '$t=["#2F755F","#1F5E7A","#8E3B2F","#6E5C83","#9C7550"]',
+    '$t=["#2F755F","#1F5E7A","#003D53","#6E5C83","#9C7550"]']],
+  // Stamp tooltip and accessible label: "Entregado el 21 set. 2026", or "Entregado en 2026" when only the year is known.
+  ['Tooltip del sello', [
+    '"Ejecutado"+(t.closedLabel?" el "+et(t.closedLabel):"")',
+    String.raw`"Entregado"+(t.closedLabel?(/^\d{4}$/.test(t.closedLabel)?" en ":" el ")+et(t.closedLabel):"")`]],
+  ['Etiqueta accesible del sello', [
+    '", entregado "+(t.closedLabel||"")',
+    String.raw`", entregado "+(t.closedLabel?(/^\d{4}$/.test(t.closedLabel)?"en ":"el ")+t.closedLabel:"")`]],
+];
+for (const [label, versions] of passport) {
+  const current = versions[versions.length - 1];
+  for (const before of versions.slice(0, -1)) source = source.replaceAll(before, current);
+  if (!source.includes(current)) throw new Error(label + ' de Paper FX no encontrado');
 }
 fs.writeFileSync(file, source);
