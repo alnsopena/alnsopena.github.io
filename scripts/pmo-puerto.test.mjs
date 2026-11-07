@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import './pmo-fiestas.test.mjs';
+import './mi-muelle.test.mjs';
 
 const base = new URL('../portafolio-ejecutivo-it/', import.meta.url);
 const source = name => fs.readFileSync(new URL('assets/js/' + name, base), 'utf8');
