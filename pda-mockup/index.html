@@ -2810,10 +2810,12 @@ function applyClientTariffs(lines, announce){
     x.tariffTo = null; x.tariffExpired = null; x.tariffSoon = false;
     if(t && tariffStatus(t).applies){
       if(!x.rateLocked && !isFixed(x)) x.rate = t.rate;
+      if(t.min!=null && !isFixed(x)) x.min = Number(t.min)||0;   // el mínimo viaja con la tarifa pactada
       x.rateBase = t.rate; x.rateBaseSrc = 'cliente'; x.tariffTo = t.to; x.tariffSoon = tariffStatus(t).k==='porvencer'; n++;
     } else {
       // si venía de la tarifa pactada de otro cliente, vuelve a la del catálogo
       if(wasClient && m && !x.rateLocked && !isFixed(x)) x.rate = x.tplRate ?? sysRate(m);
+      if(wasClient && m && !isFixed(x)) x.min = sysMin(m);
       x.rateBase = x.tplRate ?? (m ? sysRate(m) : x.rate);
       x.rateBaseSrc = x.tplRate!=null ? 'plantilla' : m ? 'catalogo' : 'manual';
       if(t) x.tariffExpired = t.to;
@@ -3058,8 +3060,15 @@ function sysRate(m){
   if(m.rateByPort && v.port && m.rateByPort[v.port]!=null) return m.rateByPort[v.port];
   return m.rate;
 }
+/* Mínimo que fija el sistema: el de la misma tarifa que da el precio (procedencia, puerto o estándar) */
+function sysMin(m){
+  const v = state.vessel || {};
+  if(m.rateByOrigin){ const k = m.rateByOrigin[v.origin||'intl']!=null ? (v.origin||'intl') : null; if(k && m.minByOrigin && m.minByOrigin[k]!=null) return m.minByOrigin[k]; }
+  else if(m.rateByPort && v.port && m.rateByPort[v.port]!=null && m.minByPort && m.minByPort[v.port]!=null) return m.minByPort[v.port];
+  return Number(m.min)||0;
+}
 function newLine(m, extra){ const r = sysRate(m);
-  return {...clone(m), rate:r, unitBase:m.unit, enabled:true, vatOn:m.vat>0, vatDefault:m.vat||0.18,
+  return {...clone(m), rate:r, min:sysMin(m), unitBase:m.unit, enabled:true, vatOn:m.vat>0, vatDefault:m.vat||0.18,
   rateBase:r, rateBaseSrc:'catalogo', note:'', ...(extra||{})}; }
 /* Recalcula las tarifas que dependen de la procedencia o del puerto (líneas ya cargadas) */
 function applySystemRates(what){
@@ -3068,6 +3077,7 @@ function applySystemRates(what){
     const m = masterCatalog().find(c=>c.id===x.id); if(!m || isFixed(x)) return;
     if((what==='origin' && m.rateByOrigin) || (what==='port' && m.rateByPort)){
       const r = sysRate(m); if(r!==x.rate){ x.rate = r; x.rateBase = r; x.rateBaseSrc = 'catalogo'; n++; }
+      x.min = sysMin(m);
     }
   });
   if(n) log('Tarifas', what==='origin'
@@ -5425,11 +5435,26 @@ function applyTariffs(){
     if(orig.intl || orig.nat) sv.rateByOrigin = {intl:(orig.intl||orig.nat).l.price, nat:(orig.nat||orig.intl).l.price}; else delete sv.rateByOrigin;
     const pk = Object.keys(port);
     if(pk.length) sv.rateByPort = Object.fromEntries(pk.map(k=>[k, port[k].l.price])); else delete sv.rateByPort;
+    if(orig.intl || orig.nat) sv.minByOrigin = {intl:Number((orig.intl||orig.nat).l.min)||0, nat:Number((orig.nat||orig.intl).l.min)||0}; else delete sv.minByOrigin;
+    if(pk.length) sv.minByPort = Object.fromEntries(pk.map(k=>[k, Number(port[k].l.min)||0])); else delete sv.minByPort;
     sv.tfSrc = {base:base?.t.code, intl:orig.intl?.t.code, nat:orig.nat?.t.code, port:Object.fromEntries(pk.map(k=>[k, port[k].t.code]))};
   });
   CLIENT_TARIFFS.length = 0;
   ok.forEach(t=>t.crit.filter(c=>!tfIsAll(c.cliente) && (!c.suc || c.suc===TF_BRANCH[t.tipo])).forEach(c=>t.lines.forEach(l=>
-    CLIENT_TARIFFS.push({id:`${t.code}_${l.svc}`, client:c.cliente, svc:l.svc, rate:l.price, from:t.from, to:t.to, note:t.ref, code:t.code}))));
+    CLIENT_TARIFFS.push({id:`${t.code}_${l.svc}`, client:c.cliente, svc:l.svc, rate:l.price, min:Number(l.min)||0, from:t.from, to:t.to, note:t.ref, code:t.code}))));
+  syncOpenPdaMins();
+}
+/* La PDA abierta y aún Pendiente toma el mínimo de la tarifa aprobada (precio y cantidad de la PDA se respetan) */
+function syncOpenPdaMins(){
+  if(typeof state==='undefined' || !state.services || !state.services.length || state.status!=='Pendiente') return;
+  let n = 0;
+  state.services.forEach(x=>{
+    const m = masterCatalog().find(c=>c.id===x.id); if(!m || isFixed(x)) return;
+    const t = state.client && state.client.name ? clientTariff(state.client.name, x.id) : null;
+    const min = t && tariffStatus(t).applies && t.min!=null ? Number(t.min)||0 : sysMin(m);
+    if(min !== (Number(x.min)||0)){ x.min = min; n++; }
+  });
+  if(n){ log('Tarifas', `Monto mínimo actualizado en ${n} línea(s) de la PDA abierta`); if(state.pdaNumber && state.step===2) renderStep2(); }
 }
 function tariffsOfSvc(id){ return TARIFFS.filter(t=>t.lines.some(l=>l.svc===id)); }
 function canApproveTariffs(){ return /Gerencia/.test(curUser()); }
