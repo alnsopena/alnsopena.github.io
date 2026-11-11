@@ -1722,6 +1722,7 @@
       </div>
     </div>
     <div class="user-box">
+      <button type="button" class="notes-toggle" id="syBtn" onclick="syMenu()" style="display:none">Compartir datos</button>
       <button type="button" class="notes-toggle on" id="notesToggle" onclick="toggleNotes()" title="Mostrar u ocultar las notas del prototipo">Notas</button>
       <select id="currentUser">
         <option>A. Pérez (Comercial)</option>
@@ -3125,7 +3126,8 @@ function fmtCur(n,cur){ return (cur==='PEN'?'S/ ':'$ ')+Number(n||0).toLocaleStr
 /* Formato del sistema: PDA + año + correlativo de 6 dígitos + puerto (ej. PDA2026000035PECLL) */
 function genPdaNumber(){
   const y = new Date().getFullYear();
-  return `PDA${y}${String(Math.floor(Math.random()*900)+100).padStart(6,'0')}${portCode()}`;
+  let c; do { c = `PDA${y}${String(Math.floor(Math.random()*900)+100).padStart(6,'0')}${portCode()}`; } while(SAMPLE_PDAS.some(p=>p.code===c));
+  return c;
 }
 function refreshPdaCode(){
   if(state.pdaNumber) state.pdaNumber = state.pdaNumber.replace(/PE[A-Z]{3}$/, portCode());
@@ -3419,7 +3421,7 @@ function renderResultsByType(){ renderResults(SAMPLE_PDAS.filter(p=>p.tipo===sta
 function renderResults(data){
   document.getElementById('resultsCount').textContent = data.length;
   document.getElementById('resultsNote').textContent =
-    'Datos de demostración';
+    (typeof SY!=='undefined' && SY && SY.on) ? 'Datos de demostración + compartidos' : 'Datos de demostración';
   const tb = document.getElementById('resultsBody');
   if(!data.length){
     tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#8D9BA2;font-style:italic">Sin resultados</td></tr>';
@@ -3781,6 +3783,7 @@ function resetPdaData(){
 }
 function openSamplePda(code){
   const sp = SAMPLE_PDAS.find(x=>x.code===code); if(!sp) return;
+  if(sp.shared){ openSharedPda(sp); return; }
   state.categoryType = sp.tipo; state.quotationType = sp.tipo; state.maritimeMode = sp.modo;
   state.loadedTemplate = null; state.traceability = [];
   resetPdaData();
@@ -3806,6 +3809,7 @@ function openSamplePda(code){
   }
   state.step = 0;
   goStep(2);
+  if(typeof SY!=='undefined' && SY) SY.openBase = sp.code+'|'+pdaSnapshot()+'|'+state.status;
   toast(`${sp.code} abierta`,'success');
 }
 
@@ -5343,7 +5347,8 @@ let TARIFFS = []; let tfSeq = 1;
 const tf = { view:'list', f:{}, adv:false, selId:null, draft:null, edit:false, isNew:false, dirty:false, tab:'crit', returnTo:'landing', reason:null };
 
 function tfIsAll(v){ return !v || /^Tod/.test(v); }
-function tfCode(){ return 'S' + String(tfSeq++).padStart(23,'0'); }
+function tfCode(){ if(typeof SY!=='undefined' && SY && SY.on){ tfSeq++; return 'S' + String(Date.now()).padStart(23,'0'); }   /* compartido: código único entre usuarios */
+  return 'S' + String(tfSeq++).padStart(23,'0'); }
 function tfCrit(o){ return {suc:'Callao', puerto:TF_ALL.puerto, terminal:TF_ALL.terminal, cliente:TF_ALL.cliente, armador:TF_ALL.armador, nave:TF_ALL.nave, proc:TF_ALL.proc, ...(o||{})}; }
 function tfLine(sv, price, extra){
   return {svc:sv.id, factor:1, minQty:1, cost:0, price:Number(price)||0, min:Number(sv.min)||0, vat:sv.vat>0?Math.round(sv.vat*100):18, sujeto:sv.vat>0,
@@ -7767,6 +7772,161 @@ function init(){
   log('Sistema','Prototipo iniciado.');
 }
 init();
+
+/* ============================================================
+   DATOS COMPARTIDOS (pruebas) · Firebase Realtime Database por REST, sin SDK
+   Comparte PDAs, plantillas y tarifas entre quienes entren con la misma clave.
+   Sin clave (o con SY_DB vacío) el prototipo funciona igual que siempre: en memoria.
+============================================================ */
+const SY_DB = '';   /* URL de la base, ej. https://<proyecto>-default-rtdb.firebaseio.com · vacío = función apagada */
+var SY = { on:false, key:'', base:'', last:{pdas:{}, plantillas:{}, tarifas:{}}, es:null, timer:null, busy:false, err:false, openBase:'' };
+const SY_STATE_SKIP = ['clients','suppliers'];
+function syDb(){ return (window.SY_DB_TEST || SY_DB || '').replace(/\/+$/,''); }
+function syId(v){ return String(v).replace(/[.$#\[\]\/]/g,'_'); }
+function syCols(){
+  return {
+    plantillas: { list:()=>TEMPLATE_STORE, id:x=>x.id },
+    tarifas:    { list:()=>TARIFFS,        id:x=>x.id }
+  };
+}
+/* PDA en curso como registro del listado (con su estado completo para reabrirla) */
+function syCurPda(){
+  if(!state.pdaNumber || !state.categoryType) return null;
+  const mar = state.categoryType==='maritimo', v = state.vessel||{}, t = state.terrestrial||{};
+  const prev = SAMPLE_PDAS.find(p=>p.code===state.pdaNumber);
+  const by = (prev && prev.by) || curUser();
+  const snap = {}; Object.keys(state).forEach(k=>{ if(!SY_STATE_SKIP.includes(k)) snap[k] = state[k]; });
+  return { code:state.pdaNumber, tipo:state.categoryType, modo:state.maritimeMode||null,
+    nave: mar ? shipDisplayName() : (t.plate||''), servicio: mar ? (state.maritimeMode==='lineas' ? 'Liner' : 'Tramp') : 'Terrestre',
+    viaje: mar ? (v.voy||'') : (t.ref||''), puerto: mar ? (v.port||'') : (t.destination||''),
+    cliente:(state.client?.name||'').toUpperCase(), estado:state.status, etapa:state.status,
+    sub:`Compartida · creada por ${by}`, obs: state.obs ? state.obs.reason : '', data:{}, shared:true, by, snap:JSON.stringify(snap) };
+}
+function openSharedPda(sp){
+  const s = JSON.parse(sp.snap), st = s.step;
+  Object.assign(state, s);
+  if(state.client?.name && !state.clients.some(c=>normTxt(c.name)===normTxt(state.client.name))) state.clients.push({...state.client});
+  state.step = 0; goStep(st>=1 ? st : 2);
+  toast(`${sp.code} abierta (compartida)`,'success');
+}
+function syPut(col, id, val){
+  return fetch(`${SY.base}/${col}/${syId(id)}.json`, {method:'PUT', body:JSON.stringify(val)})
+    .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); SY.err = false; })
+    .catch(()=>{ SY.err = true; delete SY.last[col][id]; }).finally(()=>syChip());
+}
+/* Sube solo lo que cambió desde la última sincronización */
+function syFlush(){
+  if(!SY.on || SY.busy) return;
+  const by = curUser(), ts = Date.now();
+  Object.entries(syCols()).forEach(([col,c])=>{
+    const seen = {};
+    c.list().forEach(x=>{ const id = c.id(x), j = JSON.stringify(x); seen[id] = 1;
+      if(SY.last[col][id] !== j){ SY.last[col][id] = j; syPut(col, id, {j, by, ts}); } });
+    Object.keys(SY.last[col]).forEach(id=>{ if(!seen[id] && SY.last[col][id] !== null){ SY.last[col][id] = null; syPut(col, id, {del:true, by, ts}); } });
+  });
+  const cur = syCurPda();
+  if(cur){ const j = JSON.stringify(cur);
+    if(SY.last.pdas[cur.code] !== j){
+      /* una PDA de ejemplo recién abierta no se comparte hasta que alguien la cambia */
+      if(SY.last.pdas[cur.code] === undefined && SY.openBase === cur.code+'|'+pdaSnapshot()+'|'+state.status) return;
+      SY.last.pdas[cur.code] = j; syLocalPda(cur); syPut('pdas', cur.code, {j, by, ts});
+    } }
+}
+function syLocalPda(rec){
+  const i = SAMPLE_PDAS.findIndex(p=>p.code===rec.code);
+  if(i>-1) SAMPLE_PDAS[i] = rec; else SAMPLE_PDAS.unshift(rec);
+}
+/* Aplica un registro que llegó de otro usuario */
+function syApply(col, id, val){
+  if(!SY.last[col] || !val) return false;
+  if(col==='pdas'){
+    if(val.del || !val.j || SY.last.pdas[id] === val.j) return false;
+    const rec = JSON.parse(val.j);
+    if(rec.code === state.pdaNumber) return false;      // la PDA que tengo abierta no se pisa
+    SY.last.pdas[id] = val.j;
+    syLocalPda(rec); return true;
+  }
+  const c = syCols()[col], list = c.list();
+  const i = list.findIndex(x=>syId(c.id(x))===id);
+  if(val.del){ if(i<0) return false; SY.last[col][c.id(list[i])] = null; list.splice(i,1); return true; }
+  if(!val.j) return false;
+  const obj = JSON.parse(val.j), rid = c.id(obj);
+  if(SY.last[col][rid] === val.j) return false;
+  if(col==='tarifas') obj.lines = (obj.lines||[]).filter(l=>tfSvcAny(l.svc));   // servicios que este navegador no conoce
+  SY.last[col][rid] = col==='tarifas' ? JSON.stringify(obj) : val.j;
+  if(i>-1) list[i] = obj; else list.push(obj);
+  return true;
+}
+function syApplyAll(data){
+  let n = 0;
+  Object.keys(SY.last).forEach(col=>Object.entries((data && data[col]) || {}).forEach(([id,val])=>{ if(syApply(col,id,val)) n++; }));
+  return n;
+}
+function syAfter(n){
+  if(!n) return;
+  try{
+    applyTariffs();
+    const act = id => document.getElementById(id)?.classList.contains('active');
+    if(act('screenLanding')) applyFilters();
+    if(act('screenTariffs') && tf.view==='list') renderTfList();
+    if(act('screenTemplates')) renderTemplateManager();
+  }catch(e){}
+}
+function syListen(){
+  if(SY.es) SY.es.close();
+  const es = SY.es = new EventSource(SY.base + '.json');
+  const on = e => { let d; try{ d = JSON.parse(e.data); }catch(x){ return; } if(!d) return;
+    SY.busy = false; SY.err = false;
+    const parts = String(d.path||'/').split('/').filter(Boolean);
+    let n = 0;
+    if(parts.length===0) n = syApplyAll(d.data);
+    else if(parts.length===1 && SY.last[parts[0]]) n = syApplyAll({[parts[0]]:d.data});
+    else if(parts.length===2) n = syApply(parts[0], parts[1], d.data) ? 1 : 0;
+    else { syReload(); return; }
+    syAfter(n); syChip(); };
+  es.addEventListener('put', on); es.addEventListener('patch', on);
+  es.addEventListener('cancel', ()=>{ SY.err = true; syChip(); });
+  es.addEventListener('auth_revoked', ()=>{ SY.err = true; syChip(); });
+  es.onerror = ()=>{ SY.err = true; syChip(); };
+}
+function syReload(){ fetch(SY.base+'.json').then(r=>r.json()).then(d=>{ syAfter(syApplyAll(d)); syChip(); }).catch(()=>{ SY.err = true; syChip(); }); }
+function syChip(){
+  const b = document.getElementById('syBtn'); if(!b) return;
+  b.style.display = syDb() ? '' : 'none';
+  b.classList.toggle('on', SY.on && !SY.err);
+  b.textContent = !SY.on ? 'Compartir datos' : SY.err ? 'Compartido · sin conexión' : 'Datos compartidos';
+  b.title = SY.on ? 'Las PDA, plantillas y tarifas se guardan para todos los que usan la misma clave. Clic para opciones.' : 'Ingresa la clave de pruebas para guardar y ver los datos de todos';
+  const note = document.getElementById('resultsNote'); if(note && SY.on) note.textContent = 'Datos de demostración + compartidos';
+}
+function syConnect(key, quiet){
+  key = String(key||'').trim();
+  if(!/^[A-Za-z0-9_-]{8,40}$/.test(key)){ if(!quiet) toast('La clave debe tener de 8 a 40 letras o números','error'); return; }
+  SY.key = key; SY.base = `${syDb()}/salas/${key}`; SY.on = true; SY.busy = true; SY.err = false;
+  try{ localStorage.setItem('pdaSala', key); }catch(e){}
+  syListen();
+  if(!SY.timer) SY.timer = setInterval(syFlush, 2500);
+  syChip(); if(!quiet) toast('Datos compartidos activados','success');
+}
+function syMenu(){
+  if(!SY.on){ const k = prompt('Clave de pruebas (te la da quien coordina las pruebas):'); if(k) syConnect(k); return; }
+  const admin = /Gerencia/.test(curUser());
+  const op = prompt('Datos compartidos activos.\n\n1 = Dejar de compartir en este navegador' + (admin ? '\n2 = Restablecer datos de prueba (borra lo compartido para todos)' : '') + '\n\nEscribe el número:');
+  if(op==='1'){ try{ localStorage.removeItem('pdaSala'); }catch(e){} location.reload(); }
+  else if(op==='2' && admin && confirm('Se borrarán las PDA, plantillas y tarifas compartidas de TODOS los usuarios. ¿Continuar?')){
+    fetch(SY.base+'.json', {method:'DELETE'}).then(()=>location.reload()).catch(()=>toast('No se pudo restablecer','error'));
+  }
+}
+function syInit(){
+  /* ids estables de las plantillas de ejemplo (iguales en todos los navegadores) */
+  TEMPLATE_STORE.forEach((t,i)=>{ t.id = 'tpl-s'+String(i+1).padStart(3,'0'); });
+  /* línea base: lo que ya trae el prototipo no se sube */
+  Object.entries(syCols()).forEach(([col,c])=>c.list().forEach(x=>{ SY.last[col][c.id(x)] = JSON.stringify(x); }));
+  syChip();
+  if(!syDb()) return;
+  let k = ''; try{ k = localStorage.getItem('pdaSala') || ''; }catch(e){}
+  if(k) syConnect(k, true);
+}
+syInit();
 
 /* ============================================================
    CAMBIOS VS CONNECT ACTUAL (Ver PDA de cert-internalportal)
