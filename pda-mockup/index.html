@@ -7778,7 +7778,7 @@ init();
    Comparte PDAs, plantillas y tarifas entre quienes entren con la misma clave.
    Sin clave (o con SY_DB vacío) el prototipo funciona igual que siempre: en memoria.
 ============================================================ */
-const SY_DB = '';   /* URL de la base, ej. https://<proyecto>-default-rtdb.firebaseio.com · vacío = función apagada */
+const SY_DB = 'https://cosmos-pda-mockup-default-rtdb.firebaseio.com';   /* URL de la base, ej. https://<proyecto>-default-rtdb.firebaseio.com · vacío = función apagada */
 var SY = { on:false, key:'', base:'', last:{pdas:{}, plantillas:{}, tarifas:{}}, es:null, timer:null, busy:false, err:false, openBase:'' };
 const SY_STATE_SKIP = ['clients','suppliers'];
 function syDb(){ return (window.SY_DB_TEST || SY_DB || '').replace(/\/+$/,''); }
@@ -7903,6 +7903,8 @@ function syConnect(key, quiet){
   if(!/^[A-Za-z0-9_-]{8,40}$/.test(key)){ if(!quiet) toast('La clave debe tener de 8 a 40 letras o números','error'); return; }
   SY.key = key; SY.base = `${syDb()}/salas/${key}`; SY.on = true; SY.busy = true; SY.err = false;
   try{ localStorage.setItem('pdaSala', key); }catch(e){}
+  fetch(SY.base+'/pdas.json?shallow=true').then(r=>{ if(r.status===401 || r.status===403){   /* clave que la base no reconoce */
+    SY.on = false; if(SY.es) SY.es.close(); try{ localStorage.removeItem('pdaSala'); }catch(e){} syChip(); toast('Clave de pruebas incorrecta','error'); } }).catch(()=>{});
   syListen();
   if(!SY.timer) SY.timer = setInterval(syFlush, 2500);
   syChip(); if(!quiet) toast('Datos compartidos activados','success');
