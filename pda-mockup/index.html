@@ -1774,7 +1774,7 @@
         <h1>Buscar PDA
           <span class="type-chip" id="typeChip">
             <span id="typeChipLabel">-</span>
-            <button class="switch-type" onclick="changeType()">Cambiar tipo</button>
+            <button class="switch-type" onclick="changeType()" style="display:none">Cambiar tipo</button>
           </span>
         </h1>
         <p id="landingSub">Escenarios de demostración con distintas naves, servicios, cargas y estados.</p>
@@ -3388,7 +3388,7 @@ document.querySelectorAll('#stepsNav button').forEach(b=>b.onclick=()=>{ if(!b.d
 /* ============================================================
    TIPO
 ============================================================ */
-function chooseType(type){
+function chooseType(type, quiet){
   state.categoryType = type;
   state.quotationType = type;
   state.maritimeMode = null;
@@ -3408,7 +3408,7 @@ function chooseType(type){
   document.getElementById('stepsNav').style.display = 'none';
   renderResultsByType();
   showScreen('screenLanding');
-  toast(`${type==='maritimo'?'Marítimo':'Terrestre'} seleccionado`,'success');
+  if(!quiet) toast(`${type==='maritimo'?'Marítimo':'Terrestre'} seleccionado`,'success');
 }
 function changeType(){ state.categoryType = null; state.quotationType = null; showScreen('screenType'); }
 function backToLanding(){
@@ -7769,6 +7769,7 @@ function init(){
   document.getElementById('stepsNav').style.display = 'none';
   seedRequests();
   ccClock(); setInterval(ccClock, 30000); updatePagebar('screenType');
+  chooseType('maritimo', true);   /* sin carátula: se entra directo a Buscar PDA (Marítimo) */
   log('Sistema','Prototipo iniciado.');
 }
 init();
