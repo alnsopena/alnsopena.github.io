@@ -139,11 +139,11 @@
   <!-- ============ MAESTRO DE SERVICIOS Y FÓRMULAS ============ -->
   <section class="panel" id="screenMaster">
     <div class="buscar-head">
-      <div><h1>Maestro de servicios <span class="type-chip" id="masterTypeChip"></span></h1></div>
+      <div><h1>Buscar Servicios <span class="type-chip cc-prop" data-prop="Propuesta sin ticket · Tipo de PDA" id="masterTypeChip"></span></h1><div class="fac-sub">Ingrese datos para buscar</div></div>
       <div class="buscar-head-actions">
-        <button class="btn-corp-outline" id="masterBackBtn" onclick="closeMaster()">← Volver</button>
-        <button class="btn-corp-outline" id="masterReqBtn" onclick="openRequests('master')">Solicitudes <span class="req-count" id="reqCount"></span></button>
-        <button class="btn-corp" id="masterNewBtn" onclick="newMasterService()">+ Nuevo</button>
+        <button class="btn-corp-outline cc-prop" data-prop="Propuesta sin ticket · Volver a la PDA" id="masterBackBtn" onclick="closeMaster()">← Volver</button>
+        <button class="btn-corp-outline" id="masterReqBtn" onclick="openRequests('master')">Solicitudes <span class="req-count cc-prop" id="reqCount"></span></button>
+        <button class="btn-corp" id="masterNewBtn" onclick="newMasterService()">Nuevo</button>
       </div>
     </div>
     <div id="masterPerm"></div>
@@ -154,22 +154,28 @@
           <div class="filter-field"><label>Descripción</label><input id="mfDesc" placeholder="Descripción" oninput="setMasterFilter('desc',this.value)"></div>
           <div class="filter-field"><label>Clase</label><select id="mfClase" onchange="setMasterFilter('clase',this.value)"></select></div>
           <div class="filter-field"><label>Categoría</label><select id="mfCat" onchange="setMasterFilter('cat',this.value)"></select></div>
+          <div class="filter-field"><label>Cta. Contable Ingreso</label><input id="mfIng" list="mfCtaList" placeholder="Ingresar cuenta" oninput="setMasterFilter('ing',this.value)"></div>
+          <div class="filter-field"><label>Cta. Contable Egreso</label><input id="mfEgr" list="mfCtaList" placeholder="Ingresar cuenta" oninput="setMasterFilter('egr',this.value)"></div>
+          <div class="filter-field"><label>Cta. Detracción</label><input id="mfDet" list="mfCtaList" placeholder="Ingresar cuenta" oninput="setMasterFilter('det',this.value)"></div>
+          <div class="filter-field"><label>Centro de Costo</label><input id="mfCc" list="mfCcList" placeholder="Ingresar centro de costo" oninput="setMasterFilter('cc',this.value)"></div>
+          <div class="filter-field"><label>Tipo de Nave</label><select id="mfVt" onchange="setMasterFilter('vt',this.value)"></select></div>
+          <datalist id="mfCtaList"></datalist><datalist id="mfCcList"></datalist>
         </div>
-        <div class="tf-advbar"><button type="button" class="tf-advbtn" id="mAdvBtn" onclick="toggleMAdv()">Filtros Avanzados <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg></button></div>
-        <div class="filters-grid g4" id="mAdv" style="display:none">
+        <div class="tf-advbar cc-prop" data-prop="Propuesta sin ticket · Filtros por fórmula y tarifa"><button type="button" class="tf-advbtn" id="mAdvBtn" onclick="toggleMAdv()">Filtros Avanzados <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg></button></div>
+        <div class="filters-grid g4 cc-prop" id="mAdv" style="display:none">
           <div class="filter-field"><label>Fórmula</label><select id="mfFormula" onchange="setMasterFilter('fcode',this.value)"></select></div>
           <div class="filter-field"><label>Tarifa</label><select id="mfTarifa" onchange="setMasterFilter('tar',this.value)"><option value="">Todas</option><option value="con">Con tarifa vigente</option><option value="sin">Sin tarifa vigente</option></select></div>
         </div>
         <div class="filter-actions">
-          <label class="obs-filter"><input type="checkbox" id="masterPend" onchange="setMasterFilter('pend',this.checked)"> Solo pendientes</label>
+          <label class="obs-filter cc-prop" data-prop="Propuesta sin ticket"><input type="checkbox" id="masterPend" onchange="setMasterFilter('pend',this.checked)"> Solo pendientes</label>
           <button class="btn-corp-outline" onclick="clearMasterFilters()">Limpiar</button>
           <button class="btn-corp" onclick="renderMasterList()">Buscar</button>
         </div>
       </div>
       <div class="results-head"><h2>Resultados <span class="count" id="masterCount"></span></h2>
-        <button class="btn-corp-outline" onclick="exportMasterCsv()">Exportar</button></div>
+        <button class="btn-corp-outline" id="masterExp" onclick="exportMasterCsv()">Exportar</button></div>
       <div class="results-table"><table>
-        <thead><tr><th>Código</th><th>Descripción</th><th>Categoría</th><th>Cta. Ingreso</th><th>Cta. Egreso</th><th>Código ERP</th><th>Fórmula</th><th class="r">Tarifa vigente</th><th>Pendiente</th></tr></thead>
+        <thead><tr><th>Código</th><th>Descripción</th><th>Categoría</th><th>Cta. Contable Ingreso</th><th>Cta. Contable Egreso</th><th>Cta. Detracción</th><th>Centro de Costo</th><th>Código ERP</th><th>Fórmula</th><th class="r cc-prop">Tarifa vigente</th><th class="cc-prop">Pendiente</th></tr></thead>
         <tbody id="masterList"></tbody></table><div class="cc-pager" id="masterPager"></div></div>
     </div>
     <div id="mDetail" style="display:none"><div id="masterEditor"></div></div>
@@ -233,29 +239,30 @@
   <!-- ============ SOCIOS (Data Maestra > Socio de Connect) ============ -->
   <section class="panel" id="screenPartners">
     <div class="buscar-head">
-      <div><h1>Socios</h1></div>
+      <div><h1>Buscar Socios</h1><div class="fac-sub">Ingrese datos para buscar</div></div>
       <div class="buscar-head-actions">
-        <button class="btn-corp-outline" id="ptBackBtn" onclick="closePartners()">← Volver</button>
-        <button class="btn-corp" id="ptNewBtn" onclick="newPartner()">+ Nuevo</button>
+        <button class="btn-corp-outline cc-prop" data-prop="Propuesta sin ticket · Volver a la PDA" id="ptBackBtn" onclick="closePartners()">← Volver</button>
+        <button class="btn-corp" id="ptNewBtn" onclick="newPartner()">Nuevo</button>
       </div>
     </div>
     <div id="ptList">
       <div class="buscar-filters">
-        <div class="filters-grid g3">
-          <div class="filter-field"><label>Número Documento</label><input id="pfDoc" placeholder="Número Documento" oninput="setPtFilter('doc',this.value)"></div>
-          <div class="filter-field"><label>Nombre Largo</label><input id="pfName" placeholder="Ingresar Nombre" oninput="setPtFilter('name',this.value)"></div>
+        <div class="filters-grid g4">
+          <div class="filter-field"><label>Número Documento</label><input id="pfDoc" list="pfDocList" maxlength="20" placeholder="Número Documento" oninput="setPtFilter('doc',this.value)"><datalist id="pfDocList"></datalist></div>
+          <div class="filter-field"><label>Nombre Largo</label><input id="pfName" list="pfNameList" maxlength="100" placeholder="Ingresar Nombre" oninput="setPtFilter('name',this.value)"><datalist id="pfNameList"></datalist></div>
           <div class="filter-field"><label>Rol</label><select id="pfRol" onchange="setPtFilter('rol',this.value)"></select></div>
+          <div class="filter-field"><label>Estado</label><select id="pfEst" onchange="setPtFilter('est',this.value)"><option value="">Todos los estados</option><option value="Por homologar">Pendiente de aprobación</option><option value="Homologado">Aprobado</option></select></div>
         </div>
         <div class="filter-actions tf-actions">
-          <button class="btn-corp-outline" onclick="clearPtFilters()">Limpiar</button>
-          <button class="btn-corp" onclick="renderPtList()">Buscar</button>
+          <button class="btn-corp-outline" id="ptLimpiar" onclick="clearPtFilters()">Limpiar</button>
+          <button class="btn-corp" id="ptBuscar" onclick="renderPtList()">Buscar</button>
         </div>
       </div>
       <div class="results-head"><h2>Resultados <span class="count" id="ptCount"></span></h2>
-        <div class="tf-quick" id="ptQuick"></div>
-        <button class="btn-corp-outline" onclick="exportPtCsv()">Exportar</button></div>
+        <div class="tf-quick cc-prop" data-prop="Propuesta sin ticket · Accesos rápidos" id="ptQuick"></div>
+        <button class="btn-corp-outline" id="ptExp" onclick="exportPtCsv()">Exportar</button></div>
       <div class="results-table"><table>
-        <thead><tr><th>Número Documento</th><th>Nombre Corto</th><th>Dirección</th><th>Roles</th><th>Homologación <span class="tf-new">nuevo</span></th></tr></thead>
+        <thead><tr><th>Número Documento</th><th>Nombre Corto</th><th>Dirección</th><th class="cc-prop">Roles</th><th>Estado</th></tr></thead>
         <tbody id="ptResults"></tbody></table><div class="cc-pager" id="ptPager"></div></div>
     </div>
     <div id="ptDetail" style="display:none"><div id="ptEditor"></div></div>
@@ -290,23 +297,27 @@
   <!-- ============ NAVE (Data Maestra > Nave de Connect) ============ -->
   <section class="panel" id="screenVessels">
     <div class="buscar-head">
-      <div><h1>Naves</h1></div>
-      <div class="buscar-head-actions"><button class="btn-corp-outline" id="nvBackBtn" onclick="closeVessels()">← Volver</button><button class="btn-corp" id="nvNewBtn" onclick="newVessel()">+ Nuevo</button></div>
+      <div><h1>Buscar Nave</h1><div class="fac-sub">Ingrese datos para buscar</div></div>
+      <div class="buscar-head-actions"><button class="btn-corp-outline cc-prop" data-prop="Propuesta sin ticket · Volver a la PDA" id="nvBackBtn" onclick="closeVessels()">← Volver</button><button class="btn-corp" id="nvNewBtn" onclick="newVessel()">Nuevo</button></div>
     </div>
     <div id="nvList">
       <div class="buscar-filters">
         <div class="filters-grid g4">
-          <div class="filter-field"><label>Nombre de Nave</label><input id="nfName" placeholder="Ingresar Nombre de Nave" oninput="setNvFilter('name',this.value)"></div>
-          <div class="filter-field"><label>Código Lloyds (IMO)</label><input id="nfImo" placeholder="Ingresar Código Lloyds (IMO)" oninput="setNvFilter('imo',this.value)"></div>
+          <div class="filter-field"><label>Nombre de Nave</label><input id="nfName" maxlength="100" placeholder="Ingresar Nombre de Nave" oninput="setNvFilter('name',this.value)"></div>
+          <div class="filter-field"><label>Código Lloyds (IMO)</label><input id="nfImo" maxlength="7" placeholder="Ingresar Código Lloyds (IMO)" oninput="setNvFilter('imo',this.value)"></div>
           <div class="filter-field"><label>Tipo de Nave</label><select id="nfTipo" onchange="setNvFilter('tipo',this.value)"></select></div>
           <div class="filter-field"><label>Bandera</label><select id="nfFlag" onchange="setNvFilter('flag',this.value)"></select></div>
-          <div class="filter-field"><label>Armador</label><input id="nfArm" placeholder="Ingresar Armador" oninput="setNvFilter('armador',this.value)"></div>
+          <div class="filter-field"><label>Armador</label><input id="nfArm" list="nfArmList" placeholder="Ingresar Armador" oninput="setNvFilter('armador',this.value)"><datalist id="nfArmList"></datalist></div>
+          <div class="filter-field"><label>Rango de Fecha de Creación</label><div class="dm-rango"><input type="date" id="nfDesde" onkeydown="return false" onchange="setNvFilter('desde',this.value)"><input type="date" id="nfHasta" onkeydown="return false" onchange="setNvFilter('hasta',this.value)"></div></div>
+          <div class="filter-field"><label>Estado</label><select id="nfEst" onchange="setNvFilter('est',this.value)"><option value="">Todos los estados</option><option value="Por homologar">Pendiente de aprobación</option><option value="Homologado">Aprobado</option></select></div>
         </div>
-        <div class="filter-actions tf-actions"><button class="btn-corp-outline" onclick="clearNvFilters()">Limpiar</button><button class="btn-corp" onclick="renderNvList()">Buscar</button></div>
+        <div class="tf-advbar"><button type="button" class="tf-advbtn" id="nvAdvBtn" onclick="toggleNvAdv()">Filtros avanzados <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg></button></div>
+        <div class="filters-grid g4" id="nvAdv" style="display:none"></div>
+        <div class="filter-actions tf-actions"><button class="btn-corp-outline" id="nvLimpiar" onclick="clearNvFilters()">Limpiar</button><button class="btn-corp" id="nvBuscar" onclick="nvBuscarRango()">Buscar</button></div>
       </div>
-      <div class="results-head"><h2>Resultados <span class="count" id="nvCount"></span></h2><div class="tf-quick" id="nvQuick"></div><button class="btn-corp-outline" id="nvExp" onclick="nvExport()">Exportar</button></div>
+      <div class="results-head"><h2>Resultados <span class="count" id="nvCount"></span></h2><div class="tf-quick cc-prop" data-prop="Propuesta sin ticket · Accesos rápidos" id="nvQuick"></div><button class="btn-corp-outline" id="nvExp" onclick="nvExport()">Exportar</button></div>
       <div class="results-table"><table>
-        <thead><tr><th>Nombre de Nave</th><th>Código Lloyds (IMO)</th><th>Tipo de Nave</th><th>Bandera</th><th>Armador</th><th>Fecha de Creación</th><th class="r">LOA</th><th class="r">Manga</th><th class="r">Calado</th><th class="r">TRG</th><th class="r">TRN</th><th>Homologación <span class="tf-new">nuevo</span></th></tr></thead>
+        <thead><tr><th>Nombre de Nave</th><th>Código Lloyds (IMO)</th><th>Estado</th><th>Tipo de Nave</th><th>Bandera</th><th>Armador</th><th>Fecha de Creación</th><th class="r">LOA</th><th class="r">Manga</th><th class="r">Calado</th><th class="r">TRG</th><th class="r">TRN</th></tr></thead>
         <tbody id="nvResults"></tbody></table><div class="cc-pager" id="nvPager"></div></div>
     </div>
     <div id="nvDetail" style="display:none"><div id="nvEditor"></div></div>
@@ -328,7 +339,7 @@
     <div class="results-table tbl-wrap"><table>
       <thead id="reqHead"></thead>
       <tbody id="reqBodyList"></tbody></table></div>
-    <div class="pnote proc"><span class="pn-tag">Pendiente de proceso</span><b>Plazos y responsables.</b> Definir el plazo de homologación por área y quién en Facturación aprueba. Mientras tanto, el servicio no se puede cotizar en la PDA.</div>
+    <div class="pnote proc"><span class="pn-tag">Pendiente de proceso</span><b>Plazos y responsables.</b> Definir el plazo de homologación por área y quién en Facturación aprueba. Mientras tanto, el servicio está en la PDA por homologar y la PDA no se puede aprobar.</div>
   </section>
 
   <!-- ============ PLANTILLAS ============ -->
@@ -1601,11 +1612,11 @@ function showScreen(id){
 const PAGEBAR = {
   screenDashboard:['Dashboard',['Inicio','Dashboard']],
   screenType:['PDA',['Inicio','PDA']], screenLanding:['Buscar PDA',['Inicio','PDA','Buscar PDA']],
-  screenMaster:['Maestro de servicios',['Inicio','Servicios']], screenTemplates:['Plantillas',['Inicio','PDA','Plantillas']],
+  screenMaster:['Buscar Servicios',['Inicio','Servicios','Consulta de Servicios']], screenTemplates:['Plantillas',['Inicio','PDA','Plantillas']],
   screenRequests:['Solicitudes',['Inicio','Servicios','Solicitudes']],
-  screenPartners:['Consulta de Socios',['Inicio','Socios','Consulta de Socios']],
+  screenPartners:['Buscar Socios',['Inicio','Socios','Consulta de Socios']],
   screenVoyages:['Consulta Viaje',['Inicio','Viaje','Consulta Viaje']],
-  screenVessels:['Consulta Nave',['Inicio','Nave','Consulta Nave']],
+  screenVessels:['Buscar Nave',['Inicio','Nave','Consulta Nave']],
   screenTariffs:['Consulta Tarifa',['Inicio','Tarifa','Consulta Tarifa']]
 };
 function updatePagebar(id){
@@ -1637,8 +1648,8 @@ const CC_SUBMENU = {
   'Agenciamiento':[['Viaje',"openVoyages(null,'landing')",'<path d="M3 17l2 3h14l2-3"/><path d="M5 17V9h14v8M12 9V4M9 6h6"/>']],
   'PDA':[['PDA','backToLanding()','<circle cx="12" cy="12" r="8"/><path d="M9 9h4a2 2 0 0 1 0 4h-3v3"/>']],
   'Tarifa':[['Tarifa',"openTariffs(null,'landing')",'<circle cx="12" cy="12" r="8"/><path d="M14.5 9.5c-.4-.9-1.4-1.5-2.5-1.5-1.5 0-2.5.8-2.5 2s1 1.6 2.5 2 2.5.9 2.5 2-1 2-2.5 2c-1.2 0-2.2-.6-2.6-1.6M12 6.5v11"/>']],
-  'Data Maestra':[['Catálogo','vyOut()','<path d="M4 6h16M4 12h10M4 18h7M16 16l2 2 4-4"/>'],['Organización','openOrgFin()','<path d="M4 21V7l8-4 8 4v14M9 21v-6h6v6M8 10h.01M12 10h.01M16 10h.01"/>',true],['Socio',"openPartners(null,'landing')",'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.5 1.7-2.2 3-2.2s2.4.7 3 2.2M14 10h4M14 13h3"/>'],['Servicios',"openMaster(null,'landing')",'<rect x="4" y="7" width="16" height="12" rx="2"/><path d="M9 7V5h6v2M4 12h16"/>'],
-    ['Nave',"openVessels(null,'landing')",'<path d="M3 17l2 3h14l2-3"/><path d="M5 17V9h14v8M12 9V4M9 6h6"/>'],['Tipo de cambio','vyOut()','<path d="M4 8h13l-3-3M20 16H7l3 3"/>'],['Series','vyOut()','<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M10 8l-1 8M15 8l-1 8M8 11h9M7 14h9"/>'],
+  'Data Maestra':[['Catálogo','vyOut()','<path d="M4 6h16M4 12h10M4 18h7M16 16l2 2 4-4"/>'],['Organización','openOrgFin()','<path d="M4 21V7l8-4 8 4v14M9 21v-6h6v6M8 10h.01M12 10h.01M16 10h.01"/>',true],['Socio',"openPartners(null,'landing')",'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.5 1.7-2.2 3-2.2s2.4.7 3 2.2M14 10h4M14 13h3"/>',true],['Servicios',"openMaster(null,'landing')",'<rect x="4" y="7" width="16" height="12" rx="2"/><path d="M9 7V5h6v2M4 12h16"/>'],
+    ['Nave',"openVessels(null,'landing')",'<path d="M3 17l2 3h14l2-3"/><path d="M5 17V9h14v8M12 9V4M9 6h6"/>',true],['Tipo de cambio','vyOut()','<path d="M4 8h13l-3-3M20 16H7l3 3"/>'],['Series','vyOut()','<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M10 8l-1 8M15 8l-1 8M8 11h9M7 14h9"/>'],
     ['Plantilla Email','vyOut()','<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>'],['Días No Laborables','vyOut()','<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>']]
 };
 function ccMenu(name, btn){
@@ -3355,8 +3366,12 @@ function enrichMasterConnect(){
 function openMaster(selId, returnTo){
   if(!state.categoryType){ toast('Elige primero Marítimo o Terrestre','error'); return; }
   master.returnTo = returnTo || 'landing';
-  master.f = {code:'', desc:'', clase:'', cat:'', pend:false, fcode:'', tar:''};
-  ['mfCode','mfDesc','mfFormula','mfTarifa'].forEach(id=>{ const el = document.getElementById(id); if(el) el.value = ''; });
+  master.f = {code:'', desc:'', clase:'', cat:'', pend:false, fcode:'', tar:'', ing:'', egr:'', det:'', cc:'', vt:''};
+  ['mfCode','mfDesc','mfFormula','mfTarifa','mfIng','mfEgr','mfDet','mfCc'].forEach(id=>{ const el = document.getElementById(id); if(el) el.value = ''; });
+  document.getElementById('mfVt').innerHTML = '<option value="">Todos</option>' + VESSEL_TYPES.map(v=>`<option value="${v.k}">${esc(v.es)}</option>`).join('');
+  const ctas = [...new Set(masterCatalog().flatMap(x=>[x.ctaIng,x.ctaEgr,x.ctaDet]).filter(Boolean))];
+  document.getElementById('mfCtaList').innerHTML = ctas.map(c=>`<option value="${esc(c)}">`).join('');
+  document.getElementById('mfCcList').innerHTML = Object.entries(SVC_CC).map(([a,c])=>`<option value="${c}">${esc(a)}</option>`).join('');
   document.getElementById('masterPend').checked = false;
   const d = currentDims();
   master.test = state.categoryType==='terrestre'
@@ -3441,8 +3456,8 @@ function dataStateHtml(x){
 function isPendingSvc(x){ return !!(x.ratePending || x.codePending || x.reclass); }
 function setMasterFilter(k,v){ master.f[k] = v; master.page = 1; renderMasterList(); }
 function clearMasterFilters(){
-  master.f = {code:'', desc:'', clase:'', cat:'', pend:false, fcode:'', tar:''};
-  ['mfCode','mfDesc','mfClase','mfCat','mfFormula','mfTarifa'].forEach(id=>{ const el = document.getElementById(id); if(el) el.value = ''; });
+  master.f = {code:'', desc:'', clase:'', cat:'', pend:false, fcode:'', tar:'', ing:'', egr:'', det:'', cc:'', vt:''};
+  ['mfCode','mfDesc','mfClase','mfCat','mfFormula','mfTarifa','mfIng','mfEgr','mfDet','mfCc','mfVt'].forEach(id=>{ const el = document.getElementById(id); if(el) el.value = ''; });
   document.getElementById('masterPend').checked = false;
   renderMasterList();
 }
@@ -3453,8 +3468,14 @@ function masterFiltered(){
     (!code || normTxt(x.ser||'').includes(code) || normTxt(x.sap||'').includes(code)) &&
     (!desc || normTxt(x.name).includes(desc) || normTxt(x.nameEn||'').includes(desc)) &&
     (!f.clase || x.clase===f.clase) && (!f.cat || x.cat===f.cat) && (!f.pend || isPendingSvc(x)) && (!f.fcode || x.fcode===f.fcode) &&
-    (!f.tar || (f.tar==='con') === !!(x.tariffCode && !x.ratePending)));
+    (!f.tar || (f.tar==='con') === !!(x.tariffCode && !x.ratePending)) &&
+    (!f.ing || String(x.ctaIng||'').includes(f.ing)) && (!f.egr || String(x.ctaEgr||'').includes(f.egr)) && (!f.det || String(x.ctaDet||'').includes(f.det)) &&
+    (!f.cc || normTxt(svcCC(x)).includes(normTxt(f.cc))) && (!f.vt || x.allVessels || (x.vesselTypes||[]).includes(f.vt)));
 }
+/* Centro de Costo (ficticio, por área) y aviso de Connect cuando la PDA no puede calcular el servicio */
+const SVC_CC = {'Agenciamiento':'CC-1101', 'Operaciones':'CC-1201', 'Documentación':'CC-1301', 'Transporte':'CC-1401', 'Facturación':'CC-1501'};
+function svcCC(x){ return x.cCosto || SVC_CC[x.area] || 'CC-1001'; }
+function svcSinUnidad(x){ return !x.tariffUnit || !x.formula; }
 function toggleMAdv(){
   master.adv = !master.adv;
   document.getElementById('mAdv').style.display = master.adv ? '' : 'none';
@@ -3472,21 +3493,18 @@ function renderMasterList(){
       <td>${esc(catLabel(x.cat))}</td>
       <td class="mono">${esc(x.ctaIng||'-')}</td>
       <td class="mono">${esc(x.ctaEgr||'-')}</td>
+      <td class="mono">${esc(x.ctaDet||'-')}</td>
+      <td class="mono">${esc(svcCC(x))}</td>
       <td class="mono">${esc(x.sap||'-')}</td>
-      <td><span class="mono">${esc(x.fcode||'')}</span><div class="pda-row-sub">${esc(formulaPlain(x.formula, activeCatalogKey()))}</div></td>
-      <td class="r">${svcTariffCell(x)}</td>
-      <td>${dataStateHtml(x)}</td></tr>`).join('')
-    || '<tr><td colspan="9" style="text-align:center;padding:30px;color:#8D9BA2;font-style:italic">Sin resultados</td></tr>';
+      <td>${svcSinUnidad(x) ? '<span class="ds warn" title="La PDA no puede calcular este servicio: le falta la unidad de tarifa o la fórmula, o tiene una fórmula que el cálculo no admite.">Sin unidad de tarifa</span>' : `<span class="mono">${esc(x.fcode||'')}</span><div class="pda-row-sub">${esc(formulaPlain(x.formula, activeCatalogKey()))}</div>`}</td>
+      <td class="r cc-prop">${svcTariffCell(x)}</td>
+      <td class="cc-prop">${dataStateHtml(x)}</td></tr>`).join('')
+    || '<tr><td colspan="11" style="text-align:center;padding:30px;color:#8D9BA2;font-style:italic">No se encontraron resultados con los criterios seleccionados.</td></tr>';
   document.getElementById('masterCount').textContent = all.length;
 }
 function exportMasterCsv(){
-  const rows = [['Código','Descripción','Descripción (Inglés)','Clase','Categoría','Cta. Ingreso','Cta. Egreso','Cta. Detracción','Código ERP','Unidad de Tarifa','Fórmula','Cálculo','Pendiente']]
-    .concat(masterFiltered().map(x=>[x.ser,x.name,x.nameEn||'',x.clase,catLabel(x.cat),x.ctaIng,x.ctaEgr,x.ctaDet,x.sap,x.tariffUnit,x.fcode,
-      formulaPlain(x.formula,activeCatalogKey()), dataStateHtml(x).replace(/<[^>]+>/g,' ').trim()]));
-  const csv = '﻿' + rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(';')).join('\r\n');
-  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
-  a.download = 'servicios.csv'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
-  toast('Servicios exportados','success');
+  facXlsx('Servicios','Servicios',['Código','Descripción','Categoría','Cta. Contable Ingreso','Cta. Contable Egreso','Cta. Detracción','Centro de Costo','Código ERP','Fórmula'],
+    masterFiltered().map(x=>[x.ser||'',x.name,catLabel(x.cat),x.ctaIng||'',x.ctaEgr||'',x.ctaDet||'',svcCC(x),x.sap||'',svcSinUnidad(x)?'Sin unidad de tarifa':(x.fcode||'')]));
 }
 
 /* ---------- Detalle: Información General + pestañas ---------- */
@@ -3532,24 +3550,26 @@ function renderMasterEditor(){
     ? `<button class="btn-corp-outline" onclick="discardMaster()">Cancelar</button><button class="btn-corp" id="masterSaveBtn" onclick="saveMaster()">Guardar</button>`
     : can ? `<button class="btn-corp" onclick="startMasterEdit()">Editar</button>` : '';
   const info = `<div class="buscar-filters">
-      <div class="md-cardhead"><div><h3 class="md-h">Información General</h3><div class="md-flags">${dataStateHtml(d)}${master.isNew?'':(d.ratePending||!d.tariffCode
+      <div class="md-cardhead"><div><h3 class="md-h">Información General</h3><div class="md-flags cc-prop" data-prop="Propuesta sin ticket · Estado y tarifas del servicio">${dataStateHtml(d)}${master.isNew?'':(d.ratePending||!d.tariffCode
         ? (canEditTariffs() ? `<button class="link-btn" onclick="newTariffForSvc('${d.id}','master')">+ Crear tarifa</button>` : '<span class="ds warn">Sin tarifa</span>')
         : `<button class="link-btn" onclick="openTariffs({svcId:'${d.id}',svc:master.draft.name},'master')">Tarifas (${tariffsOfSvc(d.id).length})</button>`)}</div></div><div class="md-actions">${actions}</div></div>
       <div class="filters-grid g3">
-        ${fld('Clase', sel('clase', CLASES_SVC, d.clase))}
+        ${fld('Clase *', sel('clase', CLASES_SVC, d.clase))}
         ${fld('Categoría', sel('cat', cats, d.cat, cats.map(c=>catLabel(c))))}
-        ${fld('Código ERP', inp('sap','Ej. R00018'))}
-        ${fld('Código', `<input disabled value="${esc(d.ser||'')}">`)}
+        ${fld('Código ERP', master.isNew ? inp('sap','Ej. R00018') : `<input disabled data-f="sap" value="${esc(d.sap||'')}">`)}
+        ${fld('Código', `<input disabled value="${esc(d.ser||'')}" placeholder="Automático">`)}
         ${fld('Descripción *', inp('name') + fErr(master.errs,'name'))}
         ${fld('Descripción (Inglés)', inp('nameEn'))}
         ${fld('Cta. Ingresos', inp('ctaIng'))}
         ${fld('Cta. Egresos', inp('ctaEgr'))}
         ${fld('Cta. Detracción', inp('ctaDet','Elegir Cta. Detracción'))}
-        ${fld('División de Negocio', sel('division', DIVISIONES, d.division))}
+        ${fld('División de Negocio *', sel('division', DIVISIONES, d.division))}
         ${fld('Unidad de Negocio', sel('unidadNeg', UNIDADES_NEG, d.unidadNeg))}
-        ${fld('Área', sel('area', AREAS_SVC, d.area))}
+        ${fld('Área *', sel('area', AREAS_SVC, d.area))}
       </div>
       <label class="obs-filter md-check"><input type="checkbox" ${dis} ${d.heredar?'checked':''} onchange="updField('heredar',this.checked)"> Heredar</label>
+      <label class="obs-filter md-check" title="Al registrarlo en un BL de importación, Nuevo MEMO viene marcado; no se ofrece en BL de exportación. Cambiarlo no afecta a los servicios ya registrados ni a las tarifas."><input type="checkbox" ${dis} ${d.cambioDeposito?'checked':''} onchange="updField('cambioDeposito',this.checked)"> Es cambio de depósito</label>
+      <div class="pda-row-sub">Al registrarlo en un BL de importación, Nuevo MEMO viene marcado; no se ofrece en BL de exportación. Cambiarlo no afecta a los servicios ya registrados ni a las tarifas.</div>
     </div>`;
 
   const tab = master.tab==='tarifas' ? 'unidad' : (master.tab || 'unidad');
@@ -3565,14 +3585,14 @@ function renderMasterEditor(){
     const keys = contKeysOf(d.formula) || [];
     body = `<div class="results-table"><table><thead><tr><th style="width:22%">Unidad de Tarifa</th><th style="width:22%">Fórmula</th><th style="width:14%">Cantidad por defecto</th><th>Cálculo</th></tr></thead><tbody><tr>
         <td><select ${dis} onchange="updField('tariffUnit',this.value)">${TARIFF_UNITS.map(u=>`<option ${u===d.tariffUnit?'selected':''}>${u}</option>`).join('')}</select></td>
-        <td><select ${dis} onchange="setFormulaCode(this.value)">${fopts.map(c=>`<option value="${c.k}" ${c.k===d.fcode?'selected':''}>${c.k==='PERS'?'Personalizada':c.k}${c.nuevo?' (nueva)':''}</option>`).join('')}</select></td>
+        <td><select ${dis} onchange="setFormulaCode(this.value)">${fopts.map(c=>`<option value="${c.k}" ${c.k==='PERS'?'class="cc-prop"':''} ${c.k===d.fcode?'selected':''}>${c.k==='PERS'?'Personalizada':c.k}${c.nuevo?' (nueva)':''}</option>`).join('')}</select></td>
         <td><input ${dis} inputmode="decimal" value="${d.qty}" style="max-width:110px" oninput="updDraft('qty',parseNum(this.value))"></td>
         <td><b>${esc(formulaPlain(d.formula, type))}</b>${(()=>{ if(d.ratePending || !d.tariffCode) return '';
           const ctx = testCtx(d), r = evalFormula(d.formula, ctx); if(!r.ok) return '';
           return `<div class="tf-ex">Ej. ${esc(formulaWithValues(d.formula, ctx, sym))} = <b>${sym}${money2(r.value)}</b>${Number(d.min)>0?` · mín. ${sym}${fmtNum(d.min)}`:''}</div>`; })()}</td>
       </tr></tbody></table></div>
       ${d.fcode==='PxCONT' ? `<div class="m-cont">${CONT_KEYS.map(k=>`<label><input type="checkbox" ${dis} ${keys.includes(k)?'checked':''} onchange="toggleContKey('${k}',this.checked)"> ${FACTOR_DEFS[k].label}</label>`).join('')}</div>` : ''}
-      ${d.fcode==='PERS' && edit ? `<div class="m-custom">
+      ${d.fcode==='PERS' && edit ? `<div class="m-custom cc-prop" data-prop="Propuesta sin ticket · Fórmula personalizada">
           <div class="f-strip" id="fPalette"></div>
           <div class="f-canvas" id="fCanvas"></div>
           <div class="f-tools"><span class="f-status" id="fStatus"></span>
@@ -4129,7 +4149,7 @@ let reasonCb = null;
    NAVE · base: Data Maestra > Nave de Cosmos Connect (Consulta Nave / Edición de Nave)
    + homologación de la nave preregistrada desde la PDA (no registrada o TBN)
 ============================================================ */
-const nv = {view:'list', f:{name:'', imo:'', tipo:'', flag:'', armador:'', quick:''}, page:1, size:10, selId:null, draft:null, edit:false, isNew:false, dirty:false, returnTo:'landing', errs:null};
+const nv = {view:'list', f:{name:'', imo:'', tipo:'', flag:'', armador:'', desde:'', hasta:'', est:'', quick:''}, adv:false, page:1, size:10, selId:null, draft:null, edit:false, isNew:false, dirty:false, returnTo:'landing', errs:null};
 const FLAGS = ['Panamá','Liberia','Islas Marshall','Bahamas','Malta','Singapur','Chipre','Dinamarca','Perú','Hong Kong','Grecia','Noruega'];
 function seedVessels(){
   const arm = {'NORD VALOUR':'VALERO PERU S.A.C.','PACIFIC HORIZON':'MAERSK LINE A/S','MAERSK ESSEX':'MAERSK LINE A/S','BOX ENDURANCE':'ZIM INTEGRATED SHIPPING SERVICE LTD','REEFER ATLANTIC':'ZIM INTEGRATED SHIPPING SERVICE LTD'};
@@ -4143,7 +4163,10 @@ function vtypeLabel(k){ return VESSEL_TYPES.find(v=>v.k===k)?.es || k || ''; }
 function canEditVessel(){ return /Agenciamiento|Gerencia|Operaciones/.test(curUser()); }
 
 function openVessels(pre, returnTo){
-  nv.returnTo = returnTo || 'landing'; nv.f = {name:'', imo:'', tipo:'', flag:'', armador:'', quick:'', ...(pre||{})}; nv.page = 1;
+  nv.returnTo = returnTo || 'landing'; nv.f = {name:'', imo:'', tipo:'', flag:'', armador:'', desde:'', hasta:'', est:'', quick:'', ...(pre||{})}; nv.page = 1;
+  document.getElementById('nfArmList').innerHTML = PARTNERS.map(p=>`<option value="${esc(p.largo)}">`).join('');
+  ['nfDesde','nfHasta','nfEst'].forEach((id,i)=>{ document.getElementById(id).value = nv.f[['desde','hasta','est'][i]]||''; });
+  nvAdvRender();
   document.getElementById('nfTipo').innerHTML = '<option value="">Elegir Tipo de Nave</option>' + VESSEL_TYPES.map(v=>`<option value="${v.k}">${v.es}</option>`).join('');
   document.getElementById('nfFlag').innerHTML = '<option value="">Elegir Bandera</option>' + FLAGS.map(f=>`<option>${f}</option>`).join('');
   [['nfName','name'],['nfImo','imo'],['nfTipo','tipo'],['nfFlag','flag'],['nfArm','armador']].forEach(([id,k])=>{ document.getElementById(id).value = nv.f[k]; });
@@ -4153,7 +4176,7 @@ function openVessels(pre, returnTo){
   showScreen('screenVessels'); showNvView('list'); applyNvPerm(); renderNvList();
 }
 function openVessel(name, returnTo){ const s = vesselByName(name); openVessels(null, returnTo); if(s) selectVessel(s.id, true); }
-function setNvFilter(k,v){ nv.f[k] = v; nv.page = 1; renderNvList(); }
+function setNvFilter(k,v,soloEstado){ nv.f[k] = v; nv.page = 1; if(soloEstado){ const hf = nvHasF(); document.getElementById('nvBuscar').disabled = !hf; document.getElementById('nvLimpiar').disabled = !hf; return; } renderNvList(); }
 function clearNvFilters(){ const r = nv.returnTo; openVessels(null, r); }
 function setNvQuick(k){ nv.f.quick = nv.f.quick===k ? '' : k; nv.page = 1; renderNvList(); }
 function nvGo(p, size){ if(size) nv.size = size; nv.page = p; renderNvList(); }
@@ -4177,23 +4200,38 @@ function closeVessels(){
   if(nv.returnTo==='voyage' && vy.selId){ showScreen('screenVoyages'); showVyView('detail'); renderVyDetail(); return; }
   if(nv.returnTo==='pda' && state.pdaNumber) goStep(state.step>0 ? state.step : 2); else backToLanding();
 }
+/* Connect: Filtros avanzados por rango (LOA, Manga, Calado con decimales; TRG y TRN enteros) */
+const NV_RANGOS = [['loa','LOA',0],['manga','Manga',0],['calado','Calado',0],['grt','TRG',1],['trn','TRN',1]];
+function nvAdvRender(){
+  const g = document.getElementById('nvAdv'); if(!g) return;
+  g.innerHTML = NV_RANGOS.map(([k,l,ent])=>`<div class="filter-field"><label>Rango de ${l}</label><div class="dm-rango"><input id="nfR_${k}_d" inputmode="${ent?'numeric':'decimal'}" maxlength="9" placeholder="Desde" value="${esc(nv.f[k+'D']||'')}" oninput="setNvFilter('${k}D',this.value,1)"><input id="nfR_${k}_h" inputmode="${ent?'numeric':'decimal'}" maxlength="9" placeholder="Hasta" value="${esc(nv.f[k+'H']||'')}" oninput="setNvFilter('${k}H',this.value,1)"></div></div>`).join('');
+  g.style.display = nv.adv ? '' : 'none';
+}
+function toggleNvAdv(){ nv.adv = !nv.adv; nvAdvRender(); }
+function nvRangoMal(){ return NV_RANGOS.some(([k])=>{ const d = nv.f[k+'D'], h = nv.f[k+'H']; return (d!=null && d!=='' && isNaN(+d)) || (h!=null && h!=='' && isNaN(+h)) || (d!=='' && h!=='' && d!=null && h!=null && +d > +h); }); }
+function nvBuscarRango(){ if(nvRangoMal()){ toast('Por favor corrija los campos rangos','error'); return; } renderNvList(); }
+function nvHasF(){ return Object.entries(nv.f).some(([k,v])=>k!=='quick' && v); }
 function nvFiltered(over){
-  const f = {...nv.f, ...(over||{})}, q = k => normTxt(f[k]||'');
+  const f = {...nv.f, ...(over||{})}, q = k => normTxt(f[k]||''), num = v => v!=null && v!=='' && !isNaN(+v);
   return SHIPS_CATALOG.filter(s=>(!q('name') || normTxt(s.name).includes(q('name'))) && (!q('imo') || String(s.imo).includes(f.imo.replace(/\D/g,''))) &&
     (!f.tipo || s.vtype===f.tipo) && (!f.flag || s.flag===f.flag) && (!q('armador') || normTxt(s.armador).includes(q('armador'))) &&
+    (!f.est || s.estado===f.est) && (!f.desde || String(s.created||'').slice(0,10)>=f.desde) && (!f.hasta || String(s.created||'').slice(0,10)<=f.hasta) &&
+    NV_RANGOS.every(([k])=>(!num(f[k+'D']) || (+s[k]||0)>=+f[k+'D']) && (!num(f[k+'H']) || (+s[k]||0)<=+f[k+'H'])) &&
     (f.quick!=='pend' || s.estado==='Por homologar') && (f.quick!=='rej' || s.estado==='Rechazado'));
 }
 function renderNvList(){
   const all = nvFiltered().sort((a,b)=>(a.estado==='Homologado') - (b.estado==='Homologado') || a.name.localeCompare(b.name));
   const pages = Math.max(1, Math.ceil(all.length/nv.size)); nv.page = Math.min(Math.max(1, nv.page), pages);
   document.getElementById('nvResults').innerHTML = all.slice((nv.page-1)*nv.size, nv.page*nv.size).map(s=>`<tr class="mt-row" onclick="selectVessel('${s.id}')">
-      <td><span class="pda-code-link">${esc(s.name)}</span></td><td class="mono">${esc(s.imo||'-')}</td><td>${esc(vtypeLabel(s.vtype)||'-')}</td><td>${esc(s.flag||'-')}</td><td>${esc(s.armador||'-')}</td>
-      <td>${vyFmt(s.created)}</td><td class="r">${s.loa||'-'}</td><td class="r">${s.manga||'-'}</td><td class="r">${s.calado||'-'}</td><td class="r">${s.grt||'-'}</td><td class="r">${s.trn||'-'}</td><td>${ptPill(s.estado)}</td></tr>`).join('')
-    || '<tr><td colspan="12" style="text-align:center;padding:30px;color:#8D9BA2;font-style:italic">Sin resultados</td></tr>';
+      <td><span class="pda-code-link">${esc(s.name)}</span></td><td class="mono">${esc(s.imo||'-')}</td><td>${dmPill(s.estado)}</td><td>${esc(vtypeLabel(s.vtype)||'-')}</td><td>${esc(s.flag||'-')}</td><td>${esc(s.armador||'-')}</td>
+      <td>${vyFmt(s.created)}</td><td class="r">${s.loa||'-'}</td><td class="r">${s.manga||'-'}</td><td class="r">${s.calado||'-'}</td><td class="r">${s.grt||'-'}</td><td class="r">${s.trn||'-'}</td></tr>`).join('')
+    || '<tr><td colspan="12" style="text-align:center;padding:30px;color:#8D9BA2;font-style:italic">No se encontraron resultados con los criterios seleccionados.</td></tr>';
   document.getElementById('nvCount').textContent = all.length;
   document.getElementById('nvPager').innerHTML = pagerHtml(all.length, nv.page, nv.size, 'nvGo');
+  const hf = nvHasF(), bb = document.getElementById('nvBuscar'), bl = document.getElementById('nvLimpiar');
+  if(bb) bb.disabled = !hf; if(bl) bl.disabled = !hf && !nv.f.quick;
   const base = nvFiltered({quick:''}), q = {pend:base.filter(s=>s.estado==='Por homologar').length, rej:base.filter(s=>s.estado==='Rechazado').length};
-  document.getElementById('nvQuick').innerHTML = [['pend','Por homologar'],['rej','Rechazadas']].filter(([k])=>q[k] || nv.f.quick===k)
+  document.getElementById('nvQuick').innerHTML = [['pend','Pendiente de aprobación'],['rej','Rechazadas']].filter(([k])=>q[k] || nv.f.quick===k)
     .map(([k,l])=>`<button type="button" class="tf-q ${k==='pend'?'pend':'exp'} ${nv.f.quick===k?'on':''}" onclick="setNvQuick('${k}')">${l} <b>${q[k]}</b></button>`).join('');
 }
 function selectVessel(id, force){
@@ -4208,60 +4246,70 @@ function newVessel(){
   nv.selId = nv.draft.id; nv.isNew = true; nv.edit = true; nv.dirty = true; nv.errs = null; showNvView('detail'); renderNvEditor();
 }
 function nvUpd(k,v){ nv.draft[k] = ['loa','manga','calado','grt','trn'].includes(k) ? parseNum(v) : v; nv.dirty = true; clearErr(nv.errs, k, '#nvEditor'); }
-function startNvEdit(){ if(!canEditVessel()){ toast('Solo Agenciamiento, Operaciones o Gerencia editan naves','error'); return; } nv.edit = true; renderNvEditor(); }
+function nvEsTbn(d){ return normTxt(String(d&&d.name||'').trim())==='tbn'; }
+function startNvEdit(){ if(nvEsTbn(nv.draft)){ toast('TBN es una nave comodín: no se puede editar, eliminar ni aprobar.','error'); return; } if(!canEditVessel()){ toast('Solo Agenciamiento, Operaciones o Gerencia editan naves','error'); return; } nv.edit = true; renderNvEditor(); }
 function renderNvEditor(){
   const ed = document.getElementById('nvEditor'), d = nv.draft; if(!d){ ed.innerHTML = ''; return; }
-  const can = canEditVessel(), edit = nv.edit && can, dis = edit ? '' : 'disabled', E = nv.errs;
+  const tbn = nvEsTbn(d) && !nv.isNew, can = canEditVessel() && !tbn, edit = nv.edit && can, dis = edit ? '' : 'disabled', E = nv.errs, pend = d.estado==='Por homologar';
   const fld = (l, html, k) => `<div class="filter-field"><label>${l}</label>${html}${fErr(E,k)}</div>`;
-  const inp = (k, ph, num) => `<input ${dis} data-f="${k}" ${num?'inputmode="decimal"':''} value="${esc(d[k]||(num?'':''))}" placeholder="${ph||''}" oninput="nvUpd('${k}',this.value)">`;
+  const inp = (k, ph, num, max) => `<input ${dis} data-f="${k}" ${num?'inputmode="decimal"':''} ${max?`maxlength="${max}"`:''} value="${esc(d[k]||(num?'':''))}" placeholder="${ph||''}" oninput="nvUpd('${k}',this.value)">`;
   const sel = (k, opts, labels) => `<select ${dis} onchange="nvUpd('${k}',this.value)"><option value="">Elegir</option>${opts.map((o,i)=>`<option value="${esc(o)}" ${o===d[k]?'selected':''}>${esc(labels?labels[i]:o)}</option>`).join('')}</select>`;
   let actions = '';
-  if(edit) actions = `<button class="btn-corp-outline" onclick="discardVessel()">Cancelar</button><button class="btn-corp" onclick="saveVessel()">Guardar</button>${d.estado==='Por homologar' && !nv.isNew ? '<button class="btn-corp tf-ok" onclick="homologateVessel()">Homologar</button>' : ''}`;
-  else if(can) actions = (d.estado==='Por homologar' ? `<button class="btn-corp-outline" onclick="rejectVessel()">Rechazar</button><button class="btn-corp tf-ok" onclick="homologateVessel()">Homologar</button>` : '') + `<button class="btn-corp" onclick="startNvEdit()">Editar</button>`;
+  if(edit) actions = `<button class="btn-corp-outline" onclick="discardVessel()">Cancelar</button><button class="btn-corp" onclick="saveVessel()">Guardar</button>${pend && !nv.isNew ? '<button class="btn-corp tf-ok" onclick="homologateVessel()">Aprobar nave</button>' : ''}`;
+  else if(can) actions = (d.estado==='Homologado' ? `<button class="btn-corp-outline" onclick="nvReopen()">Volver a pendiente</button>` : '')
+      + (pend ? `<button ${DM_SIN_TK('Rechazar','btn-corp-outline')} onclick="rejectVessel()">Rechazar</button>` : '')
+      + `<button class="btn-corp" onclick="startNvEdit()">Editar</button><button class="btn-corp-outline" onclick="nvDelete()">Eliminar</button>`
+      + (pend ? '<button class="btn-corp tf-ok" onclick="homologateVessel()">Aprobar nave</button>' : '');
   const lastRej = d.estado==='Rechazado' ? [...d.hist].reverse().find(h=>h.next==='Rechazado') : null;
-  const banner = d.origen && d.estado==='Por homologar'
-    ? `<div class="tf-reason pend">Preregistrada por ${esc(d.origen.by)} · ${fmtDate(d.origen.ts)}${d.origen.pda?` · ${esc(d.origen.pda)}`:''}</div>`
-    : lastRej ? `<div class="tf-reason rechazada"><b>Rechazada</b> · ${esc(lastRej.user)} · ${fmtDate(lastRej.ts)}: ${esc(lastRej.comment)}</div>` : '';
+  const banner = (tbn ? '<div class="tf-reason pend">TBN es una nave comodín: no se puede editar, eliminar ni aprobar.</div>' : '')
+    + (d.origen && pend ? `<div ${DM_SIN_TK('Preregistro desde la PDA')}><div class="tf-reason pend">Preregistrada por ${esc(d.origen.by)} · ${fmtDate(d.origen.ts)}${d.origen.pda?` · ${esc(d.origen.pda)}`:''}</div></div>`
+    : lastRej ? `<div ${DM_SIN_TK('Rechazar')}><div class="tf-reason rechazada"><b>Rechazada</b> · ${esc(lastRej.user)} · ${fmtDate(lastRej.ts)}: ${esc(lastRej.comment)}</div></div>` : '')
+    + (pend && !tbn ? '<div class="tf-reason pend">Para guardar o aprobar la nave se requieren todos los campos marcados con *.</div>' : '');
   ed.innerHTML = `<div class="buscar-filters">
-    <div class="md-cardhead"><div class="tf-title"><h3 class="md-h">Información General</h3>${nv.isNew?'':`<button class="tf-hist" title="Historial" onclick="openHistModal(nv.draft.hist||[])"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg></button>`}</div>
-      <div class="md-actions"><span class="cc-chip on st-${d.estado==='Homologado'?'aprobada':d.estado==='Rechazado'?'rechazada':'pendiente'}">${esc(d.estado)}</span>${actions}</div></div>${banner}
+    <div class="md-cardhead"><div class="tf-title"><h3 class="md-h">Información General</h3>${nv.isNew?'':`<button class="tf-hist cc-prop" data-prop="Propuesta sin ticket · Historial" title="Historial" onclick="openHistModal(nv.draft.hist||[])">${DM_HIST_IC}</button>`}</div>
+      <div class="md-actions">${dmChip(d.estado)}${actions}</div></div>${banner}
     <div class="filters-grid g4">
-      ${fld('Nombre de Nave *', inp('name','Ingresar Nombre de Nave'), 'name')}
-      ${fld('Código Lloyds (IMO) *', inp('imo','7 dígitos'), 'imo')}
+      ${fld('Nombre de Nave *', inp('name','Ingresar Nombre de Nave',0,100), 'name')}
+      ${fld('Código Lloyds (IMO) *', inp('imo','7 dígitos',0,7), 'imo')}
       ${fld('Tipo de Nave *', sel('vtype', VESSEL_TYPES.map(v=>v.k), VESSEL_TYPES.map(v=>v.es)), 'vtype')}
       ${fld('Bandera *', sel('flag', FLAGS), 'flag')}
-      ${fld('Armador', inp('armador','Ingresar Armador'))}
+      ${fld('Armador *', `<input ${dis} data-f="armador" list="nvArmList" value="${esc(d.armador||'')}" placeholder="Buscar socio" oninput="nvUpd('armador',this.value)"><datalist id="nvArmList">${PARTNERS.map(p=>`<option value="${esc(p.largo)}">`).join('')}</datalist>`, 'armador')}
       ${fld('LOA *', inp('loa','0.00',1), 'loa')}
-      ${fld('Manga', inp('manga','0.00',1))}
-      ${fld('Calado', inp('calado','0.00',1))}
-      ${fld('TRG *', inp('grt','0.00',1), 'grt')}
-      ${fld('TRN', inp('trn','0.00',1))}
-      <div class="filter-field" style="grid-column:span 2"><label>Observaciones</label><input ${dis} value="${esc(d.obs||'')}" oninput="nvUpd('obs',this.value)"></div>
+      ${fld('Manga *', inp('manga','0.00',1), 'manga')}
+      ${fld('Calado *', inp('calado','0.00',1), 'calado')}
+      ${fld('TRG *', inp('grt','0',1), 'grt')}
+      ${fld('TRN', inp('trn','0',1), 'trn')}
+      <div class="filter-field" style="grid-column:span 2"><label>Observaciones</label><textarea ${dis} maxlength="400" rows="2" oninput="nvUpd('obs',this.value)">${esc(d.obs||'')}</textarea></div>
     </div></div>`;
 }
 function applyNvPerm(){ const nb = document.getElementById('nvNewBtn'); if(nb) nb.style.display = canEditVessel() ? '' : 'none'; if(!canEditVessel()) nv.edit = false; }
+const NV_LBL = {name:'Nombre de Nave', imo:'Código Lloyds (IMO)', vtype:'Tipo de Nave', flag:'Bandera', armador:'Armador', loa:'LOA', manga:'Manga', calado:'Calado', grt:'TRG'};
 function nvErrors(d, full){
-  const E = {};
-  if(!String(d.name||'').trim()) E.name = 'Obligatorio';
-  else if(SHIPS_CATALOG.some(s=>s.id!==d.id && normTxt(s.name)===normTxt(d.name))) E.name = 'Ya existe una nave con este nombre';
-  if(full){
-    if(/^TBN\b/i.test(d.name)) E.name = 'Reemplaza TBN por el nombre real';
-    if(!/^\d{7}$/.test(String(d.imo||''))) E.imo = '7 dígitos'; else if(typeof imoValid==='function' && !imoValid(d.imo)) E.imo = 'IMO no válido (dígito verificador)';
-    if(!d.vtype) E.vtype = 'Requerido para homologar'; if(!d.flag) E.flag = 'Requerido para homologar';
-    if(!(d.loa>0)) E.loa = 'Requerido para homologar'; if(!(d.grt>0)) E.grt = 'Requerido para homologar';
-  }
+  const E = {}, OB = 'Este campo es obligatorio', nm = String(d.name||'').trim();
+  if(!nm) E.name = OB;
+  else if(nm.length < 4) E.name = 'El nombre de la nave requiere al menos 4 caracteres.';
+  else if(window.CC && CC.verPropuestas && SHIPS_CATALOG.some(s=>s.id!==d.id && normTxt(s.name)===normTxt(nm))) E.name = 'Ya existe una nave con este nombre (propuesta)';
+  else if(full && /^TBN\b/i.test(nm)) E.name = 'Reemplaza TBN por el nombre real';
+  const imo = String(d.imo||'');
+  if(!imo) E.imo = OB; else if(imo.length!==7) E.imo = 'El Código Lloyds debe contener 7 caracteres';
+  else if(!/^\d{7}$/.test(imo) || (typeof imoValid==='function' && !imoValid(imo))) E.imo = 'El IMO debe tener 7 dígitos y un dígito verificador válido.';
+  ['vtype','flag','armador'].forEach(k=>{ if(!String(d[k]||'').trim()) E[k] = OB; });
+  ['loa','manga','calado','grt'].forEach(k=>{ if(!(+d[k]>0)) E[k] = OB; });
+  if(d.grt && !Number.isInteger(+d.grt)) E.grt = 'Ingrese un número entero';
+  if(d.trn && !Number.isInteger(+d.trn)) E.trn = 'Ingrese un número entero';
   return E;
 }
 function saveVessel(){
   const d = nv.draft, E = nvErrors(d, false);
-  if(Object.keys(E).length){ nv.errs = E; renderNvEditor(); return; }
+  if(Object.keys(E).length){ nv.errs = E; renderNvEditor(); toast('Por favor, complete todos los campos obligatorios.','error'); return; }
   nv.errs = null; d.name = d.name.trim().toUpperCase();
   const i = SHIPS_CATALOG.findIndex(s=>s.id===d.id), prevName = i>-1 ? SHIPS_CATALOG[i].name : null;
   d.hist.push({ts:new Date().toISOString(), user:curUser(), prev:nv.isNew?'':d.estado, next:d.estado, comment:nv.isNew?'Registro de nave':'Edición de datos'});
   if(i>-1) SHIPS_CATALOG[i] = clone(d); else SHIPS_CATALOG.push(clone(d));
   if(prevName && prevName!==d.name) VOYAGES.forEach(v=>{ if(v.nave===prevName) v.nave = d.name; });
   log('Naves', `${nv.isNew?'Registró':'Editó'} la nave ${d.name}`);
-  nv.isNew = false; nv.edit = false; nv.dirty = false; showNvView('detail'); renderNvEditor(); toast('Nave guardada','success');
+  const nuevo = nv.isNew; nv.isNew = false; nv.edit = false; nv.dirty = false; showNvView('detail'); renderNvEditor();
+  toast(nuevo ? `La nave ${d.name} se ha registrado correctamente` : 'La nave se ha actualizado correctamente','success');
 }
 function discardVessel(){
   if(nv.dirty && !confirm('¿Descartar los cambios?')) return; nv.dirty = false; nv.errs = null;
@@ -4279,11 +4327,25 @@ function nvSetEstado(next, comment){
   }
 }
 function homologateVessel(){
-  if(!canEditVessel()){ toast('Solo Agenciamiento, Operaciones o Gerencia homologan naves','error'); return; }
+  if(!canEditVessel()){ toast('Solo Agenciamiento, Operaciones o Gerencia aprueban naves','error'); return; }
+  if(nvEsTbn(nv.draft)){ toast('TBN es una nave comodín: no se puede editar, eliminar ni aprobar.','error'); return; }
   const E = nvErrors(nv.draft, true);
-  if(Object.keys(E).length){ nv.errs = E; nv.edit = true; renderNvEditor(); document.querySelector('#nvEditor .f-err')?.scrollIntoView({block:'center',behavior:'smooth'}); toast('Completa los campos marcados y vuelve a homologar','info'); return; }
+  if(Object.keys(E).length){ const k = Object.keys(E)[0]; nv.errs = E; nv.edit = true; renderNvEditor(); document.querySelector('#nvEditor .f-err')?.scrollIntoView({block:'center',behavior:'smooth'});
+    toast(E[k]==='Este campo es obligatorio' ? `Para aprobar la nave se debe completar: ${NV_LBL[k]}.` : E[k],'info'); return; }
+  if(!confirm('Al aprobar, la nave queda disponible en PDAs y viajes y no vuelve a pendiente. ¿Desea continuar?')) return;
   if(nv.edit){ saveVessel(); if(nv.edit) return; }
-  nvSetEstado('Homologado', 'Homologación de la nave'); toast('Nave homologada','success');
+  nvSetEstado('Homologado', 'Aprobación de la nave'); toast('La nave se ha aprobado correctamente','success');
+}
+function nvReopen(){
+  if(!canEditVessel()){ toast('Solo Agenciamiento, Operaciones o Gerencia pueden volver a pendiente','error'); return; }
+  if(!confirm('La nave volverá a pendiente de aprobación. ¿Desea continuar?')) return;
+  nvSetEstado('Por homologar', 'Volver a pendiente'); toast('La nave volvió a pendiente de aprobación','success');
+}
+function nvDelete(){
+  const d = nv.draft; if(nvEsTbn(d)){ toast('TBN es una nave comodín: no se puede editar, eliminar ni aprobar.','error'); return; }
+  if(!confirm(`¿Estás seguro de que deseas eliminar la nave ${d.imo||''} - ${d.name}?`)) return;
+  const i = SHIPS_CATALOG.findIndex(s=>s.id===d.id); if(i>-1) SHIPS_CATALOG.splice(i,1);
+  nv.draft = null; nv.edit = false; nv.dirty = false; showNvView('list'); renderNvList(); toast('La nave se ha eliminado correctamente','success');
 }
 function rejectVessel(){ openReason('Rechazar nave', 'Rechazar', txt=>{ nvSetEstado('Rechazado', txt); toast('Nave rechazada','info'); }); }
 
@@ -4393,8 +4455,8 @@ function vyExport(){
     vyFiltered().map(v=>[v.code,v.nro,v.puerto,v.nave,v.cliente,v.tipo,vyFmt(v.eta),vyFmt(v.etd),vyPdas(v).join(', ')||'-',v.estado]));
 }
 function nvExport(){
-  facXlsx('Naves','Naves',['Nombre de Nave','Código Lloyds (IMO)','Tipo de Nave','Bandera','Armador','Fecha de Creación','LOA','Manga','Calado','TRG','TRN','Homologación'],
-    nvFiltered().map(s=>[s.name,s.imo||'-',vtypeLabel(s.vtype)||'-',s.flag||'-',s.armador||'-',vyFmt(s.created),s.loa||'-',s.manga||'-',s.calado||'-',s.grt||'-',s.trn||'-',s.estado]));
+  facXlsx('Naves','Naves',['Nombre de Nave','Código Lloyds (IMO)','Estado','Tipo de Nave','Bandera','Armador','Fecha de Creación','LOA','Manga','Calado','TRG','TRN'],
+    nvFiltered().map(s=>[s.name,s.imo||'-',dmEstTxt(s.estado),vtypeLabel(s.vtype)||'-',s.flag||'-',s.armador||'-',vyFmt(s.created),s.loa||'-',s.manga||'-',s.calado||'-',s.grt||'-',s.trn||'-']));
 }
 function vyPdas(v){ return [...new Set(v.rows.map(r=>r.pda).filter(Boolean))]; }
 function renderVyList(){
@@ -5494,14 +5556,14 @@ const GUIDES = {
   ]
 };
 GUIDES.screenPartners = [
-  {t:'Homologar un socio', need:()=>canEditPartner(), steps:[
-    {go:()=>{ if(pt.view!=='list') backToPtList(); }, el:()=>gq('#ptQuick .tf-q') || gq('#ptList .results-table'), h:'Por homologar', p:'Clientes y proveedores preregistrados desde las PDA.'},
+  {t:'Aprobar un socio', need:()=>canEditPartner(), steps:[
+    {go:()=>{ if(pt.view!=='list') backToPtList(); }, el:()=>gq('#ptQuick .tf-q') || gq('#ptList .results-table'), h:'Pendiente de aprobación', p:'Clientes y proveedores preregistrados desde las PDA.'},
     {go:()=>{ const p = PARTNERS.find(x=>x.estado==='Por homologar'); if(p) selectPartner(p.id, true); }, el:()=>gq('#ptEditor .md-cardhead'), h:'Revisar', p:'Muestra quién lo preregistró y desde qué PDA.'},
-    {el:()=>gq('#ptEditor .buscar-filters + .buscar-filters'), h:'Completar datos', p:'Para homologar se requiere nombre, código ERP y dirección.'},
-    {el:()=>gq('#ptEditor .md-tabs'), h:'Roles', p:'Al menos un rol marcado como cliente o proveedor.'},
-    {el:()=>gqt('#ptEditor button','Homologar'), h:'Homologar', p:'Con esto la PDA que lo usa ya puede aprobarse.'}]},
+    {el:()=>gq('#ptEditor .buscar-filters + .buscar-filters'), h:'Completar datos', p:'Para guardar o aprobar se requieren dirección, código ERP y al menos un rol.'},
+    {el:()=>gq('#ptEditor .md-tabs'), h:'Roles', p:'Al menos un rol activo.'},
+    {el:()=>gqt('#ptEditor button','Aprobar socio'), h:'Aprobar socio', p:'Con esto la PDA que lo usa ya puede aprobarse.'}]},
   {t:'Buscar un socio', steps:[
-    {go:()=>{ if(pt.view!=='list') backToPtList(); }, el:'#ptList .filters-grid', h:'Filtros', p:'Por documento, nombre o rol.'},
+    {go:()=>{ if(pt.view!=='list') backToPtList(); }, el:'#ptList .filters-grid', h:'Filtros', p:'Por documento, nombre, rol o estado.'},
     {el:()=>gq('#ptResults tr'), h:'Abrir', p:'Clic en el documento para ver roles, contactos y cuentas.'}]}
 ];
 GUIDES.screenVoyages = [
@@ -5513,10 +5575,10 @@ GUIDES.screenVoyages = [
     {go:()=>{ if(vy.view!=='detail'){ const v = VOYAGES[0]; selectVoyage(v.code); } setVyTab('ops'); }, el:()=>gq('#vyEditor .md-body'), h:'Servicios operativos', p:'Agrupados por categoría. La columna Código PDA indica de qué PDA vino cada servicio.'}]}
 ];
 GUIDES.screenVessels = [
-  {t:'Homologar una nave', need:()=>canEditVessel(), steps:[
-    {go:()=>{ if(nv.view!=='list') backToNvList(); }, el:()=>gq('#nvQuick .tf-q') || gq('#nvList .results-table'), h:'Por homologar', p:'Naves preregistradas desde las PDA (no registradas o TBN).'},
-    {go:()=>{ const s = SHIPS_CATALOG.find(x=>x.estado==='Por homologar'); if(s) selectVessel(s.id, true); }, el:()=>gq('#nvEditor .filters-grid'), h:'Completar datos', p:'Nombre real, IMO de 7 dígitos, tipo, bandera, LOA y TRG.'},
-    {el:()=>gqt('#nvEditor button','Homologar'), h:'Homologar', p:'Después se homologa el viaje en Agenciamiento > Viaje.'}]}
+  {t:'Aprobar una nave', need:()=>canEditVessel(), steps:[
+    {go:()=>{ if(nv.view!=='list') backToNvList(); }, el:()=>gq('#nvQuick .tf-q') || gq('#nvList .results-table'), h:'Pendiente de aprobación', p:'Naves preregistradas desde las PDA (no registradas o TBN).'},
+    {go:()=>{ const s = SHIPS_CATALOG.find(x=>x.estado==='Por homologar'); if(s) selectVessel(s.id, true); }, el:()=>gq('#nvEditor .filters-grid'), h:'Completar datos', p:'Todos los campos marcados con *: nombre real, IMO, tipo, bandera, armador, LOA, manga, calado y TRG.'},
+    {el:()=>gqt('#nvEditor button','Aprobar nave'), h:'Aprobar nave', p:'Después se homologa el viaje en Agenciamiento > Viaje.'}]}
 ];
 GUIDES.screenVoyages.unshift({t:'Homologar un viaje', need:()=>canEditVessel(), steps:[
     {go:()=>{ if(vy.view!=='list') backToVyList(); }, el:()=>gq('#vyQuick .tf-q') || gq('#vyList .results-table'), h:'Por homologar', p:'Viajes preregistrados desde las PDA.'},
@@ -5599,7 +5661,7 @@ const PT_ROLES = ['Agente Marítimo','Armador','Línea naviera','Operador portua
 const PT_CONTACT_TYPES = ['Importación','Exportación','Operaciones','Comercial','Facturación','Cobranzas'];
 const PT_BANK_TYPES = ['Cuenta corriente','Cuenta de ahorros','Cuenta de detracciones'];
 let PARTNERS = []; let ptSeq = 1;
-const pt = {view:'list', f:{doc:'', name:'', rol:'', quick:''}, page:1, size:10, selId:null, draft:null, edit:false, isNew:false, dirty:false, tab:'roles', returnTo:'landing', errs:null};
+const pt = {view:'list', f:{doc:'', name:'', rol:'', est:'', quick:''}, page:1, size:10, selId:null, draft:null, edit:false, isNew:false, dirty:false, tab:'roles', returnTo:'landing', errs:null};
 
 function ptNew(o){
   return {id:'pt'+(ptSeq++), tipoPersona:'Persona Jurídica', nac:'Nacional', tipoDoc:'RUC', doc:'', corto:'', largo:'', erp:'', dir:'', moneda:'USD', aduana:'', pago:'Crédito',
@@ -5642,12 +5704,22 @@ function supplierPending(n){ return partnerPending(n); }
 function homologatedSuppliers(){ return state.suppliers.filter(s=>!partnerPending(s)); }
 function canEditPartner(){ return /Facturación|Gerencia/.test(curUser()); }
 function ptPill(e){ return `<span class="tf-st ${e==='Homologado'?'aprobada':e==='Rechazado'?'rechazada':'pendiente'}">${esc(e)}</span>`; }
+/* Estados de Connect (PARTNER_STATUS y VESSEL_STATUS): Pendiente de aprobación / Aprobado. Rechazado es propuesta sin ticket.
+   El valor interno sigue siendo el del flujo PDA (Por homologar / Homologado) para no tocar los bloqueos de la PDA. */
+const DM_EST = {'Por homologar':'Pendiente de aprobación', 'Homologado':'Aprobado', 'Rechazado':'Rechazado'};
+function dmEstTxt(e){ return DM_EST[e] || e; }
+function dmPill(e){ return `<span class="tf-st ${e==='Homologado'?'aprobada':e==='Rechazado'?'rechazada cc-prop':'pendiente'}"${e==='Rechazado'?' data-prop="Propuesta sin ticket · Rechazado"':''}>${esc(dmEstTxt(e))}</span>`; }
+function dmChip(e){ return `<span class="cc-chip on st-${e==='Homologado'?'aprobada':e==='Rechazado'?'rechazada':'pendiente'}">${esc(dmEstTxt(e))}</span>`; }
+const DM_SIN_TK = (t, cls) => `class="cc-prop${cls?' '+cls:''}" data-prop="Propuesta sin ticket${t?' · '+t:''}"`;
+const DM_HIST_IC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>';
 
 /* ---------- Pantalla ---------- */
 function openPartners(pre, returnTo){
   pt.returnTo = returnTo || 'landing';
-  pt.f = {doc:'', name:'', rol:'', quick:'', ...(pre||{})}; pt.page = 1;
+  pt.f = {doc:'', name:'', rol:'', est:'', quick:'', ...(pre||{})}; pt.page = 1;
   document.getElementById('pfRol').innerHTML = '<option value="">Seleccione Roles</option>' + PT_ROLES.map(r=>`<option>${r}</option>`).join('');
+  document.getElementById('pfDocList').innerHTML = PARTNERS.filter(p=>p.doc).map(p=>`<option value="${esc(p.doc)}">`).join('');
+  document.getElementById('pfNameList').innerHTML = PARTNERS.map(p=>`<option value="${esc(p.largo)}">`).join('');
   ptSyncFilters();
   document.getElementById('ptBackBtn').textContent = pt.returnTo==='pda' ? '← Volver a la PDA' : '← Volver al listado';
   pt.selId = null; pt.draft = null; pt.edit = false; pt.isNew = false; pt.dirty = false;
@@ -5656,10 +5728,10 @@ function openPartners(pre, returnTo){
 }
 function openPartner(id, returnTo){ openPartners(null, returnTo); selectPartner(id, true); }
 function ptSyncFilters(){
-  document.getElementById('pfDoc').value = pt.f.doc; document.getElementById('pfName').value = pt.f.name; document.getElementById('pfRol').value = pt.f.rol;
+  document.getElementById('pfDoc').value = pt.f.doc; document.getElementById('pfName').value = pt.f.name; document.getElementById('pfRol').value = pt.f.rol; document.getElementById('pfEst').value = pt.f.est||'';
 }
 function setPtFilter(k,v){ pt.f[k] = v; pt.page = 1; renderPtList(); }
-function clearPtFilters(){ pt.f = {doc:'', name:'', rol:'', quick:''}; pt.page = 1; ptSyncFilters(); renderPtList(); }
+function clearPtFilters(){ pt.f = {doc:'', name:'', rol:'', est:'', quick:''}; pt.page = 1; ptSyncFilters(); renderPtList(); }
 function setPtQuick(k){ pt.f.quick = pt.f.quick===k ? '' : k; pt.page = 1; renderPtList(); }
 function ptGo(p, size){ if(size) pt.size = size; pt.page = p; renderPtList(); }
 function showPtView(v){
@@ -5670,7 +5742,7 @@ function showPtView(v){
   const bb = document.getElementById('ptBackBtn'); if(bb) bb.style.display = v==='list' || pt.returnTo!=='landing' ? '' : 'none';
   const t = document.getElementById('ccPbTitle'), c = document.getElementById('ccCrumbs');
   if(v==='detail'){
-    const ttl = pt.isNew ? 'Nuevo Socio' : 'Editar Socio';
+    const ttl = pt.isNew ? 'Crear Socio' : 'Editar Socio';
     if(t) t.innerHTML = `<button type="button" class="cc-back" onclick="backToPtList()" title="Volver a la búsqueda"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 6l-6 6 6 6"/></svg></button>${ttl}`;
     if(c) c.innerHTML = `Inicio / Socios / <b>${ttl}</b>`;
   } else updatePagebar('screenPartners');
@@ -5685,29 +5757,27 @@ function closePartners(){
 function ptFiltered(over){
   const f = {...pt.f, ...(over||{})}, d = normTxt(f.doc), n = normTxt(f.name);
   return PARTNERS.filter(p=>(!d || normTxt(p.doc).includes(d)) && (!n || normTxt(p.largo).includes(n) || normTxt(p.corto).includes(n)) &&
-    (!f.rol || p.roles.some(r=>r.rol===f.rol)) && (f.quick!=='pend' || p.estado==='Por homologar') && (f.quick!=='rej' || p.estado==='Rechazado'));
+    (!f.rol || p.roles.some(r=>r.rol===f.rol)) && (!f.est || p.estado===f.est) && (f.quick!=='pend' || p.estado==='Por homologar') && (f.quick!=='rej' || p.estado==='Rechazado'));
 }
+function ptHasF(){ return ['doc','name','rol','est'].some(k=>pt.f[k]); }
 function renderPtList(){
   const all = ptFiltered().sort((a,b)=>(a.estado==='Homologado') - (b.estado==='Homologado') || a.corto.localeCompare(b.corto));
   const pages = Math.max(1, Math.ceil(all.length/pt.size)); pt.page = Math.min(Math.max(1, pt.page), pages);
   const list = all.slice((pt.page-1)*pt.size, pt.page*pt.size);
   document.getElementById('ptResults').innerHTML = list.map(p=>`<tr class="mt-row" onclick="selectPartner('${p.id}')">
-      <td><span class="pda-code-link">${esc(p.doc||'-')}</span></td><td>${esc(p.corto)}</td><td>${esc(p.dir||'-')}</td>
-      <td>${esc(p.roles.map(r=>r.rol).join(', ')||'-')}</td><td>${ptPill(p.estado)}</td></tr>`).join('')
-    || '<tr><td colspan="5" style="text-align:center;padding:30px;color:#8D9BA2;font-style:italic">Sin resultados</td></tr>';
+      <td><span class="pda-code-link">${esc(p.doc||'Sin documento')}</span></td><td><span class="pda-code-link">${esc(p.corto)}</span></td><td>${esc(p.dir||'-')}</td>
+      <td class="cc-prop">${esc(p.roles.map(r=>r.rol).join(', ')||'-')}</td><td>${dmPill(p.estado)}</td></tr>`).join('')
+    || '<tr><td colspan="5" style="text-align:center;padding:30px;color:#8D9BA2;font-style:italic">No se encontraron resultados con los criterios seleccionados.</td></tr>';
   document.getElementById('ptCount').textContent = all.length;
   document.getElementById('ptPager').innerHTML = pagerHtml(all.length, pt.page, pt.size, 'ptGo');
+  const hf = ptHasF(), bb = document.getElementById('ptBuscar'), bl = document.getElementById('ptLimpiar');
+  if(bb) bb.disabled = !hf; if(bl) bl.disabled = !hf && !pt.f.quick;
   const base = ptFiltered({quick:''}), q = {pend: base.filter(p=>p.estado==='Por homologar').length, rej: base.filter(p=>p.estado==='Rechazado').length};
-  document.getElementById('ptQuick').innerHTML = [['pend','Por homologar'],['rej','Rechazados']].filter(([k])=>q[k] || pt.f.quick===k)
+  document.getElementById('ptQuick').innerHTML = [['pend','Pendiente de aprobación'],['rej','Rechazados']].filter(([k])=>q[k] || pt.f.quick===k)
     .map(([k,l])=>`<button type="button" class="tf-q ${k==='pend'?'pend':'exp'} ${pt.f.quick===k?'on':''}" onclick="setPtQuick('${k}')">${l} <b>${q[k]}</b></button>`).join('');
 }
 function exportPtCsv(){
-  const rows = [['Número Documento','Nombre Corto','Nombre Largo','Código ERP','Dirección','Roles','Homologación']]
-    .concat(ptFiltered().map(p=>[p.doc,p.corto,p.largo,p.erp,p.dir,p.roles.map(r=>r.rol).join(', '),p.estado]));
-  const csv = '﻿' + rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(';')).join('\r\n');
-  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
-  a.download = 'socios.csv'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
-  toast('Socios exportados','success');
+  facXlsx('Socios','Socios',['Número Documento','Nombre Corto','Dirección','Estado'], ptFiltered().map(p=>[p.doc||'Sin documento',p.corto,p.dir||'',dmEstTxt(p.estado)]));
 }
 
 /* ---------- Detalle ---------- */
@@ -5719,7 +5789,7 @@ function selectPartner(id, force){
 }
 function newPartner(){
   if(!canEditPartner()){ toast('Solo Facturación o Gerencia registran socios','error'); return; }
-  pt.draft = ptNew({estado:'Por homologar', hist:[], roles:[{rol:'Proveedor', cliente:false, proveedor:true}]});
+  pt.draft = ptNew({estado:'Por homologar', hist:[], moneda:'', pago:'', roles:[{rol:'Proveedor', cliente:false, proveedor:true}]});
   pt.selId = pt.draft.id; pt.isNew = true; pt.edit = true; pt.dirty = true; pt.errs = null; pt.tab = 'roles';
   showPtView('detail'); renderPtEditor();
   document.querySelector('#ptEditor [data-f=doc]')?.focus();
@@ -5727,89 +5797,142 @@ function newPartner(){
 function ptUpd(k,v,re){ pt.draft[k] = v; pt.dirty = true; clearErr(pt.errs, k, '#ptEditor'); if(re) renderPtEditor(); }
 function ptUpdRow(list,i,k,v,re){ pt.draft[list][i][k] = v; pt.dirty = true; if(list==='roles') clearErr(pt.errs, 'roles', '#ptEditor'); if(re) renderPtEditor(); }
 function ptAddRow(list){
-  const row = list==='roles' ? {rol:PT_ROLES[0], cliente:false, proveedor:false} : list==='contactos' ? {tipo:PT_CONTACT_TYPES[0], nombre:'', tel:'', movil:'', email:'', dir:''} : {banco:'', tipo:PT_BANK_TYPES[0], cuenta:'', moneda:'PEN'};
+  const row = list==='roles' ? {rol:PT_ROLES[0], cliente:false, proveedor:false} : list==='contactos' ? {tipo:PT_CONTACT_TYPES[0], nombre:'', tel:'', movil:'', email:'', dir:'', notas:''} : {banco:'', tipo:PT_BANK_TYPES[0], cuenta:'', moneda:'PEN'};
   pt.draft[list].push(row); pt.dirty = true; renderPtEditor();
 }
 function ptDelRow(list,i){ pt.draft[list].splice(i,1); pt.dirty = true; renderPtEditor(); }
+/* Connect: Añadir / Eliminar con selección de filas */
+pt.sel = {};
+function ptSelRow(list,i,v){ const s = pt.sel[list] = pt.sel[list] || []; if(v) s.push(i); else pt.sel[list] = s.filter(x=>x!==i); }
+function ptDelSel(list){ const s = pt.sel[list] || []; if(!s.length){ toast('Seleccione al menos una fila','info'); return; } pt.draft[list] = pt.draft[list].filter((x,i)=>!s.includes(i)); pt.sel[list] = []; pt.dirty = true; renderPtEditor(); }
 function setPtTab(k){ pt.tab = k; renderPtEditor(); }
 function startPtEdit(){ if(!canEditPartner()){ toast('Solo Facturación o Gerencia editan socios','error'); return; } pt.edit = true; renderPtEditor(); }
 function openPtHistory(){ openHistModal(pt.draft.hist||[]); }
 
 function renderPtEditor(){
   const ed = document.getElementById('ptEditor'), d = pt.draft; if(!d){ ed.innerHTML = ''; return; }
-  const can = canEditPartner(), edit = pt.edit && can, dis = edit ? '' : 'disabled', E = pt.errs;
+  const can = canEditPartner(), edit = pt.edit && can, dis = edit ? '' : 'disabled', E = pt.errs, pend = d.estado==='Por homologar';
+  d.sftp = d.sftp || {on:false, host:'', puerto:22, usuario:'', metodo:'pass', clave:'', entrada:'', proceso:'', archivo:'', errores:'', patron:''};
   const fld = (label, html, k) => `<div class="filter-field"><label>${label}</label>${html}${fErr(E,k)}</div>`;
-  const sel = (k, opts, re) => `<select ${dis} onchange="ptUpd('${k}',this.value${re?',true':''})">${opts.map(o=>`<option ${o===d[k]?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
-  const inp = (k, ph, lock) => `<input ${lock?'disabled':dis} data-f="${k}" value="${esc(d[k]??'')}" placeholder="${ph||''}" oninput="ptUpd('${k}',this.value)">`;
+  const sel = (k, opts, re, ph) => `<select ${dis} onchange="ptUpd('${k}',this.value${re?',true':''})">${ph?`<option value="">${ph}</option>`:''}${opts.map(o=>`<option ${o===d[k]?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
+  const inp = (k, ph, lock, max) => `<input ${lock?'disabled':dis} data-f="${k}" ${max?`maxlength="${max}"`:''} value="${esc(d[k]??'')}" placeholder="${ph||''}" oninput="ptUpd('${k}',this.value)">`;
   const docLock = !pt.isNew && d.estado==='Homologado';
+  const hint = PT_DOC_HINT[d.tipoDoc] || '';
   let actions = '';
-  if(edit) actions = `<button class="btn-corp-outline" onclick="discardPartner()">Cancelar</button><button class="btn-corp" onclick="savePartner()">Guardar</button>${d.estado==='Por homologar' && !pt.isNew ? '<button class="btn-corp tf-ok" onclick="homologatePartner()">Homologar</button>' : ''}`;
-  else if(can) actions = (d.estado==='Por homologar' ? `<button class="btn-corp-outline" onclick="rejectPartner()">Rechazar</button><button class="btn-corp tf-ok" onclick="homologatePartner()">Homologar</button>` : '')
-      + `<button class="btn-corp" onclick="startPtEdit()">Editar</button>`;
+  if(edit) actions = `<button class="btn-corp-outline" onclick="discardPartner()">Cancelar</button><button class="btn-corp" onclick="savePartner()">Guardar</button>${pend && !pt.isNew ? '<button class="btn-corp tf-ok" onclick="homologatePartner()">Aprobar socio</button>' : ''}`;
+  else if(can) actions = (d.estado==='Homologado' ? `<button class="btn-corp-outline" onclick="ptReopen()">Volver a pendiente</button>` : '')
+      + (pend ? `<button ${DM_SIN_TK('Rechazar','btn-corp-outline')} onclick="rejectPartner()">Rechazar</button>` : '')
+      + `<button class="btn-corp" onclick="startPtEdit()">Editar</button><button class="btn-corp-outline" onclick="ptDelete()">Eliminar</button>`
+      + (pend ? '<button class="btn-corp tf-ok" onclick="homologatePartner()">Aprobar socio</button>' : '');
   const lastRej = d.estado==='Rechazado' ? [...d.hist].reverse().find(h=>h.next==='Rechazado') : null;
-  const banner = d.origen && d.estado==='Por homologar'
-    ? `<div class="tf-reason pend">Preregistrado como ${esc(d.origen.kind||'socio').toLowerCase()} por ${esc(d.origen.by)} · ${fmtDate(d.origen.ts)}${d.origen.pda?` · <a href="#" onclick="openSamplePdaSafe('${d.origen.pda}');return false">${esc(d.origen.pda)}</a>`:''}</div>`
-    : lastRej ? `<div class="tf-reason rechazada"><b>Rechazado</b> · ${esc(lastRej.user)} · ${fmtDate(lastRej.ts)}: ${esc(lastRej.comment)}</div>` : '';
+  const banner = (d.origen && pend
+    ? `<div ${DM_SIN_TK('Preregistro desde la PDA')}><div class="tf-reason pend">Preregistrado como ${esc(d.origen.kind||'socio').toLowerCase()} por ${esc(d.origen.by)} · ${fmtDate(d.origen.ts)}${d.origen.pda?` · <a href="#" onclick="openSamplePdaSafe('${d.origen.pda}');return false">${esc(d.origen.pda)}</a>`:''}</div></div>`
+    : lastRej ? `<div ${DM_SIN_TK('Rechazar')}><div class="tf-reason rechazada"><b>Rechazado</b> · ${esc(lastRej.user)} · ${fmtDate(lastRej.ts)}: ${esc(lastRej.comment)}</div></div>` : '')
+    + (pend ? '<div class="tf-reason pend">Para guardar o aprobar el socio se requieren dirección, código ERP y al menos un rol.</div>' : '');
+  const docs = d.nac==='Nacional' ? ['RUC','DNI','Carné de Extranjería'] : ['Tax ID','Pasaporte'];
   const head = `<div class="buscar-filters">
-    <div class="md-cardhead"><div class="tf-title"><h3 class="md-h">Información General</h3>${pt.isNew?'':`<button class="tf-hist" title="Historial" onclick="openPtHistory()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg></button>`}</div>
-      <div class="md-actions"><span class="cc-chip on st-${d.estado==='Homologado'?'aprobada':d.estado==='Rechazado'?'rechazada':'pendiente'}">${esc(d.estado)}</span>${actions}</div></div>${banner}
+    <div class="md-cardhead"><div class="tf-title"><h3 class="md-h">Información General</h3>${pt.isNew?'':`<button class="tf-hist cc-prop" data-prop="Propuesta sin ticket · Historial" title="Historial" onclick="openPtHistory()">${DM_HIST_IC}</button>`}</div>
+      <div class="md-actions">${dmChip(d.estado)}${actions}</div></div>${banner}
     <div class="filters-grid g4">
-      ${fld('Tipo Persona *', sel('tipoPersona',['Persona Jurídica','Persona Natural']))}
-      ${fld('Nacionalidad *', sel('nac',['Nacional','Extranjera'],true))}
-      ${fld('Tipo Documento *', sel('tipoDoc', d.nac==='Nacional' ? ['RUC','DNI'] : ['Tax ID','Pasaporte']))}
-      ${fld(`Número Documento *${d.tipoDoc==='RUC'?' <small>(11 dígitos numéricos)</small>':''}`, inp('doc','Ingrese Número de Documento', docLock) + (docLock && edit ? '<div class="pda-row-sub">El RUC no puede modificarse en modo edición.</div>' : ''), 'doc')}
+      ${fld('Tipo Persona *', sel('tipoPersona',['Persona Jurídica','Persona Natural'],false,'Elegir Tipo Persona'), 'tipoPersona')}
+      ${fld('Nacionalidad *', sel('nac',['Nacional','Extranjera'],true,'Elegir Nacionalidad'), 'nac')}
+      ${fld('Tipo Documento *', sel('tipoDoc', docs, true, 'Elegir Tipo Documento'), 'tipoDoc')}
+      ${fld(`Número Documento *${hint?` <small>${hint}</small>`:''}`, inp('doc','Ingrese Número de Documento', docLock, PT_DOC_MAX[d.tipoDoc]||20) + (docLock && edit ? '<div class="pda-row-sub">El RUC no puede modificarse en modo edición.</div>' : ''), 'doc')}
     </div></div>`;
+  const reps = PARTNERS.filter(p=>p.id!==d.id && p.roles.some(x=>/Línea naviera|Representante de Línea/.test(x.rol))).map(p=>p.largo);
+  const s = d.sftp, sdis = edit ? '' : 'disabled';
+  const sIn = (k, l, ph, type) => fld(l, `<input ${sdis} ${type?`type="${type}"`:''} value="${esc(s[k]??'')}" placeholder="${ph||''}" oninput="ptSftp('${k}',this.value)">`, 'sftp_'+k);
+  const sftp = `<div class="dm-sftp"><label class="obs-filter"><input type="checkbox" ${sdis} ${s.on?'checked':''} onchange="ptSftp('on',this.checked,true)"> Requerir Integración SFTP</label>
+    ${s.on?`<div class="filters-grid g4">${sIn('host','Host SFTP *','sftp.ejemplo.example')}${sIn('puerto','Puerto SFTP *','22','number')}${sIn('usuario','Usuario SFTP *','Usuario')}
+      <div class="filter-field"><label>Método de Autenticación</label><div class="dm-radios"><label><input type="radio" name="ptSftpM" ${sdis} ${s.metodo==='pass'?'checked':''} onchange="ptSftp('metodo','pass',true)"> Contraseña</label><label><input type="radio" name="ptSftpM" ${sdis} ${s.metodo==='ssh'?'checked':''} onchange="ptSftp('metodo','ssh',true)"> Clave SSH</label></div></div>
+      ${s.metodo==='ssh' ? sIn('clave','Clave SSH SFTP *','Pegue la clave pública de prueba') : sIn('clave','Contraseña SFTP *','Contraseña','password')}
+      ${sIn('entrada','Directorio de Entrada *','/entrada')}${sIn('proceso','Directorio en Proceso *','/proceso')}${sIn('archivo','Directorio de Archivo *','/archivo')}
+      ${sIn('errores','Directorio de Errores','/errores')}${sIn('patron','Patrón de Archivo <small>(ej: *.xml)</small>','*.xml')}</div>`:''}</div>`;
   const gen = `<div class="buscar-filters"><div class="filters-grid g4">
-      ${fld('Nombre Corto *', inp('corto','Ingresar Nombre Corto'), 'corto')}
-      ${fld('Nombre Largo *', inp('largo','Ingresar Nombre'), 'largo')}
-      ${fld('Código ERP *', inp('erp','Ingresar Código ERP'), 'erp')}
-      ${fld('Dirección *', inp('dir','Ingresar Dirección'), 'dir')}
-      ${fld('Moneda', `<select ${dis} onchange="ptUpd('moneda',this.value)"><option value="USD" ${d.moneda==='USD'?'selected':''}>Dólar estadounidense</option><option value="PEN" ${d.moneda==='PEN'?'selected':''}>Sol peruano</option></select>`)}
-      ${fld('Código de Aduana', inp('aduana','Ingresar Código de Aduana'))}
-      ${fld('Condición de Pago', sel('pago',['Crédito','Contado']))}
+      ${fld('Nombre Corto *', inp('corto','Ingresar Nombre Corto',false,80), 'corto')}
+      ${fld('Nombre Largo *', inp('largo','Ingresar Nombre',false,100), 'largo')}
+      ${fld('Código ERP *', inp('erp','Ingresar Código ERP',false,25), 'erp')}
+      ${fld('Dirección *', inp('dir','Ingresar Dirección',false,200), 'dir')}
+      ${fld('Moneda', `<select ${dis} onchange="ptUpd('moneda',this.value)"><option value="">Elegir Moneda</option><option value="USD" ${d.moneda==='USD'?'selected':''}>Dólar estadounidense</option><option value="PEN" ${d.moneda==='PEN'?'selected':''}>Sol peruano</option></select>`)}
+      ${fld('Código de Aduana', inp('aduana','Ingresar Código de Aduana',false,4))}
+      ${fld('Condición de Pago', sel('pago',['Crédito','Contado'],false,'Elegir Condición de Pago'))}
+      ${fld('Representante de Línea', `<input ${dis} list="ptRepList" value="${esc(d.repLinea||'')}" placeholder="Buscar socio" oninput="ptUpd('repLinea',this.value)"><datalist id="ptRepList">${reps.map(x=>`<option value="${esc(x)}">`).join('')}</datalist>`)}
     </div>
     <div class="pt-checks"><label class="obs-filter"><input type="checkbox" ${dis} ${d.relCosmos?'checked':''} onchange="ptUpd('relCosmos',this.checked)"> Relacionado con Cosmos</label>
-      <label class="obs-filter"><input type="checkbox" ${dis} ${d.demurrage?'checked':''} onchange="ptUpd('demurrage',this.checked)"> Requiere archivo de Demurrage Free Days cargado</label></div></div>`;
-  const tab = pt.tab;
-  const tabs = [['roles',`Roles (${d.roles.length})`],['contactos',`Información de Contacto (${d.contactos.length})`],['bancos',`Información Financiera (${d.bancos.length})`]]
-    .map(([k,l])=>`<button class="${k===tab?'on':''}" onclick="setPtTab('${k}')">${l}</button>`).join('');
-  const cell = (list,i,k,v,ph) => edit ? `<input value="${esc(v||'')}" placeholder="${ph||''}" oninput="ptUpdRow('${list}',${i},'${k}',this.value)">` : esc(v||'-');
+      <label class="obs-filter"><input type="checkbox" ${dis} ${d.demurrage?'checked':''} onchange="ptUpd('demurrage',this.checked)"> Requiere archivo de Demurrage Free Days cargado</label></div>
+    <div class="fac-sec">Configuración SFTP</div>${sftp}</div>`;
+  const tab = pt.tab, cnt = n => ` <span class="cc-prop">(${n})</span>`;
+  const tabs = [['roles','Roles',d.roles.length],['contactos','Información de Contacto',d.contactos.length],['bancos','Información Financiera',d.bancos.length]]
+    .map(([k,l,n])=>`<button class="${k===tab?'on':''}" onclick="setPtTab('${k}')">${l}${cnt(n)}</button>`).join('');
+  const cell = (list,i,k,v,ph,max) => edit ? `<input value="${esc(v||'')}" ${max?`maxlength="${max}"`:''} placeholder="${ph||''}" oninput="ptUpdRow('${list}',${i},'${k}',this.value)">` : esc(v||'-');
   const csel = (list,i,k,opts,v) => edit ? `<select onchange="ptUpdRow('${list}',${i},'${k}',this.value)">${opts.map(o=>`<option ${o===v?'selected':''}>${esc(o)}</option>`).join('')}</select>` : esc(v);
   const cchk = (list,i,k,v) => `<input type="checkbox" ${edit?'':'disabled'} ${v?'checked':''} onchange="ptUpdRow('${list}',${i},'${k}',this.checked)">`;
-  const del = (list,i) => edit ? `<td><button class="link-btn danger" onclick="ptDelRow('${list}',${i})">Quitar</button></td>` : '';
+  const pick = (list,i) => edit ? `<td style="width:36px"><input type="checkbox" onchange="ptSelRow('${list}',${i},this.checked)"></td>` : '';
+  const ph = edit ? '<th style="width:36px"></th>' : '';
   const empty = (n,t) => `<tr><td colspan="${n}" style="color:#8D9BA2;padding:14px 20px">${t}</td></tr>`;
+  pt.sel = {};
   let body = '';
-  if(tab==='roles') body = `<div class="results-table"><table><thead><tr><th>Rol</th><th style="width:120px">Cliente</th><th style="width:120px">Proveedor</th>${edit?'<th style="width:80px"></th>':''}</tr></thead><tbody>
-      ${d.roles.map((r,i)=>`<tr><td>${csel('roles',i,'rol',PT_ROLES,r.rol)}</td><td>${cchk('roles',i,'cliente',r.cliente)}</td><td>${cchk('roles',i,'proveedor',r.proveedor)}</td>${del('roles',i)}</tr>`).join('') || empty(4,'Sin roles.')}
+  if(tab==='roles') body = `<div class="results-table"><table><thead><tr>${ph}<th>Rol</th><th style="width:120px">Cliente</th><th style="width:120px">Proveedor</th></tr></thead><tbody>
+      ${d.roles.map((r,i)=>`<tr>${pick('roles',i)}<td>${csel('roles',i,'rol',PT_ROLES,r.rol)}</td><td>${cchk('roles',i,'cliente',r.cliente)}</td><td>${cchk('roles',i,'proveedor',r.proveedor)}</td></tr>`).join('') || empty(4,'Sin roles.')}
     </tbody></table></div>${fErr(E,'roles')}`;
-  else if(tab==='contactos') body = `<div class="results-table"><table><thead><tr><th>Tipo</th><th>Nombre</th><th>Teléfono</th><th>Móvil</th><th>Email</th><th>Dirección</th>${edit?'<th></th>':''}</tr></thead><tbody>
-      ${d.contactos.map((c,i)=>`<tr><td>${csel('contactos',i,'tipo',PT_CONTACT_TYPES,c.tipo)}</td><td>${cell('contactos',i,'nombre',c.nombre)}</td><td>${cell('contactos',i,'tel',c.tel)}</td>
-        <td>${cell('contactos',i,'movil',c.movil)}</td><td>${cell('contactos',i,'email',c.email)}</td><td>${cell('contactos',i,'dir',c.dir)}</td>${del('contactos',i)}</tr>`).join('') || empty(7,'Sin contactos.')}
-    </tbody></table></div>`;
-  else body = `<div class="results-table"><table><thead><tr><th>Banco</th><th>Tipo</th><th>Cuenta</th><th>Moneda</th>${edit?'<th></th>':''}</tr></thead><tbody>
-      ${d.bancos.map((b,i)=>`<tr><td>${csel('bancos',i,'banco',['',...CB_BANKS],b.banco)}</td><td>${csel('bancos',i,'tipo',PT_BANK_TYPES,b.tipo)}</td><td>${cell('bancos',i,'cuenta',b.cuenta)}</td>
-        <td>${csel('bancos',i,'moneda',['PEN','USD'],b.moneda)}</td>${del('bancos',i)}</tr>`).join('') || empty(5,'Sin cuentas.')}
-    </tbody></table></div>`;
-  if(edit) body += `<div style="margin-top:10px"><button class="btn-add" onclick="ptAddRow('${tab}')">+ ${tab==='roles'?'Rol':tab==='contactos'?'Contacto':'Cuenta'}</button></div>`;
+  else if(tab==='contactos') body = `<div class="results-table"><table><thead><tr>${ph}<th>Tipo *</th><th>Nombre *</th><th>Teléfono</th><th>Móvil</th><th>Email</th><th>Dirección</th><th>Notas</th></tr></thead><tbody>
+      ${d.contactos.map((c,i)=>`<tr>${pick('contactos',i)}<td>${csel('contactos',i,'tipo',PT_CONTACT_TYPES,c.tipo)}</td><td>${cell('contactos',i,'nombre',c.nombre,'',100)}</td><td>${cell('contactos',i,'tel',c.tel,'',25)}</td>
+        <td>${cell('contactos',i,'movil',c.movil,'',25)}</td><td>${cell('contactos',i,'email',c.email,'',200)}</td><td>${cell('contactos',i,'dir',c.dir,'',200)}</td><td>${cell('contactos',i,'notas',c.notas,'',400)}</td></tr>`).join('') || empty(8,'Sin contactos.')}
+    </tbody></table></div>${fErr(E,'contactos')}`;
+  else body = `<div class="results-table"><table><thead><tr>${ph}<th>Banco *</th><th>Tipo *</th><th>Cuenta *</th><th>Moneda *</th></tr></thead><tbody>
+      ${d.bancos.map((b,i)=>`<tr>${pick('bancos',i)}<td>${csel('bancos',i,'banco',['',...CB_BANKS],b.banco)}</td><td>${csel('bancos',i,'tipo',PT_BANK_TYPES,b.tipo)}</td><td>${cell('bancos',i,'cuenta',b.cuenta,'',25)}</td>
+        <td>${csel('bancos',i,'moneda',['PEN','USD'],b.moneda)}</td></tr>`).join('') || empty(5,'Sin cuentas.')}
+    </tbody></table></div>${fErr(E,'bancos')}`;
+  if(edit) body += `<div style="margin-top:10px;display:flex;gap:8px"><button class="btn-add" onclick="ptAddRow('${tab}')">Añadir</button><button class="btn-corp-outline" onclick="ptDelSel('${tab}')">Eliminar</button></div>`;
   ed.innerHTML = head + gen + `<div class="buscar-filters"><div class="md-tabs">${tabs}</div><div class="md-body">${body}</div></div>`;
 }
+const PT_DOC_HINT = {'DNI':'(8 dígitos numéricos)', 'RUC':'(11 dígitos numéricos)', 'Pasaporte':'(Máx. 15 caracteres alfanuméricos)', 'Carné de Extranjería':'(Máx. 11 caracteres alfanuméricos)', 'Tax ID':'(Máx. 20 caracteres)'};
+const PT_DOC_MAX = {'DNI':8, 'RUC':11, 'Pasaporte':15, 'Carné de Extranjería':11, 'Tax ID':20};
+function ptSftp(k, v, re){ pt.draft.sftp[k] = v; pt.dirty = true; if(re) renderPtEditor(); }
 function applyPtPerm(){ const nb = document.getElementById('ptNewBtn'); if(nb) nb.style.display = canEditPartner() ? '' : 'none'; if(!canEditPartner()) pt.edit = false; }
 function openSamplePdaSafe(code){ if(SAMPLE_PDAS.some(x=>x.code===code)) openSamplePda(code); else toast('PDA de ejemplo no disponible','info'); }
 
-/* ---------- Guardar / homologar ---------- */
+/* ---------- Guardar / aprobar (Connect) ---------- */
+const PT_LBL = {tipoPersona:'Tipo Persona', nac:'Nacionalidad', tipoDoc:'Tipo Documento', doc:'Número Documento', corto:'Nombre Corto', largo:'Nombre Largo', erp:'Código ERP', dir:'Dirección'};
 function ptBasicErrors(d){
-  const E = {};
-  if(!String(d.doc||'').trim()) E.doc = 'Obligatorio';
-  else if(d.tipoDoc==='RUC' && !/^(10|20)\d{9}$/.test(d.doc)) E.doc = '11 dígitos, inicia con 10 o 20';
-  else if(PARTNERS.some(p=>p.id!==d.id && p.doc===d.doc)) E.doc = 'Ya existe un socio con este documento';
-  if(!String(d.largo||'').trim()) E.largo = 'Obligatorio';
+  const E = {}, OB = 'Este campo es obligatorio', v = k => String(d[k]||'').trim();
+  Object.keys(PT_LBL).forEach(k=>{ if(!v(k)) E[k] = OB; });
+  const doc = v('doc'), t = d.tipoDoc;
+  if(doc && ((t==='RUC' && !/^\d{11}$/.test(doc)) || (t==='DNI' && !/^\d{8}$/.test(doc)) || (/Pasaporte|Carné/.test(t) && !/^[A-Za-z0-9]+$/.test(doc)) || doc.length > (PT_DOC_MAX[t]||20)))
+    E.doc = `Número Documento ${PT_DOC_HINT[t]||''}`.trim();
+  /* Propuesta sin ticket: RUC que inicia con 10 o 20 y documento no repetido (Connect no lo valida) */
+  else if(doc && window.CC && CC.verPropuestas){
+    if(t==='RUC' && !/^(10|20)/.test(doc)) E.doc = 'El RUC inicia con 10 o 20 (propuesta)';
+    else if(PARTNERS.some(p=>p.id!==d.id && p.doc===doc)) E.doc = 'Ya existe un socio con este documento (propuesta)';
+  }
+  if(!d.roles.length) E.roles = 'Seleccione al menos un rol.';
+  else if(new Set(d.roles.map(r=>r.rol)).size !== d.roles.length) E.roles = 'Se encontraron roles duplicados.';
+  if(d.contactos.some(c=>!String(c.nombre||'').trim() || !c.tipo)) E.contactos = 'Tipo y Nombre son obligatorios en cada contacto.';
+  else if(d.contactos.some(c=>!c.tel && !c.movil && !c.email)) E.contactos = 'Cada contacto debe tener al menos un Teléfono, Móvil o Correo.';
+  else if(d.contactos.some(c=>(c.tel && !/^\d+$/.test(c.tel)) || (c.movil && !/^\d+$/.test(c.movil)))) E.contactos = 'Teléfono y Móvil solo admiten dígitos.';
+  if(d.bancos.some(b=>!b.banco || !b.tipo || !String(b.cuenta||'').trim() || !b.moneda)) E.bancos = 'Banco, Tipo, Cuenta y Moneda son obligatorios.';
+  const s = d.sftp;
+  if(s && s.on){
+    if(!String(s.host||'').trim()) E.sftp_host = 'El host SFTP es requerido';
+    if(!(+s.puerto>=1 && +s.puerto<=65535)) E.sftp_puerto = 'El puerto debe estar entre 1 y 65535';
+    if(!String(s.usuario||'').trim()) E.sftp_usuario = 'El usuario SFTP es requerido';
+    if(!String(s.clave||'').trim()) E.sftp_clave = s.metodo==='ssh' ? 'La clave SSH SFTP es requerida' : 'La contraseña SFTP es requerida';
+    if(!String(s.entrada||'').trim()) E.sftp_entrada = 'El directorio de entrada es requerido';
+    if(!String(s.proceso||'').trim()) E.sftp_proceso = 'El directorio en proceso es requerido';
+    if(!String(s.archivo||'').trim()) E.sftp_archivo = 'El directorio de archivo es requerido';
+  }
   return E;
+}
+function ptShowErrs(E){
+  pt.errs = E; if(E.roles) pt.tab = 'roles'; else if(E.contactos) pt.tab = 'contactos'; else if(E.bancos) pt.tab = 'bancos';
+  pt.edit = true; renderPtEditor();
+  document.querySelector('#ptEditor .f-err')?.scrollIntoView({block:'center', behavior:'smooth'});
 }
 function savePartner(){
   if(!canEditPartner()){ toast('Solo Facturación o Gerencia editan socios','error'); return; }
   const d = pt.draft, E = ptBasicErrors(d);
-  if(Object.keys(E).length){ pt.errs = E; renderPtEditor(); return; }
-  pt.errs = null; if(!d.corto) d.corto = d.largo;
+  if(Object.keys(E).length){ ptShowErrs(E); toast('Por favor, complete todos los campos obligatorios.','error'); return; }
+  pt.errs = null;
   const user = curUser(), i = PARTNERS.findIndex(x=>x.id===d.id);
   const prevName = i>-1 ? PARTNERS[i].largo : null;
   d.hist.push(pt.isNew ? {ts:new Date().toISOString(), user, prev:'', next:d.estado, comment:'Registro de socio'} : {ts:new Date().toISOString(), user, prev:d.estado, next:d.estado, comment:'Edición de datos'});
@@ -5817,11 +5940,11 @@ function savePartner(){
   if(prevName && prevName!==d.largo){ const k = state.suppliers.indexOf(prevName); if(k>-1) state.suppliers[k] = d.largo; state.services.forEach(x=>{ if(x.supplier===prevName) x.supplier = d.largo; }); }
   if(d.roles.some(r=>r.proveedor) && !state.suppliers.includes(d.largo)) state.suppliers.push(d.largo);
   log('Socios', `${pt.isNew?'Registró':'Editó'} el socio ${d.largo} (${d.doc})`, user);
-  pt.isNew = false; pt.edit = false; pt.dirty = false;
-  showPtView('detail'); renderPtEditor(); toast('Socio guardado','success');
+  const nuevo = pt.isNew; pt.isNew = false; pt.edit = false; pt.dirty = false;
+  showPtView('detail'); renderPtEditor(); toast(nuevo ? 'El socio se ha registrado correctamente' : 'El socio se ha actualizado correctamente','success');
 }
 function discardPartner(){
-  if(pt.dirty && !confirm('¿Descartar los cambios?')) return;
+  if(pt.dirty && !confirm('Hay cambios sin guardar. ¿Estás seguro de que quieres salir?')) return;
   pt.dirty = false; pt.errs = null;
   if(pt.isNew){ pt.isNew = false; pt.draft = null; pt.edit = false; showPtView('list'); renderPtList(); return; }
   selectPartner(pt.selId, true);
@@ -5830,23 +5953,39 @@ function ptSetEstado(next, comment){
   const p = PARTNERS.find(x=>x.id===pt.selId); if(!p) return;
   const prev = p.estado; p.estado = next;
   p.hist.push({ts:new Date().toISOString(), user:curUser(), prev, next, comment});
-  log('Socios', `Socio ${p.largo}: ${prev} → ${next}`);
+  log('Socios', `Socio ${p.largo}: ${dmEstTxt(prev)} → ${dmEstTxt(next)}`);
   pt.draft = clone(p); renderPtEditor(); updPtCount();
   if(document.getElementById('step2').classList.contains('active')) renderStep2();
 }
 function homologatePartner(){
-  if(!canEditPartner()){ toast('Solo Facturación o Gerencia homologan socios','error'); return; }
+  if(!canEditPartner()){ toast('Solo Facturación o Gerencia aprueban socios','error'); return; }
   const d = pt.draft, E = ptBasicErrors(d);
-  ['corto','erp','dir'].forEach(k=>{ if(!String(d[k]||'').trim()) E[k] = 'Requerido para homologar'; });
-  if(!d.roles.length || !d.roles.some(r=>r.cliente || r.proveedor)) E.roles = 'Marca al menos un rol como cliente o proveedor';
   if(Object.keys(E).length){
-    pt.errs = E; if(E.roles) pt.tab = 'roles'; pt.edit = true; renderPtEditor();
-    document.querySelector('#ptEditor .f-err')?.scrollIntoView({block:'center', behavior:'smooth'});
-    toast('Completa los campos marcados y vuelve a homologar','info'); return;
+    const k = Object.keys(E)[0];
+    ptShowErrs(E);
+    toast(k==='roles' ? 'Para aprobar el socio se debe asignar al menos un rol activo.' : `Para aprobar el socio se debe completar: ${PT_LBL[k] || E[k]}.`, 'info'); return;
   }
+  if(!confirm('Al aprobar, el socio queda disponible en PDAs y viajes y no vuelve a pendiente. ¿Desea continuar?')) return;
   if(pt.edit){ savePartner(); if(pt.edit) return; }
-  ptSetEstado('Homologado', 'Homologación del socio');
-  toast('Socio homologado','success');
+  ptSetEstado('Homologado', 'Aprobación del socio');
+  toast('El socio se ha aprobado correctamente','success');
+}
+/* Connect: Volver a pendiente (permiso DM.SO.Reopen) con el uso del socio en PDAs y viajes */
+function ptReopen(){
+  if(!canEditPartner()){ toast('Solo Facturación o Gerencia pueden volver a pendiente','error'); return; }
+  const d = pt.draft, n = normTxt(d.largo);
+  const pdas = (typeof SAMPLE_PDAS!=='undefined' ? SAMPLE_PDAS : []).filter(x=>normTxt(x.client||x.cliente||'')===n).length;
+  const voys = (typeof VOYAGES!=='undefined' ? VOYAGES : []).filter(v=>normTxt(v.cliente||'')===n).length;
+  facOpen(`<h3>Volver a pendiente</h3>
+    <p>Este socio está en ${pdas} PDAs y ${voys} viajes como cliente. Seguirán asociados.</p>
+    <ul class="dm-efectos"><li>No podrá elegirse en viajes nuevos.</li><li>Las PDAs abiertas con este socio no podrán aprobarse.</li><li>Se desbloquea el tipo y número de documento.</li></ul>
+    <div class="fac-btns"><button type="button" class="cc-btn" onclick="facClose()">Cancelar</button><button type="button" class="cc-btn pink" id="ptReopenOk" onclick="facClose();ptSetEstado('Por homologar','Volver a pendiente');toast('El socio volvió a pendiente de aprobación','success')">Volver a pendiente</button></div>`);
+}
+function ptDelete(){
+  if(!canEditPartner()){ toast('Solo Facturación o Gerencia eliminan socios','error'); return; }
+  if(!confirm('¿Estás seguro de que deseas eliminar este Socio?')) return;
+  const i = PARTNERS.findIndex(x=>x.id===pt.selId); if(i>-1) PARTNERS.splice(i,1);
+  pt.draft = null; pt.dirty = false; pt.edit = false; showPtView('list'); renderPtList(); toast('Socio eliminado correctamente','success');
 }
 function rejectPartner(){
   if(!canEditPartner()){ toast('Solo Facturación o Gerencia rechazan socios','error'); return; }
@@ -7909,7 +8048,7 @@ function rlOut(){ toast('No disponible en este prototipo','info'); }
 function renderRl(){ if(RL.view==='detail'){ renderRlDetail(); return; }
   updatePagebar('screenRoles');
   const f = RL.f, all = rlFiltered(), pages = Math.max(1,Math.ceil(all.length/RL.size)); RL.page = Math.min(RL.page,pages); const list = all.slice((RL.page-1)*RL.size, RL.page*RL.size);
-  document.getElementById('rlRoot').innerHTML = `<div class="fac-card" id="rlF"><div class="fac-head"><div><h3>Buscar Roles</h3><div class="fac-sub">Ingresar datos para buscar</div></div><div class="fac-acts"><button type="button" class="cc-btn" onclick="rlOut()">+ Nuevo</button></div></div>
+  document.getElementById('rlRoot').innerHTML = `<div class="fac-card" id="rlF"><div class="fac-head"><div><h3>Buscar Roles</h3><div class="fac-sub">Ingresar datos para buscar</div></div><div class="fac-acts"><button type="button" class="cc-btn" id="rlNuevo" onclick="rlNew()">Nuevo</button></div></div>
     <div class="fac-g3">${fF('Sistema',fSel(RL_SYS,f.sys,`id="rlSys" onchange="rlSet('sys',this.value)"`,'Seleccione un sistema'))}${fF('Nombre',`<input id="rlName" placeholder="Ingrese nombre" value="${esc(f.name)}" onchange="rlSet('name',this.value)">`)}${fF('Descripción',`<input placeholder="Ingrese descripción" value="${esc(f.desc)}" onchange="rlSet('desc',this.value)">`)}</div>
     <div class="fac-btns"><button type="button" class="cc-btn" id="rlBuscar" ${rlHasF()?'':'disabled'} onclick="rlSearch()">Buscar</button><button type="button" class="cc-btn" ${rlHasF()||RL.searched?'':'disabled'} onclick="rlClear()">Limpiar</button></div></div>
   ${RL.searched?`<div class="fac-card" id="rlRes"><div class="fac-head"><h3>Resultados (${all.length})</h3></div>
@@ -7918,26 +8057,67 @@ function renderRl(){ if(RL.view==='detail'){ renderRlDetail(); return; }
     </tbody></table></div>
     <div class="fac-btns" style="justify-content:space-between;align-items:center"><button type="button" class="cc-btn" id="rlExp" onclick="rlExport()">Exportar</button><div class="cc-pager" style="border:none">${pagerHtml(all.length, RL.page, RL.size, 'rlGo')}</div></div></div>`:''}`;
 }
-function rlOpen(n){ RL.sel = n; RL.view = 'detail'; RL.tab = 'menu'; RL.open = {}; if(document.querySelector('section.panel.active')?.id!=='screenRoles') facEnter('screenRoles'); renderRl(); }
-function rlBack(){ RL.view = 'list'; RL.sel = null; renderRl(); }
+function rlOpen(n){ RL.edit = false; RL.draft = null; RL.isNew = false; RL.sel = n; RL.view = 'detail'; RL.tab = 'menu'; RL.open = {}; if(document.querySelector('section.panel.active')?.id!=='screenRoles') facEnter('screenRoles'); renderRl(); }
+function rlBack(){ RL.view = 'list'; RL.sel = null; RL.edit = false; RL.draft = null; RL.isNew = false; renderRl(); }
 function rlTab(t){ RL.tab = t; renderRl(); }
 function rlToggle(k){ RL.open[k] = !RL.open[k]; renderRl(); }
 function rlTree(groups, chkG, chkC){
   return `<ul class="rl-tree">${groups.map(([g,ch])=>`<li><div class="rl-node"><button type="button" class="fac-expbtn" onclick="rlToggle('${esc(g)}')">${RL.open[g]?'&#8964;':'&#8250;'}</button><label class="fac-chk"><input type="checkbox" disabled ${chkG(g)?'checked':''}> ${esc(g)}</label></div>
     ${RL.open[g]?`<ul class="rl-leaf">${ch.map(c=>`<li><label class="fac-chk"><input type="checkbox" disabled ${chkC(g,c)?'checked':''}> ${esc(c)}</label></li>`).join('')}</ul>`:''}</li>`).join('')}</ul>`;
 }
+function rlFull(rd){ return {menus: !rd ? [] : rd.menus==='*' ? RL_MENU.flatMap(([g,ch])=>[g,...ch]) : [...rd.menus], groups: !rd ? [] : rd.groups==='*' ? RL_PERMS.map(g=>g[0]) : [...rd.groups], branches: rd ? [...rd.branches] : []}; }
+function rlNew(){ RL.isNew = true; RL.edit = true; RL.errs = {}; RL.sel = null; RL.view = 'detail'; RL.tab = 'menu'; RL.open = {}; RL.draft = {sys:'', n:'', d:'', ext:false, ...rlFull(null)}; renderRl(); }
+function rlStartEdit(){ const r = RL_ROLES.find(x=>x.n===RL.sel); RL.isNew = false; RL.edit = true; RL.errs = {}; RL.draft = {...r, ext:!!r.ext, ...rlFull(RL_READ[r.n])}; renderRl(); }
+function rlCancel(){ RL.edit = false; RL.draft = null; RL.errs = {}; if(RL.isNew){ RL.isNew = false; rlBack(); return; } renderRl(); }
+function rlUpd(k, v){ RL.draft[k] = v; if(RL.errs) delete RL.errs[k]; }
+function rlChk(list, item, on, hijos){ const d = RL.draft, s = new Set(d[list]); [item, ...(hijos||[])].forEach(x=>on ? s.add(x) : s.delete(x)); d[list] = [...s]; renderRl(); }
+function rlSave(){
+  const d = RL.draft, E = {}, dos = /\s{2}/;
+  if(!d.sys) E.sys = 'El sistema es requerido.';
+  if(!String(d.n||'').trim()) E.n = 'Este campo es obligatorio'; else if(dos.test(d.n)) E.n = 'El formato no es válido (no se permiten 2 espacios seguidos).';
+  if(dos.test(d.d||'')) E.d = 'El formato no es válido (no se permiten 2 espacios seguidos).';
+  if(RL.isNew && RL_ROLES.some(x=>x.sys===d.sys && x.n===d.n.trim())) E.n = 'Ya existe un rol con este nombre';
+  RL.errs = E; if(Object.keys(E).length){ renderRl(); return; }
+  const n = d.n.trim(), rec = {sys:d.sys, n, d:d.d||'', ext:!!d.ext};
+  if(RL.isNew) RL_ROLES.push(rec); else Object.assign(RL_ROLES.find(x=>x.n===RL.sel), rec);
+  RL_READ[n] = {menus:d.menus, groups:d.groups, branches:d.branches};
+  const nuevo = RL.isNew; RL.sel = n; RL.isNew = false; RL.edit = false; RL.draft = null; renderRl();
+  toast(nuevo ? 'Rol creado exitosamente.' : 'Rol actualizado exitosamente.','success');
+}
+function rlDelete(){
+  const r = RL_ROLES.find(x=>x.n===RL.sel); if(!r || !confirm(`¿Está seguro que desea eliminar el rol "${r.n}"?`)) return;
+  RL_ROLES.splice(RL_ROLES.indexOf(r),1); delete RL_READ[r.n]; rlBack(); toast('Rol eliminado exitosamente.','success');
+}
+function rlTreeEd(groups, list){
+  const s = new Set(RL.draft[list]);
+  return `<ul class="rl-tree">${groups.map(([g,ch],gi)=>`<li><div class="rl-node"><button type="button" class="fac-expbtn" onclick="rlToggle('${esc(g)}')">${RL.open[g]?'&#8964;':'&#8250;'}</button><label class="fac-chk"><input type="checkbox" ${s.has(g)?'checked':''} onchange="rlChk('${list}',${JSON.stringify(g).replace(/"/g,'&quot;')},this.checked,${list==='menus'?JSON.stringify(ch).replace(/"/g,'&quot;'):'null'})"> ${esc(g)}</label></div>
+    ${RL.open[g]?`<ul class="rl-leaf">${ch.map(c=>`<li><label class="fac-chk"><input type="checkbox" ${list==='menus' ? (s.has(c)?'checked':'') : (s.has(g)?'checked':'')} onchange="rlChk('${list}',${JSON.stringify(list==='menus'?c:g).replace(/"/g,'&quot;')},this.checked)"> ${esc(c)}</label></li>`).join('')}</ul>`:''}</li>`).join('')}</ul>`;
+}
 function renderRlDetail(){
-  const r = RL_ROLES.find(x=>x.n===RL.sel), rd = RL_READ[r.n], ext = r.sys===RL_E;
-  facSetBar('screenRoles','Mantenimiento de Roles',['Inicio','Roles y Permisos','Mantenimiento de Roles'],'rlBack()');
+  const ed = RL.edit && RL.draft;
+  const r = ed ? RL.draft : RL_ROLES.find(x=>x.n===RL.sel), rd = ed ? null : RL_READ[r.n], ext = r.sys===RL_E, E = RL.errs || {};
+  const ttl = RL.isNew ? 'Crear Rol' : 'Mantenimiento de Roles';
+  facSetBar('screenRoles',ttl,['Inicio','Roles y Permisos',ttl],'rlBack()');
   const mOk = x=>rd && (rd.menus==='*' || rd.menus.includes(x)), gOk = g=>rd && (rd.groups==='*' || rd.groups.includes(g));
   const none = `<div class="fac-note" id="rlNone">Permisos de este rol no cargados en el prototipo.</div>`;
-  const body = RL.tab==='menu' ? rlTree(ext?[]:RL_MENU, g=>mOk(g), (g,c)=>mOk(c)) : RL.tab==='perm' ? rlTree(ext?[]:RL_PERMS, g=>gOk(g), g=>gOk(g))
+  const err = k => E[k] ? `<div class="f-err">${E[k]}</div>` : '';
+  const body = ed
+    ? (RL.tab==='menu' ? rlTreeEd(ext?[]:RL_MENU,'menus') : RL.tab==='perm' ? rlTreeEd(ext?[]:RL_PERMS,'groups')
+      : `<div class="rl-branch">${RL_BRANCH.map(b=>`<label class="fac-chk"><input type="checkbox" ${RL.draft.branches.includes(b)?'checked':''} onchange="rlChk('branches','${esc(b)}',this.checked)"> ${esc(b)}</label>`).join('')}</div>`)
+    : RL.tab==='menu' ? rlTree(ext?[]:RL_MENU, g=>mOk(g), (g,c)=>mOk(c)) : RL.tab==='perm' ? rlTree(ext?[]:RL_PERMS, g=>gOk(g), g=>gOk(g))
     : `<div class="rl-branch">${RL_BRANCH.map(b=>`<label class="fac-chk"><input type="checkbox" disabled ${rd&&rd.branches.includes(b)?'checked':''}> ${esc(b)}</label>`).join('')}</div>`;
-  document.getElementById('rlRoot').innerHTML = `<div class="fac-card" id="rlGen"><div class="fac-head"><h3>Información General</h3><div class="fac-acts"><button type="button" class="cc-btn" onclick="rlOut()">Editar</button><button type="button" class="cc-btn pink" onclick="rlOut()">Eliminar</button></div></div>
-    <div class="fac-g3">${fRo('Sistema',r.sys)}${fRo('Nombre',r.n)}${fRo('Descripción',r.d)}</div>
-    <div style="margin-top:12px"><label class="fac-chk"><input type="checkbox" disabled> Visible para Cliente Externo</label><div class="fac-sub" style="margin:4px 0 0">Habilitar este rol para que sea seleccionable en el wizard de registro del Portal Externo.</div></div></div>
+  const acts = ed ? '' : `<button type="button" class="cc-btn" id="rlEditar" onclick="rlStartEdit()">Editar</button><button type="button" class="cc-btn pink" onclick="rlDelete()">Eliminar</button>`;
+  const gen = ed
+    ? `${fF('Sistema *', RL.isNew ? fSel(RL_SYS, r.sys, `id="rlDSys" onchange="rlUpd('sys',this.value);renderRl()"`, 'Seleccione un sistema') : `<input disabled value="${esc(r.sys)}">`)}${err('sys')}
+       ${fF('Nombre *', `<input id="rlDName" maxlength="100" value="${esc(r.n)}" oninput="rlUpd('n',this.value)">${err('n')}`)}
+       ${fF('Descripción', `<input maxlength="200" value="${esc(r.d)}" oninput="rlUpd('d',this.value)">${err('d')}`)}`
+    : `${fRo('Sistema',r.sys)}${fRo('Nombre',r.n)}${fRo('Descripción',r.d)}`;
+  document.getElementById('rlRoot').innerHTML = `<div class="fac-card" id="rlGen"><div class="fac-head"><h3>Información General</h3><div class="fac-acts">${acts}</div></div>
+    <div class="fac-g3">${gen}</div>
+    <div style="margin-top:12px"><label class="fac-chk"><input type="checkbox" ${ed?'':'disabled'} ${r.ext?'checked':''} onchange="rlUpd('ext',this.checked)"> Visible para Cliente Externo</label><div class="fac-sub" style="margin:4px 0 0">Habilitar este rol para que sea seleccionable en el wizard de registro del Portal Externo.</div></div></div>
   <div class="fac-card" id="rlTabsCard"><div class="fac-tabs"><button type="button" class="${RL.tab==='menu'?'on':''}" onclick="rlTab('menu')">Menú</button><button type="button" class="${RL.tab==='perm'?'on':''}" onclick="rlTab('perm')">Permisos</button><button type="button" class="${RL.tab==='suc'?'on':''}" onclick="rlTab('suc')">Sucursales</button></div>
-    ${rd?'':none}<div id="rlBody">${body}</div></div>`;
+    ${rd||ed?'':none}<div id="rlBody">${body}</div></div>
+  ${ed?`<div class="fac-btns"><button type="button" class="cc-btn" onclick="rlCancel()">Cancelar</button><button type="button" class="cc-btn" id="rlGuardar" onclick="rlSave()">Guardar</button></div>`:''}`;
 }
 /* ---------- Usuarios: ficticios del mockup ---------- */
 const US_RUC = '20600000001', US_SOCIO = 'COSMOS GLOBAL LOGISTICS S.A.C';
@@ -7961,7 +8141,7 @@ function usExport(){ facXlsx('Usuarios','Usuarios',['Email','Nombre','RUC','Role
 function renderUs(){ if(US.view==='detail'){ renderUsDetail(); return; }
   updatePagebar('screenUsers');
   const f = US.f, all = usFiltered(), pages = Math.max(1,Math.ceil(all.length/US.size)); US.page = Math.min(US.page,pages); const list = all.slice((US.page-1)*US.size, US.page*US.size), roles = RL_ROLES.filter(r=>!f.sys||r.sys===f.sys).map(r=>r.n);
-  document.getElementById('usRoot').innerHTML = `<div class="fac-card" id="usF"><div class="fac-head"><div><h3>Buscar Usuario</h3><div class="fac-sub">Ingrese los criterios de búsqueda para filtrar los usuarios</div></div><div class="fac-acts"><button type="button" class="cc-btn" onclick="rlOut()">+ Nuevo</button></div></div>
+  document.getElementById('usRoot').innerHTML = `<div class="fac-card" id="usF"><div class="fac-head"><div><h3>Buscar Usuario</h3><div class="fac-sub">Ingrese los criterios de búsqueda para filtrar los usuarios</div></div><div class="fac-acts"><button type="button" class="cc-btn" id="usNuevo" onclick="usNew()">Nuevo</button></div></div>
     <div class="fac-g3">${fF('Email',`<input placeholder="Ingresar un email" value="${esc(f.email)}" onchange="usSet('email',this.value)">`)}${fF('Nombre',`<input id="usName" placeholder="Ingresar un nombre" value="${esc(f.name)}" onchange="usSet('name',this.value)">`)}${fF('RUC',`<input placeholder="Elegir RUC" value="${esc(f.ruc)}" onchange="usSet('ruc',this.value)">`)}${fF('Sistema',fSel(RL_SYS,f.sys,`id="usSys" onchange="usSet('sys',this.value)"`,'Elegir un sistema'))}${fF('Rol',fSel(roles,f.role,`id="usRole" onchange="usSet('role',this.value)"`,'Elegir un rol'))}</div>
     <div class="fac-btns"><button type="button" class="cc-btn" id="usBuscar" ${usHasF()?'':'disabled'} onclick="usSearch()">Buscar</button><button type="button" class="cc-btn" ${usHasF()||US.searched?'':'disabled'} onclick="usClear()">Limpiar</button></div></div>
   ${US.searched?`<div class="fac-card" id="usRes"><div class="fac-head"><h3>Resultados (${all.length})</h3></div>
@@ -7970,19 +8150,79 @@ function renderUs(){ if(US.view==='detail'){ renderUsDetail(); return; }
     </tbody></table></div>
     <div class="fac-btns" style="justify-content:space-between;align-items:center"><button type="button" class="cc-btn" id="usExp" onclick="usExport()">Exportar</button><div class="cc-pager" style="border:none">${pagerHtml(all.length, US.page, US.size, 'usGo')}</div></div></div>`:''}`;
 }
-function usOpen(e){ US.sel = e; US.view = 'detail'; US.tab = 'roles'; if(document.querySelector('section.panel.active')?.id!=='screenUsers') facEnter('screenUsers'); renderUs(); }
-function usBack(){ US.view = 'list'; US.sel = null; renderUs(); }
+function usOpen(e){ US.edit = false; US.draft = null; US.isNew = false; US.sel = e; US.view = 'detail'; US.tab = 'roles'; if(document.querySelector('section.panel.active')?.id!=='screenUsers') facEnter('screenUsers'); renderUs(); }
+function usBack(){ US.view = 'list'; US.sel = null; US.edit = false; US.draft = null; US.isNew = false; renderUs(); }
 function usTab(t){ US.tab = t; renderUs(); }
+/* Catálogo ficticio de series para el diálogo "Agregar series al usuario" */
+const US_SERIES = (()=>{ const L = []; ['Callao','Paita','Ilo'].forEach((s,i)=>[['Documentario','Factura','F'],['Documentario','Boleta','B'],['Documentario','Liquidación de Cobranza','LC'],['Contable','Nota de Crédito','FC']].forEach(([o,t,p])=>{ const c = p + String(i+5).padStart(p.length>1?2:3,'0'); L.push([s,o,t,c,'ERP-'+c, 1000+L.length*37]); })); return L; })();
+function usNew(){ US.isNew = true; US.edit = true; US.errs = {}; US.sel = null; US.view = 'detail'; US.tab = 'roles'; US.draft = {e:'', n:'', razon:'', ruc:'', pre:'', sap:'', roles:[], series:[]}; US.addSys = ''; renderUs(); }
+function usStartEdit(){ const u = US_LIST.find(x=>x.e===US.sel); US.isNew = false; US.edit = true; US.errs = {}; US.draft = JSON.parse(JSON.stringify({razon:US_SOCIO, ruc:US_RUC, ...u, series:u.series||[]})); US.addSys = ''; renderUs(); }
+function usCancel(){ US.edit = false; US.draft = null; US.errs = {}; if(US.isNew){ US.isNew = false; usBack(); return; } renderUs(); }
+function usUpd(k, v){ US.draft[k] = v; if(US.errs) delete US.errs[k]; }
+function usAddRole(){
+  const sys = document.getElementById('usAddSys').value, rol = document.getElementById('usAddRol').value;
+  if(!sys || !rol){ toast('Seleccione Sistema y Rol','info'); return; }
+  if(US.draft.roles.includes(rol)){ toast('El rol ya está asignado','info'); return; }
+  US.draft.roles.push(rol); delete US.errs.roles; renderUs();
+}
+function usDelRoles(){ const sel = [...document.querySelectorAll('#usBody input[data-rol]:checked')].map(x=>x.dataset.rol); if(!sel.length){ toast('Seleccione al menos un rol','info'); return; } US.draft.roles = US.draft.roles.filter(r=>!sel.includes(r)); renderUs(); }
+function usDelSerie(c){ US.draft.series = US.draft.series.filter(s=>s[3]!==c); renderUs(); }
+function usSeriesDlg(){
+  US.sf = US.sf || {suc:'', ori:'', tipo:'', cod:''};
+  const f = US.sf, q = normTxt, asig = new Set(US.draft.series.map(s=>s[3]));
+  const list = US_SERIES.filter(s=>(!f.suc||s[0]===f.suc)&&(!f.ori||s[1]===f.ori)&&(!f.tipo||s[2]===f.tipo)&&(!f.cod||q(s[3]).includes(q(f.cod))));
+  const opt = i => [...new Set(US_SERIES.map(s=>s[i]))];
+  facOpen(`<h3>Agregar series al usuario</h3><div style="height:10px"></div>
+    <div class="fac-g4">${fF('Sucursal',fSel(opt(0),f.suc,`onchange="US.sf.suc=this.value;usSeriesDlg()"`,'Todas'))}${fF('Origen',fSel(opt(1),f.ori,`onchange="US.sf.ori=this.value;usSeriesDlg()"`,'Todos'))}${fF('Tipo Doc.',fSel(opt(2),f.tipo,`onchange="US.sf.tipo=this.value;usSeriesDlg()"`,'Todos'))}${fF('Código Serie',`<input value="${esc(f.cod)}" onchange="US.sf.cod=this.value;usSeriesDlg()">`)}</div>
+    <div class="fac-scroll" style="margin-top:12px"><table class="fac-tbl" id="usSerTbl"><thead><tr><th>Asignada</th><th>Código Serie</th><th>Sucursal</th><th>Origen</th><th>Tipo Doc.</th><th>Correlativo</th><th>Código ERP</th></tr></thead><tbody>
+      ${list.map(s=>`<tr><td><input type="checkbox" data-ser="${esc(s[3])}" ${asig.has(s[3])?'checked disabled':''}></td><td>${esc(s[3])}</td><td>${esc(s[0])}</td><td>${esc(s[1])}</td><td>${esc(s[2])}</td><td>${s[5]}</td><td>${esc(s[4])}</td></tr>`).join('') || '<tr><td colspan="7" class="fac-empty">No se encontraron resultados con los criterios seleccionados.</td></tr>'}
+    </tbody></table></div>
+    <div class="fac-btns"><button type="button" class="cc-btn" onclick="facClose()">Cancelar</button><button type="button" class="cc-btn" id="usSerOk" onclick="usSeriesAdd()">Agregar seleccionadas</button></div>`, 'lg');
+}
+function usSeriesAdd(){
+  const sel = [...document.querySelectorAll('#usSerTbl input[data-ser]:checked:not([disabled])')].map(x=>x.dataset.ser);
+  if(!sel.length){ toast('Seleccione al menos una serie','info'); return; }
+  US_SERIES.filter(s=>sel.includes(s[3])).forEach(s=>US.draft.series.push(s.slice(0,5)));
+  facClose(); renderUs(); toast(`${sel.length} serie(s) agregada(s)`,'success');
+}
+function usSave(){
+  const d = US.draft, E = {};
+  if(US.isNew){
+    if(!String(d.e||'').trim()) E.e = 'Este campo es obligatorio'; else if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.e)) E.e = 'El formato del email no es válido';
+    else if(US_LIST.some(u=>u.e===d.e.trim())) E.e = 'Ya existe un usuario con este email';
+    if(!String(d.n||'').trim()) E.n = 'Este campo es obligatorio';
+    if(d.ruc && !/^\d{1,11}$/.test(d.ruc)) E.ruc = 'Máximo 11 dígitos';
+  }
+  if(!d.roles.length) E.roles = 'Seleccione al menos un rol.';
+  US.errs = E; if(Object.keys(E).length){ if(E.roles) US.tab = 'roles'; renderUs(); return; }
+  if(US.isNew) US_LIST.push({e:d.e.trim(), n:d.n.trim(), roles:d.roles, series:d.series, pre:'', sap:''});
+  else Object.assign(US_LIST.find(x=>x.e===US.sel), {roles:d.roles, series:d.series, pre:d.pre, sap:d.sap});
+  const nuevo = US.isNew; US.sel = US.isNew ? d.e.trim() : US.sel; US.isNew = false; US.edit = false; US.draft = null; renderUs();
+  toast(nuevo ? 'Usuario creado correctamente' : 'Usuario actualizado correctamente','success');
+}
+function usDelete(){
+  const u = US_LIST.find(x=>x.e===US.sel); if(!u || !confirm('¿Estás seguro de que deseas eliminar este usuario?')) return;
+  US_LIST.splice(US_LIST.indexOf(u),1); usBack(); toast('Usuario eliminado correctamente','success');
+}
 function renderUsDetail(){
-  const u = US_LIST.find(x=>x.e===US.sel);
-  facSetBar('screenUsers','Ver Usuario',['Inicio','Usuarios','Ver Usuario'],'usBack()');
+  const ed = US.edit && US.draft, u = ed ? US.draft : {razon:US_SOCIO, ruc:US_RUC, ...US_LIST.find(x=>x.e===US.sel)}, E = US.errs || {};
+  const ttl = US.isNew ? 'Crear Usuario' : ed ? 'Editar Usuario' : 'Ver Usuario';
+  facSetBar('screenUsers',ttl,['Inicio','Usuarios',ttl],'usBack()');
+  const err = k => E[k] ? `<div class="f-err">${E[k]}</div>` : '';
+  const nw = ed && US.isNew, eds = ed && !US.isNew;
+  const inp = (l, k, max, on, extra) => on ? fF(l, `<input maxlength="${max}" value="${esc(u[k]||'')}" ${extra||''} oninput="usUpd('${k}',this.value)">${err(k)}`) : fRo(l.replace(' *',''), u[k]||'');
+  const sysOf = r => (RL_ROLES.find(x=>x.n===r)||{}).sys || '';
+  const roleOpts = RL_ROLES.filter(x=>!US.addSys || x.sys===US.addSys).map(x=>x.n);
   const body = US.tab==='roles'
-    ? `<table class="fac-tbl"><thead><tr><th>Sistema</th><th>Rol</th></tr></thead><tbody>${u.roles.map(r=>`<tr><td>${esc(RL_ROLES.find(x=>x.n===r).sys)}</td><td><button type="button" class="fac-link" onclick="openRoles();rlOpen('${esc(r)}')">${esc(r)}</button></td></tr>`).join('')}</tbody></table>`
-    : `<table class="fac-tbl"><thead><tr><th>Sucursal</th><th>Origen de Documento</th><th>Tipo de Documento</th><th>Serie</th><th>Código ERP</th><th>Acción</th></tr></thead><tbody>${(u.series||[]).map(s=>`<tr>${s.map(c=>`<td>${esc(c)}</td>`).join('')}<td>-</td></tr>`).join('') || '<tr><td colspan="6" class="fac-empty">Sin series asignadas</td></tr>'}</tbody></table>`;
-  document.getElementById('usRoot').innerHTML = `<div class="fac-card" id="usGen"><div class="fac-head"><h3>Información General</h3><div class="fac-acts"><button type="button" class="cc-btn" onclick="rlOut()">Editar</button><button type="button" class="cc-btn pink" onclick="rlOut()">Eliminar</button></div></div>
-    <div class="fac-g2">${fRo('Usuario/Email',u.e)}${fRo('Nombre',u.n)}${fRo('Razón Social',US_SOCIO)}${fRo('Socio RUC',US_RUC)}</div>
-    <div class="fac-sec">Numeración SAP</div><div class="fac-g2">${fRo('Prefijo de Usuario',u.pre||'')}${fRo('Serie SAP',u.sap||'')}</div></div>
-  <div class="fac-card" id="usTabsCard"><div class="fac-tabs"><button type="button" class="${US.tab==='roles'?'on':''}" onclick="usTab('roles')">Roles</button><button type="button" class="${US.tab==='series'?'on':''}" onclick="usTab('series')">Series</button></div><div class="fac-scroll" id="usBody">${body}</div></div>`;
+    ? `${ed?`<div class="fac-g3" style="margin-bottom:10px">${fF('Sistema *',fSel(RL_SYS,US.addSys,`id="usAddSys" onchange="US.addSys=this.value;renderUs()"`,'Elegir un sistema'))}${fF('Rol *',fSel(roleOpts,'',`id="usAddRol"`,'Elegir un rol'))}<div class="fac-f" style="justify-content:flex-end;flex-direction:row;gap:8px;align-items:flex-end"><button type="button" class="cc-btn" id="usAddRolBtn" onclick="usAddRole()">Agregar</button><button type="button" class="cc-btn pink" onclick="usDelRoles()">Eliminar</button></div></div>`:''}
+      <table class="fac-tbl"><thead><tr>${ed?'<th style="width:36px"></th>':''}<th>Sistema</th><th>Rol</th></tr></thead><tbody>${u.roles.map(r=>`<tr>${ed?`<td><input type="checkbox" data-rol="${esc(r)}"></td>`:''}<td>${esc(sysOf(r))}</td><td>${ed?esc(r):`<button type="button" class="fac-link" onclick="openRoles();rlOpen('${esc(r)}')">${esc(r)}</button>`}</td></tr>`).join('') || `<tr><td colspan="3" class="fac-empty">Sin roles asignados</td></tr>`}</tbody></table>${err('roles')}`
+    : `${ed?`<div style="margin-bottom:10px"><button type="button" class="cc-btn" id="usAddSer" onclick="usSeriesDlg()">Agregar series</button></div>`:''}<table class="fac-tbl"><thead><tr><th>Sucursal</th><th>Origen de Documento</th><th>Tipo de Documento</th><th>Serie</th><th>Código ERP</th><th>Acción</th></tr></thead><tbody>${(u.series||[]).map(s=>`<tr>${s.slice(0,5).map(c=>`<td>${esc(c)}</td>`).join('')}<td>${ed?`<button type="button" class="fac-link" onclick="usDelSerie('${esc(s[3])}')">Eliminar</button>`:'-'}</td></tr>`).join('') || '<tr><td colspan="6" class="fac-empty">Sin series asignadas</td></tr>'}</tbody></table>`;
+  const acts = ed ? '' : `<button type="button" class="cc-btn" id="usEditar" onclick="usStartEdit()">Editar</button><button type="button" class="cc-btn pink" onclick="usDelete()">Eliminar</button>`;
+  document.getElementById('usRoot').innerHTML = `<div class="fac-card" id="usGen"><div class="fac-head"><h3>Información General</h3><div class="fac-acts">${acts}</div></div>
+    <div class="fac-g2">${inp('Usuario/Email *','e',255,nw,'id="usDEmail" type="email"')}${inp('Nombre *','n',255,nw,'id="usDName"')}${nw?fF('Razón Social',`<input list="usSocList" value="${esc(u.razon||'')}" oninput="usUpd('razon',this.value)"><datalist id="usSocList">${(typeof PARTNERS!=='undefined'?PARTNERS:[]).map(p=>`<option value="${esc(p.largo)}">`).join('')}</datalist>`):fRo('Razón Social',u.razon||'')}${inp('Socio RUC','ruc',11,nw)}</div>
+    <div class="fac-sec">Numeración SAP</div><div class="fac-g2">${inp('Prefijo de Usuario','pre',30,eds)}${inp('Serie SAP','sap',30,eds)}</div></div>
+  <div class="fac-card" id="usTabsCard"><div class="fac-tabs"><button type="button" class="${US.tab==='roles'?'on':''}" onclick="usTab('roles')">Roles</button><button type="button" class="${US.tab==='series'?'on':''}" onclick="usTab('series')">Series</button></div><div class="fac-scroll" id="usBody">${body}</div></div>
+  ${ed?`<div class="fac-btns"><button type="button" class="cc-btn" onclick="usCancel()">Cancelar</button><button type="button" class="cc-btn" id="usGuardar" onclick="usSave()">Guardar</button></div>`:''}`;
 }
 /* ---------- Registro en navegación y guías ---------- */
 CC_SUBMENU['Seguridad'] = [
