@@ -2,7 +2,7 @@
    Importación: Documentos (búsqueda y BL), Transbordo, Direccionamiento.
    Exportación: Documentos (búsqueda y Reserva), Cutoff.
    Propuesta I-037 (HU-DOC-23): restricciones de exportación (mantenimiento y alertas que solo avisan).
-   Propuestas I-062, I-017, I-080, I-081, I-185, I-069, I-055, I-074, I-078 e I-036: ver bloque "PROPUESTAS sobre Documentación".
+   Propuestas I-062, I-017, I-080, I-081, I-185, I-069, I-055, I-074, I-078, I-036, I-060, I-019, I-022 e I-182: ver bloque "PROPUESTAS sobre Documentación".
    Todo en memoria, con CC.datos y datos ficticios propios. La pantalla antigua screenDocBl queda sin enlace en el menú. */
 (function(){
 'use strict';
@@ -309,7 +309,7 @@ function filasImp(){
 function htmlImp(){
   seed(); if(!('nave' in S.fi.f)){ S.fi.f = FI0(); S.fi.q = FI0(); }
   const f = S.fi.f, all = filasImp(), pg = CC.paginar(all, S.fi.pag, S.fi.tam), selN = S.fi.sel.size;
-  const filtros = `<div class="fac-card" id="docIF"><div class="fac-head"><div><h3>Consulta y carga</h3><div class="fac-sub">Ingresar datos y/o documentos</div></div><div class="fac-acts"><span ${CC.propuesta('I-062','Configuración de avisos')}>${ghost('Configurar avisos',"docAvAbrir('Llegada')",'id="docIAvBtn"')}</span>${ghost('Cargar archivos',"docUpAbrir('imp')")}${btn('Nuevo','docImpNuevo()')}</div></div>
+  const filtros = `<div class="fac-card" id="docIF"><div class="fac-head"><div><h3>Consulta y carga</h3><div class="fac-sub">Ingresar datos y/o documentos</div></div><div class="fac-acts"><span ${CC.propuesta('I-062','Configuración de avisos')}>${ghost('Configurar avisos',"docAvAbrir('Llegada')",'id="docIAvBtn"')}</span><span ${CC.propuesta('I-060','Recargos TUR')}>${ghost('Cargar recargos TUR',"docTurAbrir('imp')",'id="docITurBtn"')}</span>${ghost('Cargar archivos',"docUpAbrir('imp')")}${btn('Nuevo','docImpNuevo()')}</div></div>
     <div class="fac-g4">
       ${campo('Nave',`<input id="docINave" list="docINaves" placeholder="Ingresar nave" value="${esc(f.nave)}" onchange="docIF('nave',this.value)">${dl('docINaves',naves())}`)}
       ${campo('Número de Viaje',`<input id="docIViaje" list="docIViajes" placeholder="Ingresar número de viaje" value="${esc(f.viaje)}" ${f.nave?'':'disabled'} onchange="docIF('viaje',this.value)">${dl('docIViajes',viajesDe(f.nave))}`)}
@@ -601,14 +601,15 @@ function edHtml(k){
     </div>${dl('docEdPuertos', puertos())}</div>`;
   const sunatInfo = imp && d.info ? `<div class="fac-card"><div class="fac-sec" style="margin-top:0">Información SUNAT</div><div class="fac-g4">${CC.campoLectura('Número de Detalle', d.info.detalle)}${CC.campoLectura('Número Electrónico', d.info.electronico)}</div></div>` : '';
   const tabs = [['gen','Información General'],['eq','Información de Equipos'],['carga','Información de Carga'],['rec','Recargo - Cláusula'],['desc','Descripciones']].concat(!imp && !E.nuevo ? [['traz','Trazabilidad']] : []);
-  const cuerpo = E.tab==='gen' ? genHtml(k, d, ro) : E.tab==='eq' ? eqHtml(k, d, ro) : E.tab==='carga' ? grid('carga', imp?CARGA_IMP:CARGA_EXP, d, ro) : E.tab==='rec' ? grid('recargos', RECARGOS, d, ro) : E.tab==='desc' ? grid('descripciones', DESCS, d, ro) : trazHtml(d);
+  const cuerpo = E.tab==='gen' ? genHtml(k, d, ro) : E.tab==='eq' ? eqHtml(k, d, ro) : E.tab==='carga' ? grid('carga', imp?CARGA_IMP:CARGA_EXP, d, ro) : E.tab==='rec' ? (PV() && !E.nuevo ? recPropHtml(k, d) : '') + grid('recargos', RECARGOS, d, ro) : E.tab==='desc' ? grid('descripciones', DESCS, d, ro) : trazHtml(d);
   const pend = imp ? pendImp(d) : pendExp(d), exc = imp || !P37() ? [] : excesos(d);
   const pie = `${(d.estado==='POR REVISAR'||!d.estado) ? `<div class="fac-card" id="docEdPend"><h3>${imp?'Campos pendientes para Aprobar BL':'Campos pendientes para Aprobar Reserva'}</h3>${pend.length?`<ul class="doc-ul">${pend.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'<p>Ninguno</p>'}</div>` : ''}
+    ${!imp && !E.nuevo && d.estado==='POR REVISAR' && PV() ? parcialHtml(d) : ''}
     ${exc.length ? `<div class="fac-card" ${CC.propuesta('I-037','Restricciones de exportación')} id="docEdR37"><h3>Restricciones de exportación ${M37()}</h3><p class="doc-mut">Aviso: los equipos superan una restricción vigente. No bloquea el guardado ni la transmisión.</p><ul class="doc-ul warn">${exc.map(x=>`<li>${esc(excTxt(x))}</li>`).join('')}</ul></div>` : ''}
     ${!imp && !E.nuevo && d.estado==='APROBADO' && resOk(d) && !S.manifSalida.has(d.nave+'|'+d.viaje) ? '<div class="fac-card"><h3>Manifiesto de salida pendiente</h3><p>El viaje del BL aún no cuenta con el manifiesto de salida completado.</p></div>' : ''}
     ${!imp && !E.nuevo && d.estado!=='POR REVISAR' && pendSunatExp(d).length ? `<div class="fac-card" id="docEdPendS"><h3>Campos pendientes para transmitir a SUNAT</h3><ul class="doc-ul">${pendSunatExp(d).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}`;
   const botones = ro ? '' : `<div class="fac-btns">${ghost('Cancelar','docEdCancelar()')}${btn(E.nuevo?'Crear':'Guardar','docEdGuardar()','','id="docEdGuardar"')}</div>`;
-  return `${alerta}${cab}${!imp && !E.nuevo && PV() ? borradorHtml(d) : ''}${ident}${nv}${sunatInfo}<div class="fac-card" id="docEdTabs"><div class="fac-tabs">${tabs.map(([t,l])=>`<button type="button" class="${E.tab===t?'on':''}" onclick="docEdTab('${t}')">${l}</button>`).join('')}</div>${cuerpo}</div>${pie}${botones}`;
+  return `${alerta}${cab}${!imp && !E.nuevo && PV() ? borradorHtml(d) + nnHtml(d) : ''}${ident}${nv}${sunatInfo}<div class="fac-card" id="docEdTabs"><div class="fac-tabs">${tabs.map(([t,l])=>`<button type="button" class="${E.tab===t?'on':''}" onclick="docEdTab('${t}')">${l}</button>`).join('')}</div>${cuerpo}</div>${pie}${botones}`;
 }
 function lastOf(l){ return last(l); }
 function botonesCab(k, d){
@@ -759,11 +760,13 @@ window.docEdGuardar = () => {
 function aplicarGuardar(nuevoEstado){
   const E = S.ed, d = E.d, imp = E.k==='imp', l = imp ? S.imp : S.exp, real = buscarBL(E.id);
   const cambios = real ? Object.keys(CAMPOS_HIST).filter(k=>String(real[k]??'')!==String(d[k]??'')).map(k=>({campo:CAMPOS_HIST[k], antes:String(real[k]??''), despues:String(d[k]??'')})) : [];
+  const eraPR = !imp && real && real.estado==='POR REVISAR';
   if(!real){ d.id = (imp?'I':'E') + (++S.seq); d.estado = 'POR REVISAR'; d.emision = d.emision || d.fechaEmision || hoyISO(); d.audit = {c:CC.usuario(), cts:ahora(), u:CC.usuario(), ts:ahora()}; d.hist = [ev(imp?'BL creado':'Reserva creada', CC.usuario())]; d.version = 1; l.push(d); }
   else { Object.assign(real, d); }
   const b = buscarBL(d.id); tocar(b);
   if(nuevoEstado) b.estado = nuevoEstado;
   if((b.estado==='POR REVISAR' || !b.estado) && !(imp ? pendImp(b) : pendExp(b)).length) b.estado = 'APROBADO';
+  if(eraPR) registrarParcial(b);
   if(cambios.length){ b.version = (b.version||1) + 1; b.cambios.push({ver:b.version, origen:'Edición interna', sobre:b.version-1, ts:ahora(), user:CC.usuario(), campos:cambios}); }
   b.hist.push(ev(`${E.nuevo?'Registro':'Cambios guardados'}. Estado: ${b.estado}`, CC.usuario()));
   const eraNuevo = E.nuevo; S.ed = {...E, id:b.id, nuevo:false, ro:true, dirty:false, d:clone(b)};
@@ -966,7 +969,7 @@ function htmlExp(){
   seed(); if(!('nave' in S.fe.f)){ S.fe.f = FE0(); S.fe.q = FE0(); }
   const f = S.fe.f, all = filasExp(), pg = CC.paginar(all, S.fe.pag, S.fe.tam), conViaje = f.nave && f.viaje;
   const filtros = `<div class="fac-card" id="docEF"><div class="fac-head"><div><h3>Consulta y carga</h3><div class="fac-sub">Ingresar datos y/o documentos</div></div><div class="fac-acts">
-      <span ${CC.propuesta('I-037','Restricciones de exportación')}>${ghost('Restricciones de exportación',"CC.abrir('screenDocExpRestr')",'id="docERestrBtn"')}</span><span ${CC.propuesta('I-062','Configuración de avisos')}>${ghost('Configurar avisos',"docAvAbrir('Salida')",'id="docEAvBtn"')}</span>${ghost('Cargar archivos',"docUpAbrir('exp')")}${btn('Nuevo','docExpNuevo()')}</div></div>
+      <span ${CC.propuesta('I-037','Restricciones de exportación')}>${ghost('Restricciones de exportación',"CC.abrir('screenDocExpRestr')",'id="docERestrBtn"')}</span><span ${CC.propuesta('I-062','Configuración de avisos')}>${ghost('Configurar avisos',"docAvAbrir('Salida')",'id="docEAvBtn"')}</span><span ${CC.propuesta('I-060','Recargos TUR')}>${ghost('Cargar recargos TUR',"docTurAbrir('exp')",'id="docETurBtn"')}</span>${ghost('Cargar archivos',"docUpAbrir('exp')")}${btn('Nuevo','docExpNuevo()')}</div></div>
     <div class="fac-g4">
       ${campo('Nave',`<input id="docENave" list="docENaves" placeholder="Ingresar nave" value="${esc(f.nave)}" onchange="docEF('nave',this.value)">${dl('docENaves',naves())}`)}
       ${campo('Número de Viaje',`<input id="docEViaje" list="docEViajes" placeholder="Ingresar número de viaje" value="${esc(f.viaje)}" ${f.nave?'':'disabled'} onchange="docEF('viaje',this.value)">${dl('docEViajes',viajesDe(f.nave))}`)}
@@ -1371,7 +1374,8 @@ window.docCoGuardar = () => {
    PROPUESTAS sobre Documentación (todo marcado en morado; se oculta con "Ver propuestas" apagado)
    I-062 HU-DOC-05 avisos · I-017/I-080/I-081/I-185 HU-DOC-22 trazabilidad · I-069 HU-DOC-09 anulación en bloque
    I-055 HU-DOC-20 eliminación en bloque · I-074 HU-DOC-25 vencimiento y baja con motivo · I-078 HU-DOC-19 correctores
-   I-036 HU-DOC-02 creación rápida de socios
+   I-036 HU-DOC-02 creación rápida de socios · I-060 HU-DOC-01 recargos TUR · I-019 HU-DOC-05 recargos en el aviso
+   I-022 HU-DOC-21 BL No Negociable · I-182 HU-DOC-39 guardado parcial de la Reserva
 ===================================================================== */
 const MKP = (hu, t, pen) => CC.marca('Agrega', hu, t, pen);
 
@@ -1553,7 +1557,7 @@ function avPrevia(c){
     <h4 style="margin:4px 0">${c.tipo==='Llegada'?'AVISO DE LLEGADA / ARRIVAL NOTICE':'AVISO DE SALIDA / DEPARTURE NOTICE'}</h4>
     <div class="doc-mut">BL ${esc(ej.numero||'EJEMPLO0001')} · Nave ${esc(ej.nave||'')} · Viaje ${esc(ej.viaje||'')} · Puerto de operación ${esc(c.puerto)} · Sucursal ${esc(c.suc)}</div>
     <p style="margin:8px 0 2px">${esc(avTxt(c.esp, c))}</p><p style="margin:0 0 8px" class="doc-mut">${esc(avTxt(c.eng, c))}</p>
-    ${s('fletes')?`<div><b>Fletes y recargos:</b> según condición de pago del BL (reglas de I-019).</div>`:''}
+    ${s('fletes') ? (c.tipo==='Llegada' ? avFletes(ej, 'docAvPrevFletes') : `<div><b>Fletes y recargos:</b> según condición de pago del BL.</div>`) : ''}
     ${s('direcc')?`<div><b>Direccionamiento:</b> <span style="color:#1F5FBF">${esc(c.enlDir)}</span></div>`:''}
     ${s('deposito')?`<div><b>Depósito por defecto:</b> contenedor ${esc(c.depCont)}; rodante ${esc(c.depRod)}</div>`:''}
     ${s('devolucion')?`<div><b>Devolución:</b> ${esc(c.devol)}</div>`:''}
@@ -1607,6 +1611,132 @@ window.docAvGuardar = () => { const A = S.av, c = A.ed;
   c.user = CC.usuario(); c.ts = ahora();
   if(c.id){ const i = A.cfg.findIndex(x=>x.id===c.id); A.cfg[i] = clone(c); } else { c.id = 'AV'+(++S.seq); A.cfg.push(clone(c)); }
   A.ed = null; CC.toast('Configuración de aviso guardada correctamente','success'); rerender('screenDocAvisos'); };
+
+/* ---------- I-060 · HU-DOC-01: recargos TUR 07108 / 07100 (carga, homologación y vínculo al BL) ---------- */
+const TUR_REP = ['TUR 07108 · BL Freight and Charge Report','TUR 07100'];
+const TUR_CARGO = {OFT:['FLETE','Flete marítimo'], BAF:['BAF','Bunker Adjustment Factor'], ISP:['ISPS','International Ship and Port Security'], THD:['THC','Terminal Handling Charge'], DOC:['BL FEE','Emisión de BL']};
+const r2 = n => Math.round((+n||0)*100)/100;
+const condTxt = c => c==='Por cobrar' ? 'Collect' : 'Prepaid';
+/* Prepaid: puerto de embarque y embarcador pagador. Collect: puerto de descarga y consignatario pagador. */
+const turLinea = (b, cod, cond, monto, rep) => { const h = TUR_CARGO[cod];
+  return {cod, cargo:h[0], descripcion:h[1], condPago:cond, moneda:'USD', monto:r2(monto), unidad:'BL', cantidad:1,
+    lugar:cond==='Por cobrar' ? b.puertoDescarga : b.puertoCarga, pagador:cond==='Por cobrar' ? 'Consignatario' : 'Embarcador', rep}; };
+function turSeed(){
+  seed(); if(S.turOk) return; S.turOk = true;
+  const ev0 = {archivo:'TUR07108_ejemplo.xlsx', rep:TUR_REP[0], ts:'2026-11-18T09:20:00', user:'J. Ramos (Documentación)'};
+  const imps = S.imp.filter(b=>b.indicador==='Importación' && b.numero), zim = imps.filter(b=>b.lineaCod==='ZIM'), otra = imps.find(b=>b.lineaCod!=='ZIM');
+  const dar = (b, l) => { if(!b) return; b.tur = l.map(([c,cd,m])=>turLinea(b, c, cd, m, ev0.rep)); b.turCarga = clone(ev0); };
+  dar(zim[0], [['OFT','Prepagado',1850],['BAF','Por cobrar',320.5],['THD','Por cobrar',145],['ISP','Prepagado',12]]);
+  dar(zim[1], [['OFT','Prepagado',1720],['BAF','Prepagado',300]]);
+  dar(otra, [['OFT','Prepagado',1600],['THD','Por cobrar',150],['DOC','Por cobrar',75]]);
+  /* I-022: datos de pago y bloqueo del BL No Negociable (ficticios) */
+  const e = id => S.exp.find(b=>b.id===id) || {};
+  e('E7').vbPagado = true; e('E4').vbPagado = true; e('E8').vbPagado = true; e('E8').sobrExpo = true;
+  /* I-182: la reserva en Por revisar ya tuvo su primera edición */
+  S.exp.filter(b=>b.estado==='POR REVISAR').forEach(b=>{ b.edPR = 1; });
+}
+window.docTurAbrir = k => { seed(); turSeed(); const q = (k==='imp'?S.fi:S.fe).f;
+  if(!q.nave || !q.viaje){ CC.toast('Seleccione la nave y el viaje para cargar los recargos TUR.','error'); return; }
+  K.tur = {k, nave:q.nave, viaje:q.viaje, rep:'', archivo:'', err:''}; pintarTur(); };
+function pintarTur(){ const t = K.tur;
+  CC.modal(`<div id="docTurDlg"><h3>Cargar recargos TUR ${MKP('HU-DOC-01','I-060','PEN-I060-01')}</h3>
+    <div class="fac-g3">${CC.campoLectura('Nave', t.nave)}${CC.campoLectura('Número de Viaje', t.viaje)}${campo('Reporte *', sel(TUR_REP, t.rep, `id="docTurRep" onchange="K_tur('rep',this.value)"`, 'Elegir reporte'))}</div>
+    <label class="doc-drop"><input type="file" id="docTurFile" accept=".xlsx,.xls,.csv" onchange="docTurFile(this)"><span>${t.archivo ? esc(t.archivo) : 'Arrastre o seleccione el archivo Excel del reporte'}</span></label>
+    ${t.err?`<div class="fac-note err" id="docTurErr">${esc(t.err)}</div>`:''}
+    <ul class="doc-ul doc-mut" style="margin-top:8px"><li>Homologa moneda (CURRENCY_DOC), puerto (PORT_DOC con UN/LOCODE) y recargo (CHARGE_TYPE). No inventa valores: lo que no homologa queda en observaciones.</li>
+    <li>Cada recargo se vincula a su BL con Unidad base BL y Cantidad 1. Prepaid: puerto de embarque y paga el embarcador. Collect: puerto de descarga y paga el consignatario.</li>
+    <li>Los importes del mismo recargo se suman y se redondean a dos decimales.</li></ul>
+    <div class="fac-note warn">Por definir: PEN-I060-01 (formato y muestras finales, tránsitos), PEN-I060-02 (clave del recargo y recarga del mismo archivo; el prototipo reemplaza lo cargado antes con el mismo reporte para no duplicar el cobro), PEN-I060-03 (qué se bloquea con observaciones) y PEN-I060-04 (lugar de pago y pagador del 07100).</div>
+    <div class="fac-btns">${ghost('Cancelar','docCbNo()')}${btn('Procesar','docTurOk()','','id="docTurOk"')}</div></div>`, 'md'); }
+window.K_tur = (k, v) => { K.tur[k] = v; K.tur.err = ''; pintarTur(); };
+window.docTurFile = inp => { const f = inp.files && inp.files[0]; if(!f) return; const ext = (f.name.split('.').pop()||'').toLowerCase();
+  K.tur.err = ['xlsx','xls','csv'].includes(ext) ? '' : 'El tipo de archivo no está permitido. Cargue el reporte en Excel.'; K.tur.archivo = K.tur.err ? '' : f.name; pintarTur(); };
+window.docTurOk = () => { const t = K.tur;
+  if(!t.rep || !t.archivo){ t.err = 'Por favor complete todos los campos obligatorios'; pintarTur(); return; }
+  const lista = (t.k==='imp' ? S.imp : S.exp).filter(b=>b.nave===t.nave && b.viaje===t.viaje && b.numero && b.estado!=='Anulado').slice(0,4);
+  const ev1 = {archivo:t.archivo, rep:t.rep, ts:ahora(), user:CC.usuario()}, ok = [], obs = []; let fila = 1;
+  lista.forEach((b,i)=>{ const crudo = [['OFT', i%2?'Prepagado':'Por cobrar', 1500+i*50], ['BAF', i%2?'Prepagado':'Por cobrar', 200.255], ['ISP','Prepagado',12]];
+    if(i===0) crudo.push(['BAF','Por cobrar',30.1]);
+    const sum = {}; crudo.forEach(([c,cd,m])=>{ fila++; const k = c+'|'+cd; if(sum[k]) sum[k].monto = r2(sum[k].monto + m); else sum[k] = turLinea(b, c, cd, m, t.rep); });
+    b.tur = (b.tur||[]).filter(x=>x.rep!==t.rep).concat(Object.values(sum)); b.turCarga = clone(ev1);
+    Object.values(sum).forEach(x=>ok.push({bl:b.numero, ...x})); });
+  const b0 = (lista[0]||{}).numero || '';
+  obs.push({fila:++fila, bl:b0, campo:'Moneda', valor:'USDX', motivo:'Moneda sin homologación en CURRENCY_DOC'});
+  obs.push({fila:++fila, bl:b0, campo:'Recargo', valor:'XFE', motivo:'Recargo sin homologación en CHARGE_TYPE'});
+  obs.push({fila:++fila, bl:'ZIMUNOEXISTE01', campo:'Número BL', valor:'ZIMUNOEXISTE01', motivo:'BL no registrado en el viaje'});
+  CC.modal(`<div id="docTurRes"><h3>Resultado de la carga ${MKP('HU-DOC-01','I-060')}</h3>
+    <dl class="fac-kv"><dt>Archivo</dt><dd>${esc(ev1.archivo)} (${esc(ev1.rep)})</dd><dt>Fecha y hora</dt><dd>${fdt(ev1.ts)}</dd><dt>Usuario</dt><dd>${esc(ev1.user)}</dd></dl>
+    <div class="fac-sec">Recargos vinculados: ${ok.length} en ${lista.length} BL</div>
+    <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th>Número BL</th><th>Código en archivo</th><th>Recargo homologado</th><th>Condición</th><th>Moneda</th><th>Monto</th><th>Unidad Base</th><th>Cantidad</th><th>Lugar de Pago</th><th>Pagador</th></tr></thead><tbody>
+    ${ok.map(x=>`<tr><td>${esc(x.bl)}</td><td>${esc(x.cod)}</td><td>${esc(x.cargo)}</td><td>${condTxt(x.condPago)}</td><td>${esc(x.moneda)}</td><td class="doc-num">${x.monto.toFixed(2)}</td><td>BL</td><td>1</td><td>${esc(x.lugar)}</td><td>${esc(x.pagador)}</td></tr>`).join('') || '<tr><td colspan="10" class="fac-empty">El viaje no tiene BL válidos</td></tr>'}</tbody></table></div>
+    <div class="fac-sec">Observaciones: ${obs.length} filas no cargadas</div>
+    <table class="fac-tbl" id="docTurObs"><thead><tr><th>Fila</th><th>Número BL</th><th>Campo</th><th>Valor</th><th>Motivo</th></tr></thead><tbody>${obs.map(o=>`<tr><td>${o.fila}</td><td>${esc(o.bl)}</td><td>${o.campo}</td><td>${esc(o.valor)}</td><td>${o.motivo}</td></tr>`).join('')}</tbody></table>
+    <p class="doc-mut">Los BL válidos se procesaron. Las observaciones se regularizan en los catálogos y se vuelve a cargar el archivo.</p>
+    <div class="fac-btns">${btn('Aceptar','docCbSi()')}</div></div>`, 'lg'); };
+/* Tarjetas de la pestaña Recargo - Cláusula */
+function recPropHtml(k, d){ turSeed(); const b = buscarBL(d.id) || d, l = b.tur || [], c = b.turCarga;
+  const tur = `<div class="fac-card" ${CC.propuesta('I-060','Recargos TUR')} id="docRecTur"><h3>Recargos cargados desde TUR ${MKP('HU-DOC-01','I-060','PEN-I060-02')}</h3>
+    ${l.length ? `<div class="fac-scroll"><table class="fac-tbl"><thead><tr><th>Recargo - Cláusula</th><th>Descripción</th><th>Condición de Pago</th><th>Moneda</th><th>Monto</th><th>Unidad Base</th><th>Cantidad</th><th>Lugar de Pago</th><th>Pagador</th></tr></thead><tbody>
+      ${l.map(x=>`<tr><td>${esc(x.cargo)}</td><td>${esc(x.descripcion)}</td><td>${condTxt(x.condPago)}</td><td>${esc(x.moneda)}</td><td class="doc-num">${x.monto.toFixed(2)}</td><td>BL</td><td>1</td><td>${esc(x.lugar)}</td><td>${esc(x.pagador)}</td></tr>`).join('')}</tbody></table></div>
+      <p class="doc-mut">Carga: ${esc(c.archivo)} (${esc(c.rep)}) · ${fdt(c.ts)} · ${esc(c.user)}</p>`
+    : `<p class="doc-mut">Este BL aún no tiene recargos del reporte TUR. Se cargan desde Documentos con «Cargar recargos TUR».</p>`}</div>`;
+  return tur + (k==='imp' ? `<div class="fac-card" ${CC.propuesta('I-019','Recargos en el Aviso de Llegada')} id="docRecAviso"><h3>Así se verán en el Aviso de Llegada ${MKP('HU-DOC-05','I-019','PEN-I019-01')}</h3>${reglaAviso()}
+    ${avFletes(b, 'docRecAvisoTbl') || '<p class="doc-mut" id="docRecAvisoTbl">Con esta regla el aviso no muestra el recuadro de fletes y recargos (ni título ni filas).</p>'}</div>` : ''); }
+
+/* ---------- I-019 · HU-DOC-05: recargos del Aviso de Llegada según Carrier Code ---------- */
+const AV_REGLAS = [['linea','Por línea: ZIM solo Collect; otras líneas Collect y Prepaid'],['regimen','Por régimen (área, 09/10): Importación solo Collect']];
+const reglaAv = () => (S.avRegla = S.avRegla || 'linea');
+const visibleAv = (b, r) => reglaAv()==='regimen' ? r.condPago==='Por cobrar' : (b.lineaCod==='ZIM' ? r.condPago==='Por cobrar' : true);
+function reglaAviso(){ return `<div class="fac-g2">${campo('Regla aplicada', sel(AV_REGLAS, reglaAv(), `id="docAvRegla" onchange="docAvRegla(this.value)"`))}</div>
+  <p class="doc-mut">Por definir PEN-I019-01: una sola tabla línea × régimen × condición de pago, y si el usuario puede cambiar la selección. El visor, el PDF descargado y el correo usan este mismo detalle.</p>`; }
+window.docAvRegla = v => { S.avRegla = v; refrescarActiva(); };
+function avFletes(b, id){ turSeed(); b = b || {};
+  const l = (b.recargos||[]).concat(b.tur||[]).filter(r=>visibleAv(b, r)); if(!l.length) return '';
+  const monto = r => r.unidad==='BL' ? (+r.monto||0) : ((+r.tarifa||0)*(+r.cantidad||0) || +r.monto || 0);
+  const tot = {}; l.forEach(r=>{ tot[r.moneda] = r2((tot[r.moneda]||0) + monto(r)); });
+  return `<div id="${id||''}"><b>Fletes y recargos</b> <span class="doc-mut">(BL ${esc(b.numero||'')} · Carrier Code ${esc(b.lineaCod||'')})</span>
+    <table class="fac-tbl"><thead><tr><th>Concepto</th><th>Condición</th><th>Moneda</th><th>Monto</th></tr></thead><tbody>
+    ${l.map(r=>`<tr><td>${esc(r.cargo)}${r.descripcion?` <span class="doc-mut">${esc(r.descripcion)}</span>`:''}</td><td>${condTxt(r.condPago)}</td><td>${esc(r.moneda)}</td><td class="doc-num">${monto(r).toFixed(2)}</td></tr>`).join('')}
+    ${Object.entries(tot).map(([m,v])=>`<tr><td colspan="2"><b>Total</b></td><td>${esc(m)}</td><td class="doc-num"><b>${v.toFixed(2)}</b></td></tr>`).join('')}</tbody></table></div>`; }
+
+/* ---------- I-022 · HU-DOC-21: estado y emisión del BL No Negociable ---------- */
+function nnCond(b){ const tx = (b.bl||[]).some(t=>t.c==='0154' && t.st==='COMPLETED');
+  return [['Tipo de emisión Original', b.tipoEmision==='Original', 'El BL No Negociable solo se emite para un BL Original.'],
+    ['BL no anulado', b.estado!=='Anulado', 'El BL No Negociable no se emite para un BL anulado.'],
+    ['Transmitido a SUNAT o en «Listo para facturar»', tx || b.pago==='Listo para facturar', 'El BL aún no está transmitido a SUNAT ni en «Listo para facturar».'],
+    ['VB de exportación pagado', !!b.vbPagado, 'Pendiente pago de documentación.'],
+    ['Sin sobrestadía de exportación pendiente', !b.sobrExpo, 'El cliente tiene sobrestadía de exportación pendiente.'],
+    ['Cliente no suspendido', !b.suspendido, 'El cliente está suspendido.']]; }
+function nnHtml(d){ turSeed(); const b = buscarBL(d.id) || d, c = nnCond(b), falta = c.filter(x=>!x[1]), draft = ['APROBADO','TRANSMITIDO A SUNAT','POR RECTIFICAR'].includes(b.estado);
+  const rect = b.estado==='POR RECTIFICAR' && b.vbPagado, tono = TONO_AP[falta.length?'Rechazado':'Aprobado'];
+  return `<div class="fac-card" ${CC.propuesta('I-022','BL No Negociable')} id="docEdNN"><div class="fac-head"><div><h3>BL No Negociable ${MKP('HU-DOC-21','I-022','PEN-I022-04')}</h3>
+    <div class="fac-sub">Draft: ${draft?'disponible (BL aprobado, última versión del corrector)':'se habilita al aprobar el BL'} · NN: ${falta.length?'bloqueado':'habilitado'}</div></div>
+    <div class="fac-acts"><span class="cc-chip" style="background:${tono[0]};color:${tono[1]}">${falta.length?'NN bloqueado':'NN habilitado'}</span>${btn('Descargar BL No Negociable',`docNnVer('${b.id}')`,'',`id="docNnDesc" ${falta.length?'disabled':''}`)}</div></div>
+    <table class="fac-tbl" id="docNnCond"><thead><tr><th>Condición para emitir el NN</th><th>Estado</th></tr></thead><tbody>${c.map(([t,ok])=>`<tr><td>${t}</td><td>${ok?'Cumple':'<b>Falta</b>'}</td></tr>`).join('')}</tbody></table>
+    ${falta.length?`<div class="fac-note warn" id="docNnMotivo"><b>Motivo:</b> ${falta.map(x=>esc(x[2])).join(' ')}</div>`:''}
+    ${rect?`<div class="fac-note" id="docNnRect">El BL se corrigió después de la transmisión a SUNAT y del pago del VB: se registra el concepto Rectificación de manifiesto y, al pagarlo, el NN se genera con la última versión. Qué descarga el cliente mientras tanto: por definir (PEN-I022-04).</div>`:''}
+    <p class="doc-mut">Por definir PEN-I022-04: si habilita la transmisión enviada o la aceptada por SUNAT (el prototipo usa la aceptada). El mismo estado se ve en el portal externo, opción Matriz.</p></div>`; }
+window.docNnVer = id => { const b = buscarBL(id); if(nnCond(b).some(x=>!x[1])) return;
+  const fe = (b.equipos.find(e=>e.fEmbarque)||{}).fEmbarque || b.atd || b.emision;
+  CC.modal(`<div id="docNnPrev"><h3>Vista previa del BL No Negociable ${MKP('HU-DOC-21','I-022')}</h3>
+    <div style="border:1px solid #DDE3EC;border-radius:10px;padding:14px;background:#fff;font-size:12.5px">
+    <div style="text-align:center;font-weight:800;letter-spacing:3px;color:#B3261E;border:2px solid #B3261E;padding:4px;margin-bottom:10px">NOT NEGOTIABLE</div>
+    <dl class="fac-kv"><dt>Número BL</dt><dd>${esc(b.numero)} · versión V${esc(b.version||1)}</dd><dt>Embarcador</dt><dd>${esc(b.embarcador)}</dd><dt>Consignatario</dt><dd>${esc(b.consignatario)}</dd>
+    <dt>Nave / Viaje</dt><dd>${esc(b.nave)} / ${esc(b.viaje)}</dd><dt>Puertos</dt><dd>${esc(b.puertoCarga)} a ${esc(b.puertoDescarga)}</dd><dt>Contenedores</dt><dd>${esc(b.equipos.filter(e=>!e.roleado).map(e=>e.numero).join(', '))}</dd>
+    <dt>Fecha de emisión</dt><dd>${fd(String(fe||'').slice(0,10))} (fecha de embarque)</dd><dt>Fletes</dt><dd><b>AS PER AGREEMENT</b></dd></dl>
+    <div style="margin-top:16px;border-top:1px solid #333;width:220px;padding-top:4px" class="doc-mut">Firma del representante legal</div></div>
+    <p class="doc-mut">Solo cambia la marca respecto al Draft (sin «DRAFT», con «NOT NEGOTIABLE»). Todos los Draft y NN ocultan los fletes con «As per Agreement» (fase 1). La firma y el texto final se atienden en I-195.</p>
+    <div class="fac-btns">${ghost('Cerrar','docCbNo()')}${btn('Descargar PDF',`docNnPdf('${b.id}')`,'','id="docNnPdf"')}</div></div>`, 'md'); };
+window.docNnPdf = id => { const b = buscarBL(id); CC.cerrarModal(); CC.toast(`BL No Negociable ${b.numero} descargado en PDF`,'success'); };
+
+/* ---------- I-182 · HU-DOC-39: guardado parcial de la Reserva en Por revisar ---------- */
+function registrarParcial(b){ turSeed(); b.edPR = (b.edPR||1) + 1;
+  b.parcial = b.estado==='POR REVISAR' ? {n:b.edPR, ts:ahora(), user:CC.usuario(), pend:pendExp(b).length} : null; }
+function parcialHtml(d){ turSeed(); const b = buscarBL(d.id) || d, p = b.parcial;
+  return `<div class="fac-card" ${CC.propuesta('I-182','Guardado parcial')} id="docEdParcial"><h3>Guardado parcial en Por revisar ${MKP('HU-DOC-39','I-182','PEN-RES-02')}</h3>
+    <p>En cualquier edición puede guardar solo lo que cambió (por ejemplo, el cliente o el embarcador). Los campos pendientes no bloquean el guardado: se exigen al aprobar o transmitir.</p>
+    ${p?`<div class="fac-note" id="docParcialUlt">Edición ${p.n} guardada el ${fdt(p.ts)} por ${esc(p.user)}. La reserva sigue en Por revisar: faltan ${p.pend} ${p.pend===1?'dato':'datos'} para aprobar.</div>`:`<p class="doc-mut">Ediciones guardadas en Por revisar: ${esc(b.edPR||1)}.</p>`}
+    <p class="doc-mut">Por definir PEN-RES-02: matriz de campos exigidos al guardar, aprobar y transmitir.</p></div>`; }
 
 /* =====================================================================
    Registro de pantallas
