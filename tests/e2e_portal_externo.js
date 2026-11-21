@@ -1,6 +1,6 @@
 // Uso: PORTAL_HTML=<ruta a portal.html> node tests/e2e_portal_externo.js
 // Portal externo v37: registro de 4 pasos, login simulado con rol, menú por rol, las 8 pantallas con una acción cada una,
-// prototipos HU-DM-01, HU-FAC-07 y HU-ATC-12, interruptor "Ver propuestas" y cero errores JS.
+// prototipos HU-DM-01, HU-FAC-07, HU-ATC-12, HU-DOC-27 (Direccionamiento) y HU-DOC-40 (SUNAT en Matriz), interruptor "Ver propuestas" y cero errores JS.
 const { chromium } = require('playwright'); const path = require('path'); const fs = require('fs');
 const HTML = process.env.PORTAL_HTML || [path.resolve(__dirname, '../pda-mockup/portal.html'), path.resolve(__dirname, '../repo/pda-mockup/portal.html')].find(f => fs.existsSync(f));
 let fails = 0; const check = (c, m) => { console.log(c ? 'OK ' : 'FALLA', m); if (!c) fails++; };
@@ -81,6 +81,37 @@ const pdf = name => ({ name, mimeType: 'application/pdf', buffer: Buffer.from('%
   await p.click('#peDiGuardar'); await W(300);
   check((await toast()).includes('Será procesada cuando el BL exista') && (await txt('#peDiForm')).includes('Provisional'), 'direccionamiento guardado como Provisional');
 
+  // 2b. HU-DOC-27: prototipos I-114 (avisos, por defecto, contenedores, aprobación automática), I-099 (reporte) e I-085 (carga rodante)
+  check((await txt('#peDiAvisos')).includes('Registro'), 'I-114: aviso de registro guardado en el direccionamiento');
+  await menu('Importaciones'); await p.click('#peDiF button:has-text("Buscar")'); await W();
+  check((await txt('#peDiRes')).includes('Por defecto') && (await txt('#peDiRep')).includes('Reporte de direccionamiento'), 'I-114 e I-099: BL de Importación por defecto y bloque de reporte');
+  const [xls] = await Promise.all([p.waitForEvent('download', { timeout: 4000 }).catch(() => null), p.click('#peDiRepX')]);
+  check(xls && /Reporte_Direccionamiento/.test(xls.suggestedFilename()), 'I-099: exporta el reporte de direccionamiento');
+  await p.click('#peDiRes button.fac-link:has-text("ZIMUDIR0000021")'); await W(300);
+  check((await p.$$('.pe-cnt')).length === 2, 'I-114: contenedores cargados solos desde el BL');
+  await p.selectOption('#peDiFDesp', 'Diferido'); await W();
+  await p.fill('#peDiFReg', 'ALMACÉN EXTRAPORTUARIO DEMO S.A.C.'); await p.dispatchEvent('#peDiFReg', 'change'); await W();
+  await p.click('#peDiGuardar'); await W(300);
+  const dr = await p.evaluate(() => PE.dir.find(d => d.bl === 'ZIMUDIR0000021'));
+  check(dr && dr.estado === 'APPROVED' && dr.tipo === 'Web' && dr.apl.razon === 'ALMACÉN EXTRAPORTUARIO DEMO S.A.C.' && dr.nave === 'PACIFIC HORIZON' && dr.viaje === '115E', 'I-114: Diferido queda Aprobado, tipo Web, entidad solicitada y misma nave y viaje');
+  check((await txt('#peDiAvisos')).includes('Aprobado automáticamente'), 'I-114: aviso de aprobación automática');
+  await menu('Importaciones'); await p.click('#peDiNuevo'); await W(250);
+  await p.selectOption('#peDiFCarga', 'Carga rodante'); await W();
+  check(await p.isVisible('#peDiRod') && !(await p.isVisible('#peDiCNuevo')), 'I-085: carga rodante no pide contenedores');
+  await p.fill('#peDiFBl', 'RODANTE00001'); await p.dispatchEvent('#peDiFBl', 'change'); await W();
+  await p.fill('#peDiFVj', '115E - PACIFIC HORIZON - Callao'); await p.dispatchEvent('#peDiFVj', 'change'); await W();
+  await p.selectOption('#peDiFDesp', 'Anticipado'); await W();
+  await p.fill('#peDiFReg', 'ALMACÉN EXTRAPORTUARIO DEMO S.A.C.'); await p.dispatchEvent('#peDiFReg', 'change'); await W();
+  await p.click('#peDiGuardar'); await W(300);
+  check((await txt('#peDiForm')).includes('Carga rodante') || (await p.evaluate(() => (PE.dir.find(d => d.bl === 'RODANTE00001') || {}).carga)) === 'Carga rodante', 'I-085: carga rodante guardada sin contenedores');
+  await menu('Importaciones'); await p.click('#peDiF button:has-text("Buscar")'); await W();
+  const nRes = async () => Number(((await txt('#peDiRes')).match(/Resultados \((\d+)\)/) || [])[1]);
+  const nAntes = await nRes();
+  await p.evaluate(() => window.scrollTo(0, 0)); await p.click('#propToggle'); await W(250);
+  check(!(await p.isVisible('#peDiRep')) && (await p.locator('#screenPeDireccionamiento .cc-prop:visible').count()) === 0 && await nRes() === nAntes, 'apagar propuestas oculta los prototipos de Direccionamiento sin romper la grilla');
+  await p.click('#propToggle'); await W(200);
+  check(await p.isVisible('#peDiRep'), 'encender propuestas muestra el reporte otra vez');
+
   // 3. Autorización de Liberación de Línea: liberar el BL del cliente
   await menu('Liberaciones y trámites', 'Autorización de Liberación de Línea');
   check(await titulo() === 'Autorización de Línea por BL', 'Liberación de Línea abre');
@@ -141,10 +172,23 @@ const pdf = name => ({ name, mimeType: 'application/pdf', buffer: Buffer.from('%
   await p.fill('#peMxRes', 'ZIMEXP'); await W(); await p.click('#peMxB'); await W();
   check((await p.$$('#peMxRes .pe-nn .pe-ic:not(.dis)')).length === 1 && (await p.$$('#peMxRes .pe-nn .pe-ic.dis')).length === 1, 'HU-FAC-07: BL No Negociable en Matriz (1 habilitado, 1 bloqueado)');
   await p.click('#peMxRes button.fac-link:has-text("ZIMEXP0026013")'); await W(250);
+  check((await txt('#peMxTxEst')).includes('Datos completos'), 'HU-DOC-40: Matriz muestra los campos para transmitir a SUNAT');
   await p.click('#peMxEditar'); await W();
   await p.fill('#peMxRef', 'PO-7781'); await p.dispatchEvent('#peMxRef', 'change'); await W();
   await p.click('#peMxFinal'); await W(); await conf(); await W(200);
   check((await toast()).includes('Datos finales guardados') && (await txt('#screenPeMatriz')).includes('Versión 2'), 'Matriz editada: versión 2 guardada como final');
+  check((await txt('#peMxTxEst')).includes('Envío TX-26013-2'), 'HU-DOC-40: al guardar final se replica y se transmite sola');
+  await p.click('#peMxEditar'); await W();
+  const consRaz = '#screenPeMatriz .fac-card:has(h3:text-is("Consignatario")) input';
+  await p.fill(consRaz, ''); await p.dispatchEvent(consRaz, 'change'); await W();
+  check((await txt('#peMxTx')).includes('Falta'), 'HU-DOC-40: marca el campo que falta');
+  await p.click('#peMxFinal'); await W();
+  check((await toast()).includes('Para transmitir a SUNAT falta: Consignatario'), 'HU-DOC-40: mensaje específico y sin transmisión');
+  await p.click('#screenPeMatriz .fac-btns button:has-text("Cancelar")'); await W(); await conf();
+  check((await txt('#peMxTxEst')).includes('versión 2') && (await p.evaluate(() => PE.mx.ZIMEXP0026013.tx.length)) === 1, 'HU-DOC-40: reabrir no genera un segundo envío');
+  await p.evaluate(() => window.scrollTo(0, 0)); await p.click('#propToggle'); await W(250);
+  check(!(await p.isVisible('#peMxTx')) && await p.isVisible('#peMxEditar'), 'apagar propuestas oculta el bloque SUNAT sin romper la Matriz');
+  await p.click('#propToggle'); await W(200);
 
   // 8. Mesa de ayuda: aprueba mandato y desglose, ve el memo y el filtro HU-DM-01
   await rol('HELP_DESK');

@@ -162,8 +162,8 @@ PE.mand = [
   {n:'ME-000104', cliente:'PACIFIC CHEMICALS LTD', tipo:'Por BL', bl:'ZIMUBOX0000011', desde:'', hasta:'', tTer:'Agente de Aduana', tercero:AGENTE.razonSocial, oper:'Importación', estado:'RECHAZADO', fReg:'2026-10-02T15:00', archivo:'mandato-pacific.pdf', obs:'El documento no corresponde al BL.',
     hist:[hi('','PENDIENTE','','mesa.ayuda@cosmos.example','2026-10-02T15:00'), hi('PENDIENTE','RECHAZADO','El documento no corresponde al BL.','admin.portal@cosmos.example','2026-10-03T10:00')]}];
 PE.dir = [
-  {id:'DR-000201', bl:'ZIMUBOX0000012', nave:'BOX ENDURANCE', viaje:'684', servicio:'Liner', linea:'ZIM', cons:'ANDES MINING EXPORT S.A.', desp:'Diferido', cc:'', com:'', reg:{...ALMACENES[0]}, apl:{...ALMACENES[0]}, estado:'APPROVED', fReg:'2026-09-03T09:00', conts:['ZIMU1023757','ZIMU1031676'], hist:[{fecha:'2026-09-03T09:00', user:'importador@andesmining.example', tipo:'Registro', cambios:[]}]},
-  {id:'DR-000200', bl:'ZIMUBOX0000011', nave:'BOX ENDURANCE', viaje:'684', servicio:'Liner', linea:'ZIM', cons:'PACIFIC CHEMICALS LTD', desp:'SADA Extraportuario', cc:'', com:'', reg:{...ALMACENES[1]}, apl:{razon:'', aduana:'', ruc:''}, estado:'PENDING', fReg:'2026-09-02T15:30', conts:['ZIMU1007919','ZIMU1015838'], hist:[]}];
+  {id:'DR-000201', bl:'ZIMUBOX0000012', nave:'BOX ENDURANCE', viaje:'684', servicio:'Liner', linea:'ZIM', cons:'ANDES MINING EXPORT S.A.', desp:'Diferido', cc:'', com:'', reg:{...ALMACENES[0]}, apl:{...ALMACENES[0]}, estado:'APPROVED', tipo:'Web', fReg:'2026-09-03T09:00', conts:['ZIMU1023757','ZIMU1031676'], hist:[{fecha:'2026-09-03T09:00', user:'importador@andesmining.example', tipo:'Registro', cambios:[]}]},
+  {id:'DR-000200', bl:'ZIMUBOX0000011', nave:'BOX ENDURANCE', viaje:'684', servicio:'Liner', linea:'ZIM', cons:'PACIFIC CHEMICALS LTD', desp:'SADA Extraportuario', cc:'', com:'', reg:{...ALMACENES[1]}, apl:{razon:'', aduana:'', ruc:''}, estado:'PENDING', tipo:'Web', fReg:'2026-09-02T15:30', conts:['ZIMU1007919','ZIMU1015838'], hist:[]}];
 PE.des = [{id:'DG-000007', bl:'ZIMUBOX0000011', estado:'PENDIENTE', fReg:'2026-11-17T10:00', fRes:'', hijos:[
     {bl:'ZIMUBOX0000011A', parte:'PACIFIC CHEMICALS LTD', peso:'12500', conts:['ZIMU1007919']}, {bl:'ZIMUBOX0000011B', parte:'IMPORTADORA LIMA NORTE S.A.C.', peso:'9800', conts:['ZIMU1015838']}],
   adj:[{tipo:'Plantilla de Desglose', archivo:'plantilla-desglose.xlsx', fecha:'2026-11-17T10:00', usuario:'mesa.ayuda@cosmos.example'}, {tipo:'Carta de Desglose', archivo:'carta-desglose.pdf', fecha:'2026-11-17T10:00', usuario:'mesa.ayuda@cosmos.example'}, {tipo:'MBL Endosado', archivo:'mbl-endosado.pdf', fecha:'2026-11-17T10:00', usuario:'mesa.ayuda@cosmos.example'}]}];
@@ -481,7 +481,19 @@ const DTONO = k => ({APPROVED:'aprobada', REJECTED:'rechazada'})[k] || 'pendient
 const DESPACHOS = ['Anticipado','Diferido','SADA Extraportuario','SADA Almacén del cliente'];
 const diUI = () => PE.ui.di || (PE.ui.di = {modo:'buscar', f:{nave:'', viaje:'', bl:''}, buscado:false, pagina:1, tam:10});
 const diVis = d => veBL({indicador:'Importación', consignatario:d.cons, numero:d.bl});
-function diFilas(){ const f = diUI().f; return PE.dir.filter(d=>diVis(d) && (!f.nave || d.nave===f.nave) && (!f.viaje || f.viaje.startsWith(d.viaje+' ')) && (!f.bl || d.bl.includes(f.bl.toUpperCase()))); }
+/* Prototipos HU-DOC-27 (I-114, I-085, I-099): solo con "Ver propuestas" encendido */
+const P = () => CC.verPropuestas;
+const DIR_AUTO = ['Diferido','SADA Extraportuario'];
+/* BL ficticio de importación con el periodo de direccionamiento abierto (ETA en 7 días); solo se usa en esta pantalla */
+const DI_DEMO = [{numero:'ZIMUDIR0000021', nave:'PACIFIC HORIZON', viaje:'115E', linea:'ZIM', consignatario:'ANDES MINING EXPORT S.A.', indicador:'Importación', contenedores:['ZIMU2100011','ZIMU2100026']}];
+const diBLs = () => [...dat().blImportacion, ...DI_DEMO];
+/* I-114 (B5): BL de Importación sin solicitud, con el direccionamiento por defecto */
+const diDefecto = () => P() ? diBLs().filter(b=>veBL(b) && !PE.dir.some(d=>d.bl===b.numero)).map(b=>({id:'', def:true, bl:b.numero, nave:b.nave, viaje:b.viaje, linea:b.linea,
+  cons:b.consignatario, desp:'', cc:'', com:'', reg:{razon:'', aduana:'', ruc:''}, apl:{...ALMACENES[1]}, estado:'NO_REQUEST', tipo:'Defecto', fReg:'', conts:b.contenedores.slice(), hist:[]})) : [];
+/* I-099: vigencia = cierre del periodo de direccionamiento (ETA menos 36 horas); fuente por confirmar en PEN-I099-02 */
+const diVig = d => { const v = viaje(d.nave, d.viaje); return v.eta ? fhh(loc(new Date(new Date(v.eta) - 36*36e5)).slice(0,16)) : 'Sin datos'; };
+const diPara = m => ['Consignatario', 'Documentación Importación', m.cc].filter(Boolean).join(', ');
+function diFilas(){ const f = diUI().f; return [...PE.dir.filter(diVis), ...diDefecto()].filter(d=>(!f.nave || d.nave===f.nave) && (!f.viaje || f.viaje.startsWith(d.viaje+' ')) && (!f.bl || d.bl.includes(f.bl.toUpperCase()))); }
 const vjsDe = nave => dat().viajes.filter(v=>v.nave===nave).map(vjLbl);
 function diHtml(){
   const u = diUI(); if(u.modo!=='buscar') return diForm();
@@ -489,11 +501,17 @@ function diHtml(){
   const campos = [F('Nave', `<input id="peDiNave" list="peDlNave" placeholder="Ingresar Nave" value="${e(f.nave)}" onchange="peDiNave()">`),
     F('Viaje', `<input id="peDiViaje" list="peDlDiVj" placeholder="Ingresar Viaje" value="${e(f.viaje)}" ${dis(f.nave)}>`),
     F('N° BL', `<input id="peDiBl" maxlength="35" placeholder="Ingrese N° BL" value="${e(f.bl)}">`)];
-  const cols = [{t:'N° BL', v:d=>`<button type="button" class="fac-link" onclick="peDiVer('${d.id}')">${ico('ojo')}${e(d.bl)}</button>`}, {t:'Nave', k:'nave'}, {t:'Viaje', k:'viaje'},
+  const cols = [{t:'N° BL', v:d=>d.def ? `<span ${CC.propuesta('I-114','Direccionamiento por defecto','pe-def')}><button type="button" class="fac-link" onclick="peDiDef('${d.bl}')">${e(d.bl)}</button><span class="pe-tag">Por defecto</span></span>`
+      : `<button type="button" class="fac-link" onclick="peDiVer('${d.id}')">${ico('ojo')}${e(d.bl)}</button>`}, {t:'Nave', k:'nave'}, {t:'Viaje', k:'viaje'},
     {t:'Puerto Operativo', v:d=>e(viaje(d.nave, d.viaje).puerto || '')}, {t:'Línea', v:d=>e(lineaNom(d.linea))}, {t:'Tipo de Despacho', v:d=>sd(d.desp)},
     {t:'Entidad Receptora Registrada', v:d=>sd(d.reg.razon)}, {t:'Entidad Receptora Aplicada', v:d=>sd(d.apl.razon)}, {t:'Fecha de Registro', v:d=>CC.fecha(d.fReg)},
-    {t:'Estado de Direccionamiento', v:d=>CC.chipEstado(Object.fromEntries(DIR_ST)[d.estado], DTONO(d.estado))}, {t:'Historial de versiones', v:d=>ic('hist','Historial de versiones',`peDiHist('${d.id}')`)}];
+    {t:'Estado de Direccionamiento', v:d=>CC.chipEstado(Object.fromEntries(DIR_ST)[d.estado], DTONO(d.estado))}, {t:'Historial de versiones', v:d=>d.def ? '' : ic('hist','Historial de versiones',`peDiHist('${d.id}')`)}];
+  const rep = `<div ${CC.propuesta('I-099','Reporte y cierre de direccionamiento','fac-note')} id="peDiRep" style="margin-top:14px"><b>Reporte de direccionamiento</b> ${CC.marca('Agrega','HU-DOC-27','I-099','PEN-I099-02')}<br>
+    Solo se listan BL de Importación, incluidos los que tienen direccionamiento por defecto ${CC.marca('Modifica','HU-DOC-27','I-114')}.<br>
+    Cuando Cosmos cierra el direccionamiento del viaje: Diferido y SADA Extraportuario quedan Aprobados; SADA Almacén del cliente queda Preaprobado, o Rechazado si no culmina el visto bueno ${CC.marca('Agrega','HU-DOC-27','I-099','PEN-I099-01')}.
+    <div style="margin-top:10px"><button type="button" class="cc-btn ghost" id="peDiRepX" onclick="peDiReporte()">Exportar reporte</button></div></div>`;
   return CC.filtros({id:'peDiF', titulo:'Consulta y Registro', sub:'Ingresar datos y/o Documentos', cols:3, campos, buscar:'peDiBuscar()', limpiar:'peDiLimpiar()', acciones:'<button type="button" class="cc-btn" id="peDiNuevo" onclick="peDiNuevo()">Nuevo</button>'})
+    + (u.buscado ? rep : '')
     + (u.buscado ? CC.tablaResultados({id:'peDiRes', columnas:cols, filas:diFilas(), pagina:u.pagina, tam:u.tam, fnPagina:'peDiPagina', vacio:'No se encontraron resultados con los criterios seleccionados'}) : '')
     + dl('peDlNave', dat().naves.map(n=>n.nombre)) + dl('peDlDiVj', vjsDe(f.nave));
 }
@@ -501,29 +519,35 @@ function diForm(){
   const u = diUI(), m = u.form, md = u.modo, cr = md==='crear', ed = md!=='ver', v = viaje(m.nave, m.viaje);
   const sadaCli = m.desp==='SADA Almacén del cliente';
   const puedeEditar = md==='ver' && !m.apl.razon && !esRevisor();
+  const rod = P() && m.carga==='Carga rodante';
   const campos = [
     F('N° BL *', `<input id="peDiFBl" list="peDlDiBl" ${dis(cr)} maxlength="20" placeholder="Ingrese N° BL" value="${e(m.bl)}" onchange="peDiF('bl',this.value)">`),
-    F('Viaje/Nave *', `<input id="peDiFVj" list="peDlDiVjAll" ${dis(cr)} placeholder="Ingresar Viaje" value="${e(m.viaje ? vjLbl({...v, numero:m.viaje, nave:m.nave, puerto:v.puerto||''}) : '')}" onchange="peDiF('vj',this.value)">`),
+    F(`Viaje/Nave * ${CC.marca('Corrige','HU-DOC-27','I-114')}`, `<input id="peDiFVj" list="peDlDiVjAll" ${dis(cr)} placeholder="Ingresar Viaje" value="${e(m.viaje ? vjLbl({...v, numero:m.viaje, nave:m.nave, puerto:v.puerto||''}) : '')}" onchange="peDiF('vj',this.value)">`),
     F('Servicio', CC.selector(['Liner','Tramp'], m.servicio, `${dis(cr)} onchange="peDiF('servicio',this.value)"`, 'Elegir Servicio')),
     F('Línea', `<input list="peDlLin" ${dis(cr)} placeholder="Ingresar Línea" value="${e(m.linea ? lineaNom(m.linea) : '')}" onchange="peDiF('linea',this.value)">`),
     CC.campoLectura('ETA', v.eta ? fhh(v.eta) : ''),
     F('Consignatario', `<input list="peDlCons" ${dis(cr && !esCli())} value="${e(m.cons)}" onchange="peDiF('cons',this.value)">`),
     F('Tipo de Despacho *', CC.selector(DESPACHOS, m.desp, `id="peDiFDesp" ${dis(ed)} onchange="peDiF('desp',this.value)" ${m.desp==='Diferido' ? 'title="Numeración de la carga posterior al término de operaciones de la nave."' : ''}`, 'Elegir')),
     F('Correo CC', `<input type="email" maxlength="200" ${dis(ed)} value="${e(m.cc)}" onchange="peDiF('cc',this.value)">`),
-    F('Comentario', `<input maxlength="800" ${dis(ed)} value="${e(m.com)}" onchange="peDiF('com',this.value)">`)];
+    F('Comentario', `<input maxlength="800" ${dis(ed)} value="${e(m.com)}" onchange="peDiF('com',this.value)">`),
+    `<div ${CC.propuesta('I-085','Carga rodante')}>${F(`Tipo de Carga ${CC.marca('Agrega','HU-DOC-27','I-085','PEN-I085-04')}`, CC.selector(['Contenedores','Carga rodante'], m.carga||'Contenedores', `id="peDiFCarga" ${dis(cr)} onchange="peDiF('carga',this.value)"`))}</div>`];
   const reg = [F('Razón Social *', `<input id="peDiFReg" list="peDlAlm" maxlength="100" ${dis(ed && !sadaCli)} value="${e(m.reg.razon)}" onchange="peDiF('regRazon',this.value)">`),
     F('Código de Aduana *', `<input id="peDiFAdu" maxlength="4" ${dis(ed && !sadaCli)} value="${e(m.reg.aduana)}" onchange="peDiF('reg.aduana',this.value)">`),
     F('RUC *', `<input id="peDiFRuc" maxlength="20" ${dis(ed && !sadaCli)} value="${e(m.reg.ruc)}" onchange="peDiF('reg.ruc',this.value)">`)];
-  const apl = [CC.campoLectura('Razón Social', m.apl.razon), CC.campoLectura('Código de Aduana', m.apl.aduana), CC.campoLectura('RUC', m.apl.ruc)];
-  const contsT = `<div class="fac-head" style="margin:18px 0 8px"><h3 style="font-size:15px">Contenedores</h3><div class="fac-acts">${cr ? '<button type="button" class="cc-btn ghost" id="peDiCNuevo" onclick="peDiCont(\'add\')">Nuevo</button><button type="button" class="cc-btn ghost" onclick="peDiCont(\'del\')">Eliminar</button>' : ''}</div></div>
+  const apl = [CC.campoLectura('Razón Social', m.apl.razon), CC.campoLectura('Código de Aduana', m.apl.aduana), CC.campoLectura('RUC', m.apl.ruc),
+    `<div ${CC.propuesta('I-114','Tipo de Direccionamiento')} id="peDiTipo">${CC.campoLectura('Tipo de Direccionamiento', m.tipo || (cr ? 'Web' : ''))}</div>`];
+  const avisos = `<div ${CC.propuesta('I-114','Avisos por correo','fac-note')} id="peDiAvisos" style="margin-top:14px"><b>Avisos por correo</b> ${CC.marca('Agrega','HU-DOC-27','I-114','PEN-I114-01')}<br>
+    Al registrar y en cada cambio de estado se avisa a: ${e(diPara(m))}.${(m.avisos||[]).map(a=>`<br>${fhh(a.fecha)} · ${e(a.evento)} · ${e(a.para)}`).join('')}</div>`;
+  const contsT = rod ? `<div ${CC.propuesta('I-085','Carga rodante sin contenedores','fac-note')} id="peDiRod" style="margin-top:18px">Carga rodante: no se exigen contenedores. Indica las unidades (chasis o VIN) en Comentario.</div>`
+    : `<div class="fac-head" style="margin:18px 0 8px"><h3 style="font-size:15px">Contenedores ${cr ? `${CC.marca('Corrige','HU-DOC-27','I-114')} <span ${CC.propuesta('I-114','Carga automática','pe-help')}>Se cargan solos al elegir el BL.</span>` : ''}</h3><div class="fac-acts">${cr ? '<button type="button" class="cc-btn ghost" id="peDiCNuevo" onclick="peDiCont(\'add\')">Nuevo</button><button type="button" class="cc-btn ghost" onclick="peDiCont(\'del\')">Eliminar</button>' : ''}</div></div>
     <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th></th><th>Número de Contenedor</th></tr></thead><tbody>${m.conts.map((c,i)=>`<tr><td><input type="checkbox" ${dis(cr)} onchange="PE.ui.di.selC[${i}]=this.checked"></td><td><input class="pe-cnt" maxlength="11" ${dis(cr)} placeholder="Ingrese número de contenedor" value="${e(c)}" onchange="peDiContN(${i},this.value)" style="width:200px"></td></tr>`).join('') || '<tr><td colspan="2" class="fac-empty">Sin contenedores</td></tr>'}</tbody></table></div>`;
   return `<div class="fac-card" id="peDiForm">${md!=='crear' ? chipsTodos(DIR_ST, m.estado, DTONO) : ''}
     <div class="fac-head"><h3>Datos Generales</h3><div class="fac-acts">${m.id ? `<button type="button" class="cc-btn ghost" onclick="peDiHist('${m.id}')">Historial de versiones</button>` : ''}${puedeEditar ? '<button type="button" class="cc-btn" id="peDiEditar" onclick="peDiEditar()">Editar</button>' : ''}</div></div>
     <div class="fac-g3">${campos.join('')}</div>
     <div class="fac-sec">Entidad Receptora Registrada (Cliente)</div><div class="fac-g3">${reg.join('')}</div>
-    <div class="fac-sec">Entidad Receptora Aplicada</div><div class="fac-g3">${apl.join('')}</div>${contsT}
+    <div class="fac-sec">Entidad Receptora Aplicada</div><div class="fac-g3">${apl.join('')}</div>${contsT}${avisos}
     ${ed ? '<div class="fac-btns"><button type="button" class="cc-btn ghost" onclick="peDiVolver()">Cancelar</button><button type="button" class="cc-btn" id="peDiGuardar" onclick="peDiGuardar()">Guardar</button></div>' : ''}</div>
-    ${dl('peDlDiBl', dat().blImportacion.filter(veBL).map(b=>b.numero))}${dl('peDlDiVjAll', dat().viajes.map(vjLbl))}${dl('peDlLin', dat().lineas.map(l=>l.nombre))}${dl('peDlCons', CONS())}${dl('peDlAlm', ALMACENES.map(a=>a.razon))}`;
+    ${dl('peDlDiBl', diBLs().filter(veBL).map(b=>b.numero))}${dl('peDlDiVjAll', dat().viajes.map(vjLbl))}${dl('peDlLin', dat().lineas.map(l=>l.nombre))}${dl('peDlCons', CONS())}${dl('peDlAlm', ALMACENES.map(a=>a.razon))}`;
 }
 pantalla({id:'screenPeDireccionamiento', grupo:G.I, opcion:'Direccionamiento de Carga', titulo:'Direccionamiento de Carga', migas:['Inicio','Importaciones','Direccionamiento de Carga'],
   html: diHtml, reset: () => { const u = diUI(); u.modo = 'buscar'; u.sucio = false; },
@@ -541,10 +565,11 @@ W.peDiEditar = () => { diUI().modo = 'editar'; pinta('screenPeDireccionamiento')
 W.peDiVolver = () => { const u = diUI(); salirSinGuardar(u, ()=>{ if(u.modo==='editar') W.peDiVer(u.id); else { u.modo = 'buscar'; abrir('screenPeDireccionamiento'); } }); };
 W.peDiF = (k, v) => {
   const u = diUI(), m = u.form; u.sucio = true;
-  if(k==='bl'){ m.bl = v.toUpperCase().replace(/[^A-Z0-9./-]/g,'').slice(0,20); const b = bl(m.bl);
+  if(k==='bl'){ m.bl = v.toUpperCase().replace(/[^A-Z0-9./-]/g,'').slice(0,20); const b = bl(m.bl) || DI_DEMO.find(x=>x.numero===m.bl);
     if(b && esExp(b)){ CC.toast('El número de BL ingresado no corresponde a una importación en el viaje seleccionado.', 'error'); m.bl = ''; }
     else if(b && veBL(b)){ Object.assign(m, {nave:b.nave, viaje:b.viaje, linea:b.linea, cons:b.consignatario, servicio:'Liner', conts:b.contenedores.slice()}); } }
   else if(k==='vj'){ const x = dat().viajes.find(y=>vjLbl(y)===v); m.nave = x ? x.nave : ''; m.viaje = x ? x.numero : ''; if(x && !m.linea) m.linea = x.linea; }
+  else if(k==='carga'){ m.carga = v; if(v==='Carga rodante') m.conts = []; }
   else if(k==='linea'){ m.linea = (dat().lineas.find(l=>l.nombre===v)||{}).codigo || v; }
   else if(k==='desp'){ m.desp = v; if(v==='SADA Almacén del cliente'){ if(!m.cons){ CC.toast('El consignatario está vacío.', 'error'); m.desp = ''; } else m.reg = {razon:m.cons, aduana:'3001', ruc:rucDe(m.cons)}; } }
   else if(k==='regRazon'){ const a = ALMACENES.find(x=>x.razon===v); m.reg = a ? {...a} : {...m.reg, razon:v}; }
@@ -563,18 +588,26 @@ W.peDiGuardar = () => {
   const v = viaje(m.nave, m.viaje);
   if(!v.eta || (new Date(v.eta) - new Date())/36e5 < 36) return CC.toast('El periodo de direccionamiento se encuentra cerrado.', 'error');
   if(u.modo==='crear'){
-    m.conts = m.conts.filter(Boolean); if(!m.conts.length) return CC.toast('Se requiere agregar al menos un equipo.', 'error');
-    const existe = dat().blImportacion.some(b=>b.numero===m.bl);
-    const d = {...JSON.parse(JSON.stringify(m)), id:'DR-' + String(200 + PE.dir.length).padStart(6,'0'), estado:existe ? 'PENDING' : 'PROVISIONAL', fReg:ahora(), hist:[{fecha:ahora(), user:PE.ses.correo, tipo:'Registro', cambios:[]}]};
+    const rod = P() && m.carga==='Carga rodante';
+    m.conts = m.conts.filter(Boolean); if(!m.conts.length && !rod) return CC.toast('Se requiere agregar al menos un equipo.', 'error');
+    const existe = diBLs().some(b=>b.numero===m.bl);
+    const auto = existe && P() && DIR_AUTO.includes(m.desp);
+    const d = {...JSON.parse(JSON.stringify(m)), id:'DR-' + String(200 + PE.dir.length).padStart(6,'0'), estado:auto ? 'APPROVED' : existe ? 'PENDING' : 'PROVISIONAL', fReg:ahora(), hist:[{fecha:ahora(), user:PE.ses.correo, tipo:'Registro', cambios:[]}]};
+    if(P()){ d.tipo = 'Web'; if(auto) d.apl = {...d.reg}; d.avisos = [{fecha:ahora(), evento:'Registro', para:diPara(d)}]; if(auto) d.avisos.push({fecha:ahora(), evento:'Aprobado automáticamente', para:diPara(d)}); }
     PE.dir.unshift(d); u.id = d.id;
     CC.toast(existe ? 'Direccionamiento creado correctamente' : 'Solicitud de direccionamiento registrada. Será procesada cuando el BL exista en el sistema.', 'success');
   } else {
     const cur = PE.dir.find(d=>d.id===u.id), cambios = [['Tipo de Despacho', cur.desp, m.desp], ['Correo CC', cur.cc, m.cc], ['Comentario', cur.com, m.com], ['Entidad Receptora Registrada', cur.reg.razon, m.reg.razon]].filter(x=>x[1]!==x[2]);
     Object.assign(cur, JSON.parse(JSON.stringify(m)), {estado:cur.estado==='PROVISIONAL' ? 'PROVISIONAL' : 'PENDING'}); cur.hist.push({fecha:ahora(), user:PE.ses.correo, tipo:'Edición', cambios});
+    if(P()) (cur.avisos = cur.avisos || []).push({fecha:ahora(), evento:'Actualización', para:diPara(cur)});
     CC.toast('Direccionamiento actualizado correctamente', 'success');
   }
   u.sucio = false; W.peDiVer(u.id);
 };
+W.peDiDef = n => { const i = $('peDiBl'); if(i) i.value = n; W.peDiNuevo(); };
+W.peDiReporte = () => CC.exportarExcel('Reporte_Direccionamiento', 'Direccionamiento', ['N° BL','Contenedor','Cliente','Depósito','Vigencia','Estado','Usuario'],
+  diFilas().flatMap(d=>(d.conts.length ? d.conts : ['']).map(c=>[d.bl, c, d.cons, d.apl.razon || d.reg.razon, diVig(d), Object.fromEntries(DIR_ST)[d.estado], d.def ? '' : ((d.hist[0]||{}).user || '')])));
+W.addEventListener('cc:propuestas', ()=>['screenPeDireccionamiento','screenPeMatriz'].forEach(id=>{ if(PE.ses && $(id) && $(id).classList.contains('active')) pinta(id); }));
 W.peDiHist = id => { const d = PE.dir.find(x=>x.id===id);
   CC.modal(`<h3>Historial de versiones</h3>${d.hist.length ? d.hist.map((h,i)=>`<div class="pe-grp"><b>V${i+1}</b> <span class="pe-tag">${e(h.tipo)}</span>${i===d.hist.length-1 ? '<span class="pe-tag">Vigente</span>' : ''} <span class="pe-help">${fhh(h.fecha)} · ${e(h.user)} · ${h.cambios.length ? `${h.cambios.length} ${h.cambios.length===1 ? 'cambio' : 'cambios'}` : 'Sin cambios registrados'}</span>
     ${h.cambios.length ? `<table class="fac-tbl" style="margin-top:8px"><thead><tr><th>Campo</th><th>Anterior</th><th>Nuevo</th></tr></thead><tbody>${h.cambios.map(c=>`<tr><td>${e(c[0])}</td><td>${c[1] ? e(c[1]) : 'Sin valor'}</td><td>${c[2] ? e(c[2]) : 'Sin valor'}</td></tr>`).join('')}</tbody></table>` : ''}</div>`).reverse().join('') : '<p class="fac-empty">Aún no hay cambios registrados para este BL.</p>'}
@@ -666,7 +699,7 @@ function mxForm(){
       ${CC.campoLectura('Puerto de Pago *', b.puertoCarga)}
       ${F('Tipo de Carga *', CC.selector(['Contenedor lleno (FCL)','Carga consolidada (LCL)','Carga refrigerada'], m.gen.tipoCarga, `${dis(ed)} onchange="peMxF('gen.tipoCarga',this.value)"`, 'Elegir tipo de carga'))}
       ${CC.campoLectura('Cantidad', sum(m.conts,'cant'))}${CC.campoLectura('Volumen (M3)', sum(m.conts,'vol'))}</div></div>
-    ${ct}${cutoff}
+    ${ct}${cutoff}${txCard(m, u.n)}
     ${ed ? `<div class="fac-btns"><button type="button" class="cc-btn ghost" onclick="peMxVolver()">Cancelar</button><button type="button" class="cc-btn ghost" id="peMxProv" onclick="peMxProvisional()" ${dis(editable(cur.estado) && vmax<=1)}>Guardar Provisional</button><button type="button" class="cc-btn" id="peMxFinal" onclick="peMxFinal()" ${dis(m.conts.length)}>Guardar Final</button></div>` : ''}
     ${dl('peDlLin', dat().lineas.map(l=>l.nombre))}`;
 }
@@ -696,6 +729,22 @@ function mxValida(m){
   if(zimProblemas(m).length) return 'Revise los datos de las partes del BL de Zim antes de guardar.';
   return '';
 }
+/* Prototipo HU-DOC-40 (I-183): campos que exige la transmisión a SUNAT. Lista ilustrativa hasta cerrar PEN-TXC-01 */
+const CLI = 'Cliente (portal externo)';
+const TX_CAMPOS = [['RUC y Razón Social del Embarcador','Maestro de socios', m=>m.partes.emb.ruc && m.partes.emb.razon], ['Dirección del Embarcador', CLI, m=>m.partes.emb.dir],
+  ['Consignatario y dirección', CLI, m=>m.partes.cons.razon.trim() && m.partes.cons.dir], ['Notificante Principal y dirección', CLI, m=>m.partes.not1.razon.trim() && m.partes.not1.dir],
+  ['Condición de Pago y Tipo de Emisión', CLI, m=>m.gen.condicion && m.gen.emision], ['Puertos de embarque y descarga', 'Reserva (portal interno)', ()=>true],
+  ['Contenedores: partida, peso bruto, bultos, precintos y mercadería', CLI, m=>m.conts.length && m.conts.every(contCompleto)]];
+const txFaltan = m => TX_CAMPOS.filter(c=>!c[2](m)).map(c=>c[0]);
+function txCard(m, n){
+  const falt = txFaltan(m), tx = (mx(n).tx || []).slice(-1)[0];
+  const est = tx ? `Envío ${tx.id} del ${fhh(tx.fecha)} (versión ${tx.v}): enviado, en espera de respuesta de SUNAT.` : falt.length ? `Pendiente de datos. No se transmite hasta completar: ${falt.join(', ')}.` : 'Datos completos. Se transmite solo al guardar como final.';
+  return `<div ${CC.propuesta('I-183','Transmisión SUNAT desde la Matriz','fac-card')} id="peMxTx"><h3 style="margin-bottom:12px">Campos para transmitir a SUNAT ${CC.marca('Agrega','HU-DOC-40','I-183','PEN-TXC-01')}</h3>
+    <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th>Campo</th><th>Fuente</th><th>Se replica en</th><th>Estado</th></tr></thead><tbody>
+    ${TX_CAMPOS.map(c=>`<tr${c[2](m) ? '' : ' class="pe-bad"'}><td>${e(c[0])}</td><td>${e(c[1])}</td><td>BL del portal interno y mensaje a SUNAT</td><td>${c[2](m) ? 'Completo' : 'Falta'}</td></tr>`).join('')}</tbody></table></div>
+    <div class="fac-note" style="margin-top:12px">Al guardar como final, estos datos se copian al mismo BL del portal interno, sin volver a digitarlos. Con todos completos, la transmisión a SUNAT se dispara sola, una vez por versión. El envío no es la aceptación de SUNAT. ${CC.marca('Agrega','HU-DOC-40','I-183','PEN-TXC-02')}</div>
+    <p class="pe-help" id="peMxTxEst" style="margin-top:8px"><b>Estado de transmisión:</b> ${e(est)}</p></div>`;
+}
 const MX_CAMPOS = [['Dirección del Embarcador','partes.emb.dir'],['Consignatario','partes.cons.razon'],['Dirección del Consignatario','partes.cons.dir'],['Notificante Principal','partes.not1.razon'],
   ['Notificante Secundario','partes.not2.razon'],['Línea','gen.linea'],['Export References','gen.exportRef'],['Freight Forwarder','gen.ff'],['Condición de Pago','gen.condicion'],['Tipo de Emisión','gen.emision'],['Tipo de Carga','gen.tipoCarga']];
 const pathGet = (o, p) => p.split('.').reduce((a,k)=>a && a[k], o);
@@ -704,7 +753,8 @@ function mxAplicar(tipo, final){
   const cambios = MX_CAMPOS.map(([t,p])=>[t, pathGet(viejo,p), pathGet(nuevo,p)]).filter(x=>String(x[1]||'')!==String(x[2]||''));
   if(JSON.stringify(viejo.conts)!==JSON.stringify(nuevo.conts)) cambios.push(['Contenedores', `${viejo.conts.length} equipo(s)`, `${nuevo.conts.length} equipo(s)`]);
   Object.assign(m, {partes:nuevo.partes, gen:nuevo.gen, conts:nuevo.conts, provisional:!final, ultEd:hoyISO()}); m.ediciones++;
-  if(final){ m.version++; m.hist.push({v:m.version, tipo:m.version===1 ? 'Matriz' : `Corrector ${m.version-1}`, fecha:ahora(), user:PE.ses.correo, cambios}); }
+  if(final){ m.version++; m.hist.push({v:m.version, tipo:m.version===1 ? 'Matriz' : `Corrector ${m.version-1}`, fecha:ahora(), user:PE.ses.correo, cambios});
+    if(P() && !txFaltan(m).length) (m.tx = m.tx || []).push({id:`TX-${u.n.slice(-5)}-${m.version}`, v:m.version, fecha:ahora()}); }
   else m.hist.push({v:m.version, tipo:'Provisional', fecha:ahora(), user:PE.ses.correo, cambios});
   u.sucio = false; u.modo = 'ver'; pinta('screenPeMatriz');
   CC.toast(final ? 'Datos finales guardados exitosamente' : 'Datos provisionales guardados exitosamente', 'success');
@@ -712,7 +762,8 @@ function mxAplicar(tipo, final){
 W.peMxProvisional = () => { const err = mxValida(mxUI().form); if(err) return CC.toast(err, 'error');
   peConf('Guardar Provisional', '¿Está seguro que desea guardar como PROVISIONAL?', 'Guardar', ()=>mxAplicar('Provisional', false)); };
 W.peMxFinal = () => {
-  const u = mxUI(), m = mx(u.n), err = mxValida(u.form); if(err) return CC.toast(err, 'error');
+  const u = mxUI(), m = mx(u.n), err = mxValida(u.form), falt = P() ? txFaltan(u.form) : [];
+  if(err) return CC.toast(falt.length ? `${err}. Para transmitir a SUNAT falta: ${falt.join(', ')}.` : err, 'error');
   const b = bl(u.n), n = m.version + 1;
   const cobro = () => { const fuera = b.cutoff && hoyISO() > b.cutoff;
     const msg = m.version>=3 ? 'Ha alcanzado el límite. El registro de correctores adicionales requerirá un cargo adicional'
