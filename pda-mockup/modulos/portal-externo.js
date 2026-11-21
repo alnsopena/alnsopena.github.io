@@ -359,7 +359,7 @@ W.peRegEnviar = () => {
 CC.registrarPantalla({id:'screenPeRegistroOk', titulo:'Registro completado', migas:['Registro completado'],
   html: () => `<div class="fac-card pe-reg" style="text-align:center"><div class="pe-okic">✓</div><h3>¡Registro completado!</h3>
     <p style="font-size:14px">Su solicitud de ingreso al portal ha sido enviada con éxito y se encuentra en proceso de revisión. Recibirás una notificación en breve.</p>
-    <div ${CC.propuesta('Propuesta sin ticket','Aviso de quién aprueba','fac-note')} style="text-align:left;margin-top:16px">Atención al Cliente de Cosmos revisa y aprueba tu solicitud en el portal interno (Aprobación de Usuarios Web). Al aprobarla, recibirás un correo con tu usuario y una clave temporal.</div>
+    <div ${CC.propuesta('Sin ticket','Aviso de quién aprueba','fac-note')} style="text-align:left;margin-top:16px">Atención al Cliente de Cosmos revisa y aprueba tu solicitud en el portal interno (Aprobación de Usuarios Web). Al aprobarla, recibirás un correo con tu usuario y una clave temporal.</div>
     <div class="fac-btns" style="justify-content:center"><button type="button" class="cc-btn" id="peRegSalir" onclick="peIrLogin()">Salir</button></div></div>`});
 
 /* ---------- 7. Mandato Electrónico ---------- */
