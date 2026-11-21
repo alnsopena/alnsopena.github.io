@@ -1716,3 +1716,20 @@
   .cc-obra h3{margin:10px 0 6px}
   .cc-obra p{color:var(--cc-gray,#6B7A88);margin:0 0 10px}
   .cc-obra-ruta{font-size:12px;color:var(--cc-gray,#6B7A88)}
+
+/* ===== Módulo PDA (PDA y PDA Plantilla alineados a Connect) ===== */
+  .pill.finalizada,.badge.finalizada{background:#EDE9FE;color:#5B21B6}
+  .cc-chip.st-finalizada{background:#EDE9FE;color:#5B21B6;border-color:#DDD6FE}
+  #lpHead th[data-dir]:not([data-dir=""])::after{content:' ' attr(data-dir);font-size:10px}
+  #screenLanding .results-head{display:flex;align-items:center;gap:12px}
+  #screenLanding .results-head #lpExport,#screenTemplates .results-head .btn-corp-outline{margin-left:auto}
+  #createModal .tpl-row.on{outline:2px solid var(--cc-blue,#0B5CAD);background:#F2F7FC}
+  #createModal .cm-opt.on{outline:2px solid var(--cc-blue,#0B5CAD)}
+  .ops-only{display:none}
+  body.pda-ops #calcSections .ops-only{display:table-cell}
+  body.pda-ops #calcSections table.data tr > :nth-child(3),body.pda-ops #calcSections table.data tr > :nth-child(5),
+  body.pda-ops #calcSections table.data tr > :nth-child(6),body.pda-ops #calcSections table.data tr > :nth-child(7),
+  body.pda-ops #calcSections tfoot,body.pda-ops #calcSections .st-sub,body.pda-ops #step2 .totals-bar,body.pda-ops #step2 > .actions{display:none}
+  #screenTplForm .te-svc input,#screenTplForm .te-svc select{width:100%;min-width:70px}
+  #screenTplForm .tpl-actions,#screenTemplates .tpl-actions{display:flex;gap:8px;align-items:center}
+  #step2 .totals-bar{display:flex;gap:28px;justify-content:flex-end;flex-wrap:wrap}

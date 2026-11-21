@@ -49,7 +49,7 @@
   <section class="panel" id="screenDashboard" aria-label="Dashboard operativo">
     <iframe id="operationalDashboard" title="COSMOS Dashboard Operativo v3" data-src="dashboard/?v=v37" scrolling="no"></iframe>
   </section>
-  <section class="panel active" id="screenType">
+  <section class="panel active cc-prop" id="screenType" data-prop="Propuesta sin ticket · Terrestre o Marítimo">
     <span class="hero-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="265 341 550 398"><path fill="#00293B" d="M 705.61 438.32 C 669.30 397.82 624.10 347.41 540 347.41 C 455.89 347.41 410.69 397.82 374.38 438.32 C 339.16 477.60 314.92 502.16 271.17 503.69 L 271.17 572.14 C 347.89 570.37 390.75 522.56 425.32 484.00 C 459.47 445.91 486.44 415.83 540 415.83 C 593.55 415.83 620.52 445.91 654.67 484.00 C 689.24 522.56 732.11 570.37 808.82 572.14 L 808.82 503.69 C 765.07 502.16 740.83 477.60 705.61 438.32 "/><path fill="#011B2B" d="M 600.08 548.24 C 575.85 523.17 561.23 508.03 540 508.03 C 518.76 508.03 504.14 523.17 479.91 548.25 C 438.54 591.05 369.71 662.27 271.17 664.34 L 271.17 732.77 C 398.65 730.80 483.36 643.13 529.19 595.71 C 532.04 592.76 535.88 591.13 540 591.13 C 544.11 591.13 547.95 592.76 550.88 595.79 C 596.64 643.13 681.35 730.80 808.82 732.77 L 808.82 664.34 C 710.29 662.27 641.46 591.05 600.08 548.24 "/><path fill="#003D53" d="M 333.47 366.85 C 339.23 360.78 345.56 354.12 352.39 347.22 L 271.17 347.22 L 271.17 411.53 C 292.99 409.49 309.40 392.21 333.47 366.85 "/><path fill="#003D53" d="M 746.52 367.04 C 770.59 392.40 787 409.68 808.82 411.72 L 808.82 347.41 L 727.60 347.41 C 734.44 354.32 740.76 360.98 746.52 367.04 "/></svg></span>
     <h1>Bienvenido al prototipo de Cosmos Connect</h1>
     <p class="sub">Elige el tipo de cotización.</p>
@@ -73,67 +73,77 @@
     <div class="buscar-head">
       <div>
         <h1>Buscar PDA
-          <span class="type-chip" id="typeChip">
+          <span class="type-chip cc-prop" id="typeChip" title="Propuesta sin ticket · Terrestre o Marítimo">
             <span id="typeChipLabel">-</span>
             <button class="switch-type" onclick="changeType()" style="display:none">Cambiar tipo</button>
           </span>
         </h1>
-        <p id="landingSub">Escenarios de demostración con distintas naves, servicios, cargas y estados.</p>
+        <p id="landingSub">Ingrese datos para buscar</p>
       </div>
       <div class="buscar-head-actions">
         <button class="btn-corp-outline" style="display:none" onclick="openMaster(null,'landing')">Maestro de servicios</button>
         <button class="btn-corp-outline" style="display:none" onclick="openTariffs(null,'landing')">Tarifas</button>
         <button class="btn-corp-outline" style="display:none" onclick="openTemplateManager()">Plantillas</button>
-        <button class="btn-corp" onclick="onNewPdaClick()">+ Nueva PDA</button>
+        <button class="btn-corp" onclick="onNewPdaClick()">Nuevo<span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap"> (Nueva PDA)</span></button>
       </div>
     </div>
 
-    <div class="buscar-filters">
+    <div class="buscar-filters" oninput="lpSync()" onchange="lpSync()">
       <div class="filters-grid">
         <div class="filter-field">
-          <label>Código, nave, viaje o cliente</label>
-          <input id="searchQuery" placeholder="Ej. PACIFIC HORIZON" onkeydown="if(event.key==='Enter')applyFilters()">
+          <label>Código PDA</label>
+          <input id="searchCode" maxlength="25" placeholder="Ingresar código PDA" onkeydown="if(event.key==='Enter')applyFilters()">
         </div>
         <div class="filter-field">
-          <label>Estado principal</label>
-          <select id="searchEstado">
-            <option>Todos</option><option>Pendiente de aprobación</option><option>Aprobada</option><option>Anulada</option>
-          </select>
-        </div>
-        <div class="filter-field">
-          <label>Tipo de servicio</label>
-          <select id="searchTipo"></select>
+          <label>Nombre de Nave</label>
+          <input id="searchNave" list="dlSearchNave" placeholder="Elegir nave" onkeydown="if(event.key==='Enter')applyFilters()"><datalist id="dlSearchNave"></datalist>
         </div>
         <div class="filter-field">
           <label>Puerto</label>
           <select id="searchPuerto">
-            <option>Todos</option><option>Callao</option><option>Paracas</option><option>Pisco</option><option>Lima</option>
+            <option value="Todos">Elegir puerto</option><option>Callao</option><option>Paracas</option><option>Pisco</option><option>Paita</option><option>Lima</option>
           </select>
+        </div>
+        <div class="filter-field">
+          <label>Estado</label>
+          <select id="searchEstado">
+            <option value="Todos">Todos</option><option>Pendiente de aprobación</option><option>Aprobada</option><option>Anulada</option><option>Finalizada</option>
+          </select>
+        </div>
+        <div class="filter-field">
+          <label>Cliente</label>
+          <input id="searchCliente" list="dlSearchCliente" placeholder="Elegir cliente" onkeydown="if(event.key==='Enter')applyFilters()"><datalist id="dlSearchCliente"></datalist>
+        </div>
+        <div class="filter-field cc-prop" data-prop="Propuesta sin ticket · Tipo de servicio">
+          <label>Tipo de servicio</label>
+          <select id="searchTipo"></select>
         </div>
       </div>
       <div class="filter-actions">
-        <label class="obs-filter"><input type="checkbox" id="searchObs"> Solo con observación</label>
-        <button class="btn-corp" onclick="applyFilters()">Buscar</button>
-        <button class="btn-corp-outline" onclick="clearFilters()">Limpiar</button>
+        <label class="obs-filter cc-prop" data-prop="Propuesta sin ticket · Observación"><input type="checkbox" id="searchObs"> Solo con observación</label>
+        <button class="btn-corp" id="lpBuscar" onclick="applyFilters()">Buscar</button>
+        <button class="btn-corp-outline" id="lpLimpiar" onclick="clearFilters()">Limpiar</button>
       </div>
     </div>
 
     <div class="results-head">
-      <h2>Resultados <span class="count" id="resultsCount">0</span></h2>
+      <h2>Resultados (<span id="resultsCount">0</span>)</h2>
       <div class="note" id="resultsNote">-</div>
+      <button class="btn-corp-outline" id="lpExport" onclick="lpExport()">Exportar</button>
     </div>
     <div class="results-table">
       <table>
         <thead>
-          <tr>
-            <th style="width:22%">Código PDA</th>
-            <th>Nave</th><th>Servicio</th><th>Viaje</th><th>Puerto</th>
-            <th>Cliente</th><th>Estado</th>
+          <tr id="lpHead">
+            <th style="width:22%" data-s="code">Código PDA</th>
+            <th data-s="nave">Nombre de Nave</th><th class="cc-prop" data-s="servicio">Servicio <span class="chg-tag cc-prop">Propuesta sin ticket</span></th><th class="cc-prop" data-s="viaje">Viaje <span class="chg-tag cc-prop">Propuesta sin ticket</span></th><th data-s="puerto">Puerto</th>
+            <th data-s="cliente">Cliente</th><th data-s="estado">Estado</th>
           </tr>
         </thead>
         <tbody id="resultsBody"></tbody>
       </table>
     </div>
+    <div class="cc-pager" id="lpPager"></div>
   </section>
 
   <!-- ============ MAESTRO DE SERVICIOS Y FÓRMULAS ============ -->
@@ -335,20 +345,34 @@
   <section class="panel" id="screenTemplates">
     <div class="buscar-head">
       <div>
-        <h1>Plantillas <span class="type-chip" id="tplTypeChip"></span></h1>
-        <p>PDAs frecuentes guardadas por cliente, sucursal y tipo de buque.</p>
+        <h1>Consulta Plantilla PDA <span class="type-chip cc-prop" id="tplTypeChip" title="Propuesta sin ticket · Terrestre o Marítimo"></span></h1>
       </div>
       <div class="buscar-head-actions">
-        <button class="btn-corp-outline" onclick="backToLanding()">← Volver al listado</button>
-        <button class="btn-corp" onclick="openTplEditor()">+ Nueva plantilla</button>
+        <button class="btn-corp" onclick="openTplEditor()">Nuevo</button>
       </div>
     </div>
-    <div id="tplTabs"></div>
-    <div class="tpl-tools" id="tplMgrTools"></div>
+    <div id="tplTabs" class="cc-prop" data-prop="Propuesta sin ticket · Pestañas Líneas y Tramps"></div>
+    <div class="buscar-filters" id="tplFilters"></div>
+    <div class="results-head">
+      <h2>Resultados (<span id="tplCount">0</span>)</h2><div class="note"></div>
+      <button class="btn-corp-outline" onclick="tplExport()">Exportar</button>
+    </div>
     <div class="results-table tbl-wrap"><table>
-      <thead><tr><th>Plantilla</th><th>Cliente</th><th>Sucursal</th><th id="thVtype">Tipo de buque</th><th>Puerto / terminal</th>
-        <th>Conceptos</th><th>Actualizada</th><th style="width:310px"></th></tr></thead>
+      <thead><tr><th>Código</th><th>Nombre de Plantilla</th><th>Puerto</th><th>Terminal</th><th>Tipo de Nave</th><th>Tipo de Servicio</th>
+        <th>Tipo de Agenciamiento</th><th>Tipo de Operación</th><th>Tipo de Carga</th><th>Moneda</th><th>Estado</th>
+        <th class="cc-prop" style="width:150px"><span class="chg-tag cc-prop">Propuesta sin ticket</span></th></tr></thead>
       <tbody id="tplMgrBody"></tbody></table></div>
+    <div class="cc-pager" id="tplPager"></div>
+  </section>
+
+  <!-- Nueva / Editar / Ver Plantilla PDA (página, como Connect) -->
+  <section class="panel" id="screenTplForm">
+    <div class="buscar-head">
+      <div><h1 id="teTitle">Nueva Plantilla PDA</h1><p id="teSub"></p></div>
+      <div class="buscar-head-actions" id="teActs"></div>
+    </div>
+    <div id="teBody"></div>
+    <div class="actions" id="teFoot"></div>
   </section>
 
   <!-- ============ PASO 1 ============ -->
@@ -377,7 +401,7 @@
         <select id="clientSelect" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-weight:700;background:#fff"></select>
         <div class="meta" id="clientMeta">Cliente registrado en el sistema</div>
       </div>
-      <button class="btn btn-ghost btn-icon" onclick="openClientModal()" title="Registrar nuevo cliente"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button class="btn btn-ghost btn-icon" id="clientRegBtn" onclick="openClientModal()" title="Registrar cliente"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button>
     </div>
         </div>
         <div class="grid">
@@ -397,8 +421,9 @@
     </div>
     <div id="step1Notice"></div>
     <div class="actions">
-      <button class="btn btn-ghost" onclick="backToLanding()">← Volver al listado</button>
-      <button class="btn btn-primary" onclick="goStep(2)">Continuar a Detalle →</button>
+      <button class="btn btn-ghost" onclick="pdaCancel()">Cancelar</button>
+      <button class="btn btn-primary cc-prop" data-prop="Propuesta sin ticket" onclick="goStep(2)">Continuar a Detalle →</button>
+      <button class="btn btn-primary edit-only" onclick="pdaSave()">Guardar</button>
     </div>
   </section>
 
@@ -411,16 +436,22 @@
       <div id="contPanel"></div>
     </div>
     <div class="pnote later"><span class="pn-tag">Fase posterior</span><b>Reporte de rentabilidad.</b> Negociado vs facturado por servicio, cliente y comercial. La variación vs la tarifa base ya sale en el Excel interno; costo del proveedor y margen se agregan en esa fase.</div>
+    <div class="recalc-bar" style="display:flex;align-items:center;gap:12px;margin:10px 0">
+      <button class="btn btn-ghost btn-sm edit-only" onclick="pdaRecalcular()">Recalcular (F9)</button>
+      <span class="hint" style="margin:0">Vuelve a buscar las tarifas con los datos actuales y recalcula toda la PDA.</span></div>
     <div class="svc-card">
-      <h3>Servicios</h3>
-      <div class="cat-tools"><button class="link-btn" onclick="setAllCats(false)">Expandir todo</button><span>·</span><button class="link-btn" onclick="setAllCats(true)">Contraer todo</button></div>
+      <h3>Servicios <span id="pdaAddCat" style="margin-left:12px"></span></h3>
+      <div class="cat-tools cc-prop" data-prop="Propuesta sin ticket"><button class="link-btn" onclick="setAllCats(false)">Expandir todo</button><span>·</span><button class="link-btn" onclick="setAllCats(true)">Contraer todo</button></div>
       <div id="calcSections"></div>
       <div class="totals-bar">
-        <div class="tb-main"><span class="tb-lbl">Total estimado (USD)</span><span class="value" id="grandTotal2">$ 0.00</span></div>
+        <div class="tb-main"><span class="tb-lbl">Total Neto</span><span class="value" id="totNet2" style="font-size:15px">$ 0.00</span></div>
+        <div class="tb-main"><span class="tb-lbl">Total VAT</span><span class="value" id="totVat2" style="font-size:15px">$ 0.00</span></div>
+        <div class="tb-main"><span class="tb-lbl">Total Bruto</span><span class="value" id="grandTotal2">$ 0.00</span></div>
       </div>
     </div>
     <div id="pdaReqs"></div>
     <div class="actions">
+      <button class="btn btn-primary edit-only" onclick="pdaSave()">Guardar</button>
       <button class="btn btn-ghost" onclick="openTplEditor(null,true)">Guardar como plantilla</button>
       <button class="btn btn-ghost" onclick="exportExcel()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M9 13l4 5M13 13l-4 5"/></svg> Exportar desglose (Excel)</button>
       <button class="btn btn-primary" style="padding:14px 28px;font-size:14px" onclick="openPdfPreview()">
@@ -436,10 +467,13 @@
       <div class="st-actions" id="statusActions"></div>
     </div>
     <div id="statusActionBanner"></div>
+    <div class="cc-prop" data-prop="Propuesta sin ticket · Observación y subsanación">
     <div class="section-title"><span class="st-label">Observación</span></div>
     <div id="obsBox"></div>
+    </div>
     <div class="pnote later"><span class="pn-tag">Fase posterior</span><b>Liquidación: cotizado vs real.</b> Después de aprobar, Operaciones confirmará las cantidades reales (horas sobre lo cotizado, viajes adicionales de lancha, etc.). El sistema recalculará la PDA respetando los mínimos y mostrará las diferencias contra lo cotizado.</div>
     <div class="pnote proc"><span class="pn-tag">Pendiente de proceso</span><b>Formalizar el flujo de Jenny.</b> Comunicación oficial a Comercial con fecha de inicio y responsables de cada registro (aprobado por gerencia, falta la difusión formal).</div>
+    <div class="cc-prop" data-prop="Propuesta sin ticket · OS y correo a Operaciones al aprobar">
     <div class="section-title"><span class="st-label">Notificaciones a Operaciones</span></div>
     <div class="field" style="margin-bottom:14px">
       <label>Correos que reciben la notificación al aprobar</label>
@@ -450,7 +484,8 @@
         <button class="btn btn-ghost btn-sm" onclick="addOpEmail()">Agregar</button>
       </div>
     </div>
-    <div class="actions">
+    </div>
+    <div class="actions cc-prop" data-prop="Propuesta sin ticket">
       <button class="btn btn-primary" onclick="openPdfPreview()">Ver PDF de la PDA</button>
     </div>
   </section>
@@ -495,39 +530,31 @@
 <div class="modal-bg" id="createModal">
   <div class="modal modal-lg">
     <div class="cm-head">
-      <div><h3>Nueva PDA</h3><div class="modal-sub">Elige cómo empezar.</div></div>
+      <div><h3>Crear nueva PDA</h3></div>
       <button class="x-close" onclick="closeModal('createModal')" title="Cerrar">✕</button>
     </div>
-    <div class="field" id="cmMode" style="margin-bottom:16px"><label>Modalidad</label>
+    <div class="cm-options">
+      <button type="button" class="cm-opt" id="cmOptBlank" onclick="cmChoose('blank')">
+        <span class="cm-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M12 12v6M9 15h6"/></svg></span><b>Iniciar en Blanco</b><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Desde cero</span>
+        <span>Conceptos estándar con tarifas sugeridas. Completas cliente, nave y cantidades.</span></button>
+      <button type="button" class="cm-opt" id="cmOptTpl" onclick="cmChoose('tpl')">
+        <span class="cm-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h2"/></svg></span><b>Usar Plantilla Aprobada</b>
+        <span>Carga la cabecera y los servicios de la plantilla. Las tarifas se buscan al crear la PDA.</span></button>
+    </div>
+    <div class="field" id="cmMode" style="margin-top:16px"><label>Modalidad</label>
       <div class="seg">
         <button type="button" data-mode="lineas" onclick="setCreateMode('lineas')">Líneas</button>
         <button type="button" data-mode="tramps" onclick="setCreateMode('tramps')">Tramps</button></div></div>
-    <div class="cm-options">
-      <button type="button" class="cm-opt" onclick="createBlank()">
-        <span class="cm-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M12 12v6M9 15h6"/></svg></span><b>Desde cero</b>
-        <span>Conceptos estándar con tarifas sugeridas. Completas cliente, nave y cantidades.</span></button>
-      <button type="button" class="cm-opt" id="cmOptTpl" onclick="showCreatePicker()">
-        <span class="cm-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h2"/></svg></span><b>Desde plantilla</b>
-        <span>Reutiliza cliente, puerto, conceptos y tarifas de una operación frecuente.</span></button>
-    </div>
     <div id="cmPicker" style="display:none;margin-top:18px"></div>
+    <div class="actions">
+      <button class="btn btn-ghost" onclick="closeModal('createModal')">Cancelar</button>
+      <button class="btn btn-primary" id="cmCreateBtn" onclick="cmCreate()" disabled>Crear PDA</button>
+    </div>
   </div>
 </div>
 
-<!-- Modal: editor de plantilla -->
-<div class="modal-bg" id="tplEditModal">
-  <div class="modal modal-lg">
-    <div class="cm-head">
-      <div><h3 id="teTitle">Nueva plantilla</h3><div class="modal-sub">Datos que se precargan y conceptos con sus tarifas.</div></div>
-      <button class="x-close" onclick="closeModal('tplEditModal')" title="Cerrar">✕</button>
-    </div>
-    <div id="teBody"></div>
-    <div class="actions">
-      <button class="btn btn-ghost" onclick="closeModal('tplEditModal')">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveTemplate()">Guardar plantilla</button>
-    </div>
-  </div>
-</div>
+<!-- El editor de plantilla ahora es una página (screenTplForm), como en Connect. Se deja el contenedor vacío por compatibilidad. -->
+<div class="modal-bg" id="tplEditModal"><div class="modal"></div></div>
 
 <!-- Modal servicio personalizado -->
 <div class="modal-bg" id="customSvcModal">
@@ -691,14 +718,15 @@
 <!-- Modal cliente -->
 <div class="modal-bg" id="clientModal">
   <div class="modal">
-    <h3>Registrar Nuevo Cliente</h3>
-    <div class="modal-sub">Completa los datos.</div>
+    <h3>Registrar nuevo cliente</h3>
+    <div class="modal-sub">Solo la razón social es obligatoria. Queda pendiente de aprobación en Data Maestra y debe aprobarse antes de aprobar la PDA.</div>
     <div class="grid cols-2">
-      <div class="field" style="grid-column:1/-1"><label>Razón social / Nombre</label>
-        <input id="ncName" placeholder="Ej: Valero Marketing & Supply"></div>
-      <div class="field"><label>Correo</label><input type="email" id="ncEmail"></div>
-      <div class="field"><label>Teléfono</label><input id="ncPhone"></div>
-      <div class="field" style="grid-column:1/-1"><label>RUC / Tax ID</label><input id="ncTax"></div>
+      <div class="field" style="grid-column:1/-1"><label>Razón social / Nombre *</label>
+        <input id="ncName" maxlength="100" placeholder="Ej: Valero Marketing & Supply" oninput="ncMatches()"></div>
+      <div id="ncMatch" class="hint" style="grid-column:1/-1;margin:0"></div>
+      <div class="field"><label>Correo</label><input type="email" id="ncEmail" maxlength="200"></div>
+      <div class="field"><label>Teléfono</label><input id="ncPhone" maxlength="25"></div>
+      <div class="field" style="grid-column:1/-1"><label>RUC / Tax ID</label><input id="ncTax" maxlength="20" placeholder="RUC de 11 dígitos o Tax ID extranjero"></div>
     </div>
     <div class="actions">
       <button class="btn btn-ghost" onclick="closeModal('clientModal')">Cancelar</button>
@@ -710,27 +738,17 @@
 <!-- Modal correo -->
 <div class="modal-bg" id="emailModal">
   <div class="modal">
-    <h3>Enviar PDA por correo</h3>
-    <div class="modal-sub">La PDA <b id="emailPdaRef" class="mono"></b> se adjuntará en PDF, con el anexo de desglose de cálculo al final.</div>
-    <div class="field"><label>Destinatario</label>
-      <input id="emailInput" placeholder="correo@dominio.com" onkeydown="if(event.key==='Enter'){event.preventDefault();addEmailChip()}">
+    <h3>Enviar PDA</h3>
+    <div class="modal-sub">La PDA <b id="emailPdaRef" class="mono"></b> se envía en PDF a los contactos del cliente configurados en Data Maestra, con la plantilla de correo.<span class="cc-prop"> Incluye el anexo de desglose de cálculo al final (propuesta sin ticket).</span></div>
+    <div class="field"><label>Para (contactos del cliente)</label><div id="emailChips"></div></div>
+    <div class="field" style="margin-top:12px"><label>Asunto</label><input id="emailSubject" readonly style="background:#F6F7F7"></div>
+    <div class="field" style="margin-top:12px"><label>Mensaje (plantilla de correo)</label>
+      <textarea id="emailBody" rows="5" readonly style="background:#F6F7F7"></textarea>
     </div>
-    <div class="actions left" style="margin-top:6px">
-      <button class="btn btn-ghost btn-sm" onclick="addEmailChip()">Agregar destinatario</button>
-    </div>
-    <div class="email-chips" id="emailChips"></div>
-    <div class="field" style="margin-top:12px"><label>Asunto</label><input id="emailSubject"></div>
-    <div class="field" style="margin-top:12px"><label>Mensaje</label>
-      <textarea id="emailBody" rows="5">Estimados,
-
-Adjunto la Proforma Disbursement Account (PDA) correspondiente al presente call. Quedo atento a sus comentarios.
-
-Saludos cordiales,
-Cosmos Agencia Marítima S.A.C.</textarea>
-    </div>
+    <div id="emailErr"></div>
     <div class="actions">
       <button class="btn btn-ghost" onclick="closeModal('emailModal')">Cancelar</button>
-      <button class="btn btn-primary" onclick="sendEmail()">Enviar ahora</button>
+      <button class="btn btn-primary" id="emailSendBtn" onclick="sendEmail()">Enviar</button>
     </div>
   </div>
 </div>
@@ -738,7 +756,7 @@ Cosmos Agencia Marítima S.A.C.</textarea>
 <!-- Modal auto-email -->
 <div class="modal-bg" id="autoEmailModal">
   <div class="modal" style="max-width:520px">
-    <h3>Enviando notificación a Operaciones</h3>
+    <h3>Enviando notificación a Operaciones <span class="chg-tag">Propuesta sin ticket</span></h3>
     <div class="modal-sub">Al aprobar la PDA se notifica automáticamente al área operativa.</div>
     <div style="background:#F6F7F7;border-radius:12px;padding:16px;font-size:13px;line-height:1.8">
       <div><b>De:</b> agencia@cosmos.pe</div>
@@ -1601,7 +1619,7 @@ function showScreen(id){
 const PAGEBAR = {
   screenDashboard:['Dashboard',['Inicio','Dashboard']],
   screenType:['PDA',['Inicio','PDA']], screenLanding:['Buscar PDA',['Inicio','PDA','Buscar PDA']],
-  screenMaster:['Maestro de servicios',['Inicio','Servicios']], screenTemplates:['Plantillas',['Inicio','PDA','Plantillas']],
+  screenMaster:['Maestro de servicios',['Inicio','Servicios']], screenTemplates:['Consulta Plantilla PDA',['Inicio','Plantilla PDA']], screenTplForm:['Plantilla PDA',['Inicio','Plantilla PDA']],
   screenRequests:['Solicitudes',['Inicio','Servicios','Solicitudes']],
   screenPartners:['Consulta de Socios',['Inicio','Socios','Consulta de Socios']],
   screenVoyages:['Consulta Viaje',['Inicio','Viaje','Consulta Viaje']],
@@ -1620,17 +1638,21 @@ function renderPdaHead(){
   const h = document.getElementById('ccPdaHead'); if(!h) return;
   const st = state.status || 'Pendiente', can = canChangeStatus();
   const chips = `<span class="cc-chip on st-${st.toLowerCase()}">${statusLabel(st)}</span>`
-    + (state.obs && st!=='Anulada' ? `<span class="cc-chip obs">Con observación</span>` : '')
+    + (state.obs && st!=='Anulada' ? `<span class="cc-chip obs cc-prop">Con observación</span>` : '')
     + (PDA_ASSOC[state.pdaNumber] ? `<button type="button" class="cc-chip vy-chip" onclick="openVoyage('${PDA_ASSOC[state.pdaNumber]}','pda')">Viaje ${PDA_ASSOC[state.pdaNumber]}</button>` : '');
   const ctx = [state.categoryType==='maritimo' ? `Marítimo · ${state.maritimeMode==='lineas'?'Líneas':'Tramps'}` : state.categoryType ? 'Terrestre' : '',
-               state.loadedTemplate ? `Plantilla ${state.loadedTemplate.name}` : ''].filter(Boolean).join(' · ');
-  h.innerHTML = `<div class="cc-ph-left"><div class="cc-ph-code">${esc(state.pdaNumber||'PDA nueva')}${ctx?`<span class="cc-ph-ctx">${esc(ctx)}</span>`:''}</div><div class="cc-chips">${chips}</div></div>
+               ''].filter(Boolean).join(' · ');
+  const tplIco = state.loadedTemplate && state.loadedTemplate.id ? `<button type="button" class="cc-btn" style="padding:2px 8px;margin-left:8px" title="Ver el template: ${esc(state.loadedTemplate.name)}" onclick="openTplView('${state.loadedTemplate.id}')">&#128196;</button>` : '';
+  const voy = !!PDA_ASSOC[state.pdaNumber], open = st==='Pendiente';
+  const canAnul = can && (open || (st==='Aprobada' && !voy)), canSend = open || st==='Aprobada';
+  h.innerHTML = `<div class="cc-ph-left"><div class="cc-ph-code">${esc(state.pdaNumber||'PDA nueva')}${ctx?`<span class="cc-ph-ctx">${esc(ctx)}</span>`:''}${tplIco}</div><div class="cc-chips">${chips}</div></div>
     <div class="cc-ph-actions">
       <button type="button" class="cc-btn chg-btn" onclick="toggleChg()" title="Marca en morado lo nuevo y lo quitado respecto a Ver PDA de Connect actual">Cambios vs Connect: ${document.body.classList.contains('chg-on')?'sí':'no'}</button>
       <button type="button" class="cc-btn" onclick="openHistory()">Historial</button>
-      <button type="button" class="cc-btn" ${st==='Anulada'?'disabled':''} onclick="editPda()">Editar</button>
-      <button type="button" class="cc-btn pink" ${st==='Anulada'||!can?'disabled':''} ${can?'':'title="Solo Comercial y Gerencia pueden anular"'} onclick="openAnnul()">Anular</button>
-      <button type="button" class="cc-btn" onclick="openPdfPreview()">Enviar PDA</button>
+      <button type="button" class="cc-btn" ${open?'':'disabled'} title="${open?'Editar la PDA':st==='Aprobada'?'Para editar una PDA aprobada, vuelve antes a pendiente en la pestaña Estado':'La PDA no admite cambios'}" onclick="editPda()">Editar</button>
+      ${st==='Aprobada'||st==='Finalizada' ? `<button type="button" class="cc-btn" ${can?'':'disabled'} onclick="duplicatePda()">Duplicar</button>` : ''}
+      <button type="button" class="cc-btn pink" ${canAnul?'':'disabled'} title="${voy&&st==='Aprobada'?'Una PDA asociada a un viaje no se puede anular ni reabrir.':can?'Anular la PDA':'No tiene permiso para anular'}" onclick="openAnnul()">Anular</button>
+      <button type="button" class="cc-btn" ${canSend?'':'disabled'} onclick="openPdfPreview()">Enviar PDA</button>
     </div>`;
 }
 const CC_SUBMENU = {
@@ -1699,14 +1721,14 @@ function chooseType(type, quiet){
   const chip = document.getElementById('typeChip');
   chip.className = 'type-chip ' + type;
   document.getElementById('typeChipLabel').textContent = type==='maritimo' ? 'Marítimo' : 'Terrestre';
-  document.getElementById('landingSub').textContent = '';
+  document.getElementById('landingSub').textContent = 'Ingrese datos para buscar';
   document.getElementById('searchTipo').innerHTML = type==='maritimo'
     ? '<option>Todos</option><option>Liner</option><option>Tramp</option>'
     : '<option>Todos</option><option>Flete</option><option>Almacenaje</option>';
   document.getElementById('searchTipo').value = 'Todos';
   document.getElementById('searchPuerto').value = 'Todos';
   document.getElementById('searchEstado').value = 'Todos';
-  document.getElementById('searchQuery').value = '';
+  ['searchCode','searchNave','searchCliente'].forEach(id=>document.getElementById(id).value = '');
   document.getElementById('stepsNav').style.display = 'none';
   renderResultsByType();
   showScreen('screenLanding');
@@ -1720,34 +1742,62 @@ function backToLanding(){
 }
 function renderResultsByType(){ renderResults(SAMPLE_PDAS.filter(p=>p.tipo===state.categoryType)); }
 
+/* Buscar PDA como Connect: orden por columna (inicia por código ascendente), "Items por página" y Exportar */
+const lp = { data:[], sort:'code', dir:1, page:1, size:10 };
 function renderResults(data){
-  document.getElementById('resultsCount').textContent = data.length;
+  lp.data = data.slice(); lp.page = 1;
   document.getElementById('resultsNote').textContent =
     (typeof SY!=='undefined' && SY && SY.on) ? 'Datos de demostración + compartidos' : 'Datos de demostración';
+  const all = SAMPLE_PDAS.filter(p=>p.tipo===state.categoryType);
+  const dl = (id, k) => { const el = document.getElementById(id); if(el) el.innerHTML = [...new Set(all.map(p=>p[k]))].sort().map(x=>`<option value="${esc(x)}">`).join(''); };
+  dl('dlSearchNave','nave'); dl('dlSearchCliente','cliente');
+  lpSync(); lpRender();
+}
+function lpRender(){
+  const data = lp.data.slice().sort((a,b)=>String(a[lp.sort]||'').localeCompare(String(b[lp.sort]||''),'es')*lp.dir);
+  document.getElementById('resultsCount').textContent = data.length;
+  document.querySelectorAll('#lpHead th[data-s]').forEach(th=>{ th.onclick = ()=>lpSortBy(th.dataset.s); th.style.cursor = 'pointer';
+    th.dataset.dir = th.dataset.s===lp.sort ? (lp.dir>0 ? '▲' : '▼') : ''; th.title = 'Ordenar por esta columna'; });
   const tb = document.getElementById('resultsBody');
+  const pages = Math.max(1, Math.ceil(data.length/lp.size)); lp.page = Math.min(Math.max(1, lp.page), pages);
+  document.getElementById('lpPager').innerHTML = data.length ? pagerHtml(data.length, lp.page, lp.size, 'lpPage') : '';
   if(!data.length){
-    tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#8D9BA2;font-style:italic">Sin resultados</td></tr>';
+    tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#8D9BA2;font-style:italic">No se encontraron resultados con los criterios seleccionados.</td></tr>';
     return;
   }
-  tb.innerHTML = data.map(p=>`
+  tb.innerHTML = data.slice((lp.page-1)*lp.size, lp.page*lp.size).map(p=>`
     <tr>
-      <td><span class="pda-code-link" onclick="openSamplePda('${p.code}')">${p.code}</span>
+      <td><span class="pda-code-link" title="Haga clic para ver detalles del PDA" onclick="openSamplePda('${p.code}')">${p.code}</span>
         <div class="pda-row-sub">${p.sub}</div></td>
-      <td>${p.nave}</td><td>${p.servicio}</td><td>${p.viaje}</td><td>${p.puerto}</td>
+      <td>${p.nave}</td><td class="cc-prop">${p.servicio}</td><td class="cc-prop">${p.viaje}</td><td>${p.puerto}</td>
       <td>${p.cliente}</td>
-      <td><span class="pill ${pillClass(p.estado)}">${p.estado}</span>${p.obs?'<span class="pill observada" style="margin-left:4px" title="'+esc(p.obs)+'">Observada</span>':''}</td>
+      <td><span class="pill ${pillClass(p.estado)}">${p.estado}</span>${p.obs?'<span class="pill observada cc-prop" style="margin-left:4px" title="'+esc(p.obs)+'">Observada</span>':''}</td>
     </tr>`).join('');
 }
-function pillClass(e){ return e==='Aprobada' ? 'aprobada' : e==='Anulada' ? 'anulada' : 'pendiente'; }
+function lpPage(p, size){ if(size) lp.size = size; lp.page = p; lpRender(); }
+function lpSortBy(k){ lp.dir = lp.sort===k ? -lp.dir : 1; lp.sort = k; lpRender(); }
+/* Buscar y Limpiar se habilitan solo con algún filtro, como en Connect */
+function lpHasFilter(){
+  const v = id => (document.getElementById(id)?.value||'').trim();
+  return !!(v('searchCode') || v('searchNave') || v('searchCliente') || ['searchEstado','searchTipo','searchPuerto'].some(id=>v(id) && v(id)!=='Todos') || document.getElementById('searchObs')?.checked);
+}
+function lpSync(){ const on = lpHasFilter(); ['lpBuscar','lpLimpiar'].forEach(id=>{ const b = document.getElementById(id); if(b) b.disabled = !on; }); }
+function lpExport(){
+  const data = lp.data.slice().sort((a,b)=>String(a[lp.sort]||'').localeCompare(String(b[lp.sort]||''),'es')*lp.dir);
+  if(!data.length){ toast('No hay resultados para exportar','error'); return; }
+  facXlsx('PDA.xlsx', 'PDA', ['Código PDA','Nombre de Nave','Puerto','Cliente','Estado'], data.map(p=>[p.code, p.nave, p.puerto, p.cliente, p.estado]));
+}
+function pillClass(e){ return e==='Aprobada' ? 'aprobada' : e==='Anulada' ? 'anulada' : e==='Finalizada' ? 'finalizada' : 'pendiente'; }
 function applyFilters(){
-  const q = document.getElementById('searchQuery').value.trim().toLowerCase();
+  if(!lpHasFilter()) return;
+  const has = (a, b) => !b || normTxt(a).includes(normTxt(b));
+  const code = document.getElementById('searchCode').value.trim(), nave = document.getElementById('searchNave').value.trim(), cli = document.getElementById('searchCliente').value.trim();
   const est = document.getElementById('searchEstado').value;
   const tipo = document.getElementById('searchTipo').value;
   const puerto = document.getElementById('searchPuerto').value;
   const base = SAMPLE_PDAS.filter(p=>p.tipo===state.categoryType);
   const data = base.filter(p=>{
-    if(q && !(p.code.toLowerCase().includes(q) || p.nave.toLowerCase().includes(q) ||
-              p.viaje.toLowerCase().includes(q) || p.cliente.toLowerCase().includes(q))) return false;
+    if(!has(p.code, code) || !has(p.nave, nave) || !has(p.cliente, cli)) return false;
     if(est !== 'Todos' && p.estado !== est) return false;
     if(document.getElementById('searchObs').checked && !p.obs) return false;
     if(tipo !== 'Todos' && p.servicio !== tipo) return false;
@@ -1755,13 +1805,13 @@ function applyFilters(){
     return true;
   });
   renderResults(data);
-  toast(data.length ? `${data.length} resultado(s)` : 'Sin coincidencias', data.length?'success':'error');
 }
 function clearFilters(){
-  document.getElementById('searchQuery').value = '';
+  ['searchCode','searchNave','searchCliente'].forEach(id=>document.getElementById(id).value = '');
   document.getElementById('searchEstado').value = 'Todos';
   document.getElementById('searchTipo').value = 'Todos';
   document.getElementById('searchPuerto').value = 'Todos';
+  document.getElementById('searchObs').checked = false;
   renderResultsByType();
 }
 
@@ -1779,14 +1829,32 @@ function onNewPdaClick(){
   document.getElementById('cmPicker').style.display = 'none';
   document.getElementById('cmOptTpl').classList.remove('on');
   Object.assign(pick, {q:'', client:'', sucursal:'', vtype:''});
+  cm.tplId = null; cm.mode = 'blank';
   setCreateMode(state.maritimeMode);
+  renderCreateModal();
   document.getElementById('createModal').classList.add('show');
 }
+/* Crear nueva PDA como Connect: "Iniciar en Blanco" o "Usar Plantilla Aprobada", y se confirma con "Crear PDA" */
+const cm = { mode:'blank', tplId:null };
+function approvedTpls(){ return TEMPLATE_STORE.filter(t=>tplNorm(t).estado==='Aprobada' && (state.categoryType==='terrestre' ? t.tipo==='terrestre' : t.tipo!=='terrestre')); }
+function cmChoose(m){ if(m==='blank'){ cm.mode = m; cm.tplId = null; createBlank(); return; } cm.mode = m; renderCreateModal(); if(m==='tpl') setTimeout(()=>document.getElementById('pickQ')?.focus(), 30); }
+function renderCreateModal(){
+  const has = approvedTpls().length, g = id=>document.getElementById(id);
+  if(!has && cm.mode==='tpl') cm.mode = 'blank';
+  g('cmOptTpl').style.display = has ? '' : 'none';
+  g('cmOptBlank').classList.toggle('on', cm.mode==='blank'); g('cmOptTpl').classList.toggle('on', cm.mode==='tpl');
+  g('cmMode').style.display = cm.mode==='blank' && state.categoryType==='maritimo' ? '' : 'none';
+  g('cmCreateBtn').style.display = cm.mode==='tpl' ? '' : 'none';
+  g('cmPicker').style.display = cm.mode==='tpl' ? '' : 'none';
+  if(cm.mode==='tpl') renderCreatePicker();
+  g('cmCreateBtn').disabled = !(cm.mode==='blank' || cm.tplId);
+}
+function cmPickTpl(id){ cm.tplId = id; document.querySelectorAll('#pickList .tpl-row').forEach(r=>r.classList.toggle('on', r.dataset.id===id)); document.getElementById('cmCreateBtn').disabled = false; }
+function cmCreate(){ if(cm.mode==='blank') createBlank(); else if(cm.tplId) useTemplateById(cm.tplId); }
 function setCreateMode(m){
   if(state.categoryType!=='maritimo') return;
   state.maritimeMode = m;
   document.querySelectorAll('#cmMode [data-mode]').forEach(b=>b.classList.toggle('on', b.dataset.mode===m));
-  if(document.getElementById('cmPicker').style.display!=='none') renderCreatePicker();
 }
 function createBlank(){
   closeModal('createModal');
@@ -1795,12 +1863,7 @@ function createBlank(){
   startNewPda(false);
 }
 function currentTplTipo(){ return state.categoryType==='terrestre' ? 'terrestre' : (state.maritimeMode||'tramps'); }
-function showCreatePicker(){
-  document.getElementById('cmOptTpl').classList.add('on');
-  document.getElementById('cmPicker').style.display = '';
-  renderCreatePicker();
-  setTimeout(()=>document.getElementById('pickQ')?.focus(), 30);
-}
+function showCreatePicker(){ cmChoose('tpl'); }
 function tplFiltersHtml(f, fn, idQ){
   const list = TEMPLATE_STORE.filter(t=>t.tipo===currentTplTipo());
   const uniq = k => [...new Set(list.map(t=>t[k]).filter(Boolean))].sort();
@@ -1828,23 +1891,30 @@ function tplChips(t){
     t.real ? `<span class="mchip real" title="${esc(t.notes||'')}">Tarifas reales</span>` : `<span class="mchip ref">Referencial</span>`].filter(Boolean).join('');
 }
 function renderCreatePicker(){
+  const all = approvedTpls(), uniq = k => [...new Set(all.map(t=>t[k]).filter(Boolean))].sort();
+  const mar = state.categoryType==='maritimo';
   document.getElementById('cmPicker').innerHTML = `
-    <div class="tpl-tools">${tplFiltersHtml(pick,'setPick','pickQ')}</div>
+    <div class="tpl-tools"><input id="pickQ" placeholder="Buscar plantillas por nombre o código..." value="${esc(pick.q)}" oninput="setPick('q',this.value)">
+      <span class="cc-prop" data-prop="Propuesta sin ticket · Filtros de plantilla" style="display:contents">
+      <select class="cc-prop" onchange="setPick('client',this.value)"><option value="">Todos los clientes</option>${uniq('client').map(x=>`<option ${x===pick.client?'selected':''}>${esc(x)}</option>`).join('')}</select>
+      <select class="cc-prop" onchange="setPick('sucursal',this.value)"><option value="">Todas las sucursales</option>${uniq('sucursal').map(x=>`<option ${x===pick.sucursal?'selected':''}>${esc(x)}</option>`).join('')}</select>
+      ${mar ? `<select class="cc-prop" onchange="setPick('vtype',this.value)"><option value="">Todos los tipos de buque</option>${VESSEL_TYPES.filter(v=>all.some(t=>t.vtype===v.k)).map(v=>`<option value="${v.k}" ${v.k===pick.vtype?'selected':''}>${v.es}</option>`).join('')}</select>` : ''}</span></div>
     <div class="tpl-list2" id="pickList"></div>
     <div style="margin-top:10px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
-      <button class="link-btn" onclick="closeModal('createModal');openTemplateManager()">Administrar plantillas</button>
+      <button class="link-btn cc-prop" data-prop="Propuesta sin ticket" onclick="closeModal('createModal');openTemplateManager()">Administrar plantillas</button>
       <span class="hint" id="pickCount"></span></div>`;
   renderPickList();
 }
 function setPick(k,v){ pick[k] = v; if(k==='q') renderPickList(); else renderCreatePicker(); }
 function renderPickList(){
-  const list = TEMPLATE_STORE.filter(t=>tplMatches(t,pick));
+  const q = normTxt(pick.q).trim();
+  const list = approvedTpls().filter(t=>(!q || normTxt(t.code+' '+t.name).includes(q)) && (!pick.client || t.client===pick.client)
+    && (!pick.sucursal || t.sucursal===pick.sucursal) && (!pick.vtype || t.vtype===pick.vtype));
+  if(cm.tplId && !list.some(t=>t.id===cm.tplId)){ cm.tplId = null; document.getElementById('cmCreateBtn').disabled = true; }
   document.getElementById('pickList').innerHTML = list.map(t=>`
-    <div class="tpl-row">
-      <div><b>${esc(t.name)}</b><div class="tpl-meta">${tplChips(t)}</div></div>
-      <button class="btn btn-primary btn-sm" onclick="useTemplateById('${t.id}')">Usar</button>
-    </div>`).join('') || `<div class="dd-empty">No hay plantillas con esos filtros.
-      <button class="link-btn" onclick="closeModal('createModal');openTemplateManager();openTplEditor()">Crear una plantilla</button></div>`;
+    <div class="tpl-row ${cm.tplId===t.id?'on':''}" data-id="${t.id}" onclick="cmPickTpl('${t.id}')" style="cursor:pointer">
+      <div><span class="mono">${esc(t.code)}</span> · <b>${esc(t.name)}</b><div class="tpl-meta cc-prop">${tplChips(t)}</div></div>
+    </div>`).join('') || `<div class="dd-empty">No se encontraron plantillas que coincidan con su búsqueda</div>`;
   document.getElementById('pickCount').textContent = `${list.length} plantilla${list.length===1?'':'s'}`;
 }
 function useTemplateById(id){
@@ -1865,11 +1935,14 @@ function useTemplateById(id){
     if(ts.rate!=null){ ex.rate = ts.rate; ex.rateBase = ts.rate; ex.tplRate = ts.rate; ex.rateBaseSrc = 'plantilla'; }
     if(ts.vat!=null){ ex.vatOn = ts.vat>0; if(ts.vat>0) ex.vat = ts.vat; }
     if(ts.supplier) ex.supplier = ts.supplier;
+    if(ts.unit) ex.unit = ts.unit;
+    if(ts.currency) ex.currency = ts.currency;
     if(ts.min!=null) ex.min = ts.min;
     if(ts.note) ex.note = ts.note;
     return newLine(m, ex);
   }).filter(Boolean);
   state.remarks = t.remarks || '';
+  if(t.pago) state.payment = t.pago;
   state.cargoSynced = cargoKind();
   t.uses = (t.uses||0) + 1;
   closeModal('createModal'); closeModal('tplEditModal');
@@ -1913,159 +1986,316 @@ function seedTemplates(){
       {terrestrial:{origin:'Callao',destination:'Callao',plate:'XYZ-987',weight:30,volume:40,cargo:'Carga general',ref:'REF-002'}})
   );
   const alm = TEMPLATE_STORE.at(-1).services.find(x=>x.id==='t_almacenaje'); if(alm) alm.qty = 15;
+  TEMPLATE_STORE.forEach(tplNorm);
 }
 
+/* ---------- Plantilla PDA como Connect: código, estados con aprobación, sin tarifa guardada ---------- */
+const TPL_AGENCIAS = ['Agenciamiento completo','Agenciamiento protector','Husbandry'];
+const TPL_MONEDAS = ['USD','PEN'];
+const TPL_EST = {p:'Pendiente de aprobación', a:'Aprobada', i:'Inactiva'};
+let tplSeq = 0;
+/* Completa los campos que Connect pide y el mockup no tenía (sobre la misma plantilla en memoria) */
+function tplNorm(t){
+  if(!t) return t;
+  if(!t.code) t.code = 'PLT' + String(++tplSeq).padStart(6,'0');
+  if(!t.estado){ t.estado = TPL_EST.a; t.approvedBy = t.approvedBy || 'L. Fernández (Gerencia)'; t.approvedAt = t.approvedAt || (t.updated||'2026-09-15')+'T10:00:00'; }
+  if(!t.agencia) t.agencia = TPL_AGENCIAS[0];
+  if(!t.moneda) t.moneda = 'USD';
+  if(t.armador==null) t.armador = '';
+  if(!t.pago) t.pago = 'none';
+  return t;
+}
+function tplServicio(t){ return t.tipo==='lineas' ? 'LINER' : t.tipo==='tramps' ? 'TRAMP' : 'Terrestre'; }
+function tplChipEstado(t){
+  const tip = t.estado===TPL_EST.a ? `Aprobada por ${t.approvedBy||''} el ${t.approvedAt?new Date(t.approvedAt).toLocaleString('es-PE'):''}`
+    : t.estado===TPL_EST.i ? `Inactiva desde ${t.inactivatedAt?new Date(t.inactivatedAt).toLocaleString('es-PE'):''} por ${t.inactivatedBy||''}` : TPL_EST.p;
+  const cls = t.estado===TPL_EST.a ? 'aprobada' : t.estado===TPL_EST.i ? 'anulada' : 'pendiente';
+  return `<span class="cc-chip on st-${cls}" title="${esc(tip)}">${esc(t.estado)}</span>`;
+}
+/* Consulta Plantilla PDA: Filtros Básicos y Filtros Avanzados (plegables) */
+const tq = { f:{}, ap:{}, adv:false, page:1, size:10, tipo:'' };
+function tqEmpty(){ return {code:'', name:'', port:'', terminal:'', estado:'', vtype:'', servicio:'', agencia:'', operation:'', cargo:'', moneda:''}; }
 function openTemplateManager(){
   if(!state.categoryType){ toast('Elige primero Marítimo o Terrestre','error'); return; }
-  if(state.categoryType==='maritimo' && !state.maritimeMode) state.maritimeMode = 'tramps';
   document.getElementById('stepsNav').style.display = 'none';
   const chip = document.getElementById('tplTypeChip');
-  chip.className = 'type-chip ' + state.categoryType;
+  chip.className = 'type-chip cc-prop ' + state.categoryType;
   chip.textContent = state.categoryType==='maritimo' ? 'Marítimo' : 'Terrestre';
-  Object.assign(mgr, {q:'', client:'', sucursal:'', vtype:''});
+  TEMPLATE_STORE.forEach(tplNorm);
+  tq.f = tqEmpty(); tq.ap = tqEmpty(); tq.page = 1; tq.tipo = '';
   renderTemplateManager();
   showScreen('screenTemplates');
 }
-function setMgrTipo(t){ state.maritimeMode = t; Object.assign(mgr,{client:'',sucursal:'',vtype:''}); renderTemplateManager(); }
-function setMgr(k,v){ mgr[k] = v; if(k==='q') renderMgrBody(); else renderTemplateManager(); }
+function setMgrTipo(t){ tq.tipo = t; tq.page = 1; renderTemplateManager(); }
+function setMgr(k,v){ tq.f[k] = v; }
 function renderTemplateManager(){
   const mar = state.categoryType==='maritimo';
-  document.getElementById('tplTabs').innerHTML = mar ? `<div class="seg">${['lineas','tramps'].map(t=>
-    `<button type="button" class="${currentTplTipo()===t?'on':''}" onclick="setMgrTipo('${t}')">${t==='lineas'?'Líneas':'Tramps'} (${TEMPLATE_STORE.filter(x=>x.tipo===t).length})</button>`).join('')}</div>` : '';
-  document.getElementById('tplMgrTools').innerHTML = tplFiltersHtml(mgr,'setMgr','mgrQ');
-  document.getElementById('thVtype').style.display = mar ? '' : 'none';
+  const base = TEMPLATE_STORE.filter(x=>mar ? x.tipo!=='terrestre' : x.tipo==='terrestre');
+  document.getElementById('tplTabs').innerHTML = mar ? `<div class="seg">${[['','Todas'],['lineas','Líneas'],['tramps','Tramps']].map(([t,l])=>
+    `<button type="button" class="${tq.tipo===t?'on':''}" onclick="setMgrTipo('${t}')">${l} (${t?base.filter(x=>x.tipo===t).length:base.length})</button>`).join('')}</div>` : '';
+  const f = tq.f, inp = (k, lbl, max, ph) => `<div class="filter-field"><label>${lbl}</label><input maxlength="${max}" value="${esc(f[k])}" placeholder="${ph||''}" oninput="setMgr('${k}',this.value)" onkeydown="if(event.key==='Enter')tqBuscar()"></div>`;
+  const sel = (k, lbl, opts) => `<div class="filter-field"><label>${lbl}</label><select onchange="setMgr('${k}',this.value)"><option value="">Todos</option>${opts.map(o=>{ const [v,l] = Array.isArray(o)?o:[o,o]; return `<option value="${esc(v)}" ${String(v)===String(f[k])?'selected':''}>${esc(l)}</option>`; }).join('')}</select></div>`;
+  const terms = f.port ? (TERMINALS_BY_PORT[f.port]||[]) : [...new Set(Object.values(TERMINALS_BY_PORT).flat())];
+  document.getElementById('tplFilters').innerHTML = `
+    <div class="ms-sec" style="margin:0 0 8px"><span>Filtros Básicos</span><span style="text-transform:none;letter-spacing:0;font-weight:600">Ingresa datos para buscar</span></div>
+    <div class="filters-grid">${inp('code','Código',25,'Ingresar código')}${inp('name','Nombre de Plantilla',100,'Ingresar nombre')}
+      <div class="filter-field"><label>Puerto</label><input list="dlTqPort" maxlength="80" value="${esc(f.port)}" placeholder="Elegir puerto" onchange="setMgr('port',this.value);renderTemplateManager()"><datalist id="dlTqPort">${PORTS.map(p=>`<option value="${esc(p.k)}">${esc(p.code)} - ${esc(p.k)}</option>`).join('')}</datalist></div>
+      ${sel('terminal','Terminal',terms)}${sel('estado','Estado',Object.values(TPL_EST))}</div>
+    <button type="button" class="link-btn" style="margin:10px 0" onclick="tq.adv=!tq.adv;renderTemplateManager()">${tq.adv?'▲':'▼'} Filtros Avanzados</button>
+    <div class="filters-grid" style="${tq.adv?'':'display:none'}">${sel('vtype','Tipo de Nave',VESSEL_TYPES.map(v=>[v.k,v.es]))}${sel('servicio','Tipo de Servicio',['LINER','TRAMP'])}
+      ${sel('agencia','Tipo de Agenciamiento',TPL_AGENCIAS)}${sel('operation','Tipo de Operación',OPERATIONS.map(o=>[o.k,o.es]))}
+      ${sel('cargo','Tipo de Carga',CARGO_TYPES.map(c=>[c.k,c.es]))}${sel('moneda','Moneda',TPL_MONEDAS)}</div>
+    <div class="filter-actions"><button class="btn-corp" onclick="tqBuscar()">Buscar</button><button class="btn-corp-outline" onclick="tqLimpiar()">Limpiar</button></div>`;
   renderMgrBody();
 }
+function tqBuscar(){ tq.ap = {...tq.f}; tq.page = 1; renderMgrBody(); }
+function tqLimpiar(){ tq.f = tqEmpty(); tq.ap = tqEmpty(); tq.page = 1; renderTemplateManager(); }
+function tqList(){
+  const mar = state.categoryType==='maritimo', a = tq.ap, has = (x, y) => !y || normTxt(x).includes(normTxt(y));
+  return TEMPLATE_STORE.map(tplNorm).filter(t=>(mar ? t.tipo!=='terrestre' : t.tipo==='terrestre') && (!tq.tipo || t.tipo===tq.tipo)
+    && has(t.code, a.code) && has(t.name, a.name) && has(t.port, a.port) && (!a.terminal || t.terminal===a.terminal) && (!a.estado || t.estado===a.estado)
+    && (!a.vtype || t.vtype===a.vtype) && (!a.servicio || tplServicio(t)===a.servicio) && (!a.agencia || t.agencia===a.agencia)
+    && (!a.operation || t.operation===a.operation) && (!a.cargo || t.cargo===a.cargo) && (!a.moneda || t.moneda===a.moneda));
+}
+function tqPage(p, size){ if(size) tq.size = size; tq.page = p; renderMgrBody(); }
 function renderMgrBody(){
-  const mar = state.categoryType==='maritimo';
-  const list = TEMPLATE_STORE.filter(t=>tplMatches(t,mgr));
-  document.getElementById('tplMgrBody').innerHTML = list.map(t=>`
+  const list = tqList(), pages = Math.max(1, Math.ceil(list.length/tq.size)); tq.page = Math.min(tq.page, pages);
+  document.getElementById('tplCount').textContent = list.length;
+  document.getElementById('tplPager').innerHTML = list.length ? pagerHtml(list.length, tq.page, tq.size, 'tqPage') : '';
+  document.getElementById('tplMgrBody').innerHTML = list.slice((tq.page-1)*tq.size, tq.page*tq.size).map(t=>`
     <tr>
-      <td><b>${esc(t.name)}</b>${t.notes?`<div class="pda-row-sub">${esc(t.notes)}</div>`:''}</td>
-      <td>${esc(t.client)}</td><td>${esc(t.sucursal||'-')}</td>
-      ${mar?`<td>${esc(L(VESSEL_TYPES,t.vtype)||'-')}</td>`:''}
-      <td>${mar ? `${esc(t.port||'-')}<div class="pda-row-sub">${esc(t.terminal||'')}</div>` : `${esc(t.terrestrial?.origin||'')} → ${esc(t.terrestrial?.destination||'')}`}</td>
-      <td>${t.services.filter(x=>x.enabled).length}</td><td>${esc(t.updated)}</td>
-      <td><div class="tpl-actions">
-        <button class="btn btn-primary btn-sm" onclick="useTemplateById('${t.id}')">Usar</button>
-        <button class="link-btn" onclick="openTplEditor('${t.id}')">Editar</button>
-        <button class="link-btn" onclick="duplicateTemplate('${t.id}')">Duplicar</button>
-        <button class="link-btn danger" onclick="deleteTemplate('${t.id}')">Eliminar</button></div></td>
-    </tr>`).join('') || `<tr><td colspan="8" style="text-align:center;padding:30px;color:#8D9BA2">No hay plantillas con esos filtros.</td></tr>`;
+      <td><span class="pda-code-link" onclick="openTplView('${t.id}')">${esc(t.code)}</span></td>
+      <td><b>${esc(t.name)}</b></td><td>${esc(t.port||'-')}</td><td>${esc(t.terminal||'-')}</td><td>${esc(L(VESSEL_TYPES,t.vtype)||'-')}</td>
+      <td>${tplServicio(t)}</td><td>${esc(t.agencia)}</td><td>${esc(L(OPERATIONS,t.operation)||'-')}</td><td>${esc(L(CARGO_TYPES,t.cargo)||'-')}</td><td>${esc(t.moneda)}</td>
+      <td>${tplChipEstado(t)}</td>
+      <td class="cc-prop"><div class="tpl-actions">
+        ${t.estado===TPL_EST.a ? `<button class="btn btn-primary btn-sm" onclick="useTemplateById('${t.id}')">Usar</button>` : ''}
+        <button class="link-btn" onclick="duplicateTemplate('${t.id}')">Duplicar</button></div></td>
+    </tr>`).join('') || `<tr><td colspan="12" style="text-align:center;padding:30px;color:#8D9BA2">No se encontraron resultados con los criterios seleccionados.</td></tr>`;
+}
+function tplExport(){
+  const list = tqList(); if(!list.length){ toast('No se pudo exportar el archivo.','error'); return; }
+  facXlsx('Plantillas PDA.xlsx','Plantillas PDA',['Código','Nombre de Plantilla','Puerto','Terminal','Tipo de Nave','Tipo de Servicio','Tipo de Agenciamiento','Tipo de Operación','Tipo de Carga','Moneda','Estado'],
+    list.map(t=>[t.code, t.name, t.port||'', t.terminal||'', L(VESSEL_TYPES,t.vtype)||'', tplServicio(t), t.agencia, L(OPERATIONS,t.operation)||'', L(CARGO_TYPES,t.cargo)||'', t.moneda, t.estado]));
 }
 function duplicateTemplate(id){
   const t = TEMPLATE_STORE.find(x=>x.id===id); if(!t) return;
   const c = clone(t); c.id = 'tpl-'+Date.now(); c.name = t.name+' (copia)'; c.updated = new Date().toISOString().slice(0,10); c.uses = 0;
+  c.code = null; c.estado = TPL_EST.p; c.approvedBy = c.approvedAt = null; tplNorm(c); c.estado = TPL_EST.p;
   TEMPLATE_STORE.splice(TEMPLATE_STORE.indexOf(t)+1, 0, c);
-  toast('Plantilla duplicada','success'); renderTemplateManager();
+  toast('Plantilla duplicada','success');
   openTplEditor(c.id);
 }
 function deleteTemplate(id){
   const t = TEMPLATE_STORE.find(x=>x.id===id); if(!t) return;
-  if(!confirm(`¿Eliminar la plantilla "${t.name}"?`)) return;
+  if(!confirm(`Eliminar plantilla\n\nLa plantilla "${t.name}" se borrará definitivamente con sus servicios y no se puede deshacer. ¿Desea continuar?`)) return;
   TEMPLATE_STORE.splice(TEMPLATE_STORE.indexOf(t),1);
-  toast('Plantilla eliminada','success'); renderTemplateManager();
+  toast('Plantilla eliminada','success'); openTemplateManager();
 }
 
-/* ---------- Editor ---------- */
+/* ---------- Nueva / Editar / Ver Plantilla PDA ---------- */
 function templateFromPda(){
   const mar = state.categoryType==='maritimo', v = state.vessel;
   const ship = SHIPS_CATALOG.find(x=>x.id===state.selectedShipId);
   const short = (state.client.name||'').split(/[ ,]/)[0];
   return { id:null, tipo:currentTplTipo(), client:state.client.name,
     name: mar ? `${short} · ${L(CARGO_TYPES,v.cargo)||'Carga'} · ${v.port}` : `${short} · ${state.terrestrial.origin} → ${state.terrestrial.destination}`,
-    sucursal: SUCURSALES.includes(v.port) ? v.port : 'Callao', vtype: ship ? ship.vtype : '',
+    sucursal: SUCURSALES.includes(v.port) ? v.port : 'Callao', vtype: ship ? ship.vtype : (v.vtype||''),
     port: v.port, terminal: v.terminal, cargo: v.cargo, operation: v.operation, notes:'', origin: v.origin||'intl', remarks: state.remarks||'',
+    agencia: TPL_AGENCIAS[0], moneda:'USD', armador:'', pago: state.payment||'none',
     terrestrial: mar ? null : clone(state.terrestrial),
-    services: state.services.map(x=>({id:x.id, enabled:x.enabled, rate:isFixed(x)?x.adj.orig.rate:x.rate, qty:isFixed(x)?x.adj.orig.qty:x.qty, vat: x.vatOn ? x.vat : 0, supplier:x.supplier,
+    /* Como Connect: la plantilla guarda servicios, unidad, moneda, cantidad e IGV, sin la tarifa */
+    services: state.services.filter(x=>x.enabled).map(x=>({id:x.id, enabled:true, rate:isFixed(x)?x.adj.orig.rate:x.rate, qty:isFixed(x)?x.adj.orig.qty:x.qty, vat: x.vatOn ? x.vat : 0, unit:x.unit, currency:x.currency, supplier:x.supplier,
       ...(x.min ? {min:x.min} : {}), ...(x.note ? {note:x.note} : {}), custom: x.id.startsWith('custom_') ? clone(x) : null})) };
 }
+function tplCatalog(t){ return CATALOG_MASTER[t.tipo==='terrestre' ? 'terrestre' : 'maritimo']; }
+function tplMeta(t, row){ return row.custom || tplCatalog(t).find(m=>m.id===row.id) || {name:row.id, unit:'', currency:'USD', cat:'agency'}; }
 function openTplEditor(id, fromPda){
-  if(id) tplEditing = clone(TEMPLATE_STORE.find(x=>x.id===id));
+  if(id) tplEditing = clone(tplNorm(TEMPLATE_STORE.find(x=>x.id===id)));
   else if(fromPda) tplEditing = templateFromPda();
-  else tplEditing = { id:null, tipo:currentTplTipo(), name:'', client:state.clients[0].name, sucursal:'Callao', vtype:'',
-    port:'Callao', terminal:'DP World Callao S.R.L.', cargo:'', operation:'dis', notes:'',
+  else tplEditing = { id:null, tipo:currentTplTipo(), name:'', client:'', sucursal:'Callao', vtype:'',
+    port:'', terminal:'', cargo:'', operation:'', notes:'', agencia:'', moneda:'USD', armador:'', pago:'none', remarks:'',
     terrestrial: state.categoryType==='terrestre' ? {origin:'',destination:'',cargo:''} : null,
-    services: tplServicesDefault(state.categoryType==='terrestre'?'terrestre':'maritimo', '', null) };
-  document.getElementById('teTitle').textContent = id ? 'Editar plantilla' : fromPda ? 'Guardar PDA como plantilla' : 'Nueva plantilla';
+    services: tplServicesDefault(state.categoryType==='terrestre'?'terrestre':'maritimo', '', null).map(x=>{ delete x.rate; return x; }) };
+  tplEditing.cats = [...new Set(tplEditing.services.filter(x=>x.enabled).map(x=>tplMeta(tplEditing,x).cat))];
+  te.mode = id ? 'edit' : 'new'; te.dirty = false; te.back = fromPda ? 'pda' : (id ? 'view' : 'list');
   renderTplEditor();
-  document.getElementById('tplEditModal').classList.add('show');
-  setTimeout(()=>document.getElementById('teName')?.focus(), 40);
 }
-function teSet(k,v,rerender){ tplEditing[k] = v; if(rerender) renderTplEditor(); }
-function teTerr(k,v){ tplEditing.terrestrial = tplEditing.terrestrial || {}; tplEditing.terrestrial[k] = v; }
+function openTplView(id){
+  tplEditing = clone(tplNorm(TEMPLATE_STORE.find(x=>x.id===id)));
+  tplEditing.cats = [...new Set(tplEditing.services.filter(x=>x.enabled).map(x=>tplMeta(tplEditing,x).cat))];
+  te.mode = 'view'; te.dirty = false; te.back = 'list';
+  renderTplEditor();
+}
+const te = { mode:'new', dirty:false, back:'list' };
+function teSet(k,v,rerender){ tplEditing[k] = v; te.dirty = true; if(rerender) renderTplEditor(); }
+function teTerr(k,v){ tplEditing.terrestrial = tplEditing.terrestrial || {}; tplEditing.terrestrial[k] = v; te.dirty = true; }
+function tePort(v){ tplEditing.port = v; tplEditing.terminal = ''; te.dirty = true; renderTplEditor(); }
 function teCargo(v){
-  tplEditing.cargo = v;
+  tplEditing.cargo = v; te.dirty = true;
   const kind = (CARGO_TYPES.find(c=>c.k===v)||{}).kind;
   const want = CARGO_SERVICES[kind] || [];
-  tplEditing.services = tplEditing.services.filter(x=>!(masterCatalog().find(m=>m.id===x.id)?.cat==='cargo' && !want.includes(x.id)));
-  want.forEach(id=>{ if(!tplEditing.services.some(x=>x.id===id)){ const m = masterCatalog().find(x=>x.id===id); tplEditing.services.push({id, enabled:true, rate:m.rate, qty:m.qty}); } });
+  tplEditing.services = tplEditing.services.filter(x=>!(tplMeta(tplEditing,x).cat==='cargo' && !want.includes(x.id)));
+  want.forEach(id=>{ if(!tplEditing.services.some(x=>x.id===id)){ const m = tplCatalog(tplEditing).find(x=>x.id===id); if(m) tplEditing.services.push({id, enabled:true, qty:m.qty}); } });
+  if(want.length && !tplEditing.cats.includes('cargo')) tplEditing.cats.push('cargo');
   renderTplEditor();
 }
-function teSvc(id, k, v){
-  let row = tplEditing.services.find(x=>x.id===id);
-  if(!row){ const m = masterCatalog().find(x=>x.id===id); row = {id, enabled:false, rate:m.rate, qty:m.qty}; tplEditing.services.push(row); }
-  row[k] = k==='enabled' ? v : parseNum(v);
-  if(k==='enabled'){ const tr = document.getElementById('ter_'+id); if(tr) tr.classList.toggle('off', !v); }
+/* Al cambiar el Tipo de Nave, Connect pregunta si carga los servicios asociados */
+function teVtype(v){
+  tplEditing.vtype = v; te.dirty = true;
+  if(!v || te.mode==='view'){ renderTplEditor(); return; }
+  facOpen(`<h3>Tipo de Nave</h3><p>¿Desea cargar los servicios asociados al tipo de nave seleccionado?</p>
+    <div class="actions"><button class="btn btn-ghost" onclick="facClose();renderTplEditor()">Cancelar</button>
+      <button class="btn btn-ghost" onclick="teLoadVtype(false)">Agregar</button><button class="btn btn-primary" onclick="teLoadVtype(true)">Reemplazar</button></div>`);
 }
+function teLoadVtype(replace){
+  const t = tplEditing, vt = VESSEL_TYPES.find(x=>x.k===t.vtype);
+  const list = tplServicesDefault(t.tipo==='terrestre'?'terrestre':'maritimo', vt ? vt.cargo : t.cargo, null).map(x=>{ delete x.rate; return x; });
+  if(replace) t.services = list;
+  else list.forEach(x=>{ if(!t.services.some(y=>y.id===x.id && y.enabled)){ t.services = t.services.filter(y=>y.id!==x.id); t.services.push(x); } });
+  t.cats = [...new Set(t.services.filter(x=>x.enabled).map(x=>tplMeta(t,x).cat))];
+  facClose(); renderTplEditor();
+  toast(replace ? 'Servicios reemplazados por los del tipo de nave' : 'Servicios del tipo de nave agregados','success');
+}
+function teSvc(id, k, v){
+  const row = tplEditing.services.find(x=>x.id===id && x.enabled); if(!row) return;
+  row[k] = (k==='unit' || k==='currency' || k==='note') ? v : k==='vatOn' ? (v ? 0.18 : 0) : k==='vatPct' ? parseNum(v)/100 : parseNum(v);
+  if(k==='vatOn' || k==='vatPct'){ row.vat = k==='vatOn' ? row.vatOn : row.vatPct; delete row.vatOn; delete row.vatPct; if(k==='vatOn') renderTplEditor(); }
+  te.dirty = true;
+}
+function teAddCat(cat){
+  if(!cat) return;
+  if(!tplEditing.cats.includes(cat)) tplEditing.cats.push(cat);
+  te.dirty = true; renderTplEditor();
+}
+function teAddSvc(cat, id){
+  if(!id) return;
+  const t = tplEditing;
+  if(t.services.some(x=>x.id===id && x.enabled)){ toast('Este servicio ya está agregado en esta categoría','error'); return; }
+  const m = tplCatalog(t).find(x=>x.id===id); if(!m) return;
+  t.services = t.services.filter(x=>x.id!==id);
+  t.services.push({id, enabled:true, qty:m.qty, vat:m.vat||0}); te.dirty = true; renderTplEditor();
+}
+function teDelSvc(id){ tplEditing.services = tplEditing.services.filter(x=>x.id!==id); te.dirty = true; renderTplEditor(); }
 function renderTplEditor(){
-  const t = tplEditing, mar = t.tipo!=='terrestre';
-  const sel = (fn, list, val, empty) => `<select onchange="${fn}">${empty?`<option value="">${empty}</option>`:''}${list.map(x=>
+  const t = tplEditing, mar = t.tipo!=='terrestre', ro = te.mode==='view', dis = ro ? 'disabled' : '';
+  const sel = (fn, list, val, empty) => `<select ${dis} onchange="${fn}">${empty!=null?`<option value="">${empty}</option>`:''}${list.map(x=>
     typeof x==='string' ? `<option ${x===val?'selected':''}>${esc(x)}</option>` : `<option value="${x.k}" ${x.k===val?'selected':''}>${esc(x.es||x.k)}</option>`).join('')}</select>`;
+  const title = te.mode==='view' ? 'Ver Plantilla PDA' : te.mode==='edit' ? 'Editar Plantilla PDA' : 'Nueva Plantilla PDA';
+  document.getElementById('teTitle').innerHTML = `${title} ${t.id ? tplChipEstado(t) : ''}`;
+  document.getElementById('teSub').innerHTML = t.code ? `<span class="mono">${esc(t.code)}</span>` : 'Plantilla PDA no registrada';
+  const canApprove = canChangeStatus();
+  document.getElementById('teActs').innerHTML = ro ? `
+    <button class="btn-corp-outline" onclick="openTplEditor('${t.id}')">Editar</button>
+    ${t.estado===TPL_EST.p ? `<button class="btn-corp" ${canApprove?'':'disabled title="No tiene permiso para aprobar plantillas"'} onclick="tplApprove()">Aprobar</button>` : ''}
+    ${t.estado===TPL_EST.a ? `<button class="btn-corp-outline" onclick="tplInactivate()">Inactivar</button>` : ''}
+    ${t.estado===TPL_EST.i ? `<button class="btn-corp-outline" onclick="tplActivate()">Activar</button>` : ''}
+    <button class="btn-corp-outline" style="color:#C2185B;border-color:#F9C5D1" onclick="deleteTemplate('${t.id}')">Eliminar</button>` : '';
+  const ports = PORTS.map(p=>p.k), terms = t.port ? [...new Set([...(TERMINALS_BY_PORT[t.port]||[]), ...(t.terminal?[t.terminal]:[])])] : [];
   const head = `<div class="grid cols-3">
-    <div class="field" style="grid-column:span 2"><label>Nombre de la plantilla *</label>
-      <input id="teName" value="${esc(t.name)}" placeholder="Ej. Valero · Crudo · Callao" oninput="teSet('name',this.value)"></div>
-    ${mar ? `<div class="field"><label>Modalidad</label>${sel("teSet('tipo',this.value)",[{k:'lineas',es:'Líneas'},{k:'tramps',es:'Tramps'}],t.tipo)}</div>` : '<div></div>'}
-    <div class="field"><label>Cliente</label>${sel("teSet('client',this.value)", state.clients.map(c=>c.name), t.client)}</div>
-    <div class="field"><label>Sucursal</label>${sel("teSet('sucursal',this.value)", SUCURSALES, t.sucursal)}</div>
-    ${mar ? `<div class="field"><label>Tipo de buque</label>${sel("teSet('vtype',this.value)", VESSEL_TYPES, t.vtype, 'Cualquiera')}</div>
-      <div class="field"><label>Puerto</label>${sel("teSet('port',this.value)", PORTS.map(p=>p.k), t.port)}</div>
-      <div class="field"><label>Terminal</label><input value="${esc(t.terminal||'')}" oninput="teSet('terminal',this.value)"></div>
-      <div class="field"><label>Tipo de carga</label>${sel("teCargo(this.value)", CARGO_TYPES, t.cargo, 'Sin definir')}</div>
-      <div class="field"><label>Operación</label>${sel("teSet('operation',this.value)", OPERATIONS, t.operation)}</div>`
-    : `<div class="field"><label>Origen</label><input value="${esc(t.terrestrial?.origin||'')}" oninput="teTerr('origin',this.value)"></div>
-      <div class="field"><label>Destino</label><input value="${esc(t.terrestrial?.destination||'')}" oninput="teTerr('destination',this.value)"></div>
-      <div class="field"><label>Tipo de carga</label><input value="${esc(t.terrestrial?.cargo||'')}" oninput="teTerr('cargo',this.value)"></div>`}
-    ${mar ? `<div class="field"><label>Procedencia de la nave</label>${sel("teSet('origin',this.value)", ORIGINS, t.origin||'intl')}</div>` : ''}
-    <div class="field" style="grid-column:1/-1"><label>Notas (opcional)</label>
-      <input value="${esc(t.notes||'')}" placeholder="Ej. Tarifa de agencia negociada 2026" oninput="teSet('notes',this.value)"></div>
-    ${mar ? `<div class="field" style="grid-column:1/-1"><label>Observaciones para el PDF (REMARKS): recargos de la terminal</label>
-      <textarea rows="3" oninput="teSet('remarks',this.value)" placeholder="Ej. PILOT SURCHARGE: 18:00 a 00:00 25%">${esc(t.remarks||'')}</textarea></div>` : ''}
+    <div class="field" style="grid-column:span 2"><label>Nombre de Plantilla PDA *</label>
+      <input id="teName" ${dis} maxlength="100" value="${esc(t.name)}" placeholder="Ej. Valero · Crudo · Callao" oninput="teSet('name',this.value)"></div>
+    ${mar ? `<div class="field"><label>Tipo de Servicio *</label>${sel("teSet('tipo',this.value)",[{k:'lineas',es:'LINER'},{k:'tramps',es:'TRAMP'}],t.tipo)}</div>` : '<div></div>'}
+    ${mar ? `<div class="field"><label>Puerto *</label>${sel("tePort(this.value)", ports, t.port, 'Elegir puerto')}</div>
+      <div class="field"><label>Terminal *</label><select ${ro||!t.port?'disabled':''} onchange="teSet('terminal',this.value)"><option value="">${t.port?'Elegir terminal':'Elige primero el puerto'}</option>${terms.map(x=>`<option ${x===t.terminal?'selected':''}>${esc(x)}</option>`).join('')}</select></div>
+      <div class="field"><label>Tipo de Nave *</label>${sel("teVtype(this.value)", VESSEL_TYPES, t.vtype, 'Elegir tipo de nave')}</div>
+      <div class="field"><label>Tipo de Agenciamiento *</label>${sel("teSet('agencia',this.value)", TPL_AGENCIAS, t.agencia, 'Elegir')}</div>
+      <div class="field"><label>Tipo de Operación *</label>${sel("teSet('operation',this.value)", OPERATIONS, t.operation, 'Elegir')}</div>
+      <div class="field"><label>Tipo de Carga *</label>${sel("teCargo(this.value)", CARGO_TYPES, t.cargo, 'Elegir')}</div>`
+    : `<div class="field cc-prop" data-prop="Propuesta sin ticket · Terrestre"><label>Origen</label><input ${dis} value="${esc(t.terrestrial?.origin||'')}" oninput="teTerr('origin',this.value)"></div>
+      <div class="field cc-prop"><label>Destino</label><input ${dis} value="${esc(t.terrestrial?.destination||'')}" oninput="teTerr('destination',this.value)"></div>
+      <div class="field cc-prop"><label>Tipo de carga</label><input ${dis} value="${esc(t.terrestrial?.cargo||'')}" oninput="teTerr('cargo',this.value)"></div>`}
+    <div class="field"><label>Moneda *</label>${sel("teSet('moneda',this.value)", TPL_MONEDAS, t.moneda, 'Elegir')}</div>
+    <div class="field"><label>Cliente</label>${sel("teSet('client',this.value)", state.clients.map(c=>c.name), t.client, 'Elegir cliente')}</div>
+    <div class="field"><label>Armador</label><input ${dis} maxlength="100" value="${esc(t.armador||'')}" placeholder="Elegir armador" oninput="teSet('armador',this.value)"></div>
+    <div class="field"><label>Condición de Pago</label>${sel("teSet('pago',this.value)", PAYMENT_TERMS, t.pago||'none')}</div>
+    <div class="field cc-prop" data-prop="Propuesta sin ticket · Sucursal"><label>Sucursal</label>${sel("teSet('sucursal',this.value)", SUCURSALES, t.sucursal)}</div>
+    ${mar ? `<div class="field cc-prop" data-prop="Propuesta sin ticket · Procedencia"><label>Procedencia de la nave</label>${sel("teSet('origin',this.value)", ORIGINS, t.origin||'intl')}</div>` : ''}
+    <div class="field cc-prop" data-prop="Propuesta sin ticket · Notas internas" style="grid-column:1/-1"><label>Notas (opcional)</label>
+      <input ${dis} value="${esc(t.notes||'')}" placeholder="Ej. Tarifa de agencia negociada 2026" oninput="teSet('notes',this.value)"></div>
+    <div class="field" style="grid-column:1/-1"><label>Comentarios (pasan a Observaciones de la PDA y se imprimen en REMARKS)</label>
+      <textarea ${dis} rows="3" maxlength="400" oninput="teSet('remarks',this.value)" placeholder="Ej. PILOT SURCHARGE: 18:00 a 00:00 25%">${esc(t.remarks||'')}</textarea></div>
   </div>`;
-  const type = mar ? 'maritimo' : 'terrestre';
-  const cats = mar ? ['agency','owner','port','cargo','maritime'] : ['terrestre'];
-  const rows = cats.map(cat=>{
-    const items = [...CATALOG_MASTER[type].filter(m=>m.cat===cat).map(m=>({m, row:t.services.find(x=>x.id===m.id)})),
-                   ...t.services.filter(x=>x.custom && x.custom.cat===cat).map(x=>({m:x.custom, row:x}))];
-    if(!items.length) return '';
-    return `<tr class="te-sec"><td colspan="4">${catLabel(cat)}</td></tr>` + items.map(({m,row})=>{
-      const on = !!(row && row.enabled);
-      return `<tr id="ter_${m.id}" class="${on?'':'off'}">
-        <td><label style="display:flex;gap:8px;align-items:center;cursor:pointer"><input type="checkbox" ${on?'checked':''} onchange="teSvc('${m.id}','enabled',this.checked)"> ${esc(m.name)}</label></td>
-        <td>${m.currency}</td>
-        <td><input type="text" inputmode="decimal" value="${row?row.rate:m.rate}" oninput="teSvc('${m.id}','rate',this.value)"></td>
-        <td><input type="text" inputmode="decimal" value="${row?row.qty:m.qty}" oninput="teSvc('${m.id}','qty',this.value)"></td></tr>`;}).join('');
+  const allCats = mar ? ['agency','owner','port','cargo','maritime'] : ['terrestre'];
+  const free = allCats.filter(c=>!t.cats.includes(c));
+  const blocks = t.cats.map(cat=>{
+    const rows = t.services.filter(x=>x.enabled && tplMeta(t,x).cat===cat);
+    const avail = tplCatalog(t).filter(m=>m.cat===cat && !t.services.some(x=>x.id===m.id && x.enabled));
+    return `<div class="ms-sec" style="margin-top:14px"><span>${catLabel(cat)} · ${rows.length} servicio(s)</span>
+      ${ro ? '' : `<select style="max-width:260px;text-transform:none;letter-spacing:0" onchange="teAddSvc('${cat}',this.value)"><option value="">Agregar Servicio</option>${avail.map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('')}</select>`}</div>
+      <div class="tbl-wrap" style="border:1px solid var(--border);border-radius:10px"><table class="te-svc"><thead><tr><th>Servicio</th><th>Unidad de Tarifa</th><th>Moneda</th><th>Cantidad</th><th>A/E</th><th>VAT</th><th>Comentarios</th>${ro?'':'<th>Acciones</th>'}</tr></thead><tbody>
+      ${rows.map(x=>{ const m = tplMeta(t,x), unit = x.unit ?? m.unit, cur = x.currency ?? m.currency, vat = Number(x.vat)||0;
+        return `<tr><td>${esc(m.name)}</td>
+          <td><input ${dis} value="${esc(unit||'')}" oninput="teSvc('${x.id}','unit',this.value)"></td>
+          <td><select ${dis} onchange="teSvc('${x.id}','currency',this.value)">${TPL_MONEDAS.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('')}</select></td>
+          <td><input ${dis} inputmode="decimal" value="${x.qty??m.qty??1}" oninput="teSvc('${x.id}','qty',this.value)"></td>
+          <td><select ${dis} onchange="teSvc('${x.id}','vatOn',this.value==='A')"><option value="A" ${vat>0?'selected':''}>Afecto</option><option value="E" ${vat>0?'':'selected'}>Exonerado</option></select></td>
+          <td>${vat>0 ? `<input ${dis} inputmode="decimal" style="width:60px" value="${(vat*100).toFixed(0)}" oninput="teSvc('${x.id}','vatPct',this.value)"> %` : '0 %'}</td>
+          <td><input ${dis} maxlength="400" value="${esc(x.note||'')}" oninput="teSvc('${x.id}','note',this.value)"></td>
+          ${ro?'':`<td><button class="link-btn danger" onclick="teDelSvc('${x.id}')">Quitar</button></td>`}</tr>`; }).join('') || `<tr><td colspan="8" style="color:#8D9BA2;padding:12px">Sin servicios en esta categoría.</td></tr>`}
+      </tbody></table></div>`;
   }).join('');
   document.getElementById('teBody').innerHTML = head + `
-    <div class="ms-sec" style="margin-top:18px"><span>Conceptos incluidos y tarifas</span><span style="text-transform:none;letter-spacing:0;font-weight:600">Marca los que se precargan</span></div>
-    <div class="tbl-wrap" style="max-height:340px;overflow:auto;border:1px solid var(--border);border-radius:10px">
-      <table class="te-svc"><thead><tr><th>Concepto</th><th>Moneda</th><th>Tarifa</th><th>Cantidad</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    <div class="ms-sec" style="margin-top:18px"><span>Categorías y Servicios</span>
+      ${ro || !free.length ? '' : `<select style="max-width:240px;text-transform:none;letter-spacing:0" onchange="teAddCat(this.value)"><option value="">Agregar Categoría</option>${free.map(c=>`<option value="${c}">${catLabel(c)}</option>`).join('')}</select>`}</div>
+    <div class="hint" style="margin:4px 0 0">La plantilla no guarda tarifas: se buscan en Tarifas al crear la PDA.</div>
+    ${blocks || '<div class="hint">Agrega una categoría y sus servicios.</div>'}`;
+  document.getElementById('teFoot').innerHTML = ro
+    ? `<button class="btn btn-ghost" onclick="tplBack()">Volver</button>`
+    : `<button class="btn btn-ghost" onclick="tplCancel()">Cancelar</button><button class="btn btn-primary" onclick="saveTemplate()">Guardar</button>`;
+  if(!document.getElementById('screenTplForm').classList.contains('active')) showScreen('screenTplForm');
+  facSetBar(null, title, ['Inicio','Plantilla PDA',title], 'tplCancel()');
+}
+function tplBack(){
+  if(te.back==='pda'){ goStep(2); return; }
+  if(te.back==='view' && tplEditing && tplEditing.id && TEMPLATE_STORE.some(x=>x.id===tplEditing.id)){ openTplView(tplEditing.id); return; }
+  openTemplateManager();
+}
+function tplCancel(){
+  if(te.mode!=='view' && te.dirty && !confirm('Aún mantiene cambios sin guardar. ¿Desea continuar sin guardarlos?')) return;
+  if(te.mode==='view'){ openTemplateManager(); return; }
+  tplBack();
 }
 function saveTemplate(){
-  const t = tplEditing;
-  if(!String(t.name||'').trim()){ toast('Escribe el nombre de la plantilla','error'); document.getElementById('teName').focus(); return; }
-  if(TEMPLATE_STORE.some(x=>x.id!==t.id && x.tipo===t.tipo && normTxt(x.name)===normTxt(t.name))){ toast('Ya existe una plantilla con ese nombre','error'); return; }
-  t.services = t.services.filter(x=>x.enabled);
-  t.updated = new Date().toISOString().slice(0,10);
+  const t = tplEditing, mar = t.tipo!=='terrestre', name = String(t.name||'').trim();
+  if(!name){ toast('Complete los campos obligatorios: Nombre de Plantilla PDA.','error'); document.getElementById('teName')?.focus(); return; }
+  if(name.length<5){ toast('El nombre debe tener al menos 5 caracteres.','error'); document.getElementById('teName')?.focus(); return; }
+  if(TEMPLATE_STORE.some(x=>x.id!==t.id && normTxt(x.name)===normTxt(name))){ toast('El nombre de la plantilla ya está en uso. Por favor, ingrese otro.','error'); return; }
+  const miss = (mar ? [['port','Puerto'],['terminal','Terminal'],['vtype','Tipo de Nave'],['tipo','Tipo de Servicio'],['agencia','Tipo de Agenciamiento'],['operation','Tipo de Operación'],['cargo','Tipo de Carga'],['moneda','Moneda']]
+    : [['moneda','Moneda']]).filter(([k])=>!t[k]).map(([,l])=>l);
+  if(miss.length){ toast(`Complete los campos obligatorios: ${miss.join(', ')}.`,'error'); return; }
+  const svcs = t.services.filter(x=>x.enabled);
+  if(!svcs.length){ toast('Para guardar una plantilla PDA debe tener al menos un servicio asociado','error'); return; }
+  const bad = svcs.filter(x=>{ const m = tplMeta(t,x); return !(x.unit ?? m.unit) || !(x.currency ?? m.currency); }).map(x=>tplMeta(t,x).name);
+  if(bad.length){ toast(`Complete la moneda o la unidad de tarifa en: ${bad.join(', ')}`,'error'); return; }
+  t.name = name; t.services = svcs; t.updated = new Date().toISOString().slice(0,10);
+  delete t.cats;
   if(t.id){ const i = TEMPLATE_STORE.findIndex(x=>x.id===t.id); TEMPLATE_STORE[i] = t; }
-  else { t.id = 'tpl-'+Date.now(); t.uses = 0; TEMPLATE_STORE.unshift(t); }
-  log('Plantillas', `Guardó la plantilla "${t.name}" (${t.services.length} conceptos)`);
-  closeModal('tplEditModal');
-  toast('Plantilla guardada','success');
-  if(document.getElementById('screenTemplates').classList.contains('active')){
-    if(state.categoryType==='maritimo') state.maritimeMode = t.tipo;
-    renderTemplateManager();
-  }
+  else { t.services.forEach(x=>{ delete x.rate; }); t.id = 'tpl-'+Date.now(); t.uses = 0; t.estado = TPL_EST.p; tplNorm(t); TEMPLATE_STORE.unshift(t); }
+  log('Plantillas', `Guardó la plantilla "${t.name}" (${t.services.length} servicios)`);
+  toast('Plantilla PDA guardada correctamente','success');
+  if(te.back==='pda'){ goStep(2); return; }
+  openTplView(t.id);
+}
+function tplApprove(){
+  const t = TEMPLATE_STORE.find(x=>x.id===tplEditing.id); if(!t) return;
+  if(!canChangeStatus()){ toast('No tiene permiso para aprobar plantillas','error'); return; }
+  if(!confirm('¿Está seguro de que desea cambiar el estado a Aprobada?')) return;
+  Object.assign(t, {estado:TPL_EST.a, approvedBy:curUser(), approvedAt:new Date().toISOString()});
+  log('Plantillas', `Aprobó la plantilla "${t.name}"`); toast('Plantilla aprobada','success'); openTplView(t.id);
+}
+function tplInactivate(){
+  const t = TEMPLATE_STORE.find(x=>x.id===tplEditing.id); if(!t) return;
+  openReason('Inactivar plantilla', 'Inactivar', reason=>{
+    Object.assign(t, {estado:TPL_EST.i, inactivatedBy:curUser(), inactivatedAt:new Date().toISOString(), inactivReason:reason});
+    log('Plantillas', `Inactivó la plantilla "${t.name}": ${reason}`); toast('Plantilla inactivada','info'); openTplView(t.id);
+  });
+  const ta = document.getElementById('tfReasonTxt'); if(ta) ta.placeholder = 'Ingrese la razón de inactivación';
+}
+function tplActivate(){
+  const t = TEMPLATE_STORE.find(x=>x.id===tplEditing.id); if(!t) return;
+  Object.assign(t, {estado:TPL_EST.p, approvedBy:null, approvedAt:null});
+  log('Plantillas', `Activó la plantilla "${t.name}" (vuelve a Pendiente de aprobación)`); toast('Plantilla activada: queda pendiente de aprobación','success'); openTplView(t.id);
 }
 
 function normTxt(x){ return String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
@@ -2109,7 +2339,8 @@ function openSamplePda(code){
                  approvedBy:'L. Fernández (Gerencia)', total:grandTotal(), pda:sp.code };
     log('OS', `${state.os.number} generada al aprobar la PDA · total ${fmt(state.os.total)} · aprobada por ${state.os.approvedBy}`, state.os.approvedBy);
   }
-  state.step = 0;
+  state.step = 0; state.saved = true;
+  if(sp.estado==='Finalizada') state.status = 'Finalizada';
   goStep(2);
   if(typeof SY!=='undefined' && SY) SY.openBase = sp.code+'|'+pdaSnapshot()+'|'+state.status;
   toast(`${sp.code} abierta`,'success');
@@ -2125,7 +2356,7 @@ function startNewPda(fromTemplate){
   state.traceability = [];
   state.os = null;
   state.lastObserverNote = ''; state.obs = null; state.annul = null;
-  state.editingId = null;
+  state.editingId = null; state.saved = false; state.finish = null;
   if(!fromTemplate){
     resetPdaData();
     loadDefaultServices();
@@ -2149,7 +2380,7 @@ function renderStep1(){
 
   // Cliente
   const sel = document.getElementById('clientSelect');
-  sel.innerHTML = state.clients.map(c=>`<option ${c.name===state.client.name?'selected':''}>${c.name}</option>`).join('');
+  sel.innerHTML = state.clients.map(c=>`<option value="${esc(c.name)}" ${c.name===state.client.name?'selected':''}>${esc(c.name)}${partnerPending(c.name)?' · Pendiente de aprobación':''}</option>`).join('');
   sel.onchange = e =>{ state.client = {...state.clients.find(x=>x.name===e.target.value)}; updateClientCard(); applyClientTariffs(null, true); };
   updateClientCard();
 
@@ -2197,14 +2428,14 @@ function renderVesselFields(){
   const v = state.vessel;
   document.getElementById('vesselFields').innerHTML = `
     ${fld('Nave *','name',v.name,'text','Nombre de la nave o TBN')}
-    ${fld('IMO *','imo',v.imo,'text','7 dígitos, ej. 9654323')}
+    ${fld(state.shipSource==='registrada' ? 'IMO' : 'IMO *','imo',v.imo,'text','7 dígitos, ej. 9654323')}
     ${fld('GRT','grt',v.grt||'','num','Pendiente')}
     ${fld('LOA / eslora (m)','loa',v.loa||'','num','Pendiente')}
     ${fld('Viaje (VOY)','voy',v.voy,'text','Ej. 684')}`;
   document.getElementById('opFields').innerHTML = `
-    <div class="field"><label>Puerto</label><select data-k="port">${PORTS.map(x=>`<option value="${x.k}" ${x.k===v.port?'selected':''}>${x.k} (${x.code}${x.toConfirm?', código por confirmar':''})</option>`).join('')}</select></div>
-    <div class="field"><label>Terminal</label><input data-k="terminal" list="dlTerminals" value="${esc(v.terminal||'')}" placeholder="Ej. DP World Callao S.R.L.">
-      <datalist id="dlTerminals">${(TERMINALS_BY_PORT[v.port]||[]).map(x=>`<option value="${esc(x)}">`).join('')}</datalist></div>
+    <div class="field"><label>Puerto *</label><select data-k="port">${PORTS.map(x=>`<option value="${x.k}" ${x.k===v.port?'selected':''}>${x.code} - ${x.k}${x.toConfirm?' (código por confirmar)':''}</option>`).join('')}</select></div>
+    ${(terms=>`<div class="field"><label>Terminal *</label><select data-k="terminal" ${terms.length?'':'disabled'}><option value="">${terms.length?'Elegir terminal':'Sin terminales'}</option>${terms.map(x=>`<option ${x===v.terminal?'selected':''}>${esc(x)}</option>`).join('')}</select>
+      ${terms.length?'':'<div class="hint" style="color:#b45309">El puerto elegido no tiene terminales activas. Elige otro puerto.</div>'}</div>`)([...new Set([...(TERMINALS_BY_PORT[v.port]||[]), ...(v.terminal?[v.terminal]:[])])])}
     <div class="field"><label title="Define la tarifa de Ayudas a la navegación: 0.12 x GRT internacional, 0.03 x GRT nacional">Procedencia de la nave</label>
       <select data-k="origin">${ORIGINS.map(o=>`<option value="${o.k}" ${o.k===(v.origin||'intl')?'selected':''}>${o.es}</option>`).join('')}</select></div>`;
   bindVessel('#vesselFields'); bindVessel('#opFields');
@@ -2216,8 +2447,8 @@ function renderCargoFields(){
     : kind ? ''
     : `<div class="hint" style="align-self:end">Elige el tipo de carga para agregar sus conceptos de carga y descarga.</div>`;
   document.getElementById('cargoFields').innerHTML = `
-    <div class="field"><label>Tipo de carga</label><select data-k="cargo">${optList(CARGO_TYPES,v.cargo,true)}</select></div>
-    <div class="field"><label>Operación</label><select data-k="operation">${optList(OPERATIONS,v.operation)}</select></div>
+    <div class="field"><label>Tipo de Carga *</label><select data-k="cargo">${optList(CARGO_TYPES,v.cargo,true)}</select></div>
+    <div class="field"><label>Tipo de Operación *</label><select data-k="operation">${optList(OPERATIONS,v.operation)}</select></div>
     ${extra}`;
   bindVessel('#cargoFields');
 }
@@ -2308,8 +2539,10 @@ function isTBN(name){ return /^tbn\b/i.test(String(name||'').trim()); }
 function imoIssue(){
   const v = state.vessel;
   if(state.categoryType!=='maritimo' || !(v.name||'').trim() || isTBN(v.name)) return '';
-  if(!imoDigits(v.imo)) return 'Falta el IMO de la nave (obligatorio, 7 dígitos).';
-  if(!imoValid(v.imo)) return 'IMO no válido: revisa los 7 dígitos (el último es el dígito verificador).';
+  /* Connect: el IMO es obligatorio solo para nave no registrada; en la registrada lo trae el maestro */
+  if(state.shipSource==='registrada' && !imoDigits(v.imo)) return '';
+  if(!imoDigits(v.imo)) return 'El IMO es obligatorio, salvo que la nave sea TBN.';
+  if(!imoValid(v.imo)) return 'El IMO debe tener 7 dígitos y un dígito verificador válido.';
   return '';
 }
 function step1Issues(){
@@ -2389,6 +2622,8 @@ function updateClientCard(){
   const av = document.getElementById('clientAvatar'); if(av) av.textContent = initials;
   const meta = [state.client.email, state.client.phone, partnerPending(state.client.name) ? 'Por homologar en Socios' : ''].filter(Boolean).join(' · ') || 'Sin datos';
   document.getElementById('clientMeta').textContent = meta;
+  const b = document.getElementById('clientRegBtn');
+  if(b) b.title = partnerPending(state.client.name) ? 'Editar cliente provisional' : 'Registrar cliente';
 }
 function setExRate(v){ if(state.categoryType==='terrestre') state.terrestrial.exRate = v; else state.vessel.exRate = v; }
 function renderFx(){
@@ -2408,14 +2643,41 @@ function fetchExchangeRate(){
     toast(`T/C del día: S/ ${state.fxDay}`,'success');
   },700);
 }
-function openClientModal(){ document.getElementById('clientModal').classList.add('show'); }
+/* Registrar cliente o editar el cliente provisional (como Connect) */
+let ncEdit = null;
+function openClientModal(){
+  ncEdit = state.client && partnerPending(state.client.name) ? state.client.name : null;
+  const c = ncEdit ? state.client : {name:'', email:'', phone:'', tax:''};
+  document.getElementById('ncName').value = c.name||''; document.getElementById('ncEmail').value = c.email||'';
+  document.getElementById('ncPhone').value = c.phone||''; document.getElementById('ncTax').value = c.tax||'';
+  document.querySelector('#clientModal h3').textContent = ncEdit ? 'Editar cliente provisional' : 'Registrar nuevo cliente';
+  ncMatches();
+  document.getElementById('clientModal').classList.add('show');
+}
+function ncMatches(){
+  const box = document.getElementById('ncMatch'); if(!box) return;
+  const q = normTxt(document.getElementById('ncName').value).trim();
+  const hits = q.length<3 ? [] : state.clients.filter(c=>c.name!==ncEdit && normTxt(c.name).includes(q)).slice(0,4);
+  box.innerHTML = hits.length ? `<b>Posibles coincidencias</b>${hits.map(c=>`<div style="display:flex;justify-content:space-between;gap:8px;margin-top:4px"><span>${esc(c.name)}</span><button type="button" class="link-btn" onclick="ncUse('${esc(c.name).replace(/'/g,'')}')">Usar este</button></div>`).join('')}` : '';
+}
+function ncUse(name){ const c = state.clients.find(x=>normTxt(x.name)===normTxt(name)) || state.clients.find(x=>x.name.replace(/'/g,'')===name); if(!c) return; state.client = {...c}; closeModal('clientModal'); renderStep1(); applyClientTariffs(null, true); }
 function closeModal(id){ document.getElementById(id).classList.remove('show'); }
 function saveNewClient(){
   const name = document.getElementById('ncName').value.trim();
   const email = document.getElementById('ncEmail').value.trim();
   const phone = document.getElementById('ncPhone').value.trim();
   const tax = document.getElementById('ncTax').value.trim();
-  if(!name){ toast('El nombre es obligatorio','error'); return; }
+  if(!name){ toast('Ingresa la razón social o el nombre.','error'); return; }
+  if(email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ toast('Ingresa un correo válido','error'); return; }
+  /* RUC peruano: 11 dígitos. Se acepta también Tax ID extranjero (Connect hoy lo bloquea: error reportado) */
+  if(/^\d+$/.test(tax) && /^(10|15|17|20)/.test(tax) && tax.length!==11){ toast('El RUC debe tener exactamente 11 dígitos numéricos','error'); return; }
+  if(state.clients.some(c=>c.name!==ncEdit && normTxt(c.name)===normTxt(name))){ toast('Ya existe un cliente con ese nombre. Usa el cliente existente.','error'); return; }
+  if(ncEdit){
+    const i = state.clients.findIndex(c=>c.name===ncEdit); if(i>-1) state.clients[i] = {name,email,phone,tax};
+    const pp = partnerByName(ncEdit); if(pp){ pp.largo = pp.corto = name.toUpperCase(); pp.doc = tax || pp.doc; }
+    state.client = {name,email,phone,tax}; renderStep1(); closeModal('clientModal'); ncEdit = null;
+    toast('Cliente provisional actualizado','success'); return;
+  }
   state.clients.push({name,email,phone,tax});
   state.client = {name,email,phone,tax};
   if(!partnerByName(name)) preregPartner({name:name.toUpperCase(), doc:tax, foreign:!/^(10|20)\d{9}$/.test(tax), kind:'Cliente',
@@ -2444,14 +2706,20 @@ function renderStep2(){
   markDimWarnings();
 
   const cont = document.getElementById('calcSections');
-  cont.innerHTML = catList().map(cat=>{
+  document.body.classList.toggle('pda-ops', pdaOpsView());
+  state.addedCats = state.addedCats || [];
+  const shownCats = catList().filter(c=>state.services.some(s=>s.cat===c) || state.addedCats.includes(c));
+  const freeCats = catList().filter(c=>!shownCats.includes(c));
+  const addCat = document.getElementById('pdaAddCat');
+  if(addCat) addCat.innerHTML = freeCats.length ? `<select class="edit-only" onchange="pdaAddCat(this.value)"><option value="">Agregar Categoría</option>${freeCats.map(c=>`<option value="${c}">${catLabel(c)}</option>`).join('')}</select>` : '';
+  cont.innerHTML = shownCats.map(cat=>{
     const items = state.services.filter(s=>s.cat===cat);
     const activos = items.filter(s=>s.enabled).length;
     const disponibles = masterCatalog().filter(m=>m.cat===cat && !state.services.find(s=>s.id===m.id));
     const closed = catCollapsed(cat, items);
     return `
       <div class="section-title ${cat} coll ${closed?'closed':''}" onclick="toggleCat('${cat}')" title="${closed?'Mostrar':'Ocultar'} los servicios de esta categoría">
-        <span class="st-label"><span class="chev">${ICON.chev}</span>${catLabel(cat)} <span style="opacity:.7;font-size:11px">${activos}/${items.length} activo(s)</span>${cat==='owner'?'<span class="st-opt">Opcional</span>':''}</span>
+        <span class="st-label"><span class="chev">${ICON.chev}</span>${catLabel(cat)} <span style="opacity:.7;font-size:11px">${items.length} servicio(s)</span>${cat==='owner'?'<span class="st-opt">Opcional</span>':''}</span>
         <span class="st-sub">Subtotal <b id="subh_${cat}">${fmt(subtotal(cat))}</b></span>
         <div class="dd-wrap" onclick="event.stopPropagation()">
           <button class="btn-add" onclick="toggleDropdown('${cat}',event)">Agregar servicio ▼</button>
@@ -2469,10 +2737,11 @@ function renderStep2(){
       </div>
       <div class="tbl-wrap cat-body ${closed?'closed':''}" id="cb_${cat}"><table class="data"><thead>
         <tr>
-          <th style="width:36px"></th><th>Servicio</th>
-          <th style="width:150px">Tarifa</th><th style="width:110px">Cantidad</th>
-          <th class="num" style="width:130px">Total USD</th>
+          <th style="width:36px" class="cc-prop" title="Propuesta sin ticket: incluir o excluir la línea"></th><th>Servicio</th>
+          <th style="width:150px">Tarifa (P)</th><th style="width:110px">Cantidad (Q)</th>
+          <th class="num" style="width:130px">Total</th>
           <th style="width:190px">Proveedor</th><th>Cálculo</th>
+          <th class="ops-only">Unidad de Tarifa</th><th class="ops-only">Comentarios</th><th class="ops-only">Val. Ope.</th>
           <th style="width:76px"></th>
         </tr>
       </thead><tbody>
@@ -2693,7 +2962,7 @@ function rowService(s){
   const cur = s.currency || 'USD';
   const main = `
     <tr class="${s.enabled?'':'disabled'} ${isOpen?'editing':''}">
-      <td><input type="checkbox" tabindex="-1" ${s.enabled?'checked':''} title="Incluir en la PDA" onchange="toggleSvc('${s.id}',this.checked)"></td>
+      <td class="cc-prop"><input type="checkbox" tabindex="-1" ${s.enabled?'checked':''} title="Incluir en la PDA (propuesta sin ticket)" onchange="toggleSvc('${s.id}',this.checked)"></td>
       <td style="font-weight:600">${s.name}<span id="badges_${s.id}">${badgesHtml(s)}</span>
         <div class="row-note" id="nt_${s.id}">${esc(s.note||'')}</div></td>
       <td>${rateCellHtml(s)}</td>
@@ -2701,9 +2970,11 @@ function rowService(s){
       <td class="num mono" style="font-weight:700" id="tot_${s.id}">${totalCellHtml(s)}</td>
       <td><select tabindex="-1" onchange="onSupplierChange('${s.id}',this)">${supplierOptions(s.supplier)}</select></td>
       <td class="comment-cell" id="frm_${s.id}">${formulaText(s)}</td>
+      <td class="ops-only">${esc(s.unit||'')}</td><td class="ops-only">${esc(s.note||'')}</td>
+      <td class="ops-only"><input type="checkbox" ${s.valOpe?'checked':''} ${/Operaciones/.test(curUser())?'':'disabled'} title="Validado por Operaciones" onchange="pdaValOpe('${s.id}',this.checked)"></td>
       <td><div class="row-actions">
         <button class="btn-edit ${isOpen?'on':''}" tabindex="-1" onclick="toggleEdit('${s.id}')" title="${isOpen?'Cerrar':'Moneda, unidad e IGV'}">${isOpen?'▲':ICON.edit}</button>
-        <button class="btn-adj ${s.adj?'on':''}" tabindex="-1" onclick="openAdj('${s.id}')" title="Ajuste de línea">±</button>
+        <button class="btn-adj cc-prop ${s.adj?'on':''}" tabindex="-1" onclick="openAdj('${s.id}')" title="Ajuste de línea (propuesta sin ticket: Monto fijo y No imprimir fórmula)">±</button>
         <button class="btn-del" tabindex="-1" onclick="removeService('${s.id}')" title="Quitar servicio">✕</button>
       </div></td>
     </tr>`;
@@ -2722,6 +2993,9 @@ function rowService(s){
           <input type="text" value="${esc(s.unit)}" oninput="updLive('${s.id}','unit',this.value)"></div>
         <div class="ef" style="grid-column:1/-1"><label>Fórmula de cálculo</label>
           <div class="fx-desc" id="fxd_${s.id}">${esc(formulaDescriptive(s))}</div></div>
+        ${s.rateEdited && Number(s.rate)!==Number(s.rateFrom) ? `<div class="ef" style="grid-column:1/-1"><label>Motivo del cambio de tarifa *</label>
+          <input type="text" maxlength="500" value="${esc(s.rateReason||'')}" placeholder="Obligatorio al cambiar la tarifa" oninput="pdaRateReason('${s.id}',this.value)">
+          <div class="hint" style="margin:4px 0 0">Tarifa ${fmtNum(s.rateFrom)} → ${fmtNum(s.rate)}${s.rateBy?` · Cambiado por ${esc(s.rateBy)} el ${new Date(s.rateTs).toLocaleString('es-PE')}`:''}</div></div>` : ''}
         <div class="ef" style="grid-column:1/-1"><label>Comentario de la línea (sale en el PDF)</label>
           <input type="text" value="${esc(s.note||'')}" placeholder="Ej. 2 viajes de lancha: la autoridad volvió por inspección" oninput="updLive('${s.id}','note',this.value)"></div>
         <div class="ef"><label>IGV</label>
@@ -2734,7 +3008,7 @@ function rowService(s){
       </div>
       <div class="edit-foot">
         ${masterCatalog().some(m=>m.id===s.id)
-          ? `<span>${(c=>c?`<button class="link-btn" onclick="openTariffByCode('${c}','pda')">Ver tarifa ${tfShort(c)}</button>`:'')(lineTariffCode(s))}<button class="link-btn" onclick="openMaster('${s.id}','pda')">Ver fórmula</button></span>`
+          ? `<span>${(c=>c?`<button class="link-btn" onclick="openTariffByCode('${c}','pda')">Ver tarifa ${tfShort(c)}</button>`:'')(lineTariffCode(s))}<button class="link-btn" onclick="pdaBuscarTarifa('${s.id}')">Buscar tarifa</button><button class="link-btn" onclick="openMaster('${s.id}','pda')">Ver fórmula</button><button class="link-btn" onclick="pdaCambiarServicio('${s.id}')">Cambiar servicio o unidad</button></span>`
           : `<span class="hint" style="margin:0">Servicio personalizado: Tarifa × Cantidad</span>`}
         <button class="btn btn-primary btn-sm" onclick="toggleEdit('${s.id}')">✓ Listo</button>
       </div>
@@ -2850,14 +3124,16 @@ function updLive(id,key,val){
   if(!s || state.status==='Anulada') return;
   if(key==='rate' && s.rateLocked) return;
   if((key==='rate' || key==='qty') && isFixed(s)) return;
+  if(key==='rate' && !s.rateEdited) s.rateFrom = s.rate;
   s[key] = (key==='unit' || key==='note') ? val : (key==='cost' && String(val).trim()==='') ? null : parseNum(val);
   if(key==='vat') s.vatOn = s.vat>0;
+  if(key==='rate'){ if(!s.rateEdited){ s.rateEdited = true; } s.rateBy = curUser(); s.rateTs = new Date().toISOString(); }
   refreshLine(s);
 }
 function refreshTotals(){
   const t = sumParts(state.services);
   const set = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent = v; };
-  set('grandTotal2', fmt(t.total));
+  set('grandTotal2', fmt(t.total)); set('totNet2', fmt(t.net)); set('totVat2', fmt(t.vat));
   const a = pdaAnalytics();
   const kv = document.getElementById('kpiVar');
   if(kv){ kv.innerHTML = `${a.diff>=0?'+':''}${fmt(a.diff).replace('$ -','-$ ')} <small>(${a.diff>=0?'+':''}${(a.diffPct*100).toFixed(1)}%)</small>`;
@@ -3062,15 +3338,18 @@ function renderPdaReqs(){
   const sups = [...new Set(state.services.filter(x=>x.enabled && partnerPending(x.supplier)).map(x=>x.supplier))].map(partnerByName).filter(Boolean);
   if(state.client && partnerPending(state.client.name)) sups.unshift(partnerByName(state.client.name));
   const bk = pdaBlockers(), ships = bk.ship || [], voys = bk.voy || [];
-  el.innerHTML = list.length || sups.length || ships.length || voys.length ? `<div class="pda-reqs"><b>Pendientes para aprobar la PDA</b>
-    ${ships.map(s=>`<div class="pr-item"><span class="mono">${esc(s.imo||'IMO pendiente')}</span><span>${esc(s.name)}</span><span class="pill pendiente">Nave ${s.estado.toLowerCase()}</span>
+  const porConf = state.services.filter(x=>x.enabled && missingDim(x));
+  const ia = '<span class="tag-mini warnb">Impide aprobar</span>', ie = '<span class="tag-mini warnb">Impide enviar</span>';
+  el.innerHTML = list.length || sups.length || ships.length || voys.length || porConf.length ? `<div class="pda-reqs"><b>Pendientes para aprobar la PDA</b> <span class="hint" style="margin:0">Según lo guardado</span>
+    ${ships.map(s=>`<div class="pr-item"><span class="mono">${esc(s.imo||'IMO pendiente')}</span><span>${esc(s.name)}</span><span class="pill pendiente">Nave ${s.estado.toLowerCase()}</span>${ia}
       <button class="link-btn" onclick="openVessel('${s.name.replace(/'/g,'')}','pda')">Ver</button></div>`).join('')}
-    ${voys.map(v=>`<div class="pr-item"><span class="mono">${v.code}</span><span>${esc(v.nave)} · ${esc(v.nro)}</span><span class="pill pendiente">Viaje por homologar</span>
+    ${voys.map(v=>`<div class="pr-item cc-prop"><span class="mono">${v.code}</span><span>${esc(v.nave)} · ${esc(v.nro)}</span><span class="pill pendiente">Viaje por homologar</span>${ia}
       <button class="link-btn" onclick="openVoyage('${v.code}','pda')">Ver</button></div>`).join('')}
-    ${list.map(r=>`<div class="pr-item"><span class="mono">${r.code}</span><span>${esc(r.name)}</span><span class="pill ${REQ_ST[r.status].cls}">${REQ_ST[r.status].lbl}</span>
+    ${list.map(r=>`<div class="pr-item"><span class="mono">${r.code}</span><span>${esc(r.name)}</span><span class="pill ${REQ_ST[r.status].cls}">${REQ_ST[r.status].lbl}</span>${ia}
       <button class="link-btn" onclick="openReqDetail('${r.code}')">Ver</button></div>`).join('')}
-    ${sups.map(p=>`<div class="pr-item"><span class="mono">${esc(p.doc)}</span><span>${esc(p.largo)}</span><span class="pill ${p.estado==='Rechazado'?'rechazada':'pendiente'}">${p.roles.some(r=>r.cliente)?'Cliente':'Proveedor'} ${p.estado.toLowerCase()}</span>
-      <button class="link-btn" onclick="openPartner('${p.id}','pda')">Ver</button></div>`).join('')}</div>` : '';
+    ${sups.map(p=>{ const cli = p.roles.some(r=>r.cliente); return `<div class="pr-item ${cli?'':'cc-prop'}"><span class="mono">${esc(p.doc)}</span><span>${esc(p.largo)}</span><span class="pill ${p.estado==='Rechazado'?'rechazada':'pendiente'}">${cli?'Cliente':'Proveedor'} ${p.estado.toLowerCase()}</span>${ia}
+      <button class="link-btn" onclick="openPartner('${p.id}','pda')">Ver</button></div>`; }).join('')}
+    ${porConf.map(x=>`<div class="pr-item"><span class="mono">Por confirmar</span><span>${esc(x.name)}: falta ${esc(missingDim(x))}</span><span></span>${ie}<span></span></div>`).join('')}</div>` : '';
 }
 /* ---- Pantalla de solicitudes ---- */
 function openRequests(returnTo){
@@ -3245,7 +3524,7 @@ function refreshReqViews(){
   if(document.getElementById('step2').classList.contains('active')) renderStep2(); else renderPdaReqs();
 }
 
-function statusLabel(k){ return {Pendiente:'Pendiente de aprobación', Aprobada:'Aprobada', Anulada:'Anulada'}[k] || k; }
+function statusLabel(k){ return {Pendiente:'Pendiente de aprobación', Aprobada:'Aprobada', Anulada:'Anulada', Finalizada:'Finalizada'}[k] || k; }
 function renderStatusBanner(targetId){
   const el = document.getElementById(targetId);
   if(!el) return;
@@ -4917,6 +5196,7 @@ function exportExcel(){
    PDF PREVIEW
 ============================================================ */
 function openPdfPreview(){
+  if(!state.saved && document.getElementById('step2')?.classList.contains('active') && window.event && window.event.isTrusted){ toast('Guarda la PDA antes de previsualizar el PDF y enviarla','error'); return; }
   document.getElementById('pdfPreviewPdaNumber').textContent = state.pdaNumber || '-';
   document.getElementById('pdfPageContent').innerHTML = buildPdfDocument();
   document.querySelectorAll('[data-l]').forEach(b=>b.classList.toggle('on', b.dataset.l===state.lang));
@@ -5142,15 +5422,20 @@ function renderStep3(){
   document.getElementById('statusBadgeWrap').innerHTML =
     `<span class="badge ${st==='Aprobada'?'aprobada':st==='Anulada'?'anulada':'pendiente'}">${statusLabel(st)}</span>` +
     (state.obs && st!=='Anulada' ? ` <span class="badge observada">Con observación</span>` : '');
-  const can = canChangeStatus(), dis = can ? '' : 'disabled title="Solo Comercial y Gerencia cambian el estado"';
-  document.getElementById('statusActions').innerHTML = st==='Anulada'
-    ? `<span class="hint" style="margin:0">PDA anulada: no admite cambios.</span>`
+  const can = canChangeStatus(), dis = can ? '' : 'disabled title="No tiene permiso para esta acción"';
+  const voy = !!PDA_ASSOC[state.pdaNumber];
+  document.getElementById('statusActions').innerHTML = (st==='Anulada' || st==='Finalizada')
+    ? `<span class="hint" style="margin:0">No hay acciones disponibles para esta PDA.</span>`
     : (st==='Pendiente'
         ? `<button class="btn btn-success btn-sm" ${dis} onclick="openStatusModal('approve')">Aprobar</button>`
-        : `<button class="btn btn-ghost btn-sm" ${dis} onclick="openStatusModal('reopen')">Volver a pendiente</button>`)
-      + (can ? '' : `<div class="hint" style="margin:6px 0 0">Aprobar y volver a pendiente: solo Comercial y Gerencia. Cambia el usuario arriba. Anular está en la cabecera.</div>`);
+        : `<button class="btn btn-ghost btn-sm" ${voy?'disabled title="Una PDA asociada a un viaje no se puede anular ni reabrir."':dis} onclick="openStatusModal('reopen')">Volver a pendiente</button>
+           <button class="btn btn-primary btn-sm" ${dis} onclick="finalizePda()">Finalizar</button>`)
+      + (can || st==='Anulada' || st==='Finalizada' ? '' : `<div class="hint" style="margin:6px 0 0">Aprobar, volver a pendiente y finalizar: según permisos (Comercial y Gerencia). Cambia el usuario arriba. Anular está en la cabecera.</div>`);
   const banner = document.getElementById('statusActionBanner');
-  banner.innerHTML = st==='Anulada'
+  banner.className = 'cc-prop'; banner.dataset.prop = 'Propuesta sin ticket · Aviso de estado en la pestaña';
+  banner.innerHTML = st==='Finalizada'
+    ? `<div class="status-banner"><div><b>Finalizada</b>${state.finish?` por ${esc(state.finish.by)} el ${new Date(state.finish.ts).toLocaleString('es-PE')}`:''}. Ya no se puede editar ni agregar nada.</div></div>`
+    : st==='Anulada'
     ? `<div class="status-banner anulada"><div><b>Anulada</b> por ${esc(state.annul?.by||'')} el ${state.annul?new Date(state.annul.ts).toLocaleString('es-PE'):''}. Motivo: ${esc(state.annul?.reason||'')}${state.os?` · ${state.os.number} anulada`:''}</div></div>`
     : st==='Aprobada'
       ? `<div class="status-banner aprobada"><div><b>${state.os?state.os.number:'OS'} generada</b> al aprobar la PDA${state.approval?` (${esc(state.approval.by)})`:''}. Queda registrada en el historial de abajo.${state.approval?.note?`<br>Nota de aprobación: ${esc(state.approval.note)}`:''}</div></div>`
@@ -5161,7 +5446,101 @@ function renderStep3(){
   renderOpEmails();
   renderTimeline();
 }
-function editPda(){ goStep(1); toast('Edita los datos aquí o en Detalle','info'); }
+function editPda(){
+  if(state.status==='Aprobada'){ toast('Para editar una PDA aprobada, vuelve antes a pendiente en la pestaña Estado','error'); return; }
+  if(state.status!=='Pendiente'){ toast('La PDA no admite cambios','error'); return; }
+  goStep(1); toast('Edita los datos aquí o en Detalle','info');
+}
+/* Guardar y Cancelar (Connect): Guardar siempre graba en Pendiente de aprobación; no hay borrador */
+function pdaRateNoReason(){ return state.services.filter(x=>x.enabled && x.rateEdited && Number(x.rate)!==Number(x.rateFrom) && !isFixed(x) && !String(x.rateReason||'').trim()); }
+/* ---------- Detalle alineado a Connect ---------- */
+/* Vista Operaciones: sin permiso de ver montos (PDA.ViewFinancial) se ven Unidad, Cantidad, Comentarios y Val. Ope. */
+function pdaOpsView(){ return /Operaciones/.test(curUser()); }
+function pdaValOpe(id, on){ const s = state.services.find(x=>x.id===id); if(!s) return; s.valOpe = on; log('Operaciones', `${on?'Validó':'Quitó la validación de'} "${s.name}" (Val. Ope.)`); }
+function pdaAddCat(cat){ if(!cat) return; state.addedCats = [...new Set([...(state.addedCats||[]), cat])]; state.collapsed = {...(state.collapsed||{}), [cat]:false}; renderStep2(); }
+function pdaRateReason(id, v){ const s = state.services.find(x=>x.id===id); if(s) s.rateReason = v; }
+/* Buscar tarifa: vuelve a tomar la tarifa vigente de la línea (catálogo o tarifa pactada del cliente) */
+function pdaBuscarTarifa(id){
+  const s = state.services.find(x=>x.id===id); if(!s) return;
+  const m = masterCatalog().find(x=>x.id===id);
+  const base = s.rateBase!=null ? s.rateBase : (m ? m.rate : s.rate);
+  if(base==null){ toast('No se encontró una tarifa vigente para este servicio y unidad','error'); return; }
+  s.rate = base; s.rateEdited = false; s.rateReason = '';
+  log('Tarifas', `Buscó la tarifa de "${s.name}": ${s.currency} ${fmtNum(base)}`);
+  renderStep2(); toast(`Tarifa vigente aplicada: ${curSym(s.currency)}${fmtNum(base)}`,'success');
+}
+/* Cambiar servicio o unidad de la línea */
+function pdaCambiarServicio(id){
+  const s = state.services.find(x=>x.id===id); if(!s) return;
+  const otros = masterCatalog().filter(m=>m.cat===s.cat && (m.id===id || !state.services.some(x=>x.id===m.id)));
+  facOpen(`<h3>Cambiar servicio o unidad</h3><p class="hint">${esc(s.name)}</p>
+    <div class="fac-g2">${fF('Servicio', `<select id="pcsSvc">${otros.map(m=>`<option value="${m.id}" ${m.id===id?'selected':''}>${esc(m.name)}</option>`).join('')}</select>`)}
+      ${fF('Unidad', `<input id="pcsUnit" value="${esc(s.unit||'')}">`)}</div>
+    <div class="actions"><button class="btn btn-ghost" onclick="facClose()">Cancelar</button><button class="btn btn-primary" onclick="pdaCambiarOk('${id}')">Listo</button></div>`);
+}
+function pdaCambiarOk(id){
+  const s = state.services.find(x=>x.id===id); if(!s) return;
+  const nid = document.getElementById('pcsSvc').value, unit = document.getElementById('pcsUnit').value.trim();
+  if(!unit){ toast('Complete la unidad de tarifa','error'); return; }
+  if(nid!==id){ const m = masterCatalog().find(x=>x.id===nid); const i = state.services.indexOf(s);
+    state.services[i] = newLine(m, {enabled:true, qty:s.qty, supplier:s.supplier}); state.services[i].unit = unit;
+    log('Datos', `Cambió el servicio "${s.name}" por "${m.name}"`); state.editingId = null; }
+  else { s.unit = unit; log('Datos', `Cambió la unidad de "${s.name}" a ${unit}`); }
+  facClose(); renderStep2();
+}
+/* Otro proveedor: cualquier proveedor de Data Maestra; si no tiene tarifa vigente, la tarifa de la línea no cambia */
+function pdaOtroProveedor(id){
+  const list = [...new Set([...state.suppliers, ...PARTNERS.filter(p=>p.roles.some(r=>r.proveedor)).map(p=>p.largo)])].sort();
+  facOpen(`<h3>Otro proveedor</h3>${fF('Proveedor', `<input id="poProv" list="poDl" placeholder="Elegir proveedor"><datalist id="poDl">${list.map(x=>`<option value="${esc(x)}">`).join('')}</datalist>`)}
+    <div class="actions"><button class="btn btn-ghost" onclick="facClose()">Cancelar</button><button class="btn btn-primary" onclick="pdaOtroOk('${id}')">Listo</button></div>`);
+}
+function pdaOtroOk(id){
+  const v = document.getElementById('poProv').value.trim(); if(!v){ toast('Elige un proveedor','error'); return; }
+  if(!state.suppliers.includes(v)) state.suppliers.push(v);
+  updSvc(id, 'supplier', v); facClose(); renderStep2();
+  toast('El proveedor no tiene una tarifa vigente para este servicio y unidad; la tarifa de la línea no cambió.','info');
+}
+/* Recalcular (F9): recalcula con los datos actuales y resume lo que falta */
+function pdaRecalcular(){
+  if(!['Pendiente'].includes(state.status)) return;
+  renderStep2();
+  const v = state.categoryType==='maritimo' ? state.vessel : {};
+  const falta = state.categoryType==='maritimo' ? [!(v.grt>0)&&'GRT', !(v.loa>0)&&'LOA'].filter(Boolean) : [];
+  const pend = state.services.filter(x=>x.enabled && missingDim(x)).map(x=>x.name);
+  facOpen(`<h3>Recalcular (F9)</h3><p><b>PDA recalculada.</b></p>
+    ${falta.length ? `<p>Faltan datos de cálculo: ${esc(falta.join(', '))}</p>` : ''}
+    ${pend.length ? `<p>Quedan «Por confirmar»: ${esc(pend.join(', '))}</p>` : ''}
+    <div class="actions"><button class="btn btn-primary" onclick="facClose()">Listo</button></div>`);
+}
+document.addEventListener('keydown', e=>{ if(e.key==='F9' && document.getElementById('step2')?.classList.contains('active')){ e.preventDefault(); pdaRecalcular(); } });
+function pdaSave(force){
+  if(state.status!=='Pendiente'){ toast(state.status==='Aprobada' ? 'Para editar una PDA aprobada, vuelve antes a pendiente en la pestaña Estado' : 'La PDA no admite cambios','error'); return; }
+  const v = state.vessel;
+  if(state.categoryType==='maritimo'){
+    if(!String(v.name||'').trim() || !v.port || !v.terminal || !v.cargo || !v.operation){ toast('Por favor complete todos los campos obligatorios','error'); if(state.step!==1) goStep(1); return; }
+    const imo = imoIssue(); if(imo){ toast(imo,'error'); return; }
+  }
+  const sinMotivo = pdaRateNoReason();
+  if(sinMotivo.length){ toast(`Indica el motivo del cambio de tarifa en: ${sinMotivo.map(x=>x.name).join(', ')}.`,'error'); return; }
+  if(!force && state.categoryType==='maritimo'){
+    const dup = SAMPLE_PDAS.find(p=>p.code!==state.pdaNumber && p.estado!=='Anulada' && normTxt(p.nave)===normTxt(v.name) && normTxt(p.viaje)===normTxt(v.voy) && normTxt(p.puerto)===normTxt(v.port) && normTxt(p.cliente)===normTxt(state.client.name));
+    if(dup){
+      facOpen(`<h3>Posible PDA duplicada</h3><p>Ya existe la PDA <b>${esc(dup.code)}</b> con la misma nave, viaje, puerto y cliente.</p>
+        <div class="actions"><button class="btn btn-ghost" onclick="facClose();openSamplePda('${dup.code}')">Ver PDA</button><button class="btn btn-ghost" onclick="facClose()">Cancelar</button>
+        <button class="btn btn-primary" onclick="facClose();pdaSave(true)">Continuar de todos modos</button></div>`);
+      return;
+    }
+  }
+  const nuevo = !state.saved;
+  state.saved = true; state.status = 'Pendiente';
+  log('Estado', nuevo ? 'PDA guardada en Pendiente de aprobación' : 'PDA actualizada');
+  toast(nuevo ? 'PDA creado correctamente' : 'PDA actualizada correctamente','success');
+  renderPdaHead(); if(state.step===2) renderStep2();
+}
+function pdaCancel(){
+  if(!state.saved && !confirm('Aún mantiene cambios sin guardar. ¿Desea continuar sin guardarlos?')) return;
+  backToLanding();
+}
 function openHistory(){
   const list = state.traceability.slice().reverse();
   openHistModal(list.map((t,i)=>({ts:t.ts, user:t.user, prev: i ? (list[i-1].st||'') : '', next: t.st || state.status,
@@ -5245,20 +5624,33 @@ function resolveObservation(){
 }
 /* ---------- Estado principal ---------- */
 const ST_MODAL = {
-  approve:{title:'Aprobar PDA', sub:'Se genera la OS y se notifica a Operaciones. La nota es opcional y queda en el historial.',
+  approve:{title:'Aprobar PDA', sub:'¿Está seguro de que desea cambiar el estado a Aprobada? (Propuesta sin ticket: se genera la OS y se notifica a Operaciones.)',
            label:'Nota de aprobación (opcional)', ph:'Ej. Aprobada con tarifa pactada vigente; confirmar horas de lancha al cierre', req:false, btn:'Aprobar', cls:'btn-success'},
-  reopen: {title:'Volver a pendiente', sub:'La PDA regresa a "Pendiente de aprobación". El motivo es obligatorio y queda en el historial.',
-           label:'Motivo *', ph:'Ej. El cliente pidió cambiar la terminal', req:true, btn:'Volver a pendiente', cls:'btn-primary'}
+  reopen: {title:'Volver a pendiente', sub:'¿Está seguro de que desea cambiar el estado a Pendiente de aprobación? El motivo es obligatorio y queda en el historial.',
+           label:'Motivo para volver a pendiente *', ph:'Ej. El cliente pidió cambiar la terminal', req:true, btn:'Confirmar', cls:'btn-primary'}
 };
 let stModalKind = null;
+/* Requisitos de Connect para aprobar (UpdatePDACommandHandler) */
+function pdaApproveReqs(){
+  const m = [];
+  if(!state.client || !state.client.name) m.push('Para aprobar la PDA se debe seleccionar un cliente.');
+  if(state.categoryType==='maritimo' && !String(state.vessel.voy||'').trim()) m.push('Para aprobar la PDA se debe indicar el viaje o referencia.');
+  if(!(currentExRate()>0)) m.push('Para aprobar la PDA se debe indicar el tipo de cambio.');
+  if(!state.services.some(x=>x.enabled)) m.push('Para aprobar la PDA se debe agregar al menos un servicio.');
+  return m;
+}
 function openStatusModal(kind){
-  if(!canChangeStatus()){ toast('Solo Comercial y Gerencia pueden cambiar el estado','error'); return; }
+  if(!canChangeStatus()){ toast('No tiene permiso para cambiar el estado','error'); return; }
+  if(kind==='reopen' && PDA_ASSOC[state.pdaNumber]){ toast('Una PDA asociada a un viaje no se puede anular ni reabrir.','error'); return; }
   if(kind==='approve' && state.obs){ toast('Tiene una observación pendiente: subsánala antes de aprobar','error'); return; }
+  /* Los requisitos de Connect para aprobar (cliente, viaje, T/C, un servicio) van dentro de pdaBlockers() */
   if(kind==='approve' && pdaBlockers().n){ toast(blockMsg(pdaBlockers()),'error'); return; }
   const c = ST_MODAL[kind]; stModalKind = kind;
   document.getElementById('stTitle').textContent = c.title;
   document.getElementById('stSub').textContent = c.sub;
   document.getElementById('stLabel').textContent = c.label;
+  const fld = document.getElementById('stText').closest('.field');
+  if(kind==='approve'){ fld.className = 'field cc-prop'; fld.dataset.prop = 'Propuesta sin ticket · Nota de aprobación'; } else { fld.className = 'field'; delete fld.dataset.prop; }
   const ta = document.getElementById('stText'); ta.value = ''; ta.placeholder = c.ph;
   const ok = document.getElementById('stOk'); ok.textContent = c.btn; ok.className = 'btn ' + c.cls;
   document.getElementById('stAdj').innerHTML = kind==='approve' ? adjSummary().html : '';
@@ -5294,8 +5686,33 @@ function reopenPda(reason){
   toast('PDA vuelve a pendiente de aprobación','info');
   renderStep3();
 }
+/* Finalizar (Connect): irreversible, la PDA ya no se edita */
+function finalizePda(){
+  if(!canChangeStatus()){ toast('No tiene permiso para finalizar','error'); return; }
+  if(state.status!=='Aprobada') return;
+  if(!confirm('Al finalizar la PDA ya no se podrá editar ni agregar nada, y no se puede deshacer. ¿Desea continuar?')) return;
+  const user = curUser();
+  state.status = 'Finalizada'; state.finish = {by:user, ts:new Date().toISOString()};
+  const sp = SAMPLE_PDAS.find(p=>p.code===state.pdaNumber); if(sp) sp.estado = 'Finalizada';
+  log('Estado', 'Estado: Aprobada → Finalizada', user);
+  setVoidClass(); toast('PDA finalizada','success'); renderStep3();
+}
+/* Duplicar (Connect): abre una PDA nueva con los datos copiados y la ETA vacía */
+function duplicatePda(){
+  if(!(state.status==='Aprobada' || state.status==='Finalizada')) return;
+  const src = state.pdaNumber, vessel = clone(state.vessel), services = clone(state.services), client = {...state.client};
+  const keep = {shipSource:state.shipSource, selectedShipId:state.selectedShipId, remarks:state.remarks, payment:state.payment};
+  state.loadedTemplate = {name:`copia de ${src}`}; state.traceability = [];
+  startNewPda(true); state.loadedTemplate = null;
+  Object.assign(state, keep); state.vessel = Object.assign(vessel, {eta:'', etd:''}); state.services = services.map(x=>({...x, adj:null})); state.client = client;
+  state.saved = false; state.finish = null;
+  log('Sistema', `PDA duplicada desde ${src}`);
+  setVoidClass(); goStep(1);
+}
 function openAnnul(){
-  if(!canChangeStatus()){ toast('Solo Comercial y Gerencia pueden anular','error'); return; }
+  if(!canChangeStatus()){ toast('No tiene permiso para anular','error'); return; }
+  if(state.status==='Aprobada' && PDA_ASSOC[state.pdaNumber]){ toast('Una PDA asociada a un viaje no se puede anular ni reabrir.','error'); return; }
+  if(state.status==='Anulada' || state.status==='Finalizada'){ toast('No hay acciones disponibles para esta PDA.','error'); return; }
   document.getElementById('annulReason').value = '';
   document.getElementById('annulModal').classList.add('show');
   setTimeout(()=>document.getElementById('annulReason').focus(), 40);
@@ -5315,7 +5732,8 @@ function confirmAnnul(){
   toast('PDA anulada','error');
   renderStep3();
 }
-function setVoidClass(){ document.body.classList.toggle('pda-void', state.status==='Anulada'); }
+/* Solo lectura como Connect: Anulada y Finalizada no se editan; una Aprobada se edita volviendo antes a pendiente */
+function setVoidClass(){ document.body.classList.toggle('pda-void', ['Anulada','Aprobada','Finalizada'].includes(state.status)); }
 function renderOpEmails(){
   const w = document.getElementById('opEmailsChips');
   if(!w) return;
@@ -5362,8 +5780,35 @@ function log(action,detail,user){
 /* ============================================================
    CORREO
 ============================================================ */
+/* Envío como Connect: a los contactos comercial, de liquidación y de operaciones del cliente, con plantilla fija */
+function pdaClientContacts(){
+  const p = partnerByName(state.client?.name||''), cs = p ? (p.contactos||[]) : [];
+  const pick = re => (cs.find(c=>re.test(c.tipo) && c.email)||{}).email || '';
+  const out = {comercial:pick(/Comercial/i), liquidacion:pick(/Liquidaci|Facturaci/i), operaciones:pick(/Operaciones/i)};
+  /* Datos ficticios para los clientes de demostración (los clientes nuevos usan solo lo que se registró) */
+  if(SAMPLE_PDAS.some(sp=>normTxt(sp.cliente)===normTxt(state.client?.name||''))){
+    const slug = normTxt(state.client.name).replace(/[^a-z0-9]+/g,'').slice(0,12);
+    out.comercial = out.comercial || `comercial@${slug}.example`; out.liquidacion = out.liquidacion || `liquidacion@${slug}.example`; out.operaciones = out.operaciones || `operaciones@${slug}.example`;
+  }
+  return out;
+}
+function pdaSendErrors(){
+  const c = pdaClientContacts(), e = [];
+  if(!c.comercial) e.push('No se encontró un contacto comercial con correo electrónico configurado para el envío del PDA del cliente.');
+  if(!c.liquidacion) e.push('No se encontró un contacto de liquidación con correo electrónico configurado para el envío del PDA del cliente.');
+  if(!c.operaciones) e.push('No se encontró un contacto de operaciones con correo electrónico configurado para el envío del PDA del cliente.');
+  const pc = state.services.filter(x=>x.enabled && missingDim(x)).map(x=>x.name);
+  if(pc.length) e.push(`La PDA no se puede enviar con servicios «Por confirmar» porque falta el GRT o la eslora: ${pc.join(', ')}. Complete los datos de la nave y guarde la PDA.`);
+  return e;
+}
 function openEmailModal(){
-  renderChips();
+  const c = pdaClientContacts();
+  state.emails = [c.comercial, c.liquidacion, c.operaciones].filter(Boolean);
+  document.getElementById('emailChips').innerHTML = [['Comercial',c.comercial],['Liquidación',c.liquidacion],['Operaciones',c.operaciones]]
+    .map(([t,m])=>`<div style="font-size:13px;margin:2px 0"><b>${t}:</b> ${m ? esc(m) : '<span style="color:#C2185B">Sin contacto configurado</span>'}</div>`).join('');
+  const errs = pdaSendErrors();
+  document.getElementById('emailErr').innerHTML = errs.map(x=>`<div class="notice error">${esc(x)}</div>`).join('');
+  document.getElementById('emailSendBtn').disabled = !!errs.length;
   document.getElementById('emailPdaRef').textContent = state.pdaNumber||'-';
   const vessel = state.categoryType==='terrestre' ? (state.terrestrial.ref||'Servicio Terrestre') : (state.vessel.name||'Nave');
   document.getElementById('emailSubject').value = `[${state.pdaNumber||'PDA'}] Proforma Disbursement Account (PDA) · ${vessel} · ${new Date().toLocaleDateString(state.lang==='en'?'en-US':'es-PE')}`;
@@ -5373,7 +5818,7 @@ function openEmailModal(){
   document.getElementById('emailModal').classList.add('show');
 }
 function renderChips(){
-  const w = document.getElementById('emailChips');
+  const w = document.getElementById('emailChips'); if(!w || !document.getElementById('emailInput')) return;
   w.innerHTML = state.emails.map((e,i)=>`<span class="chip">${e}<button onclick="removeEmail(${i})">✕</button></span>`).join('') || '<span class="hint">Sin destinatarios</span>';
 }
 function addEmailChip(){
@@ -5385,10 +5830,11 @@ function addEmailChip(){
 }
 function removeEmail(i){ state.emails.splice(i,1); renderChips(); }
 function sendEmail(){
-  if(!state.emails.length){ toast('Agrega destinatario','error'); return; }
+  if(!(state.status==='Pendiente' || state.status==='Aprobada')){ toast('La PDA no se puede enviar en este estado','error'); return; }
+  const errs = pdaSendErrors(); if(errs.length){ toast(errs[0],'error'); return; }
   closeModal('emailModal');
   log('Correo', `PDA ${state.pdaNumber} enviada a: ${state.emails.join(', ')}`);
-  toast(`PDA enviada`,'success');
+  toast('PDA enviada correctamente','success');
 }
 
 /* ============================================================
@@ -5857,11 +6303,12 @@ function updPtCount(){ const n = PARTNERS.filter(p=>p.estado==='Por homologar').
 /* ---------- Preregistro desde la PDA ---------- */
 let supLineId = null;
 function supplierOptions(sel){
-  return state.suppliers.map(x=>`<option value="${esc(x)}" ${x===sel?'selected':''}>${esc(x)}${partnerPending(x)?' (por homologar)':''}</option>`).join('')
-    + `<option value="__new">+ Preregistrar proveedor…</option>`;
+  return `<option value="" ${sel?'':'selected'}>Elegir proveedor</option>` + state.suppliers.map(x=>`<option value="${esc(x)}" ${x===sel?'selected':''}>${esc(x)}${partnerPending(x)?' (por homologar)':''}</option>`).join('')
+    + `<option value="__otro">Otro proveedor…</option><option value="__new" class="cc-prop">+ Preregistrar proveedor… (propuesta sin ticket)</option>`;
 }
 function onSupplierChange(id, el){
   const s = state.services.find(x=>x.id===id);
+  if(el.value==='__otro'){ el.value = s ? (s.supplier||'') : ''; pdaOtroProveedor(id); return; }
   if(el.value==='__new'){ el.value = s ? s.supplier : ''; openSupplierModal(id); return; }
   updSvc(id, 'supplier', el.value);
   const b = document.getElementById('badges_'+id); if(b && s) b.innerHTML = badgesHtml(s);
@@ -5910,9 +6357,11 @@ function pdaBlockers(){
   const shRec = state.categoryType==='maritimo' && state.vessel ? (state.vessel.preregId ? SHIPS_CATALOG.find(x=>x.id===state.vessel.preregId) : vesselByName(state.vessel.name)) : null;
   const ship = shRec && shRec.estado!=='Homologado' ? [shRec] : [];
   const pv = state.categoryType==='maritimo' ? pdaVoyage() : null, voy = pv && pv.estado==='Por homologar' ? [pv] : [];
-  return {reqs, sups, cli, ship, voy, n:reqs.length + sups.length + cli.length + ship.length + voy.length};
+  const conn = pdaApproveReqs();
+  return {reqs, sups, cli, ship, voy, conn, n:reqs.length + sups.length + cli.length + ship.length + voy.length + conn.length};
 }
 function blockMsg(b){
+  if(b.conn && b.conn.length) return b.conn[0];
   return 'Antes de aprobar: ' + [b.reqs.length && `${b.reqs.length} servicio${b.reqs.length>1?'s':''} por aprobar`, b.cli.length && 'cliente por homologar',
     b.sups.length && `${b.sups.length} proveedor${b.sups.length>1?'es':''} por homologar`, b.ship?.length && 'nave por homologar', b.voy?.length && 'viaje por homologar'].filter(Boolean).join(', ');
 }
@@ -6181,9 +6630,9 @@ const CHG_REMOVED = {
   2: { t:'Detalle', items:[
     ['Columna Tarifa Unitaria',''], ['Columna Moneda','va como prefijo $ / S/ en la tarifa'],
     ['Columna A/E',''], ['Columna VAT','ahora etiqueta IGV 18% en el servicio'],
-    ['Columna Comentarios','ahora dentro de editar línea (sale en el PDF)'], ['Columna Val. Ope.',''],
+    ['Columna Comentarios','ahora dentro de editar línea (sale en el PDF)'],
     
-    ['Resumen por Categoría (Neto / VAT / Bruto)','ahora subtotal por categoría y total estimado']]},
+    ['Resumen por Categoría (Neto / VAT / Bruto)','ahora subtotal por categoría y Total Neto, VAT y Bruto']]},
   3: { t:'Estado', items:[] }
 };
 const CHG_CATS_CONNECT = ['comisión de agencia','gastos portuarios','gastos por autoridades'];
@@ -6232,7 +6681,7 @@ function markChanges(){
     chgTag(head.querySelector('.cc-ph-code'), 'Nuevo: tipo y modalidad');
     chgMark(head.querySelector('.cc-chips'), 'Cambia: un solo estado');
   }
-  if(nav) chgTag(nav.querySelector('[data-step="3"]'), 'Nuevo');
+  /* La pestaña Estado existe en Ver PDA de Connect */
   // paso 1
   const s1 = document.getElementById('step1');
   if(s1 && s1.classList.contains('active')){
@@ -6259,7 +6708,7 @@ function markChanges(){
       chgTag(th[0], 'Nuevo'); chgTag(th[5], 'Nuevo'); chgTag(th[6], 'Nuevo'); chgTag(th[7], 'Nuevo');
     });
     chgMark(document.getElementById('pdaReqs').firstElementChild, 'Nuevo: pendientes para aprobar');
-    chgMark(s2.querySelector('.totals-bar'), 'Cambia: total estimado fijo');
+    /* Totales Neto, VAT y Bruto: igual que Connect */
     chgMark(s2.querySelector(':scope > .actions'), 'Nuevo: plantilla, Excel y PDF');
   }
   // paso 3: toda la pestaña es nueva
