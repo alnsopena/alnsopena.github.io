@@ -1845,3 +1845,52 @@
   .ag-subrow>td{background:#F7F9FC;padding:8px 18px}
   .ag-cnt{font-size:11.5px;color:var(--cc-gray);text-align:right}
   #screenTariffs .fac-tbl td.cc-prop,#screenTariffs .fac-tbl th.cc-prop,#screenVoyages .fac-tbl td.cc-prop,#screenVoyages .fac-tbl th.cc-prop{background:#FAF7FF}
+/* ===== Módulo Documentación ===== */
+  .doc-mut{color:var(--cc-gray,#6B7A88);font-size:12px}
+  .doc-err{color:#B3261E;font-size:12px}
+  .doc-ic{background:none;border:none;padding:3px;cursor:pointer;color:var(--cc-blue,#0B5CAD);line-height:0;border-radius:6px}
+  .doc-ic:hover{background:#EEF3FA}.doc-ic svg{width:18px;height:18px}
+  .doc-ic.dis{opacity:.35;cursor:not-allowed}.doc-ic.rojo{color:#C62828}.doc-ic.ambar{color:#B7791F}
+  .doc-sunat{display:flex;align-items:center;gap:6px}.doc-ics{display:inline-flex;gap:2px}
+  .doc-aud{display:flex;flex-direction:column;gap:2px;font-size:12px}
+  .doc-chk{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer}.doc-chk input{width:auto}
+  .doc-dlg p{margin:0 0 10px;line-height:1.45}
+  .doc-ul{margin:6px 0 10px 18px;padding:0;font-size:13px;line-height:1.55}
+  .doc-ul.err li{color:#B3261E}.doc-ul.warn li{color:#8A5A00}
+  .doc-cnt-row{display:flex;justify-content:space-between;font-size:12px;color:var(--cc-gray,#6B7A88)}
+  .doc-prog{height:6px;background:#EEF0F4;border-radius:4px;overflow:hidden;margin:12px 0}
+  .doc-prog span{display:block;height:100%;width:100%;background:var(--cc-blue,#0B5CAD);transform-origin:left;animation:docProg linear forwards}
+  @keyframes docProg{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+  .doc-drop{display:block;border:1.5px dashed var(--cc-line,#D5DCE6);border-radius:10px;padding:16px;text-align:center;margin:14px 0;cursor:pointer;color:var(--cc-gray,#6B7A88);font-size:13px}
+  .doc-drop input{display:block;margin:0 auto 6px}
+  .doc-cell{display:flex;align-items:center;gap:4px}
+  .doc-desc{display:inline-block;max-width:180px;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
+  .doc-num{display:inline-block;min-width:70px;text-align:right}
+  .doc-r37{display:inline-flex;align-items:center;gap:4px;color:#B7791F;font-weight:600;font-size:12px}.doc-r37 svg{width:16px;height:16px}
+  .doc-ext{font-size:11.5px;color:#8A5A00}
+  .doc-cnt{font-weight:600}.doc-cnt.rojo{color:#C62828}.doc-cnt.ambar{color:#B7791F}.doc-cnt.verde{color:#1B7F3B}
+  .doc-ok{color:#1B7F3B;line-height:0}.doc-ok svg{width:18px;height:18px}
+  .doc-badges{margin-top:8px}.doc-badge{display:inline-block;font-size:11.5px;padding:2px 8px;border-radius:6px;background:#EEF3FA;color:var(--cc-ink)}
+  .doc-ambar{color:#B7791F;font-size:12px;font-weight:600}
+  .fac-zone .cc-btn.doc-amar{background:#F2B705;color:#3D2E00}
+  .doc-estados{margin-top:8px}.doc-estados .cc-chip{font-size:12px;padding:4px 9px}
+  .doc-gridacts{margin-bottom:10px}
+  .doc-grid td{padding:7px 8px}.doc-grid input[type=text]{width:120px}
+  .doc-roleado td{opacity:.5}.doc-fila-err td{background:#FDECEC}
+  .doc-ver{border:1px solid #EEF0F4;border-radius:8px;padding:10px;margin-top:10px}
+  .doc-ver-h{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+  .doc-linea{margin:6px 0 0 18px;font-size:12px;color:var(--cc-gray,#6B7A88)}
+  .doc-pasos{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px;font-size:12.5px}
+  .doc-pasos span{padding:4px 10px;border-radius:14px;background:#F5F7FB;color:var(--cc-gray,#6B7A88)}
+  .doc-pasos span.on{background:var(--cc-blue,#0B5CAD);color:#fff}.doc-pasos span.ok{background:#E6F4EA;color:#14532D}
+  .doc-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .doc-card{display:flex;flex-direction:column;gap:6px;text-align:left;border:1px solid var(--cc-line,#D5DCE6);border-radius:10px;padding:14px;background:#fff;cursor:pointer;font:inherit}
+  .doc-card.on{border-color:var(--cc-blue,#0B5CAD);box-shadow:0 0 0 2px #D6E4F5}.doc-card span{font-size:12.5px;color:var(--cc-gray,#6B7A88)}
+  .doc-lista{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow:auto;margin:10px 0}
+  .doc-grupo{border-top:1px solid #EEF0F4;margin-top:10px}
+  .doc-grupo select[multiple]{min-height:72px}
+  .doc-radios{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:6px}
+  .doc-chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.doc-chips input{flex:1;min-width:180px}
+  .doc-x{background:none;border:none;cursor:pointer;color:inherit;padding:0 0 0 4px}
+  .doc-man{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+  #docCoExc .fac-f{margin-bottom:12px}
