@@ -8056,7 +8056,7 @@ function cbMpOpen(doc){
   if(document.querySelector('section.panel.active')?.id!=='screenCobranzas') facEnter('screenCobranzas');
   renderCb();
 }
-function cbMpSet(k, v){ CB.mp.f[k] = v; renderCb(); }
+function cbMpSet(k, v){ CB.mp.f[k] = v; setTimeout(renderCb, 0); }
 function cbMpSearch(){
   const f = CB.mp.f, q = normTxt;
   const hit = FD.list.find(d=>{ const [s,n] = d.num.split('-'); return (!f.tipo||d.tipo===f.tipo) && (!f.serie||q(s).includes(q(f.serie))) && (!f.num||q(n).includes(q(f.num))) && (!f.socio||q(d.fact).includes(q(f.socio))); });
