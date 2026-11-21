@@ -2033,6 +2033,7 @@
   .cc-chip{border-color:var(--cx-line);border-radius:6px;color:var(--cx-text);font-size:12.5px;padding:5px 10px}
   .cc-chip.on{background:var(--cx-primary);border-color:var(--cx-primary)}
   #ccPdaHead .cc-chip.on{background:var(--cx-primary)!important;border-color:var(--cx-primary)!important}
+  .cc-chip.on[class*="st-"]{color:#fff}
 
   /* Diálogos (mat-dialog) */
   .modal-bg{background:rgba(0,0,0,.32);backdrop-filter:none}
