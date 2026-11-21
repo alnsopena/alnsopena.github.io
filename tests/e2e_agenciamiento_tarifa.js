@@ -60,7 +60,7 @@ const ruido = /^(start|onHasParentDirectory|addRow) is not defined/;
   await p.click('#vyEditor button:has-text("Ver Historial")'); await W();
   check((await txt('#facModalBox')).includes('Estado Previo'), 'Viaje: Historial con columnas de Connect');
   await p.click('#facModalBox .fac-btns button:has-text("Cerrar")'); await W();
-  await p.click('#vyEditor .md-actions button:has-text("Anular")'); await W();
+  await p.click('#vyEditor .md-actions button.pink:has-text("Anular")'); await W();
   check((await txt('#facModalBox h3')) === 'Anular Viaje' && await p.$eval('#anOk', e => e.disabled), 'Viaje: Anular pide motivo');
   await p.click('#facModalBox button:has-text("Cancelar")'); await W();
   await p.click('#vyEditor .md-actions button:has-text("Enviar Email")'); await W();
