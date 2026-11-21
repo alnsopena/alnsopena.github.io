@@ -1,6 +1,6 @@
 // Uso: MOCKUP_HTML=<ruta a index.html> node tests/e2e_documentacion.js
 // Documentación v37: Importación (Documentos, BL, Transbordo, Direccionamiento), Exportación (Documentos, Reserva, Cutoff)
-// y las propuestas I-037, I-062, I-017, I-080, I-081, I-185, I-069, I-055, I-074, I-078 e I-036. Falla si hay errores JS.
+// y las propuestas I-037, I-062, I-017, I-080, I-081, I-185, I-069, I-055, I-074, I-078, I-036, I-060, I-019, I-022 e I-182. Falla si hay errores JS.
 const { chromium } = require('playwright'); const path = require('path');
 const HTML = process.env.MOCKUP_HTML || path.resolve(__dirname, '../repo/pda-mockup/index.html');
 let fails = 0; const check = (c, m) => { console.log(c ? 'OK ' : 'FALLA', m); if (!c) fails++; };
@@ -171,6 +171,75 @@ const ruido = /^(start|onHasParentDirectory|addRow) is not defined/;
   await p.click('#docAvF .fac-tabs button:has-text("Salida")'); await W();
   check((await txt('#docAvRes')).includes('Resultados (2)'), 'I-062: pestaña Aviso de Salida');
 
+  // I-019 (HU-DOC-05): recargos del Aviso de Llegada según Carrier Code
+  await menu('Importación', 'Documentos'); await p.evaluate(() => docIPag(1, 50)); await W();
+  const ids = await p.evaluate(() => { const t = document.querySelector('#docIRes').textContent, z = [], o = [];
+    CC.datos.blImportacion.forEach(b => { if (b.numero && t.includes(b.numero)) (b.linea === 'ZIM' ? z : o).push(b.numero); }); return { zA: z[0], zB: z[1], ot: o[0] }; });
+  const recTab = async n => { await p.evaluate(x => docAbrirBLNumero(x), n); await W(250); await p.click('#docEdTabs .fac-tabs button:has-text("Recargo - Cláusula")'); await W(); };
+  await recTab(ids.zA);
+  const avZ = await txt('#docRecAvisoTbl');
+  check((await txt('#docRecTur')).includes('TUR07108_ejemplo.xlsx') && (await txt('#docRecTur')).includes('Consignatario'), 'I-060: el BL muestra los recargos TUR con evidencia de carga y pagador');
+  check(avZ.includes('Collect') && !avZ.includes('Prepaid') && avZ.includes('465.50'), 'I-019: BL ZIM con Collect y Prepaid muestra solo Collect y su total');
+  await p.evaluate(() => docVolver(true)); await W();
+  await recTab(ids.zB);
+  check((await txt('#docRecAvisoTbl')).includes('no muestra el recuadro'), 'I-019: BL ZIM solo Prepaid no muestra el recuadro de fletes');
+  await p.evaluate(() => docVolver(true)); await W();
+  await recTab(ids.ot);
+  const avO = await txt('#docRecAvisoTbl');
+  check(avO.includes('Collect') && avO.includes('Prepaid') && avO.includes('1825.00'), 'I-019: BL de otra línea muestra Collect y Prepaid con su total');
+  await p.selectOption('#docAvRegla', 'regimen'); await W();
+  check(!(await txt('#docRecAvisoTbl')).includes('Prepaid'), 'I-019: la regla alternativa del área (PEN-I019-01) se puede comparar');
+  await p.selectOption('#docAvRegla', 'linea'); await W();
+  await p.evaluate(() => docVolver(true)); await W();
+  await p.evaluate(() => docAvAbrir('Llegada')); await W(250);
+  await p.click('#docAvRes tbody tr >> nth=0 >> button.fac-link'); await W(250);
+  const pv = await txt('#docAvPrevFletes');
+  check(pv.includes('Collect') && !pv.includes('Prepaid'), 'I-019: la vista previa del aviso ZIM aplica la misma regla');
+
+  // I-060 (HU-DOC-01): carga de recargos TUR desde Documentos de Importación
+  await menu('Importación', 'Documentos');
+  await p.evaluate(() => { const b = CC.datos.blImportacion[0]; docIF('nave', b.nave); docIF('viaje', b.viaje); }); await W();
+  await p.click('#docITurBtn'); await W();
+  check(await p.isVisible('#docTurDlg'), 'I-060: abre la carga de recargos TUR');
+  await p.click('#docTurOk'); await W();
+  check((await txt('#docTurErr')).includes('obligatorios'), 'I-060: exige reporte y archivo');
+  await p.selectOption('#docTurRep', { index: 1 }); await W();
+  await p.setInputFiles('#docTurFile', { name: 'TUR07108_viaje.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: Buffer.from('demo') }); await W();
+  await p.click('#docTurOk'); await W();
+  const tr = await txt('#docTurRes');
+  check(tr.includes('TUR07108_viaje.xlsx') && /Recargos vinculados: \d+/.test(tr) && tr.includes('Collect') && tr.includes('Prepaid'), 'I-060: vincula recargos al BL con condición, lugar y pagador');
+  check((await txt('#docTurObs')).includes('CURRENCY_DOC') && (await txt('#docTurObs')).includes('BL no registrado'), 'I-060: reporte de observaciones sin inventar valores');
+  await modalBtn('Aceptar');
+
+  // I-022 (HU-DOC-21): BL No Negociable
+  await p.evaluate(() => docExpEditar('E7')); await W(250);
+  check((await txt('#docEdNN')).includes('NN habilitado') && !(await p.isDisabled('#docNnDesc')), 'I-022: NN habilitado con todas las condiciones');
+  await p.click('#docNnDesc'); await W();
+  const nn = await txt('#docNnPrev');
+  check(nn.includes('NOT NEGOTIABLE') && nn.includes('AS PER AGREEMENT') && nn.includes('Firma del representante legal'), 'I-022: vista previa con marca, fletes ocultos y firma');
+  await p.click('#docNnPdf'); await W(); check(toast().includes('BL No Negociable'), 'I-022: descarga del NN');
+  await p.evaluate(() => docVolver(true)); await W();
+  await p.evaluate(() => docExpEditar('E3')); await W(250);
+  check(await p.isDisabled('#docNnDesc') && (await txt('#docNnMotivo')).includes('Pendiente pago de documentación.'), 'I-022: bloqueado muestra el motivo visible');
+  await p.evaluate(() => docVolver(true)); await W();
+  await p.evaluate(() => docExpEditar('E4')); await W(250);
+  check(await p.isVisible('#docNnRect'), 'I-022: corrección después del pago pide rectificación de manifiesto');
+  await p.evaluate(() => docVolver(true)); await W();
+
+  // I-182 (HU-DOC-39): guardado parcial en Por revisar desde la segunda edición
+  const parcial = async (cons, n) => {
+    await p.click('#docEdEditar'); await W(200);
+    await p.evaluate(v => docEd('consignatario', v), cons); await W();
+    await p.click('#docEdGuardar'); await W(250);
+    if (await p.isVisible('#docR37Ok')) { await p.click('#docR37Ok'); await W(250); }
+    check(toast().includes('Reserva actualizada correctamente') && (await txt('#docParcialUlt')).includes(`Edición ${n}`) && (await txt('#docEdCab .doc-estados .on')).includes('POR REVISAR'), `I-182: edición ${n} guarda solo el consignatario y sigue en Por revisar`);
+  };
+  await p.evaluate(() => docExpEditar('E1')); await W(250);
+  await parcial('NUEVO CLIENTE UNO S.A.C.', 2);
+  await parcial('NUEVO CLIENTE DOS S.A.C.', 3);
+  check((await txt('#docEdPend')).length > 0 && !(await txt('#docEdPend')).includes('Ninguno'), 'I-182: los pendientes se mantienen para aprobar');
+  await p.evaluate(() => docVolver(true)); await W();
+
   // I-055 (HU-DOC-20): eliminación en bloque con permiso especial
   await menu('Importación', 'Documentos');
   const nv = await p.$$eval('#docIRes tr', r => { const x = r.find(t => t.textContent.includes('ZIMUBOX0000011')); const td = x.querySelectorAll('td'); return [td[3].textContent.trim(), td[4].textContent.trim()]; });
@@ -242,6 +311,12 @@ const ruido = /^(start|onHasParentDirectory|addRow) is not defined/;
   check(!(await p.isVisible('#docIAvBtn')) && !(await p.isVisible('#docIElBtn')) && (await txt('#docIRes')).includes('Aviso de llegada'), 'apagado oculta I-062 e I-055 en Importación');
   await menu('Exportación', 'Documentos');
   check(!(await txt('#docERes')).includes('Corrector 1'), 'apagado oculta la columna Correctores (I-078)');
+  check(!(await p.isVisible('#docETurBtn')), 'apagado oculta Cargar recargos TUR (I-060)');
+  await p.evaluate(() => docExpEditar('E7')); await W(250);
+  check(!(await p.isVisible('#docEdNN')) && (await txt('#docEdCab')).includes('TRANSMITIDO A SUNAT'), 'apagado oculta el BL No Negociable (I-022) y deja la Reserva de Connect');
+  await p.click('#docEdTabs .fac-tabs button:has-text("Recargo - Cláusula")'); await W();
+  check(!(await p.isVisible('#docRecTur')) && (await txt('#docEdTabs')).includes('Lugar de Pago'), 'apagado oculta los recargos TUR y deja la grilla de Connect');
+  await p.evaluate(() => docVolver(true)); await W();
   await top(); await p.click('#propToggle'); await W(200);
 
   check(errs.length === 0, `sin errores JS ${JSON.stringify(errs)}`);
