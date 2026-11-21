@@ -231,10 +231,64 @@ function caDetalle(){
     ${ed?`<div style="margin-top:10px;display:flex;gap:8px"><button type="button" class="cc-btn" onclick="caAgregar('${l}')">Agregar</button><button type="button" class="cc-btn pink" onclick="caEliminarSel('${l}')">Eliminar</button></div>`:''}</div>
   ${ed?`<div class="fac-btns"><button type="button" class="cc-btn" onclick="caCancelar()">Cancelar</button><button type="button" class="cc-btn" id="caGuardar" onclick="caGuardar()">Guardar</button></div>`:''}`;
 }
+/* ---------- Propuesta I-051 (HU-DOC-14): mantenimiento configurable ISOCODE (tipo y tamaño de contenedor) ---------- */
+const ISO_TIPOS = [['DV','Dry Van'],['HC','High Cube'],['RF','Reefer'],['RH','Reefer High Cube'],['OT','Open Top'],['FR','Flat Rack'],['TK','Tanque']];
+const isoH = (accion, detalle, user, ts) => ({accion, detalle, user, ts});
+const ISO = { f:{q:'', estado:''}, lista:[['22G1','20','DV','Contenedor estándar 20 pies'],['22R1','20','RF','Reefer 20 pies'],['22U1','20','OT','Open top 20 pies'],['22P1','20','FR','Flat rack 20 pies'],['22T1','20','TK','Tanque 20 pies'],
+    ['42G1','40','DV','Contenedor estándar 40 pies'],['45G1','40','HC','High cube 40 pies'],['45R1','40','RH','Reefer high cube 40 pies'],['42U1','40','OT','Open top 40 pies'],['42P1','40','FR','Flat rack 40 pies'],['L5G1','45','HC','High cube 45 pies']]
+  .map(([cod,tam,tipo,desc],i)=>({cod, tam, tipo, desc, activo: cod!=='L5G1', hist:[isoH('Creación', `${cod} · ${tam} ${tipo}`, 'doc.admin@cosmos.example', `2026-08-${String(10+i).padStart(2,'0')}T09:30`)]})) };
+const isoFam = x => `${x.tam} ${x.tipo}`;
+const isoUlt = x => x.hist[x.hist.length-1];
+const isoAhora = () => { const d = new Date(), p = n => String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; };
+const isoFh = ts => `${CC.fecha(ts)} ${ts.slice(11,16)}`;
+const isoFiltrar = () => ISO.lista.filter(x=>(!ISO.f.q || q(`${x.cod} ${x.desc} ${isoFam(x)}`).includes(q(ISO.f.q))) && (!ISO.f.estado || (ISO.f.estado==='Activo') === x.activo));
+W.caIso = () => { CA.view = 'iso'; vista('screenCatalogo', 'Mantenimiento ISOCODE', ['Inicio','Catálogo','Mantenimiento ISOCODE'], 'caVolver()'); };
+W.isoFiltro = () => { ISO.f = {q:$('isoQ').value.trim(), estado:$('isoEst').value}; W.caIso(); };
+W.isoEditar = cod => { const x = cod ? ISO.lista.find(i=>i.cod===cod) : {cod:'', tam:'', tipo:'', desc:'', activo:true};
+  CC.modal(`<h3>${cod ? 'Editar ISOCODE' : 'Nuevo ISOCODE'}</h3><div class="fac-g2">
+    ${CC.campo('Código ISO *', `<input id="isoCod" maxlength="4" style="text-transform:uppercase" value="${esc(x.cod)}" ${cod?'disabled':''} placeholder="Ej. 22G1">`)}
+    ${CC.campo('Tamaño (pies) *', CC.selector(['20','40','45'], x.tam, 'id="isoTam"', 'Seleccione'))}
+    ${CC.campo('Tipo *', CC.selector(ISO_TIPOS.map(([k,v])=>[k, `${k} · ${v}`]), x.tipo, 'id="isoTipo"', 'Seleccione'))}
+    ${CC.campo('Descripción *', `<input id="isoDesc" maxlength="100" value="${esc(x.desc)}">`)}</div>
+    <div class="fac-btns"><button type="button" class="cc-btn ghost" onclick="CC.cerrarModal()">Cancelar</button><button type="button" class="cc-btn" id="isoGuardar" onclick="isoGuardar('${esc(cod||'')}')">Guardar</button></div>`);
+};
+W.isoGuardar = cod => {
+  const v = {cod:$('isoCod').value.trim().toUpperCase(), tam:$('isoTam').value, tipo:$('isoTipo').value, desc:$('isoDesc').value.trim()};
+  if(!v.cod || !v.tam || !v.tipo || !v.desc){ CC.toast('Por favor, complete todos los campos obligatorios.','error'); return; }
+  if(!/^[A-Z0-9]{4}$/.test(v.cod)){ CC.toast('El código ISO debe tener 4 caracteres (letras o números).','error'); return; }
+  if(!cod && ISO.lista.some(x=>x.cod===v.cod)){ CC.toast('Ya existe un ISOCODE con este código','error'); return; }
+  const user = CC.usuario(), ts = isoAhora();
+  if(cod){ const x = ISO.lista.find(i=>i.cod===cod), cambios = ['tam','tipo','desc'].filter(k=>x[k]!==v[k]).map(k=>`${({tam:'Tamaño',tipo:'Tipo',desc:'Descripción'})[k]}: ${x[k]} → ${v[k]}`);
+    if(!cambios.length){ CC.cerrarModal(); return; } Object.assign(x, {tam:v.tam, tipo:v.tipo, desc:v.desc}); x.hist.push(isoH('Edición', cambios.join(' · '), user, ts)); }
+  else ISO.lista.push({...v, activo:true, hist:[isoH('Creación', `${v.cod} · ${v.tam} ${v.tipo}`, user, ts)]});
+  CC.cerrarModal(); W.caIso(); CC.toast('ISOCODE guardado correctamente','success');
+};
+W.isoEstado = cod => { const x = ISO.lista.find(i=>i.cod===cod), nuevo = !x.activo;
+  if(!confirm(`¿Confirma que desea ${nuevo ? 'activar' : 'inactivar'} el ISOCODE ${cod}?`)) return;
+  x.activo = nuevo; x.hist.push(isoH(nuevo ? 'Activación' : 'Inactivación', '', CC.usuario(), isoAhora())); W.caIso(); CC.toast(`ISOCODE ${nuevo ? 'activado' : 'inactivado'} correctamente`,'success'); };
+W.isoHist = cod => { const x = ISO.lista.find(i=>i.cod===cod);
+  CC.modal(`<h3>Historial ${esc(cod)}</h3><div class="fac-scroll"><table class="fac-tbl"><thead><tr><th>Acción</th><th>Detalle</th><th>Usuario</th><th>Fecha y hora</th></tr></thead><tbody>
+    ${x.hist.slice().reverse().map(h=>`<tr><td>${esc(h.accion)}</td><td>${esc(h.detalle||'-')}</td><td>${esc(h.user)}</td><td>${isoFh(h.ts)}</td></tr>`).join('')}</tbody></table></div>
+    <div class="fac-btns"><button type="button" class="cc-btn" onclick="CC.cerrarModal()">Cerrar</button></div>`); };
+function isoHtml(){
+  const filas = isoFiltrar(), lnk = (t, fn) => `<button type="button" class="fac-link" onclick="${fn}">${t}</button>`;
+  return `<div ${CC.propuesta('I-051','HU-DOC-14 · Mantenimiento ISOCODE','fac-card')} id="isoCard"><div class="fac-head"><div><h3>Mantenimiento ISOCODE</h3><div class="fac-sub">Códigos de tipo y tamaño de contenedor. La familia (tamaño y tipo) la usan Direccionamiento de Vacíos y Días Libres.</div></div>
+      <div class="fac-acts"><button type="button" class="cc-btn" id="isoNuevo" onclick="isoEditar('')">Nuevo</button></div></div>
+    <div class="fac-note" style="margin-bottom:10px">Por definir (PEN-I051-01): si este mantenimiento convive con la edición de tara, payload y propietario de cada contenedor o la reemplaza. Lo administran Documentación y TI.</div>
+    <div class="fac-g3">${CC.campo('Buscar', `<input id="isoQ" placeholder="Código, descripción o familia" value="${esc(ISO.f.q)}">`)}${CC.campo('Estado', CC.selector(['Activo','Inactivo'], ISO.f.estado, 'id="isoEst"', 'Todos'))}
+      <div class="fac-f"><label>&nbsp;</label><button type="button" class="cc-btn" id="isoBuscar" onclick="isoFiltro()">Buscar</button></div></div>
+    <div class="fac-sec">Resultados (${filas.length})</div>
+    <div class="fac-scroll"><table class="fac-tbl" id="isoTbl"><thead><tr><th>Código ISO</th><th>Tamaño</th><th>Tipo</th><th>Familia</th><th>Descripción</th><th>Estado</th><th>Última actualización</th><th>Acciones</th></tr></thead><tbody>
+    ${filas.map(x=>{ const u = isoUlt(x); return `<tr data-iso="${esc(x.cod)}"><td>${esc(x.cod)}</td><td>${esc(x.tam)}</td><td>${esc(x.tipo)}</td><td>${esc(isoFam(x))}</td><td>${esc(x.desc)}</td>
+      <td>${CC.chipEstado(x.activo ? 'Activo' : 'Inactivo', x.activo ? 'aprobada' : 'anulada')}</td><td>${esc(u.user)}<div class="ac-mut">${isoFh(u.ts)}</div></td>
+      <td><div class="fac-rowacts">${lnk('Editar', `isoEditar('${esc(x.cod)}')`)}${lnk(x.activo ? 'Inactivar' : 'Activar', `isoEstado('${esc(x.cod)}')`)}${lnk('Historial', `isoHist('${esc(x.cod)}')`)}</div></td></tr>`; }).join('')
+      || '<tr><td colspan="8" class="fac-empty">No se encontraron resultados con los criterios seleccionados.</td></tr>'}</tbody></table></div></div>`;
+}
+W.addEventListener('cc:propuestas', e => { if(!e.detail && CA.view==='iso'){ CA.view = 'list'; const a = D.querySelector('section.panel.active'); if(a && a.id==='screenCatalogo') vista('screenCatalogo'); } });
 CC.registrarPantalla({
   id:'screenCatalogo', grupo:'Data Maestra', opcion:'Catálogo', titulo:'Buscar Catálogo', migas:['Inicio','Catálogo','Consulta de Catálogo'],
-  html: () => CA.view==='detail' ? caDetalle() : filtrosCx({id:'caF', titulo:'Buscar Catálogo', hay:caHay(), buscado:CA.buscado, buscar:'caBuscar()', limpiar:'caLimpiar()',
-      acciones:'<button type="button" class="cc-btn" onclick="caNuevo()">Nuevo</button>',
+  html: () => CA.view==='iso' ? isoHtml() : CA.view==='detail' ? caDetalle() : filtrosCx({id:'caF', titulo:'Buscar Catálogo', hay:caHay(), buscado:CA.buscado, buscar:'caBuscar()', limpiar:'caLimpiar()',
+      acciones:`<button type="button" ${CC.propuesta('I-051','HU-DOC-14 · ISOCODE','cc-btn ghost')} id="caIso" onclick="caIso()">Mantenimiento ISOCODE</button><button type="button" class="cc-btn" onclick="caNuevo()">Nuevo</button>`,
       campos:[CC.campo('Nombre',`<input id="caNombre" placeholder="Ingresar nombre" value="${esc(CA.f.nombre)}" oninput="caSet('nombre',this.value)">`),
         CC.campo('Código',`<input id="caCod" placeholder="Ingresar código" value="${esc(CA.f.cod)}" oninput="caSet('cod',this.value)">`),
         CC.campo('Descripción',`<input placeholder="Ingresar descripción" value="${esc(CA.f.desc)}" oninput="caSet('desc',this.value)">`)]})

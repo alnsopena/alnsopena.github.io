@@ -240,6 +240,18 @@ function dvLeerForm(){
 window.dvRe = () => { dvLeerForm(); dvPintar(); };
 window.dvDepAuto = (idDep, idDir) => { const d = AC.dep(AC.v(idDep)); if($(idDir)) $(idDir).value = d ? d.dir : ''; if(AC.v(idDep) && d && !d.dir) CC.toast('El depósito no tiene una dirección configurada.','error'); };
 const maestro = () => CC.datos.contenedores.filter(c=>c.indicador==='Importación' && c.estado!=='Devuelto vacío');
+/* Propuesta I-045 (HU-ATC-02): alerta cuando el contenedor ya tiene Visto Bueno (liberación aprobada).
+   Control propuesto: no deja registrar ni modificar (PEN-I045-01: bloqueo o excepción autorizada, por definir). */
+const dvConVb = nums => nums.map(n=>({num:n, vb:AC.vbDe ? AC.vbDe(n) : null})).filter(x=>x.vb);
+function dvAlertaVb(nums){
+  if(!CC.verPropuestas) return false;
+  const l = dvConVb(nums); if(!l.length) return false;
+  AC.dlg(AC.cab('Contenedor con Visto Bueno') + `<div ${CC.propuesta('I-045','HU-ATC-02 · Alerta de VB')} id="dvVbAlerta" style="padding:10px;border-radius:8px">
+      ${l.map(x=>`<p class="ac-p">El contenedor <b>${esc(x.num)}</b> ya cuenta con un Visto Bueno generado el <b>${AC.fh(x.vb.fecha)}</b> (BL ${esc(x.vb.bl)}, liberación ${esc(x.vb.id)}). No es posible registrar ni modificar la instrucción de direccionamiento.</p>`).join('')}
+      <div class="ac-mut">Si el depósito debe cambiar, se hace con «Nuevo MEMO» en Instrucciones del BL.</div></div>`
+    + AC.pie(AC.btn('Entendido','acCerrar()','','data-ac="vb-ok"')), 'sm');
+  return true;
+}
 window.dvAgregarCont = () => {
   dvLeerForm(); const F = DV.form, ce = F.ce, i = F.inst, num = String(ce.num||'').toUpperCase().trim();
   let item;
@@ -253,6 +265,7 @@ window.dvAgregarCont = () => {
     if(!c){ F.ce.num = ''; CC.toast('El Contenedor, Tipo/Tamaño, Depósito Destino y Dirección deben ser obligatorios.','error'); dvPintar(); return; }
     item = {num, tipo:AC.isoDe(c.tipo), nave:c.nave, viaje:c.viaje, puerto:'Callao', bl:c.bl, cliente:(AC.bls().find(b=>b.numero===c.bl)||{}).consignatario||'', prov:false};
   }
+  if(dvAlertaVb([num])) return;
   if(!ce.dep || !ce.dir){ CC.toast(ce.dep && !depDir(ce.dep) ? 'El Depósito Destino no tiene una dirección configurada en el sistema.' : 'El Contenedor, Tipo/Tamaño, Depósito Destino y Dirección deben ser obligatorios.','error'); return; }
   if(i.contenedores.some(x=>x.num===num)){ CC.toast(`El contenedor ${num} ya fue agregado.`,'error'); return; }
   i.contenedores.push(Object.assign(item, {dep:ce.dep, dir:ce.dir})); F.ce = {prov:ce.prov}; dvPintar();
@@ -340,7 +353,11 @@ window.dvGuardar = () => {
   if(t==='Por Vigencia' || t==='Por Depósito'){ if(!i.dep) return e('Debe seleccionar un depósito destino.'); if(t==='Por Vigencia' && !i.dir) return e('El depósito no tiene una dirección configurada.'); }
   if(t==='Por Depósito'){ const p = Number(i.prioridad); if(!Number.isInteger(p) || p < 1) return e('Debe indicar la prioridad de llenado (número entero mayor o igual a 1).');
     if(DV.lista.some(x=>x.id!==i.id && x.tipo==='Por Depósito' && x.linea===i.linea && x.sucursal===i.sucursal && Number(x.prioridad)===p)) return e('Ya existe otra instrucción Por Depósito de la misma línea y sucursal con esta prioridad de llenado.'); i.prioridad = p; }
-  if(t==='Por Contenedor'){ if(!i.contenedores.length) return e('Por favor complete todos los campos obligatorios.'); if(i.contenedores.some(c=>!c.dep)) return e('Cada contenedor debe tener un depósito destino seleccionado.'); if(i.contenedores.some(c=>!c.dir)) return e('Cada contenedor debe tener dirección del depósito destino antes de guardar.'); i.bl = i.contenedores[0].bl; }
+  if(t==='Por Contenedor'){ if(!i.contenedores.length) return e('Por favor complete todos los campos obligatorios.'); if(i.contenedores.some(c=>!c.dep)) return e('Cada contenedor debe tener un depósito destino seleccionado.'); if(i.contenedores.some(c=>!c.dir)) return e('Cada contenedor debe tener dirección del depósito destino antes de guardar.');
+    if(dvAlertaVb(i.contenedores.map(c=>c.num))) return; i.bl = i.contenedores[0].bl; }
+  let excluidos = [];
+  if(t==='Por Vigencia' && i.cliente && CC.verPropuestas){ const bls = AC.bls().filter(b=>b.consignatario===i.cliente).map(b=>b.numero);
+    excluidos = dvConVb(CC.datos.contenedores.filter(c=>bls.includes(c.bl)).map(c=>c.numero)); }
   if(t==='Por Tipo/Tamaño'){
     if(!i.modo) return e('Por favor complete todos los campos obligatorios.');
     if(!i.familias.length) return e('Revise la gestión por tipo/tamaño: agregue al menos una familia o «Especiales».');
@@ -355,6 +372,10 @@ window.dvGuardar = () => {
   if(crear) DV.lista.push(i); else DV.lista[DV.lista.findIndex(x=>x.id===i.id)] = i;
   DV.tab = 'reg'; dvVolver();
   CC.toast((crear ? 'Instrucción creada exitosamente' : 'Instrucción actualizada exitosamente') + (prov ? `. ${prov} contenedor(es) provisional(es) pendiente(s) de regularizar.` : ''),'success');
+  if(excluidos.length) AC.dlg(AC.cab('Contenedores con Visto Bueno') + `<div ${CC.propuesta('I-045','HU-ATC-02 · Exclusión por VB')} id="dvVbExcluidos" style="padding:10px;border-radius:8px">
+      <p class="ac-p">Se actualizó la instrucción. ${excluidos.length} contenedor(es) del cliente no se actualizan porque ya tienen Visto Bueno:</p>
+      ${AC.tabla([{t:'Contenedor', k:'num'}, {t:'BL', v:x=>esc(x.vb.bl)}, {t:'Fecha del VB', v:x=>AC.fh(x.vb.fecha)}], excluidos)}</div>`
+    + AC.pie(AC.btn('Entendido','acCerrar()','','data-ac="vb-ok"')), 'md');
 };
 CC.registrarPantalla({
   id:'screenAcDirVacios', grupo:G, opcion:'Direccionamiento de Vacíos', titulo:'Instrucciones de Direccionamiento de Vacíos',
@@ -476,6 +497,13 @@ window.daAccion = acc => {
     }), '', 'data-ac="da-confirmar"')), 'sm');
 };
 window.daAdjuntos = id => { const d = DA.lista.find(x=>x.id===id);
+  const tablaAdj = x => x.adjuntos.length ? AC.tabla([{t:'Archivo', k:'nombre'}, {t:'Fecha de carga', v:a=>AC.fh(a.fecha)}, {t:'Descargar', v:a=>AC.btn('Descargar', AC.cb(()=>AC.descargar(a.nombre)), 'ghost')}], x.adjuntos) : '<div class="ac-empty">El daño no tiene adjuntos.</div>';
+  if(CC.verPropuestas){ const grupo = DA.lista.filter(x=>x.bl===d.bl);
+    AC.dlg(AC.cab('Adjuntos', `BL ${esc(d.bl)} · ${grupo.length} contenedor(es) con daño`) + `<div ${CC.propuesta('I-047','HU-ATC-06 · Adjuntos por contenedor')} id="daAdjGrupos" style="padding:10px;border-radius:8px">
+      ${grupo.map(x=>`<details ${x.id===d.id?'open':''} data-da-grupo="${esc(x.cont)}" style="border:1px solid #DCE3EC;border-radius:8px;margin-top:8px;background:#fff">
+        <summary style="cursor:pointer;padding:10px 12px"><b>${esc(x.cont)}</b> <span class="ac-mut">${x.adjuntos.length} archivo(s) · ${esc(x.estado)}</span></summary><div style="padding:0 12px 12px">${tablaAdj(x)}</div></details>`).join('')}</div>`
+      + AC.pie(AC.btn('Cerrar','acCerrar()','','data-ac="cerrar-adj"')), 'md');
+    return; }
   AC.dlg(AC.cab('Adjuntos', `${esc(d.cont)} · BL ${esc(d.bl)}`) + (d.adjuntos.length ? AC.tabla([{t:'Archivo', k:'nombre'}, {t:'Fecha de carga', v:a=>AC.fh(a.fecha)}, {t:'Descargar', v:a=>AC.btn('Descargar', AC.cb(()=>AC.descargar(a.nombre)), 'ghost')}], d.adjuntos) : '<div class="ac-empty">El daño no tiene adjuntos.</div>')
     + AC.pie(AC.btn('Cerrar','acCerrar()','','data-ac="cerrar-adj"')), 'md'); };
 window.daCargar = () => {
@@ -541,23 +569,51 @@ window.daNEliminarAdj = () => { daLeerN(); const N = DA.nuevo; N.adjuntos = N.ad
 window.daNGuardar = () => { daLeerN(); const N = DA.nuevo, f = N.form;
   if(!N.sel.length){ CC.toast('Seleccione al menos un contenedor.','error'); return; }
   if(!f.consig || !N.nv || !f.agente || !f.linea || f.costos==='' || !f.suc || !f.ingreso || !f.pres){ CC.toast('Por favor, complete todos los campos obligatorios.','error'); return; }
-  if(N.adjuntos.length < 3){ CC.toast('Adjunte los documentos obligatorios para guardar.','error'); return; }
+  const porCont = CC.verPropuestas;
+  if(porCont){ const falta = N.sel.filter(c=>DA_TIPOS.some(t=>!(N.porCont[c]||[]).some(a=>a.tipo===t[0])));
+    if(falta.length){ CC.toast(`Cada contenedor necesita Liquidación, Fotos y EIR. Falta completar: ${falta.join(', ')}.`,'error'); daNAbrir(falta[0]); return; } }
+  else if(N.adjuntos.length < 3){ CC.toast('Adjunte los documentos obligatorios para guardar.','error'); return; }
   N.sel.forEach(c=>DA.lista.push({id:++DA.seq, bl:N.bl, cont:c, consig:f.consig, dep:f.dep, agente:f.agente, naveViaje:N.nv, costos:Number(f.costos), sucursal:f.suc, ingreso:f.ingreso, creacion:AC.ahora(), presupuesto:f.pres, linea:f.linea,
-    adjuntos:N.adjuntos.map(a=>({nombre:a.nombre, fecha:a.fecha})), estado:'Pendiente', hist:[]}));
+    adjuntos:(porCont ? N.porCont[c] : N.adjuntos).map(a=>({nombre:a.nombre, fecha:a.fecha})), estado:'Pendiente', hist:[]}));
   CC.toast('Daño creado correctamente.','success'); DA.res = null; daVolver(); };
+/* Propuesta I-047 (HU-ATC-06): adjuntos agrupados por contenedor en desplegables */
+const daTiposDe = l => DA_TIPOS.map(t=>t[0]).filter(t=>l.some(a=>a.tipo===t));
+window.daNRe = () => { daLeerN(); daPintar(); };
+window.daNAbrir = c => { daLeerN(); const N = DA.nuevo; N.abierto = N.abierto===c ? '' : c; daPintar(); };
+window.daNSubirCont = c => { daLeerN(); const N = DA.nuevo; N.porCont = N.porCont || {}; const st = {files:[]}; let bg;
+  const html = () => AC.cab('Adjuntos', `Contenedor ${esc(c)} · ${st.files.length} archivos seleccionados`) + `<div class="fac-g2">${CC.campo('TIPO DE DOCUMENTO', CC.selector(DA_TIPOS.map(t=>t[0]), '', 'id="daNT"', 'Seleccione el tipo'))}</div>
+    <div class="ac-row" style="margin:8px 0">${AC.btn('Cargar', AC.cb(()=>{ const t = AC.v('daNT'); if(!t){ CC.toast('Seleccione el tipo de documento.','error'); return; } st.files.push(Object.assign({tipo:t}, AC.archivo(`${t}_${c}`, DA_TIPOS.find(x=>x[0]===t)[1]))); AC.repintar(bg, html()); }), 'ghost', 'data-ac="da-n-cargar"')}<span class="ac-mut">Liquidación y EIR: PDF. Fotos: JPG. Máx 10 MB.</span></div>`
+    + AC.tabla([{t:'Tipo', k:'tipo'}, {t:'Archivo', k:'nombre'}, {t:'Tamaño', k:'tam'}, {t:'Fecha', v:a=>AC.fh(a.fecha)}, {t:'Usuario', k:'usuario'}, {t:'Acciones', v:(a,i)=>AC.link('Quitar', AC.cb(()=>{ st.files.splice(i,1); AC.repintar(bg, html()); }))}], st.files, 'Sin archivos.')
+    + AC.pie(AC.btn('Cancelar','acCerrar()','ghost'), AC.btn('Guardar', AC.cb(()=>{ if(!st.files.length) return; (N.porCont[c] = N.porCont[c] || []).push(...st.files); N.abierto = c; AC.cerrar(); daPintar(); }), '', 'data-ac="da-n-guardar"'));
+  bg = AC.dlg(html(), 'lg'); };
+window.daNQuitarCont = (c, i) => { daLeerN(); const N = DA.nuevo; N.porCont[c].splice(i,1); N.abierto = c; daPintar(); };
+function daNAcordeon(N, ok){
+  N.porCont = N.porCont || {};
+  const sel = N.conts.filter(c=>N.sel.includes(c));
+  if(N.abierto===undefined && sel.length) N.abierto = sel[0];
+  const caja = c => { const l = N.porCont[c] || [], tipos = daTiposDe(l), abierto = N.abierto===c;
+    return `<details ${abierto?'open':''} data-da-grupo="${esc(c)}" style="border:1px solid #DCE3EC;border-radius:8px;margin-top:8px;background:#fff">
+      <summary onclick="event.preventDefault();daNAbrir('${esc(c)}')" style="cursor:pointer;padding:10px 12px;display:flex;gap:12px;align-items:center"><b>${abierto?'▾':'▸'} ${esc(c)}</b>
+        <span class="ac-mut">${l.length} archivo(s)</span><span class="ac-mut">${tipos.length===DA_TIPOS.length ? 'Completo' : `Falta: ${DA_TIPOS.map(t=>t[0]).filter(t=>!tipos.includes(t)).join(', ')}`}</span></summary>
+      <div style="padding:0 12px 12px"><div class="ac-row" style="justify-content:flex-end;margin-bottom:6px">${AC.btn('Subir archivo', `daNSubirCont('${esc(c)}')`, 'ghost', `data-da-subir="${esc(c)}"`)}</div>
+        ${AC.tabla([{t:'Archivo', k:'nombre'}, {t:'Tipo', k:'tipo'}, {t:'Fecha', v:a=>AC.fh(a.fecha)}, {t:'Acciones', v:(a,i)=>AC.link('Quitar', `daNQuitarCont('${esc(c)}',${i})`)}], l, 'Sin adjuntos para este contenedor.')}</div></details>`; };
+  return `<div ${CC.propuesta('I-047','HU-ATC-06 · Adjuntos por contenedor')} id="daNAdjCont" style="margin-top:12px;padding:10px;border-radius:8px">
+    <div class="ac-row"><b>Adjuntos por contenedor</b><span class="ac-mut">Cada contenedor necesita Liquidación, Fotos y EIR. Lo que cargue en uno no se asocia a otro.</span></div>
+    ${!ok ? '<div class="ac-mut" style="margin-top:6px">Busque el BL para ver sus contenedores.</div>' : sel.length ? sel.map(caja).join('') : '<div class="ac-mut" style="margin-top:6px">Seleccione contenedores para cargar sus adjuntos.</div>'}</div>`;
+}
 function daNuevoHtml(){
   const N = DA.nuevo, f = N.form, ok = N.conts.length > 0, dis = ok ? '' : 'disabled';
   return `<div class="fac-card" id="daNuevoF"><div class="fac-head"><h3>Nuevo Daño</h3></div><div class="fac-sec" style="margin-top:0">Búsqueda por BL</div>
     <div class="fac-g3">${CC.campo('BL', AC.lista('daNBl', N.bl, AC.bls().map(b=>b.numero), 'Ingrese BL'))}${CC.campo('Nave - Viaje *', CC.selector(N.nv ? [N.nv] : [], N.nv, 'id="daNNv"', 'Seleccionar'))}</div>
     <div class="fac-btns" style="position:static">${AC.btn('Buscar','daNBuscar()','','id="daNBuscar"')}${AC.btn('Limpiar','daNLimpiar()','ghost')}</div>
-    ${ok ? `<div class="ac-row"><b>Contenedores encontrados para BL: ${esc(N.bl)}</b><span class="ac-mut">${N.sel.length} seleccionados</span></div>${AC.tabla([{t:'', v:c=>`<input type="checkbox" class="daNCont" value="${esc(c)}" ${N.sel.includes(c)?'checked':''}>`}, {t:'Contenedor', v:c=>esc(c)}], N.conts)}` : ''}
+    ${ok ? `<div class="ac-row"><b>Contenedores encontrados para BL: ${esc(N.bl)}</b><span class="ac-mut">${N.sel.length} seleccionados</span></div>${AC.tabla([{t:'', v:c=>`<input type="checkbox" class="daNCont" value="${esc(c)}" ${N.sel.includes(c)?'checked':''} onchange="daNRe()">`}, {t:'Contenedor', v:c=>esc(c)}], N.conts)}` : ''}
     <div class="fac-g3" style="margin-top:12px">${CC.campo('Consignatario / Embarcador *', CC.selector(CC.datos.socios.consignatarios.map(c=>c.razonSocial).concat(CC.datos.socios.embarcadores.map(c=>c.razonSocial)), f.consig, `id="daNCons" ${dis}`, 'Seleccionar'))}
       ${CC.campo('Nave - Viaje *', `<input disabled value="${esc(N.nv)}">`)}${CC.campo('Agente de Aduana *', CC.selector(AC.agentes.map(a=>a.nombre), f.agente, `id="daNAg" ${dis}`, 'Seleccionar'))}
       ${CC.campo('Línea Naviera *', CC.selector(CC.datos.lineas.map(l=>[l.codigo,l.nombre]), f.linea, `id="daNLin" ${dis}`, 'Seleccionar'))}${CC.campo('Depósito', CC.selector(AC.depositos.map(d=>[d.codigo,d.razon]), f.dep, `id="daNDep" ${dis}`, 'Seleccionar'))}
       ${CC.campo('Costos (USD) *', `<input type="number" min="0" id="daNCos" value="${esc(f.costos??'')}" ${dis}>`)}${CC.campo('Sucursal *', CC.selector(AC.sucursales, f.suc, `id="daNSuc" ${dis}`, 'Seleccionar'))}
       ${CC.campo('Fecha de Ingreso *', `<input type="date" id="daNIng" value="${esc(f.ingreso||'')}" ${dis}>`)}${CC.campo('N° de Presupuesto *', `<input id="daNPre" value="${esc(f.pres||'')}" ${dis}>`)}</div>
-    <div class="ac-row" style="margin-top:12px"><b>Adjuntos</b><span class="ac-mut">Mínimo 3 (Liquidación, Fotos y EIR)</span><span class="ac-sp"></span>${AC.btn('Subir archivo','daNSubir()','ghost', ok ? 'id="daNSubir"' : 'disabled')}${AC.btn('Eliminar','daNEliminarAdj()','pink', N.selAdj.length ? '' : 'disabled')}</div>
-    ${AC.tabla([{t:'', v:(a,i)=>`<input type="checkbox" ${N.selAdj.includes(i)?'checked':''} onchange="daNSelAdj(${i},this.checked)">`}, {t:'Archivo', k:'nombre'}, {t:'Tipo', k:'tipo'}, {t:'Fecha', v:a=>AC.fh(a.fecha)}], N.adjuntos, 'Sin adjuntos.')}
+    ${CC.verPropuestas ? daNAcordeon(N, ok) : `<div class="ac-row" style="margin-top:12px"><b>Adjuntos</b><span class="ac-mut">Mínimo 3 (Liquidación, Fotos y EIR)</span><span class="ac-sp"></span>${AC.btn('Subir archivo','daNSubir()','ghost', ok ? 'id="daNSubir"' : 'disabled')}${AC.btn('Eliminar','daNEliminarAdj()','pink', N.selAdj.length ? '' : 'disabled')}</div>
+    ${AC.tabla([{t:'', v:(a,i)=>`<input type="checkbox" ${N.selAdj.includes(i)?'checked':''} onchange="daNSelAdj(${i},this.checked)">`}, {t:'Archivo', k:'nombre'}, {t:'Tipo', k:'tipo'}, {t:'Fecha', v:a=>AC.fh(a.fecha)}], N.adjuntos, 'Sin adjuntos.')}`}
     <div class="fac-btns">${AC.btn('Cancelar','daVolver()','ghost')}${AC.btn('Guardar','daNGuardar()','','id="daNGuardar"')}</div></div>`;
 }
 CC.registrarPantalla({
@@ -782,4 +838,80 @@ CC.registrarPantalla({
   html: uwHtml,
   guia:[{t:'Usuarios web', steps:[{el:'#uwF', h:'Buscar', p:'Filtra solicitudes del Portal Externo. Marca las pendientes para aprobarlas o rechazarlas.'}]}]
 });
+
+/* ============================================================
+   10. MANDATO ELECTRÓNICO (propuesta I-046, HU-ATC-01)
+   En Connect la aprobación, observación y rechazo están en el Portal Externo. Aquí se proponen en Atención al cliente
+   del portal interno, con los mismos estados y datos del mandato del portal externo (modulos/portal-externo.js).
+============================================================ */
+const MD_EST = {PENDIENTE:'Pendiente', OBSERVADO:'Observado', APROBADO:'Aprobado', RECHAZADO:'Rechazado'};
+const MD_TONO = {PENDIENTE:'pendiente', OBSERVADO:'pendiente', APROBADO:'aprobada', RECHAZADO:'rechazada'};
+const MD_AG = 'AGENCIA DE ADUANAS DEMO S.A.C.', MD_OP = 'OPERADOR LOGÍSTICO DEMO S.A.C.';
+const mdH = (prev, next, com, user, ts) => ({prev, next, com:com||'', user, ts});
+const MD = { f:{cliente:'', tipo:'', oper:'', estado:'PENDIENTE', desde:'', hasta:''}, buscado:false, pagina:1, tam:10, lista:[
+  {n:'ME-000101', cliente:'ANDES MINING EXPORT S.A.', tipo:'Por Vigencia', bl:'', desde:'2026-10-01', hasta:'2027-03-31', tTer:'Agente de Aduana', tercero:MD_AG, oper:'Importación', estado:'APROBADO', fReg:'2026-09-28T10:15', archivo:'mandato-andes-agencia.pdf', obs:'',
+    hist:[mdH('','PENDIENTE','','importador@andesmining.example','2026-09-28T10:15'), mdH('PENDIENTE','APROBADO','','mesa.ayuda@cosmos.example','2026-09-29T09:02')]},
+  {n:'ME-000102', cliente:'TEXTILES COSTA VERDE S.A.', tipo:'Por BL', bl:'ZIMEXP0026013', desde:'', hasta:'', tTer:'Operador Logístico', tercero:MD_OP, oper:'Exportación', estado:'PENDIENTE', fReg:'2026-11-18T16:40', archivo:'', obs:'',
+    hist:[mdH('','PENDIENTE','','exportador@costaverde.example','2026-11-18T16:40')]},
+  {n:'ME-000103', cliente:'ANDES MINING EXPORT S.A.', tipo:'Por Vigencia', bl:'', desde:'2026-11-01', hasta:'2027-01-31', tTer:'Operador Logístico', tercero:MD_OP, oper:'Importación', estado:'OBSERVADO', fReg:'2026-11-10T11:20', archivo:'', obs:'Adjunte la vigencia firmada por el representante legal.',
+    hist:[mdH('','PENDIENTE','','importador@andesmining.example','2026-11-10T11:20'), mdH('PENDIENTE','OBSERVADO','Adjunte la vigencia firmada por el representante legal.','mesa.ayuda@cosmos.example','2026-11-11T08:45')]},
+  {n:'ME-000104', cliente:'PACIFIC CHEMICALS LTD', tipo:'Por BL', bl:'ZIMUBOX0000011', desde:'', hasta:'', tTer:'Agente de Aduana', tercero:MD_AG, oper:'Importación', estado:'RECHAZADO', fReg:'2026-10-02T15:00', archivo:'mandato-pacific.pdf', obs:'El documento no corresponde al BL.',
+    hist:[mdH('','PENDIENTE','','mesa.ayuda@cosmos.example','2026-10-02T15:00'), mdH('PENDIENTE','RECHAZADO','El documento no corresponde al BL.','admin.portal@cosmos.example','2026-10-03T10:00')]},
+  {n:'ME-000105', cliente:'PACIFIC CHEMICALS LTD', tipo:'Por Vigencia', bl:'', desde:'2026-11-15', hasta:'2027-05-15', tTer:'Agente de Aduana', tercero:MD_AG, oper:'Importación', estado:'PENDIENTE', fReg:'2026-11-19T09:30', archivo:'mandato-pacific-vigencia.pdf', obs:'',
+    hist:[mdH('','PENDIENTE','','importador@pacificchem.example','2026-11-19T09:30')]}] };
+const mdVig = m => m.tipo==='Por Vigencia' ? `${CC.fecha(m.desde)} a ${CC.fecha(m.hasta)}` : '-';
+const mdFiltrar = () => { const f = MD.f; return MD.lista.filter(m=>(!f.cliente || AC.tiene(m.cliente, f.cliente)) && (!f.tipo || m.tipo===f.tipo) && (!f.oper || m.oper===f.oper) && (!f.estado || m.estado===f.estado)
+  && (!f.desde || m.fReg.slice(0,10) >= f.desde) && (!f.hasta || m.fReg.slice(0,10) <= f.hasta)); };
+const mdLeer = () => [['cliente','mdFCli'],['tipo','mdFTipo'],['oper','mdFOper'],['estado','mdFEst'],['desde','mdFDesde'],['hasta','mdFHasta']].forEach(([k,id])=>{ if($(id)) MD.f[k] = AC.v(id); });
+const mdAcc = m => [AC.link('Ver', `mdVer('${m.n}')`, `data-md-ver="${m.n}"`),
+  m.estado==='PENDIENTE' ? AC.link('Aprobar', `mdAccion('${m.n}','APROBADO')`, `data-md-aprobar="${m.n}"`) : '',
+  m.estado==='PENDIENTE' ? AC.link('Observar', `mdAccion('${m.n}','OBSERVADO')`, `data-md-observar="${m.n}"`) : '',
+  /PENDIENTE|OBSERVADO/.test(m.estado) ? AC.link('Rechazar', `mdAccion('${m.n}','RECHAZADO')`, `data-md-rechazar="${m.n}"`) : ''].filter(Boolean).join('');
+window.mdBuscar = () => { mdLeer(); MD.buscado = true; MD.pagina = 1; CC.refrescar('screenAcMandato'); if(!mdFiltrar().length) CC.toast('No se encontraron resultados con los criterios seleccionados.','info'); };
+window.mdLimpiar = () => { MD.f = {cliente:'', tipo:'', oper:'', estado:'PENDIENTE', desde:'', hasta:''}; MD.buscado = false; CC.refrescar('screenAcMandato'); };
+window.mdPagina = (p, t) => { if(t) MD.tam = t; MD.pagina = p; CC.refrescar('screenAcMandato'); };
+window.mdExportar = () => CC.exportarExcel('Mandatos_Electronicos', 'Mandatos', ['Nro Mandato','Cliente','Tipo de socio','Nombre del socio','Tipo de Mandato','Vigencia','BL','Tipo de Operación','Estado','Fecha registro'],
+  mdFiltrar().map(m=>[m.n, m.cliente, m.tTer, m.tercero, m.tipo, mdVig(m), m.bl||'-', m.oper, MD_EST[m.estado], CC.fecha(m.fReg)]));
+function mdCambia(n, nuevo, com){ const m = MD.lista.find(x=>x.n===n);
+  m.hist.push(mdH(m.estado, nuevo, com, AC.yo(), AC.ahora())); m.estado = nuevo; if(com) m.obs = com;
+  CC.refrescar('screenAcMandato'); CC.toast(`Mandato ${n}: ${MD_EST[nuevo]}`, 'success'); }
+window.mdAccion = (n, nuevo) => {
+  if(nuevo==='APROBADO') return AC.confirmar('Aprobar Mandato Electrónico', '¿Estás seguro de que deseas aprobar el mandato electrónico?', ()=>mdCambia(n, 'APROBADO', ''), 'Aceptar');
+  const v = nuevo==='OBSERVADO' ? 'observar' : 'rechazar';
+  AC.pedirMotivo({titulo:`${nuevo==='OBSERVADO' ? 'Observar' : 'Rechazar'} Mandato Electrónico`, texto:`Favor de ingresar la razón para ${v} este mandato electrónico:`, etiqueta:'Motivo', max:800, boton:'Aceptar'}, t=>mdCambia(n, nuevo, t));
+};
+window.mdVer = n => { const m = MD.lista.find(x=>x.n===n);
+  AC.dlg(AC.cab(`Mandato Electrónico ${esc(m.n)}`, '') + CC.chipEstado(MD_EST[m.estado], MD_TONO[m.estado])
+    + `<div class="fac-g3" style="margin-top:10px">${CC.campoLectura('Cliente', m.cliente)}${CC.campoLectura('Tipo de Mandato', m.tipo)}${CC.campoLectura('Tipo de Operación', m.oper)}
+      ${CC.campoLectura('Tipo de socio', m.tTer)}${CC.campoLectura('Nombre del socio', m.tercero)}${CC.campoLectura(m.tipo==='Por BL' ? 'BL' : 'Vigencia', m.tipo==='Por BL' ? m.bl : mdVig(m))}
+      ${CC.campoLectura('Fecha registro', AC.fh(m.fReg))}${CC.campoLectura('Observación', m.obs || '-')}
+      <div class="fac-f"><label>Mandato electrónico (PDF/imagen)</label>${m.archivo ? AC.link(esc(m.archivo), AC.cb(()=>AC.descargar(m.archivo)), 'data-md-descargar="1"') : '<span class="ac-mut">Sin adjunto</span>'}</div></div>
+    <div class="fac-sec">Historial</div>${AC.tabla([{t:'Estado Previo', v:h=>h.prev ? MD_EST[h.prev] : '-'}, {t:'Estado Actual', v:h=>MD_EST[h.next]}, {t:'Usuario', k:'user'}, {t:'Fecha', v:h=>AC.fh(h.ts)}, {t:'Comentario', v:h=>esc(h.com||'-')}], m.hist)}`
+    + AC.pie(m.estado==='PENDIENTE' ? AC.btn('Observar', `acCerrar();mdAccion('${m.n}','OBSERVADO')`, 'ghost') : '', /PENDIENTE|OBSERVADO/.test(m.estado) ? AC.btn('Rechazar', `acCerrar();mdAccion('${m.n}','RECHAZADO')`, 'pink') : '',
+      m.estado==='PENDIENTE' ? AC.btn('Aprobar', `acCerrar();mdAccion('${m.n}','APROBADO')`) : '', AC.btn('Cerrar','acCerrar()','ghost','data-ac="md-cerrar"')), 'lg');
+};
+function mdHtml(){
+  const f = MD.f;
+  return `<div class="fac-note" style="margin-bottom:12px">Hoy en Connect esta revisión se hace en el Portal Externo, opción Mandato Electrónico. Por definir (PEN-I046-01): si allí se retiran las acciones o se conservan para perfiles internos, y la matriz de permisos.</div>`
+    + CC.filtros({ id:'mdF', titulo:'Mandatos Electrónicos', sub:'Ingresar datos', cols:3,
+      campos:[CC.campo('Cliente', AC.lista('mdFCli', f.cliente, [...new Set(MD.lista.map(m=>m.cliente))], 'Ingresar Cliente')),
+        CC.campo('Tipo de Mandato', CC.selector(['Por Vigencia','Por BL'], f.tipo, 'id="mdFTipo"', 'Todos')),
+        CC.campo('Tipo de Operación', CC.selector(['Importación','Exportación'], f.oper, 'id="mdFOper"', 'Todos')),
+        CC.campo('Estado', CC.selector(Object.entries(MD_EST), f.estado, 'id="mdFEst"', 'Todos')),
+        CC.campo('Fecha de registro', `<div class="fac-range"><input type="date" id="mdFDesde" value="${esc(f.desde)}"><span>a</span><input type="date" id="mdFHasta" value="${esc(f.hasta)}"></div>`)],
+      buscar:'mdBuscar()', limpiar:'mdLimpiar()' })
+    + (MD.buscado ? CC.tablaResultados({ id:'mdRes', filas:mdFiltrar(), pagina:MD.pagina, tam:MD.tam, fnPagina:'mdPagina', exportar:'mdExportar()', vacio:'No se encontraron resultados con los criterios seleccionados',
+      columnas:[{t:'Nro Mandato', k:'n'}, {t:'Cliente', k:'cliente'}, {t:'Tipo de socio', k:'tTer'}, {t:'Nombre del socio', k:'tercero'}, {t:'Tipo de Mandato', k:'tipo'},
+        {t:'Vigencia', v:mdVig}, {t:'BL', v:m=>esc(m.bl||'-')}, {t:'Tipo de Operación', k:'oper'}, {t:'Estado', v:m=>CC.chipEstado(MD_EST[m.estado], MD_TONO[m.estado])},
+        {t:'Fecha registro', v:m=>CC.fecha(m.fReg)}, {t:'Acciones', v:m=>`<div class="fac-rowacts">${mdAcc(m)}</div>`}] }) : '');
+}
+CC.registrarPantalla({
+  id:'screenAcMandato', grupo:G, opcion:'Mandato Electrónico', titulo:'Mandatos Electrónicos', migas:['Inicio','Mandato Electrónico','Mandatos Electrónicos'],
+  propuesta:'I-046', html: mdHtml,
+  guia:[{t:'Mandato electrónico', steps:[{el:'#mdF', h:'Buscar', p:'Filtra por cliente, tipo, operación, estado y fechas. Por defecto muestra los pendientes.'},
+    {el:'#mdF', h:'Resolver', p:'En cada fila: Ver, Aprobar, Observar o Rechazar. Observar y Rechazar piden el motivo y quedan en el historial.'}]}]
+});
+
+/* Repintar al cambiar "Ver propuestas" (adjuntos por contenedor en Nuevo Daño) */
+window.addEventListener('cc:propuestas', ()=>{ const a = document.querySelector('section.panel.active'); if(a && a.id==='screenAcDanos' && DA.vista==='nuevo' && DA.nuevo){ daLeerN(); daPintar(); } });
 })();
