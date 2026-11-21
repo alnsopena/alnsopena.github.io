@@ -8009,7 +8009,7 @@ function cbDetailHtml(o){
     </tbody></table></div>
     <h3 style="margin:20px 0 12px">Liquidaciones</h3>
     <div class="fac-scroll" id="cbLiqs"><table class="fac-tbl"><thead><tr><th>Nº liquidación</th><th>Tipo</th><th>BL asociado</th><th class="num">Monto liquidación</th><th>Moneda</th><th>Estado liquidación</th></tr></thead><tbody>
-      ${o.liqs.map(l=>`<tr><td>${esc(l.n)}</td><td>${esc(l.tipo)}</td><td>${facProp()?`<button type="button" class="fac-link" onclick="openDocBl('imp','${l.bl}')">${esc(l.bl)}</button>`:esc(l.bl)}</td><td class="num">${fMoney(l.monto)}</td><td>${esc(CB_CURS.find(c=>c[0]===l.cur)[1])}</td><td>${esc(l.st)}</td></tr>`).join('') || `<tr><td colspan="6" class="fac-empty">Sin liquidaciones</td></tr>`}
+      ${o.liqs.map(l=>`<tr><td>${esc(l.n)}</td><td>${esc(l.tipo)}</td><td>${facProp()?`<button type="button" class="fac-link" onclick="docAbrirBLNumero('${l.bl}', ()=>cbOpen('${o.n}'))">${esc(l.bl)}</button>`:esc(l.bl)}</td><td class="num">${fMoney(l.monto)}</td><td>${esc(CB_CURS.find(c=>c[0]===l.cur)[1])}</td><td>${esc(l.st)}</td></tr>`).join('') || `<tr><td colspan="6" class="fac-empty">Sin liquidaciones</td></tr>`}
     </tbody></table></div>
     <div class="fac-btns"><span class="fac-mk cc-prop" id="cbRevWrap" ${fb('Agrega: reverso',CB_HU.val,'I-158','PEN-I158-02')}><button type="button" class="cc-btn pink" id="cbRevBtn" ${canRev?'':'disabled'} onclick="cbRevOpen('${o.n}')">Revertir validación</button></span><button type="button" class="cc-btn" onclick="cbBack()">Cerrar</button></div></div>`;
 }

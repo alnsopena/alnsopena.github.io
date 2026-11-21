@@ -570,6 +570,12 @@ const ED_ID = k => k==='imp' ? 'screenDocImpBl' : 'screenDocExpRes';
 function abrirEd(k, b, nuevo){ const otro = $(ED_ID(k==='imp'?'exp':'imp')); if(otro) otro.innerHTML = ''; S.ed = {k, id:b.id, nuevo, ro:!nuevo, d:clone(b), tab:'gen', dirty:false, selR:{}}; CC.abrir(ED_ID(k)); }
 window.docImpNuevo = () => { seed(); const f = S.fi.f; abrirEd('imp', mkImp({id:'', numero:'', nave:f.nave||'', viaje:f.viaje||'', estado:'', equipos:[], carga:[], contenedores:[], descripciones:[], entidad:'', codAduana:'', ruc:'', embarcador:'', dirEmb:'', dirCons:'', cantidad:'', pesoTotal:'', volumen:''}), true); };
 window.docImpEditar = id => abrirEd('imp', buscarBL(id), false);
+/* Abre la ficha de un BL por su número en modo consulta; "Volver" ejecuta volver() si se indica (por ejemplo, regresar a Cobranzas) */
+window.docAbrirBLNumero = (num, volver) => { seed();
+  let b = S.imp.find(x=>x.numero===num), k = 'imp';
+  if(!b){ b = S.exp.find(x=>x.numero===num); if(b) k = 'exp'; }
+  if(!b){ const bx = S.imp[0] || {}; b = mkImp({id:'C'+num, numero:num, nave:bx.nave||'', viaje:bx.viaje||'', estado:'APROBADO'}); S.imp.push(b); }
+  abrirEd(k, b, false); if(volver) S.ed.volver = volver; };
 window.docExpEditar = id => abrirEd('exp', buscarBL(id), false);
 window.docExpNuevo = () => { seed(); const f = S.fe.f; if(!f.nave || !f.viaje){ CC.toast('Por favor complete todos los campos obligatorios','error'); return; }
   conSucursal(f.nave, f.viaje, ()=>{ const v = voyInfo(f.nave, f.viaje);
@@ -721,7 +727,7 @@ window.docEdEditar = () => { const d = S.ed.d;
 window.docRtAplicar = () => { const r = K.rt, d = S.ed.d; d.entidad = r.entSol; d.codAduana = r.codSol; d.ruc = r.rucSol; CC.cerrarModal(); edRe(); };
 window.docEdCancelar = () => { const E = S.ed, salir = () => { if(E.nuevo) docVolver(true); else { E.ro = true; E.dirty = false; rerender(ED_ID(E.k)); } };
   if(E.dirty) confirmar('Descartar Cambios','Tiene cambios no guardados. ¿Está seguro de que desea salir sin guardar?','Salir sin guardar', salir); else salir(); };
-window.docVolver = forzar => { const E = S.ed, ir = () => { const k = E.k; S.ed = null; CC.abrir(k==='imp'?'screenDocImp':'screenDocExp'); };
+window.docVolver = forzar => { const E = S.ed, ir = () => { const k = E.k, vol = E.volver; S.ed = null; if(vol) vol(); else CC.abrir(k==='imp'?'screenDocImp':'screenDocExp'); };
   if(!forzar && E && !E.ro && E.dirty) confirmar('Descartar Cambios','Tiene cambios no guardados. ¿Está seguro de que desea salir sin guardar?','Salir sin guardar', ir); else ir(); };
 window.docEdEliminar = () => { const E = S.ed, imp = E.k==='imp';
   confirmar('Eliminar', imp ? '¿Estás seguro de que deseas eliminar este BL?' : '¿Estás seguro de que deseas eliminar esta Reserva?', 'Eliminar', ()=>{
