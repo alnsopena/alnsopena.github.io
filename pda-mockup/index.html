@@ -177,45 +177,8 @@
 
   <!-- ============ TARIFAS (módulo Tarifa de Connect) ============ -->
   <section class="panel" id="screenTariffs">
-    <div class="buscar-head">
-      <div><h1>Tarifas <span class="type-chip" id="tfTypeChip"></span></h1></div>
-      <div class="buscar-head-actions">
-        <button class="btn-corp-outline" id="tfBackBtn" onclick="closeTariffs()">← Volver</button>
-        <button class="btn-corp" id="tfNewBtn" onclick="newTariff()">+ Nuevo</button>
-      </div>
-    </div>
-    <div id="tfList">
-      <div class="buscar-filters">
-        <div class="filters-grid g4">
-          <div class="filter-field"><label>Código</label><input id="tfCode" placeholder="Ingresar Código" oninput="setTfFilter('code',this.value)"></div>
-          <div class="filter-field"><label>Referencia</label><input id="tfRef" placeholder="Ingresar Referencia" oninput="setTfFilter('ref',this.value)"></div>
-          <div class="filter-field"><label>Clase</label><select id="tfClase" onchange="setTfFilter('clase',this.value)"></select></div>
-          <div class="filter-field"><label>Sucursal</label><select id="tfSuc" onchange="setTfFilter('suc',this.value)"></select></div>
-          <div class="filter-field"><label>Puerto</label><select id="tfPuerto" onchange="setTfFilter('puerto',this.value)"></select></div>
-          <div class="filter-field"><label>Moneda</label><select id="tfMoneda" onchange="setTfFilter('moneda',this.value)"></select></div>
-          <div class="filter-field"><label>Tipo de Contrato</label><select id="tfContrato" onchange="setTfFilter('contrato',this.value)"></select></div>
-          <div class="filter-field"><label>Tipo de Tarifa</label><select id="tfTipo" onchange="setTfFilter('tipo',this.value)"></select></div>
-          <div class="filter-field"><label>Estado</label><select id="tfEstado" onchange="setTfFilter('estado',this.value)"></select></div>
-        </div>
-        <label class="obs-filter"><input type="checkbox" id="tfVig" onchange="setTfFilter('vig',this.checked)"> Tarifa Vigente</label>
-        <div class="tf-advbar"><button type="button" class="tf-advbtn" id="tfAdvBtn" onclick="toggleTfAdv()">Filtros Avanzados <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg></button></div>
-        <div class="filters-grid g4" id="tfAdv" style="display:none">
-          <div class="filter-field"><label>Servicio</label><input id="tfSvc" placeholder="Descripción, código SER o ERP" oninput="setTfFilter('svc',this.value)"></div>
-          <div class="filter-field"><label>Cliente</label><select id="tfCliente" onchange="setTfFilter('cliente',this.value)"></select></div>
-        </div>
-        <div class="filter-actions tf-actions">
-          <button class="btn-corp-outline" onclick="clearTfFilters()">Limpiar</button>
-          <button class="btn-corp" onclick="renderTfList()">Buscar</button>
-        </div>
-      </div>
-      <div class="results-head"><h2>Resultados <span class="count" id="tfCount"></span></h2>
-        <div class="tf-quick" id="tfQuick"></div>
-        <button class="btn-corp-outline" onclick="exportTfCsv()">Exportar</button></div>
-      <div class="results-table"><table>
-        <thead><tr><th>Código</th><th>Clase</th><th>Tipo de Tarifa</th><th>Tipo de Contrato</th><th>Moneda</th><th>Vigencia Desde</th><th>Vigencia Hasta</th><th>Referencia</th><th>Estado</th></tr></thead>
-        <tbody id="tfResults"></tbody></table><div class="cc-pager" id="tfPager"></div></div>
-      <div class="pnote proc"><span class="pn-tag">Pendiente de proceso</span><b>Quién registra las tarifas negociadas.</b> Acordar con Comercial (César, Mauricio) y Facturación que Comercial registra las tarifas pactadas con clientes y proveedores, no Facturación.</div>
-    </div>
+    <!-- Contenido pintado por modulos/agenciamiento.js (Consulta Tarifa / Edición de Tarifa) -->
+    <div id="tfList"></div>
     <div id="tfDetail" style="display:none"><div id="tfEditor"></div></div>
   </section>
 
@@ -263,27 +226,8 @@
 
   <!-- ============ VIAJE (Agenciamiento > Viaje de Connect) ============ -->
   <section class="panel" id="screenVoyages">
-    <div class="buscar-head">
-      <div><h1>Viajes</h1></div>
-      <div class="buscar-head-actions"><button class="btn-corp-outline" id="vyBackBtn" onclick="closeVoyages()">← Volver</button></div>
-    </div>
-    <div id="vyList">
-      <div class="buscar-filters">
-        <div class="filters-grid g3">
-          <div class="filter-field"><label>Código de Viaje</label><input id="vfCode" placeholder="Ingresar Código Viaje" oninput="setVyFilter('code',this.value)"></div>
-          <div class="filter-field"><label>Número de Viaje</label><input id="vfNro" placeholder="Ingresar Nro Viaje" oninput="setVyFilter('nro',this.value)"></div>
-          <div class="filter-field"><label>Nombre de la Nave</label><input id="vfNave" placeholder="Ingresar Nave" oninput="setVyFilter('nave',this.value)"></div>
-          <div class="filter-field"><label>Cliente</label><input id="vfCliente" placeholder="Ingresar Cliente" oninput="setVyFilter('cliente',this.value)"></div>
-          <div class="filter-field"><label>Tipo de Servicio</label><select id="vfTipo" onchange="setVyFilter('tipo',this.value)"><option value="">Elegir Tipo Servicio</option><option>Liner</option><option>Tramp</option></select></div>
-          <div class="filter-field"><label>Estado</label><select id="vfEstado" onchange="setVyFilter('estado',this.value)"><option value="">Elegir Estado</option><option>Por homologar</option><option>Creado</option><option>Anulado</option></select></div>
-        </div>
-        <div class="filter-actions tf-actions"><button class="btn-corp-outline" onclick="clearVyFilters()">Limpiar</button><button class="btn-corp" onclick="renderVyList()">Buscar</button></div>
-      </div>
-      <div class="results-head"><h2>Resultados <span class="count" id="vyCount"></span></h2><div class="tf-quick" id="vyQuick"></div><button class="btn-corp-outline" id="vyExp" onclick="vyExport()">Exportar</button></div>
-      <div class="results-table"><table>
-        <thead><tr><th>Código de Viaje</th><th>Número de Viaje</th><th>Puerto de Operación</th><th>Nombre de la Nave</th><th>Cliente</th><th>Tipo de Servicio</th><th>ETA</th><th>ETD</th><th>PDA asociada <span class="tf-new">nuevo</span></th><th>Estado</th></tr></thead>
-        <tbody id="vyResults"></tbody></table><div class="cc-pager" id="vyPager"></div></div>
-    </div>
+    <!-- Contenido pintado por modulos/agenciamiento.js (Consulta Viaje / Nuevo Viaje / Edición de Viaje) -->
+    <div id="vyList"></div>
     <div id="vyDetail" style="display:none"><div id="vyEditor"></div></div>
   </section>
 
@@ -3639,8 +3583,8 @@ function applyMasterPerm(){
    Solo las tarifas Aprobadas y vigentes alimentan la PDA (applyTariffs).
 ============================================================ */
 const TF_STATES = ['Pendiente','Aprobada','Rechazada','Anulada'];
-const TF_CONTRATOS = ['Estándar','Especial'];
-const TF_TIPOS = ['Propio','Tercero Externo'];
+const TF_CONTRATOS = ['Estándar','Lumpsum'];   /* Connect: Estándar y Lumpsum (antes "Especial") */
+const TF_TIPOS = ['Propio','Tercero Interno','Tercero Externo'];
 const TF_SUCURSALES = ['Callao','Lima','Paita','Pisco','Salaverry','Mollendo','Etén','San Nicolás','Matarani','Ilo','Chimbote','Paracas'];
 const TF_ALL = {puerto:'Todos los Puertos', terminal:'Todas las Terminales', cliente:'Todos los Clientes', armador:'Todos los Armadores', nave:'Todas las Naves', proc:'Todas'};
 const TF_CUR = {USD:'Dólar estadounidense', PEN:'Sol peruano'};
@@ -3696,13 +3640,13 @@ function seedTariffs(){
         crit:[tfCrit({suc, puerto:g.p})], lines:g.svs.map(([sv,v])=>tfLine(sv, v))}));
     });
   });
-  /* Tarifas pactadas con clientes: contrato Especial, una por cliente y vigencia */
+  /* Tarifas pactadas con clientes: contrato Lumpsum, una por cliente y vigencia */
   const byClient = {};
   CLIENT_TARIFFS.forEach(ct=>{ const k = ct.client+'|'+ct.from+'|'+ct.to; (byClient[k] = byClient[k] || []).push(ct); });
   Object.values(byClient).forEach(g=>{
     const sv0 = tfSvcAny(g[0].svc); if(!sv0) return;
     const tipo = CATALOG_MASTER.terrestre.some(x=>x.id===sv0.id) ? 'terrestre' : 'maritimo';
-    TARIFFS.push(tfNew(tipo, {ref:`${g[0].client.toUpperCase()} - ${g[0].note||'TARIFA PACTADA'}`, contrato:'Especial', currency:sv0.currency||'USD',
+    TARIFFS.push(tfNew(tipo, {ref:`${g[0].client.toUpperCase()} - ${g[0].note||'TARIFA PACTADA'}`, contrato:'Lumpsum', currency:sv0.currency||'USD',
       from:g[0].from, to:g[0].to, crit:[tfCrit({cliente:g[0].client})],
       hist:tfHist(g[0].from+'T09:00:00', g[0].from+'T16:20:00'),
       lines:g.map(ct=>{ const sv = tfSvcAny(ct.svc); return sv ? tfLine(sv, ct.rate) : null; }).filter(Boolean)}));
@@ -3795,11 +3739,6 @@ function tfQuickCounts(){
            soon: L.filter(t=>t.status==='Aprobada' && tfVigente(t) && tfDaysLeft(t)<=30).length,
            exp:  L.filter(t=>t.status==='Aprobada' && t.to && t.to < today).length };
 }
-function setTfQuick(k){
-  tf.f.quick = tf.f.quick===k ? '' : k;
-  tf.f.vig = !tf.f.quick; document.getElementById('tfVig').checked = tf.f.vig;
-  tf.page = 1; renderTfList();
-}
 function newTariffForSvc(id, returnTo){
   const sv = masterCatalog().find(x=>x.id===id); if(!sv) return;
   if(!canEditTariffs()){ toast('Solo Mantenedor de tarifas o Gerencia pueden crear tarifas','error'); return; }
@@ -3834,40 +3773,6 @@ function clearErr(errs, k, root){
 
 
 /* ---------- Pantalla ---------- */
-function tfDefaultFilters(){ return {code:'', ref:'', clase:'', suc:'', puerto:'', moneda:'', contrato:'', tipo:'', estado:'', vig:true, svc:'', svcId:'', cliente:'', quick:''}; }
-function openTariffs(pre, returnTo){
-  if(!state.categoryType){ toast('Elige primero Marítimo o Terrestre','error'); return; }
-  tf.returnTo = returnTo || 'landing';
-  tf.f = {...tfDefaultFilters(), ...(pre||{})}; tf.page = 1;
-  tf.adv = !!(tf.f.svc || tf.f.cliente);
-  const chip = document.getElementById('tfTypeChip');
-  chip.className = 'type-chip ' + state.categoryType;
-  chip.textContent = state.categoryType==='maritimo' ? 'Marítimo' : 'Terrestre';
-  document.getElementById('tfBackBtn').textContent = tf.returnTo==='master' ? '← Volver al servicio' : tf.returnTo==='pda' ? '← Volver a la PDA' : '← Volver al listado';
-  const opt = (ph, arr, lab) => `<option value="">${ph}</option>` + arr.map((v,i)=>`<option value="${esc(v)}">${esc(lab?lab[i]:v)}</option>`).join('');
-  document.getElementById('tfClase').innerHTML = opt('Elegir Clase', CLASES_SVC);
-  document.getElementById('tfSuc').innerHTML = opt('Elegir Sucursales', TF_SUCURSALES);
-  document.getElementById('tfPuerto').innerHTML = opt('Elegir Puerto', PORTS.map(p=>p.k));
-  document.getElementById('tfMoneda').innerHTML = opt('Elegir Moneda', ['USD','PEN'], ['Dólar estadounidense','Sol peruano']);
-  document.getElementById('tfContrato').innerHTML = opt('Elegir Tipo de Contrato', TF_CONTRATOS);
-  document.getElementById('tfTipo').innerHTML = opt('Elegir Tipo de Tarifa', TF_TIPOS);
-  document.getElementById('tfEstado').innerHTML = opt('Elegir Estado', TF_STATES);
-  document.getElementById('tfCliente').innerHTML = opt('Elegir Cliente', state.clients.map(c=>c.name));
-  tfSyncFilterInputs();
-  tf.selId = null; tf.draft = null; tf.edit = false; tf.isNew = false; tf.dirty = false;
-  document.getElementById('stepsNav').style.display = 'none';
-  showScreen('screenTariffs');
-  showTfView('list'); applyTfPerm(); renderTfList();
-}
-function tfSyncFilterInputs(){
-  const m = {tfCode:'code', tfRef:'ref', tfClase:'clase', tfSuc:'suc', tfPuerto:'puerto', tfMoneda:'moneda', tfContrato:'contrato', tfTipo:'tipo', tfEstado:'estado', tfSvc:'svc', tfCliente:'cliente'};
-  Object.entries(m).forEach(([id,k])=>{ const el = document.getElementById(id); if(el) el.value = tf.f[k]||''; });
-  document.getElementById('tfVig').checked = !!tf.f.vig;
-  document.getElementById('tfAdv').style.display = tf.adv ? '' : 'none';
-  document.getElementById('tfAdvBtn').classList.toggle('open', tf.adv);
-}
-function toggleTfAdv(){ tf.adv = !tf.adv; tfSyncFilterInputs(); }
-function setTfFilter(k,v){ tf.f[k] = v; if(k==='svc') tf.f.svcId = ''; if(k==='vig' && v) tf.f.quick = ''; tf.page = 1; renderTfList(); }
 /* Paginación con el formato de Connect */
 function pagerHtml(total, page, size, fn){
   const pages = Math.max(1, Math.ceil(total/size));
@@ -3875,9 +3780,7 @@ function pagerHtml(total, page, size, fn){
   return `<span>Items por página</span><select onchange="${fn}(1,Number(this.value))">${[10,25,50,100].map(n=>`<option ${n===size?'selected':''}>${n}</option>`).join('')}</select>
     <span class="pg-n">${page} de ${pages}</span>${b('«',1,page<=1,'Primera página')}${b('‹',page-1,page<=1,'Página anterior')}${b('›',page+1,page>=pages,'Siguiente página')}${b('»',pages,page>=pages,'Última página')}`;
 }
-function tfGo(p, size){ if(size) tf.size = size; tf.page = p; renderTfList(); }
 function mGo(p, size){ if(size) master.size = size; master.page = p; renderMasterList(); }
-function clearTfFilters(){ tf.f = tfDefaultFilters(); tf.page = 1; tf.errs = null; tfSyncFilterInputs(); renderTfList(); }
 function showTfView(v){
   tf.view = v;
   document.getElementById('tfList').style.display = v==='list' ? '' : 'none';
@@ -3892,7 +3795,6 @@ function showTfView(v){
   } else updatePagebar('screenTariffs');
   window.scrollTo({top:0});
 }
-function tfConfirmDiscard(){ return !tf.dirty || confirm('Hay cambios sin guardar en esta tarifa. ¿Descartarlos?'); }
 function backToTfList(){
   if(!tfConfirmDiscard()) return;
   tf.dirty = false; tf.draft = null; tf.selId = null; tf.edit = false; tf.isNew = false;
@@ -3904,48 +3806,8 @@ function closeTariffs(){
   if(tf.returnTo==='master'){ showScreen('screenMaster'); showMasterView(master.view||'list'); renderMaster(); return; }
   if(tf.returnTo==='pda' && state.pdaNumber) goStep(2); else backToLanding();
 }
-function tfFiltered(over){
-  const f = {...tf.f, ...(over||{})}, type = activeCatalogKey();
-  const code = normTxt(f.code), ref = normTxt(f.ref), svq = normTxt(f.svc);
-  return TARIFFS.filter(t => t.tipo===type &&
-    (!code || normTxt(t.code).includes(code)) && (!ref || normTxt(t.ref).includes(ref)) &&
-    (!f.clase || t.clase===f.clase) && (!f.moneda || t.currency===f.moneda) && (!f.contrato || t.contrato===f.contrato) &&
-    (!f.tipo || t.tipoTarifa===f.tipo) && (!f.estado || t.status===f.estado) && (!f.vig || tfVigente(t)) &&
-    (!f.suc || t.crit.some(c=>c.suc===f.suc)) && (!f.puerto || t.crit.some(c=>c.puerto===f.puerto)) &&
-    (!f.cliente || t.crit.some(c=>normTxt(c.cliente)===normTxt(f.cliente))) &&
-    (f.svcId ? t.lines.some(l=>l.svc===f.svcId) : (!svq || t.lines.some(l=>{ const sv = tfSvcAny(l.svc); return sv && (normTxt(sv.name).includes(svq) || normTxt(sv.ser||'').includes(svq) || normTxt(sv.sap||'').includes(svq)); }))) &&
-    (f.quick!=='pend' || t.status==='Pendiente') && (f.quick!=='soon' || (t.status==='Aprobada' && tfVigente(t) && tfDaysLeft(t)<=30)) &&
-    (f.quick!=='exp' || (t.status==='Aprobada' && t.to && t.to < todayISO())));
-}
 function fmtDate(iso){ if(!iso) return '-'; const [y,m,d] = iso.slice(0,10).split('-'); return `${d}/${m}/${y}`; }
 function tfPill(s){ return `<span class="tf-st ${String(s).toLowerCase()}">${esc(s)}</span>`; }
-function renderTfList(){
-  const all = tfFiltered().sort((a,b)=>b.code.localeCompare(a.code));
-  tf.size = tf.size || 10; const pages = Math.max(1, Math.ceil(all.length/tf.size)); tf.page = Math.min(Math.max(1, tf.page||1), pages);
-  const list = all.slice((tf.page-1)*tf.size, tf.page*tf.size);
-  document.getElementById('tfPager').innerHTML = pagerHtml(all.length, tf.page, tf.size, 'tfGo');
-  document.getElementById('tfResults').innerHTML = list.map(t=>`
-    <tr class="mt-row" onclick="selectTariff('${t.id}')">
-      <td><span class="pda-code-link">${esc(t.code)}</span></td><td>${esc(t.clase)}</td><td>${esc(t.tipoTarifa)}</td><td>${esc(t.contrato)}</td>
-      <td>${TF_CUR[t.currency]||t.currency}</td><td>${fmtDate(t.from)}</td><td>${fmtDate(t.to)}</td>
-      <td>${esc(t.ref)}<div class="pda-row-sub">${esc(tfScope(t))}</div></td><td>${tfPill(t.status)}${tfVigTag(t)}</td></tr>`).join('')
-    || '<tr><td colspan="9" style="text-align:center;padding:30px;color:#8D9BA2;font-style:italic">Sin resultados</td></tr>';
-  document.getElementById('tfCount').textContent = all.length;
-  const q = tfQuickCounts();
-  document.getElementById('tfQuick').innerHTML = [['pend','Por aprobar'],['soon','Por vencer'],['exp','Vencidas']]
-    .filter(([k])=>q[k] || tf.f.quick===k)
-    .map(([k,l])=>`<button type="button" class="tf-q ${k} ${tf.f.quick===k?'on':''}" onclick="setTfQuick('${k}')">${l} <b>${q[k]}</b></button>`).join('');
-}
-function exportTfCsv(){
-  const rows = [['Código','Clase','Tipo de Tarifa','Tipo de Contrato','Moneda','Vigencia Desde','Vigencia Hasta','Referencia','Estado','Criterios','Servicio','Precio de Venta']];
-  tfFiltered().forEach(t=>t.lines.forEach(l=>{ const sv = tfSvcAny(l.svc);
-    rows.push([t.code,t.clase,t.tipoTarifa,t.contrato,t.currency,fmtDate(t.from),fmtDate(t.to),t.ref,t.status,
-      t.crit.map(c=>[c.suc,c.puerto,c.terminal,c.cliente,c.armador,c.nave,c.proc].join(' / ')).join(' | '), sv?sv.name:l.svc, l.price]); }));
-  const csv = '﻿' + rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(';')).join('\r\n');
-  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
-  a.download = 'tarifas.csv'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
-  toast('Tarifas exportadas','success');
-}
 
 /* ---------- Detalle ---------- */
 function selectTariff(id, force){
@@ -3959,7 +3821,7 @@ function newTariff(fromId){
   if(!canEditTariffs()){ toast('Solo Mantenedor de tarifas o Gerencia pueden crear tarifas','error'); return; }
   const type = activeCatalogKey();
   const src = fromId ? TARIFFS.find(x=>x.id===fromId) : null;
-  const d = src ? clone(src) : tfNew(type, {status:'Pendiente', crit:[tfCrit({suc:type==='terrestre'?'Lima':'Callao'})], lines:[], hist:[]});
+  const d = src ? clone(src) : tfNew(type, {status:'Pendiente', crit:[], lines:[], hist:[]});   /* Connect: la tarifa nueva empieza sin criterios */
   if(src){ d.code = tfCode(); d.id = d.code; d.status = 'Pendiente'; d.hist = []; d.from = todayISO(); d.prevCode = src.code; }
   else { d.from = todayISO(); d.to = `${new Date().getFullYear()}-12-31`; }
   tf.draft = d; tf.selId = d.id; tf.isNew = true; tf.edit = true; tf.dirty = true; tf.errs = null; tf.tab = src ? 'svc' : 'crit';
@@ -3967,7 +3829,6 @@ function newTariff(fromId){
   if(!src) document.querySelector('#tfEditor [data-f=ref]')?.focus();
 }
 function startTfEdit(){ if(!canEditTariffs()){ toast('Solo Mantenedor de tarifas o Gerencia pueden editar','error'); return; } tf.edit = true; renderTfEditor(); }
-function setTfTab(k){ tf.tab = k; renderTfEditor(); }
 function tfUpd(k,v,re){ tf.draft[k] = v; tf.dirty = true; clearErr(tf.errs, k, '#tfEditor'); if(k==='from') clearErr(tf.errs, 'to', '#tfEditor'); if(re) renderTfEditor(); }
 function tfUpdCrit(i,k,v){ tf.draft.crit[i][k] = v; tf.dirty = true; if(k==='puerto'){ tf.draft.crit[i].terminal = TF_ALL.terminal; renderTfEditor(); } }
 function tfAddCrit(){ tf.draft.crit.push(tfCrit({suc:tf.draft.crit[0]?.suc||'Callao'})); tf.dirty = true; renderTfEditor(); }
@@ -3983,117 +3844,12 @@ function tfAddLine(id){
 }
 function tfDelLine(i){ tf.draft.lines.splice(i,1); tf.dirty = true; renderTfEditor(); }
 
-function renderTfEditor(){
-  const ed = document.getElementById('tfEditor'), d = tf.draft;
-  if(!d){ ed.innerHTML = ''; return; }
-  const can = canEditTariffs(), appr = canApproveTariffs(), edit = tf.edit && can, dis = edit ? '' : 'disabled', E = tf.errs;
-  const fld = (label, html, k) => `<div class="filter-field"><label>${label}</label>${html}${fErr(E,k)}</div>`;
-  const sel = (k, opts, labels, re) => `<select ${dis} onchange="tfUpd('${k}',this.value${re?',true':''})">${opts.map((o,i)=>`<option value="${esc(o)}" ${o===d[k]?'selected':''}>${esc(labels?labels[i]:o)}</option>`).join('')}</select>`;
-  const inp = (k, ph, type) => `<input ${dis} data-f="${k}" ${type?`type="${type}"`:''} value="${esc(d[k]??'')}" placeholder="${ph||''}" oninput="tfUpd('${k}',this.value)">`;
-  let actions = '';
-  if(edit) actions = `<button class="btn-corp-outline" onclick="discardTariff()">Cancelar</button><button class="btn-corp" onclick="saveTariff()">Guardar</button>`;
-  else if(d.status==='Pendiente') actions = (appr ? `<button class="btn-corp tf-ok" onclick="approveTariff()">Aprobar</button><button class="btn-corp-outline" onclick="askTfReason('Rechazada')">Rechazar</button>` : '')
-      + (can ? `<button class="btn-corp tf-void" onclick="askTfReason('Anulada')">Anular</button><button class="btn-corp" onclick="startTfEdit()">Editar</button>` : '');
-  else if(d.status==='Aprobada') actions = can ? `<button class="btn-corp tf-void" onclick="askTfReason('Anulada')">Anular</button><button class="btn-corp" onclick="newTariff('${d.id}')">Nueva versión</button>` : '';
-  else if(d.status==='Rechazada') actions = can ? `<button class="btn-corp" onclick="newTariff('${d.id}')">Nueva versión</button>` : '';
-  const chips = `<span class="cc-chip on st-${d.status.toLowerCase()}">${d.status}</span>`;
-  const repl = d.status==='Pendiente' ? tfOverlaps(d) : [];
-  const replHtml = repl.length ? `<span class="tf-repl" title="Al aprobarse, la anterior vence un día antes de esta Vigencia Desde">Reemplaza a ${repl.map(t=>`<a href="#" onclick="selectTariff('${t.id}');return false">${tfShort(t.code)}</a>`).join(', ')}</span>` : '';
-  const last = ['Rechazada','Anulada'].includes(d.status) ? [...(d.hist||[])].reverse().find(h=>h.next===d.status) : null;
-  const reason = last ? `<div class="tf-reason ${d.status.toLowerCase()}"><b>${d.status}</b> · ${esc(last.user)} · ${fmtDate(last.ts)}: ${esc(last.comment)}</div>` : '';
-  const info = `<div class="buscar-filters">
-    <div class="md-cardhead">
-      <div class="tf-title"><h3 class="md-h">Información General</h3>${tf.isNew?'':`<button class="tf-hist" title="Historial" onclick="openTfHistory()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg></button>`}${replHtml}</div>
-      <div class="md-actions"><div class="cc-chips">${chips}</div>${actions}</div>
-    </div>${reason}
-    <div class="filters-grid g4">
-      ${fld('Código', `<input disabled value="${esc(d.code)}">`)}
-      ${fld('Referencia *', inp('ref','Ingresar Referencia'), 'ref')}
-      ${fld('Clase', sel('clase', CLASES_SVC))}
-      ${fld('Tipo de Contrato', sel('contrato', TF_CONTRATOS))}
-      ${fld('Moneda', sel('currency', ['USD','PEN'], ['Dólar estadounidense','Sol peruano']))}
-      ${fld('Vigencia Desde *', inp('from','','date'), 'from')}
-      ${fld('Vigencia Hasta *', inp('to','','date'), 'to')}
-      ${fld('Tipo de Tarifa', sel('tipoTarifa', TF_TIPOS, null, true))}
-      ${d.tipoTarifa==='Tercero Externo' ? fld('Proveedor *', `<select ${dis} onchange="tfUpd('proveedor',this.value)">${['',...homologatedSuppliers()].map(s=>`<option value="${esc(s)}" ${s===d.proveedor?'selected':''}>${s?esc(s):'Elegir Proveedor'}</option>`).join('')}</select>`, 'proveedor') : ''}
-      ${fld('Comisión de línea', inp('comLinea','Ingresar Comisión de línea'))}
-      ${fld('Comisión del representante de la Línea', inp('comRep','Ingresar Comisión del representante'))}
-      ${fld('Comisión COSMOS', inp('comCosmos','Ingresar Comisión COSMOS'))}
-    </div></div>`;
-
-  const tab = tf.tab;
-  const tabs = [['crit',`Criterios Comerciales (${d.crit.length})`],['svc',`Servicios (${d.lines.length})`]].map(([k,l])=>`<button class="${k===tab?'on':''}" onclick="setTfTab('${k}')">${l}</button>`).join('')
-    + (tab==='svc' ? `<button class="tf-more" onclick="tf.more=!tf.more;renderTfEditor()">${tf.more?'Menos campos':'Más campos'}</button>` : '');
-  let body = '';
-  if(tab==='crit'){
-    const s = (i,k,opts,val) => edit ? `<select onchange="tfUpdCrit(${i},'${k}',this.value)">${opts.map(o=>`<option ${o===val?'selected':''}>${esc(o)}</option>`).join('')}</select>` : esc(val);
-    body = `<div class="results-table tf-scroll"><table><thead><tr><th>Sucursal</th><th>Puerto</th><th>Terminal</th><th>Cliente</th><th>Armador</th><th>Tipo de Nave</th><th>Procedencia <span class="tf-new">nuevo</span></th>${edit?'<th></th>':''}</tr></thead><tbody>
-      ${d.crit.map((c,i)=>{
-        const terms = tfIsAll(c.puerto) ? [] : [...new Set([...(TERMINALS_BY_PORT[c.puerto]||[]), PORTS.find(p=>p.k===c.puerto)?.terminal].filter(Boolean))];
-        return `<tr><td>${s(i,'suc',TF_SUCURSALES,c.suc)}</td><td>${s(i,'puerto',[TF_ALL.puerto,...PORTS.map(p=>p.k)],c.puerto)}</td>
-          <td>${s(i,'terminal',[TF_ALL.terminal,...terms],c.terminal)}</td><td>${s(i,'cliente',[TF_ALL.cliente,...state.clients.map(x=>x.name)],c.cliente)}</td>
-          <td>${edit?`<input value="${esc(c.armador)}" oninput="tfUpdCrit(${i},'armador',this.value)">`:esc(c.armador)}</td>
-          <td>${s(i,'nave',[TF_ALL.nave,...VESSEL_TYPES.map(v=>v.es)],c.nave)}</td><td>${s(i,'proc',['Todas','Internacional','Nacional'],c.proc)}</td>
-          ${edit?`<td><button class="link-btn danger" onclick="tfDelCrit(${i})">Quitar</button></td>`:''}</tr>`; }).join('')}
-      </tbody></table></div>${edit?`<div style="margin-top:10px"><button class="btn-add" onclick="tfAddCrit()">+ Criterio</button></div>`:''}`;
-  } else {
-    const sym = curSym(d.currency), type = activeCatalogKey(), more = !!tf.more;
-    const num = (i,k,v,w) => edit ? `<input inputmode="decimal" style="width:${w||90}px" value="${v}" oninput="tfUpdLine(${i},'${k}',parseNum(this.value))">` : fmtNum(v);
-    const chk = (i,k,v) => edit ? `<input type="checkbox" ${v?'checked':''} onchange="tfUpdLine(${i},'${k}',this.checked)">` : (v?'Sí':'No');
-    const mh = more ? `<th class="r">Precio de Costo</th><th class="r">Factor por Unidad</th><th class="r">Cantidad Mínima</th><th>Es Retroactivo</th><th>Es Mandatorio</th><th>Descuento</th>` : '';
-    body = `<div class="results-table tf-scroll"><table class="tf-lines"><thead><tr><th>Servicios</th><th class="r">Precio de Venta</th><th class="r">Monto mínimo <span class="tf-new">nuevo</span></th>
-        <th>Impuesto</th><th>Tipo de Cálculo</th><th>Unidad</th><th>Editable en la PDA <span class="tf-new">nuevo</span></th>${mh}${edit?'<th></th>':''}</tr></thead><tbody>
-      ${d.lines.map((l,i)=>{ const sv = tfSvcAny(l.svc) || {name:l.svc};
-        const tax = edit ? `<span class="tf-tax">${chk(i,'sujeto',l.sujeto)}${l.sujeto?num(i,'vat',l.vat,52)+'%':''}</span>` : (l.sujeto ? fmtNum(l.vat)+'%' : 'No');
-        const mc = more ? `<td class="r">${num(i,'cost',l.cost)}</td><td class="r">${num(i,'factor',l.factor,70)}</td><td class="r">${num(i,'minQty',l.minQty,70)}</td>
-          <td>${chk(i,'retro',l.retro)}</td><td>${chk(i,'mand',l.mand)}</td><td><span class="tf-tax">${chk(i,'desc',l.desc)}${l.desc?(edit?num(i,'descVal',l.descVal,70):fmtNum(l.descVal)):''}</span></td>` : '';
-        return `<tr><td><b>${esc(sv.name)}</b><div class="pda-row-sub">${esc(sv.ser||'')} · ${esc(sv.sap||'')}</div></td>
-          <td class="r">${edit?num(i,'price',l.price):'<b>'+sym+fmtNum(l.price)+'</b>'}</td><td class="r">${edit?num(i,'min',l.min):(Number(l.min)>0?sym+fmtNum(l.min):'-')}</td>
-          <td>${tax}</td><td><span class="mono">${esc(sv.fcode||'')}</span><div class="pda-row-sub">${esc(sv.formula?formulaPlain(sv.formula,type):'')}</div></td><td>${esc(sv.tariffUnit||sv.unit||'')}</td>
-          <td>${chk(i,'editable',l.editable)}</td>${mc}
-          ${edit?`<td><button class="link-btn danger" onclick="tfDelLine(${i})">Quitar</button></td>`:''}</tr>`; }).join('')
-        || `<tr><td colspan="14" style="color:#8D9BA2;padding:14px 20px">Sin servicios.</td></tr>`}
-      </tbody></table></div>${fErr(E,'lines')}
-      ${edit?`<div class="tf-addline"><select onchange="tfAddLine(this.value);this.value=''"><option value="">+ Agregar servicio del maestro…</option>${masterCatalog().filter(x=>!d.lines.some(l=>l.svc===x.id)).map(x=>`<option value="${x.id}">${esc(x.name)} (${esc(x.ser||'')})</option>`).join('')}</select></div>`:''}`;
-  }
-  ed.innerHTML = info + `<div class="buscar-filters"><div class="md-tabs">${tabs}</div><div class="md-body">${body}</div></div>`;
-}
 function applyTfPerm(){
   const nb = document.getElementById('tfNewBtn'); if(nb) nb.style.display = canEditTariffs() ? '' : 'none';
   if(!canEditTariffs()) tf.edit = false;
 }
 
 /* ---------- Guardar y estados ---------- */
-function discardTariff(){
-  if(tf.dirty && !confirm('¿Descartar los cambios de esta tarifa?')) return;
-  tf.dirty = false;
-  if(tf.isNew){ tf.isNew = false; tf.draft = null; tf.edit = false; showTfView('list'); renderTfList(); return; }
-  selectTariff(tf.selId, true);
-}
-function saveTariff(){
-  if(!canEditTariffs()){ toast('Solo Mantenedor de tarifas o Gerencia pueden editar','error'); return; }
-  const d = tf.draft, E = {};
-  if(!String(d.ref||'').trim()) E.ref = 'Obligatorio';
-  if(!d.from) E.from = 'Obligatorio';
-  if(!d.to) E.to = 'Obligatorio'; else if(d.from && d.from > d.to) E.to = 'Debe ser igual o posterior a Desde';
-  if(d.tipoTarifa==='Tercero Externo' && !d.proveedor) E.proveedor = 'Obligatorio';
-  if(!d.lines.length) E.lines = 'Agrega al menos un servicio';
-  if(Object.keys(E).length){
-    tf.errs = E; if(E.lines && Object.keys(E).length===1) tf.tab = 'svc';
-    renderTfEditor(); document.querySelector('#tfEditor .f-err')?.scrollIntoView({block:'center', behavior:'smooth'});
-    return;
-  }
-  tf.errs = null;
-  const user = curUser();
-  d.hist.push(tf.isNew ? {ts:new Date().toISOString(), user, prev:'', next:'Pendiente', comment: d.prevCode ? `Creación de tarifa (nueva versión de ${d.prevCode})` : 'Creación de tarifa'}
-                       : {ts:new Date().toISOString(), user, prev:d.status, next:d.status, comment:'Edición de tarifa'});
-  const i = TARIFFS.findIndex(x=>x.id===d.id);
-  if(i>-1) TARIFFS[i] = clone(d); else TARIFFS.push(clone(d));
-  log('Tarifas', `${tf.isNew?'Creó':'Editó'} la tarifa ${d.code} "${d.ref}"`, user);
-  tf.isNew = false; tf.edit = false; tf.dirty = false;
-  showTfView('detail'); renderTfEditor();
-  toast('Guardada · Pendiente de aprobación','success');
-}
 function tfSetStatus(next, comment){
   const t = TARIFFS.find(x=>x.id===tf.selId); if(!t) return;
   const prev = t.status; t.status = next;
@@ -4118,7 +3874,7 @@ function approveTariff(){
     }
   });
   if(repl.length){ applyTariffs(); tf.draft = clone(t); renderTfEditor(); }
-  toast(repl.length ? `Aprobada · reemplaza a ${repl.map(o=>tfShort(o.code)).join(', ')}` : tfVigente(t) ? 'Aprobada · se aplica a las nuevas PDA' : `Aprobada · rige desde ${fmtDate(t.from)}`, 'success');
+  toast('La tarifa se ha aprobado correctamente' + (repl.length ? ` · reemplaza a ${repl.map(o=>tfShort(o.code)).join(', ')}` : ''), 'success');
 }
 let reasonCb = null;
 /* ============================================================
@@ -4357,110 +4113,15 @@ function snapApprovedPda(){
 }
 
 /* ---------- Pantalla ---------- */
-function openVoyages(pre, returnTo){
-  vy.returnTo = returnTo || 'landing';
-  vy.f = {code:'', nro:'', nave:'', cliente:'', tipo:'', estado:'', ...(pre||{})}; vy.page = 1;
-  ['vfCode','vfNro','vfNave','vfCliente','vfTipo','vfEstado'].forEach((id,i)=>{ document.getElementById(id).value = vy.f[['code','nro','nave','cliente','tipo','estado'][i]]; });
-  document.getElementById('vyBackBtn').textContent = vy.returnTo==='pda' ? '← Volver a la PDA' : '← Volver al listado';
-  document.getElementById('stepsNav').style.display = 'none';
-  showScreen('screenVoyages'); showVyView('list'); renderVyList();
-}
 function openVoyage(code, returnTo){ openVoyages(null, returnTo); selectVoyage(code); }
-function setVyFilter(k,v){ vy.f[k] = v; vy.page = 1; renderVyList(); }
-function clearVyFilters(){ openVoyages(null, vy.returnTo); }
-function vyGo(p, size){ if(size) vy.size = size; vy.page = p; renderVyList(); }
-function showVyView(v){
-  vy.view = v;
-  document.getElementById('vyList').style.display = v==='list' ? '' : 'none';
-  document.getElementById('vyDetail').style.display = v==='detail' ? '' : 'none';
-  const bb = document.getElementById('vyBackBtn'); if(bb) bb.style.display = v==='list' || vy.returnTo!=='landing' ? '' : 'none';
-  const t = document.getElementById('ccPbTitle'), c = document.getElementById('ccCrumbs');
-  if(v==='detail'){
-    if(t) t.innerHTML = `<button type="button" class="cc-back" onclick="backToVyList()" title="Volver a la búsqueda"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 6l-6 6 6 6"/></svg></button>Edición de Viaje`;
-    if(c) c.innerHTML = `Inicio / Viaje / <b>Edición de Viaje</b>`;
-  } else updatePagebar('screenVoyages');
-  window.scrollTo({top:0});
-}
-function backToVyList(){ vy.selId = null; showVyView('list'); renderVyList(); }
 function closeVoyages(){ if(vy.returnTo==='pda' && state.pdaNumber) goStep(state.step>0 ? state.step : 3); else backToLanding(); }
-function vyFiltered(){
-  const f = vy.f, q = k => normTxt(f[k]||'');
-  return VOYAGES.filter(v=>(!q('code') || normTxt(v.code).includes(q('code'))) && (!q('nro') || normTxt(v.nro).includes(q('nro'))) && (!q('nave') || normTxt(v.nave).includes(q('nave'))) &&
-    (!q('cliente') || normTxt(v.cliente).includes(q('cliente'))) && (!f.tipo || v.tipo===f.tipo) && (!f.estado || v.estado===f.estado));
-}
-function vyExport(){
-  facXlsx('Viajes','Viajes',['Código de Viaje','Número de Viaje','Puerto de Operación','Nombre de la Nave','Cliente','Tipo de Servicio','ETA','ETD','PDA asociada','Estado'],
-    vyFiltered().map(v=>[v.code,v.nro,v.puerto,v.nave,v.cliente,v.tipo,vyFmt(v.eta),vyFmt(v.etd),vyPdas(v).join(', ')||'-',v.estado]));
-}
 function nvExport(){
   facXlsx('Naves','Naves',['Nombre de Nave','Código Lloyds (IMO)','Tipo de Nave','Bandera','Armador','Fecha de Creación','LOA','Manga','Calado','TRG','TRN','Homologación'],
     nvFiltered().map(s=>[s.name,s.imo||'-',vtypeLabel(s.vtype)||'-',s.flag||'-',s.armador||'-',vyFmt(s.created),s.loa||'-',s.manga||'-',s.calado||'-',s.grt||'-',s.trn||'-',s.estado]));
 }
 function vyPdas(v){ return [...new Set(v.rows.map(r=>r.pda).filter(Boolean))]; }
-function renderVyList(){
-  const all = vyFiltered(), pages = Math.max(1, Math.ceil(all.length/vy.size)); vy.page = Math.min(Math.max(1, vy.page), pages);
-  const list = all.slice((vy.page-1)*vy.size, vy.page*vy.size);
-  document.getElementById('vyResults').innerHTML = list.map(v=>`<tr class="mt-row" onclick="selectVoyage('${v.code}')">
-      <td><span class="pda-code-link">${v.code}</span></td><td>${esc(v.nro)}</td><td>${esc(v.puerto)}</td><td>${esc(v.nave)}</td><td>${esc(v.cliente)}</td><td>${esc(v.tipo)}</td>
-      <td>${vyFmt(v.eta)}</td><td>${vyFmt(v.etd)}</td><td>${vyPdas(v).map(c=>`<span class="mono">${c}</span>`).join('<br>') || '-'}</td><td>${v.estado==='Por homologar'?ptPill('Por homologar'):esc(v.estado)}</td></tr>`).join('')
-    || '<tr><td colspan="10" style="text-align:center;padding:30px;color:#8D9BA2;font-style:italic">Sin resultados</td></tr>';
-  document.getElementById('vyCount').textContent = all.length;
-  const qn = VOYAGES.filter(v=>v.estado==='Por homologar').length;
-  document.getElementById('vyQuick').innerHTML = qn || vy.f.estado==='Por homologar' ? `<button type="button" class="tf-q pend ${vy.f.estado==='Por homologar'?'on':''}" onclick="setVyFilter('estado', vy.f.estado==='Por homologar'?'':'Por homologar');document.getElementById('vfEstado').value=vy.f.estado">Por homologar <b>${qn}</b></button>` : '';
-  document.getElementById('vyPager').innerHTML = pagerHtml(all.length, vy.page, vy.size, 'vyGo');
-}
-function selectVoyage(code){ const v = voyByCode(code); if(!v) return; vy.selId = code; vy.errs = null; if(v.estado==='Por homologar') vy.tab = 'info'; vy.tab = vy.tab || 'ops'; showVyView('detail'); renderVyDetail(); }
-function setVyTab(k){ vy.tab = k; renderVyDetail(); }
 function vyOut(){ toast('Fuera del alcance de este prototipo','info'); }
 
-function renderVyDetail(){
-  const v = voyByCode(vy.selId), ed = document.getElementById('vyEditor'); if(!v){ ed.innerHTML = ''; return; }
-  const ro = (l, val) => `<div class="filter-field"><label>${l}</label><input disabled value="${esc(val??'')}"></div>`;
-  const tabs = [['info','Información General'],['times','Tiempos de Arribo y Zarpe'],['ops',`Servicios operativos (${v.rows.length})`],['docs','Documentos adjuntos']]
-    .map(([k,l])=>`<button class="${k===vy.tab?'on':''}" onclick="setVyTab('${k}')">${l}</button>`).join('');
-  let body = '';
-  const pend = v.estado==='Por homologar', canV = canEditVessel();
-  const ed2 = (l, k, val, type) => pend && canV ? `<div class="filter-field"><label>${l}</label><input ${type?`type="${type}"`:''} value="${esc(val??'')}" oninput="vyUpd('${k}',this.value)">${fErr(vy.errs,k)}</div>` : ro(l, type ? vyFmt(val) : val);
-  if(vy.tab==='info' && pend){
-    const sh = vesselByName(v.nave);
-    body = `${sh && sh.estado!=='Homologado' ? `<div class="tf-reason pend">La nave ${esc(v.nave)} está por homologar. <a href="#" onclick="openVessel('${esc(v.nave).replace(/'/g,'')}','voyage');return false">Homologar la nave</a></div>` : ''}
-      <div class="filters-grid g4">${ro('Código de Viaje', v.code)}${ro('Estado', v.estado)}${ed2('Nro Viaje *','nro',v.nro)}${ro('Nave', v.nave)}
-      ${ro('TRG', v.trg)}${ro('LOA', v.loa)}${ed2('Cliente *','cliente',v.cliente)}${ed2('Armador','armador',v.armador)}
-      ${ro('Tipo Servicio', v.tipo)}${ed2('Puerto de Operación *','puerto',v.puerto)}${ed2('Terminal','terminal',v.terminal)}${ed2('ETA *','eta',v.eta,'datetime-local')}${ed2('ETD *','etd',v.etd,'datetime-local')}</div>`;
-  } else if(vy.tab==='info'){
-    body = `<div class="filters-grid g4">${ro('Código de Viaje', v.code)}${ro('Estado', v.estado)}${ro('Nro Viaje', v.nro)}${ro('Nave', v.nave)}
-      ${ro('TRG', v.trg)}${ro('LOA', v.loa)}${ro('Cliente', v.cliente)}${ro('Armador', v.armador)}
-      ${ro('Tipo Servicio', v.tipo)}${ro('Puerto de Operación', v.puerto)}${ro('Terminal', v.terminal)}${ro('ETA', vyFmt(v.eta))}${ro('ETD', vyFmt(v.etd))}</div>`;
-  } else if(vy.tab==='times'){
-    body = `<div class="filters-grid g4">${ro('ETA', vyFmt(v.eta))}${ro('ETB','')}${ro('ETD', vyFmt(v.etd))}${ro('ATA','')}${ro('ATB','')}${ro('ATD','')}</div>`;
-  } else if(vy.tab==='docs'){
-    body = `<div class="results-table"><table><thead><tr><th>Documento</th><th>Tipo</th><th>Fecha</th></tr></thead><tbody><tr><td colspan="3" style="color:#8D9BA2;padding:14px 20px">Sin documentos.</td></tr></tbody></table></div>`;
-  } else {
-    const pdas = vyPdas(v);
-    const linked = pdas.length ? `<div class="vy-linked">${pdas.map(c=>`<span class="vy-pda"><b>${c}</b> · ${v.rows.filter(r=>r.pda===c).length} servicios
-        <button class="link-btn" onclick="openPdaFromVoyage('${c}')">Ver PDA</button><button class="link-btn danger" onclick="unlinkPda('${v.code}','${c}')">Desasociar</button></span>`).join('')}</div>` : '';
-    const cats = catList().filter(c=>v.rows.some(r=>r.cat===c));
-    const head = `<tr><th>Servicio</th><th>Fecha/Hora Inicio estimada</th><th>Fecha/Hora Inicio</th><th>Fecha/Hora Fin</th><th>Validado</th><th>Proveedor</th><th>Requiere Coordinación</th>
-      <th>Ingresar Referencias</th><th class="r">Cantidad Archivos</th><th>Código PDA</th><th>Documentos adjuntos</th><th>Acciones</th></tr>`;
-    body = `<div class="vy-opsbar">${linked}<button class="btn-corp" onclick="vyOut()">Generar Requerimiento de Servicio</button></div>` + (cats.map(c=>{
-      const rows = v.rows.filter(r=>r.cat===c), open = vy.open[c]!==false;
-      return `<div class="vy-acc ${open?'open':''}"><button class="vy-acc-h" onclick="vy.open['${c}']=${!open};renderVyDetail()">${esc(catLabel(c))} <span>${rows.length}</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
-        ${open ? `<div class="results-table vy-tbl"><table><thead>${head}</thead><tbody>${rows.map(r=>`<tr class="${r.pda?'vy-frompda':''}"><td>${esc(r.name)}</td><td>${vyDate(r.ini_est)}</td><td>${vyDate(r.ini)}</td><td>${vyDate(r.fin)}</td>
-          <td><input type="checkbox" ${r.validado?'checked':''} onchange="vyRow('${v.code}','${r.id}','validado',this.checked)"></td><td>${esc(r.proveedor||'')}</td>
-          <td><input type="checkbox" ${r.coord?'checked':''} onchange="vyRow('${v.code}','${r.id}','coord',this.checked)"></td><td>${esc(r.ref||'')}</td><td class="r">${r.files}</td>
-          <td>${r.pda?`<a href="#" class="pda-code-link" onclick="openPdaFromVoyage('${r.pda}');return false">${r.pda}</a>`:''}</td><td><button class="link-btn" onclick="vyOut()">Ver</button></td>
-          <td><button class="link-btn" onclick="vyOut()">Editar</button><button class="link-btn danger" onclick="vyDelRow('${v.code}','${r.id}')">Quitar</button></td></tr>`).join('')}</tbody></table></div>` : ''}</div>`;
-    }).join('') || `<div class="hint" style="padding:18px 4px">Sin servicios. Usa "Asociar PDA" para traer los servicios de una PDA aprobada.</div>`);
-  }
-  ed.innerHTML = `<div class="buscar-filters">
-      <div class="md-cardhead"><div class="tf-title"><h3 class="md-h">${esc(v.code)} · ${esc(v.nave)} · ${esc(v.nro)}</h3>${v.hist?`<button class="tf-hist" title="Historial" onclick="openHistModal(voyByCode(vy.selId).hist||[])"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg></button>`:''}</div>
-        <div class="md-actions"><span class="cc-chip on ${pend?'st-pendiente':v.estado==='Rechazado'?'st-rechazada':''}">${esc(v.estado)}</span>
-          ${pend ? (canV ? `<button class="btn-corp-outline" onclick="rejectVoyage()">Rechazar</button><button class="btn-corp tf-ok" onclick="homologateVoyage()">Homologar</button>` : '')
-            : `<button class="btn-corp" id="vyAssocBtn" onclick="openAssocPda()">Asociar PDA</button><button class="btn-corp" onclick="vyOut()">Enviar Email</button>
-          <button class="btn-corp" onclick="vyOut()">Editar</button><button class="btn-corp tf-void" onclick="vyOut()">Anular</button>`}</div></div>
-      ${pend && v.origen ? `<div class="tf-reason pend">Preregistrado por ${esc(v.origen.by)} · ${fmtDate(v.origen.ts)} · <a href="#" onclick="openPdaFromVoyage('${v.origen.pda}');return false">${esc(v.origen.pda)}</a></div>` : ''}
-      <div class="md-tabs">${tabs}</div><div class="md-body">${body}</div></div>`;
-}
 function vyUpd(k, val){ const v = voyByCode(vy.selId); if(!v) return; v[k] = val; clearErr(vy.errs, k, '#vyEditor'); }
 function homologateVoyage(){
   const v = voyByCode(vy.selId); if(!v) return;
@@ -4478,14 +4139,12 @@ function rejectVoyage(){
   openReason('Rechazar viaje', 'Rechazar', txt=>{ const v = voyByCode(vy.selId); if(!v) return;
     v.estado = 'Rechazado'; (v.hist = v.hist || []).push({ts:new Date().toISOString(), user:curUser(), prev:'Por homologar', next:'Rechazado', comment:txt}); renderVyDetail(); toast('Viaje rechazado','info'); });
 }
-function vyRow(code, id, k, val){ const r = voyByCode(code)?.rows.find(x=>x.id===id); if(r) r[k] = val; }
-function vyDelRow(code, id){ const v = voyByCode(code); if(!v || !confirm('¿Quitar este servicio del viaje?')) return; v.rows = v.rows.filter(r=>r.id!==id); renderVyDetail(); }
 
 /* ---------- Asociar PDA aprobada (modal con el formato de Connect) ---------- */
 function openAssocPda(){
   const v = voyByCode(vy.selId); if(!v) return;
   if(v.estado==='Anulado'){ toast('El viaje está anulado','error'); return; }
-  if(v.estado!=='Creado'){ toast('Homologa el viaje antes de asociar una PDA','error'); return; }
+  if(!['Creado','Direccionamiento cerrado'].includes(v.estado)){ toast('Homologa el viaje antes de asociar una PDA','error'); return; }
   vy.mf = {code:'', nro:v.nro, nave:v.nave, puerto:v.puerto, cliente:v.cliente}; vy.pick = null;
   ['amCode','amNro','amNave','amPuerto','amCliente'].forEach((id,i)=>{ document.getElementById(id).value = vy.mf[['code','nro','nave','puerto','cliente'][i]]; });
   renderAssocList(); document.getElementById('assocModal').classList.add('show');
@@ -4509,12 +4168,13 @@ function renderAssocList(){
 }
 function confirmAssocPda(){
   const v = voyByCode(vy.selId), code = vy.pick; if(!v || !code) return;
+  if(window.agVyAntesAsociar) agVyAntesAsociar(code);   /* Connect: deja el viaje en modo Editar; se confirma con Guardar */
   const lines = pdaLinesFor(code), user = curUser(); let n = 0;
   lines.forEach(l=>{ v.rows.push({id:'r'+Date.now()+(n++), cat:l.cat, name:l.name, ini_est:v.eta, ini:'', fin:'', validado:false, proveedor:l.supplier, coord:false, ref:'', files:0, pda:code}); });
   PDA_ASSOC[code] = v.code;
   if(state.pdaNumber===code) log('Viaje', `PDA asociada al viaje ${v.code} (${n} servicios a Servicios operativos)`, user);
   closeModal('assocModal'); vy.tab = 'ops'; renderVyDetail();
-  toast(`${code} asociada · ${n} servicios en Servicios operativos`,'success');
+  toast(`${code} asociada · ${n} servicios en Servicios operativos. Pulse Guardar para confirmar.`,'success');
 }
 function unlinkPda(vcode, code){
   const v = voyByCode(vcode); if(!v) return;
@@ -4536,17 +4196,6 @@ function openReason(title, btn, cb){
   document.getElementById('tfReasonTxt').value = ''; document.getElementById('tfReasonModal').classList.add('show');
   setTimeout(()=>document.getElementById('tfReasonTxt').focus(), 40);
 }
-function askTfReason(next){
-  reasonCb = null;
-  if(next==='Rechazada' && !canApproveTariffs()){ toast('Solo Gerencia rechaza tarifas','error'); return; }
-  if(next==='Anulada' && !canEditTariffs()){ toast('Solo Mantenedor de tarifas o Gerencia pueden anular','error'); return; }
-  tf.reason = next;
-  document.getElementById('tfReasonTitle').textContent = next==='Anulada' ? 'Anular tarifa' : 'Rechazar tarifa';
-  document.getElementById('tfReasonBtn').textContent = next==='Anulada' ? 'Anular' : 'Rechazar';
-  document.getElementById('tfReasonTxt').value = '';
-  document.getElementById('tfReasonModal').classList.add('show');
-  setTimeout(()=>document.getElementById('tfReasonTxt').focus(), 40);
-}
 function confirmTfReason(){
   const txt = document.getElementById('tfReasonTxt').value.trim();
   if(!txt){ toast('El motivo es obligatorio','error'); document.getElementById('tfReasonTxt').focus(); return; }
@@ -4563,7 +4212,6 @@ function openHistModal(rows){
     : '<tr><td colspan="5" style="color:#8D9BA2;padding:16px">Sin movimientos registrados.</td></tr>';
   document.getElementById('historyModal').classList.add('show');
 }
-function openTfHistory(){ openHistModal(tf.draft.hist||[]); }
 
 /* ---------- Tarifario por cliente (se guarda al instante; Mantenedor de tarifas o Gerencia editan) ---------- */
 function clientTariffsHtml(svc){
