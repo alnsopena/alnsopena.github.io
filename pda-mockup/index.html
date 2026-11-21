@@ -6294,6 +6294,11 @@ function fRemoved(title, hu, tk, items){
   return `<div class="chg-removed"><div class="chg-h">Se quitó respecto a Connect actual · ${title} · ${hu} · ${tk}</div>
     <ul>${items.map(([a,b])=>`<li><s>${esc(a)}</s>${b?` <span>→ ${esc(b)}</span>`:''}</li>`).join('')}</ul></div>`;
 }
+/* v37 "Ver propuestas": encendido muestra el prototipo marcado; apagado, Connect tal cual */
+function facProp(){ return typeof CC==='undefined' || CC.verPropuestas!==false; }
+function fPs(texto){ return `class="cc-prop" data-prop="${esc('Propuesta · Sin ticket · '+texto)}"`; }
+function fConfirm(titulo, texto, fn, okTxt){ facOpen(`<h3>${titulo}</h3><div class="fac-note" style="margin:14px 0">${texto}</div><div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose()">Cancelar</button><button type="button" class="cc-btn" id="facConfOk" onclick="facClose();${fn}">${okTxt||'Aceptar'}</button></div>`); }
+window.addEventListener('cc:propuestas', ()=>{ if(!facProp()){ if(FD.tab==='nc'){ FD.tab = 'docs'; FD.view = 'list'; } if(CB.tab!=='val'){ CB.tab = 'val'; CB.view = 'list'; } } facRefresh(); });
 function fChgBtn(){ return `<button type="button" class="cc-btn chg-btn" onclick="facToggleChg()" title="Marca en morado lo nuevo y lo quitado respecto a Connect actual">Cambios vs Connect: ${chgOn()?'sí':'no'}</button><span class="fac-legend">Morado: bloqueante. Lila: no bloqueante, no es foco de esta fase. Punteado: quitado. Clic en una propuesta: ver consulta y propuesta.</span>`; }
 function facToggleChg(){ document.body.classList.toggle('chg-on'); try{ localStorage.setItem('pdaChg', chgOn()?'1':'0'); }catch(e){} facRefresh(); }
 function facRefresh(){
@@ -6355,6 +6360,11 @@ function facServices(prov, cat){
   return [...new Set(FAC_TARIFFS.filter(t=>t.vigente && (!prov || t.prov===prov) && (!cat || t.cat===cat)).map(t=>t.svc))];
 }
 const FP_STATES = ['SIN PROVISIÓN','PROVISIONADO','LIQUIDADO','ERROR','ANULADO'];
+/* Catálogo de Connect: PROVISIONADO, PENDIENTE, CANJEADO, ANULADO, ERROR. I-014 propone SIN PROVISIÓN y LIQUIDADO */
+const FP_ST_CX = {'SIN PROVISIÓN':'PENDIENTE','LIQUIDADO':'CANJEADO'};
+function fpStL(s){ return facProp() ? s : (FP_ST_CX[s] || s); }
+function fpStOpts(){ return facProp() ? FP_STATES : ['PROVISIONADO','SIN PROVISIÓN','LIQUIDADO','ANULADO','ERROR'].map(s=>[s, fpStL(s)]); }
+function fpEditable(p){ return p.id===0 || (FP.edit===p.id && p.status==='ERROR'); }
 function fpPending(prov, nave, nro, svc, cat){ return {id:'sv'+(FP.seq++), prov, nave, nro, svc, cat, sel:false}; }
 function fpLine(p, l){
   const v = facVoy(l.nave, l.nro), base = l.unit==='Por TRG' ? (v.trg||0)*l.rate*l.qty : l.rate*l.qty;
@@ -6365,13 +6375,13 @@ function fpNew(o){ return {id:0, code:'', origin:'', sit:'Provisional', docType:
 function fpMkLine(t, nave, nro, cliente, tipo, qty, date){
   return {tipo:tipo||'Reembolsable', nave, nro, cat:t.cat, svc:t.svc, date:date||'', unit:t.unit, tariff:t.code, rate:t.rate, qty:qty||1, igv:t.igv, cur:t.cur, bill:cliente, collect:cliente, addr:'LIMA - PERÚ', quiebre:'Q02089 - COSTOS GENERALES', remark:''};
 }
-const FP = {seq:1, nextPrv:76, f:{prov:'',nave:'',viaje:'',num:'',sit:'',cat:'',svc:'',est:'PROVISIONADO',from:'',to:''}, searched:true, open:'', tab:'gen', page:1, size:10, view:'list', sel:null, list:[], pending:[]};
+const FP = {seq:1, nextPrv:76, edit:null, draft:null, f:{prov:'',nave:'',viaje:'',num:'',sit:'',cat:'',svc:'',est:'PROVISIONADO',from:'',to:''}, searched:true, open:'', tab:'gen', page:1, size:10, view:'list', sel:null, list:[], pending:[]};
 function fpSeed(){
   const T = c=>FAC_TARIFFS.find(t=>t.code===c);
   const box = facVoy('BOX ENDURANCE'), pac = facVoy('PACIFIC HORIZON'), oce = facVoy('OCEAN MERIDIAN'), ree = facVoy('REEFER ATLANTIC'), nor = facVoy('NORD VALOUR');
   const pdaDesc = v=>`Servicios de ${v.pda}`;
   FP.list = [
-    fpNew({id:71, code:'PRV00000000071', prov:T('TAR-0201').prov, sit:'Provisional', docType:'', docDate:'2026-09-10', recDate:'2026-09-10', payDate:'2026-10-10', desc:pdaDesc(box), linked:72, lines:[fpMkLine(T('TAR-0201'),box.nave,box.nro,box.cliente,'Reembolsable',1,'2026-09-10')]}),
+    fpNew({id:71, code:'PRV00000000071', prov:T('TAR-0201').prov, sit:'Provisional', docType:'Aviso', docSerie:'PROV', docNum:'0000000071', docDate:'2026-09-10', recDate:'2026-09-10', payDate:'2026-10-10', desc:pdaDesc(box), linked:72, lines:[fpMkLine(T('TAR-0201'),box.nave,box.nro,box.cliente,'Reembolsable',1,'2026-09-10')]}),
     fpNew({id:72, code:'PRV00000000072', origin:'PRV00000000071', prov:T('TAR-0201').prov, sit:'Original', docType:'Factura', docSerie:'F123', docNum:'000456', docDate:'2026-09-15', recDate:'2026-09-15', payDate:'2026-10-15', desc:pdaDesc(box), lines:[fpMkLine(T('TAR-0201'),box.nave,box.nro,box.cliente,'Reembolsable',1,'2026-09-10')]}),
     fpNew({id:73, code:'PRV00000000073', prov:T('TAR-0310').prov, sit:'Original', docType:'Factura', docSerie:'F045', docNum:'002210', docDate:'2026-09-08', recDate:'2026-09-08', payDate:'2026-10-08', status:'LIQUIDADO', desc:pdaDesc(pac), lines:[fpMkLine(T('TAR-0310'),pac.nave,pac.nro,pac.cliente,'Reembolsable',2,'2026-09-05')]}),
     fpNew({id:74, code:'PRV00000000074', prov:T('TAR-0420').prov, sit:'Original', docType:'Factura', docSerie:'F010', docNum:'008877', docDate:'2026-09-16', recDate:'2026-09-16', payDate:'2026-10-16', status:'ERROR', desc:pdaDesc(oce), lines:[fpMkLine(T('TAR-0420'),oce.nave,oce.nro,oce.cliente,'Gasto',1,'2026-09-14')]}),
@@ -6418,7 +6428,7 @@ function fpGroups(){
 function renderFp(){ if(FP.view==='detail') renderFpDetail(); else renderFpList(); }
 function renderFpList(){
   updatePagebar('screenProvisions');
-  const f = FP.f, svcs = facServices(FAC_PROVS.find(p=>p===f.prov)||'', f.cat), voy = facVoys().find(v=>v.nro===fpVoyNro(f.viaje));
+  const f = FP.f, svcs = facProp() ? facServices(FAC_PROVS.find(p=>p===f.prov)||'', f.cat) : [...new Set(FAC_TARIFFS.map(t=>t.svc))], voy = facVoys().find(v=>v.nro===fpVoyNro(f.viaje));
   const groups = FP.searched ? fpGroups() : [];
   document.getElementById('fpRoot').innerHTML = `
     <div class="fac-acts" style="justify-content:flex-end;margin-bottom:12px">${fChgBtn()}</div>
@@ -6427,21 +6437,21 @@ function renderFpList(){
       <div class="fac-g4">
         ${fF('Proveedor', `<input list="fpProvs" placeholder="Ingresar un proveedor" value="${esc(f.prov)}" onchange="fpSet('prov',this.value)"><datalist id="fpProvs">${FAC_PROVS.map(p=>`<option value="${esc(p)}"></option>`).join('')}</datalist>`)}
         ${fF('Nave', `<input placeholder="Ingresar una nave" value="${esc(f.nave)}" onchange="fpSet('nave',this.value)">`)}
-        ${fF(`Número de Viaje ${fm('Modifica: ETA a la derecha',FAC_HU.prov,'I-041','PEN-I041-01')}`, `<input id="fpViaje" list="fpVoys" placeholder="Ingresar un número de viaje" value="${esc(f.viaje)}" onchange="fpSet('viaje',this.value)">${facVoyList('fpVoys')}${voy?`<small style="color:var(--cc-sub);font-size:12px">ETA: ${facEta(voy)}</small>`:''}`)}
+        ${fF(`Número de Viaje ${fm('Modifica: ETA a la derecha',FAC_HU.prov,'I-041','PEN-I041-01')}`, `<input id="fpViaje" list="fpVoys" placeholder="Ingresar un número de viaje" value="${esc(f.viaje)}" onchange="fpSet('viaje',this.value)">${facVoyList('fpVoys')}${voy?`<small class="cc-prop" style="color:var(--cc-sub);font-size:12px">ETA: ${facEta(voy)}</small>`:''}`)}
         ${fF('Número de Provisión', `<input placeholder="Ingresar un número de provisión" value="${esc(f.num)}" onchange="fpSet('num',this.value)">`)}
         ${fF('Situación', fSel(['Provisional','Original'], f.sit, `onchange="fpSet('sit',this.value)"`, 'Elegir una situación'))}
         ${fF('Categoría', fSel(FAC_CATS, f.cat, `onchange="fpSet('cat',this.value)"`, 'Elegir una categoría'))}
         ${fF(`Servicios ${fm('Modifica: por Categoría y Proveedor, sin duplicados',FAC_HU.prov,'I-040','PEN-I040-01')}`, fSel(svcs, f.svc, `id="fpSvc" onchange="fpSet('svc',this.value)"`, 'Elegir un servicio comercial'))}
-        ${fF(`Estado de Provisión ${fm('Modifica',FAC_HU.prov,'I-014','PEN-I014-01')}`, fSel(FP_STATES, f.est, `id="fpEst" onchange="fpSet('est',this.value)"`, 'Elegir un estado'))}
+        ${fF(`Estado de Provisión ${fm('Modifica',FAC_HU.prov,'I-014','PEN-I014-01')}`, fSel(fpStOpts(), f.est, `id="fpEst" onchange="fpSet('est',this.value)"`, 'Elegir un estado'))}
         ${fF('Rango de Fechas', `<div class="fac-range"><input type="date" value="${f.from}" onchange="fpSet('from',this.value)"><input type="date" value="${f.to}" onchange="fpSet('to',this.value)"></div>`)}
       </div>
-      <div class="fac-btns"><button type="button" class="cc-btn" ${fpHasFilter()?'':'disabled'} onclick="fpSearch()">Buscar</button><button type="button" class="cc-btn pink" ${fpHasFilter()?'':'disabled'} onclick="fpClear()">Limpiar</button></div>
+      <div class="fac-btns"><button type="button" class="cc-btn" onclick="fpSearch()">Buscar</button><button type="button" class="cc-btn pink" onclick="fpClear()">Limpiar</button></div>
       ${fRemoved('Estados de provisión', FAC_HU.prov, 'I-014', [['CANJEADO','LIQUIDADO'],['PENDIENTE','SIN PROVISIÓN']])}
     </div>
     ${FP.searched && groups.length ? `<div class="fac-card" style="padding:0">
       <div style="padding:20px 24px 12px"><h3>Resultados (${groups.length})</h3></div>
-      <div style="padding:0 24px 24px"><div class="fac-scroll" style="max-height:none"><table class="fac-tbl fac-layout"><thead><tr><th>Proveedor</th><th>Servicios Pendientes</th><th>Provisiones</th><th></th></tr></thead><tbody>
-        ${groups.map(g=>`<tr><td>${esc(g.name)}</td><td>${g.pend.length}</td><td>${g.provs.length}</td><td class="num"><button type="button" class="fac-expbtn" aria-label="Expandir" onclick="fpToggle('${esc(g.name).replace(/'/g,"\\'")}')">${FP.open===g.name?'▲':'▼'}</button></td></tr>
+      <div style="padding:0 24px 24px"><div class="fac-scroll" style="max-height:none"><table class="fac-tbl fac-layout"><thead><tr><th>Proveedor</th><th>Provisiones</th><th>Servicios Pendientes</th><th></th></tr></thead><tbody>
+        ${groups.map(g=>`<tr><td>${esc(g.name)}</td><td>${g.provs.length}</td><td>${g.pend.length}</td><td class="num"><button type="button" class="fac-expbtn" aria-label="Expandir" onclick="fpToggle('${esc(g.name).replace(/'/g,"\\'")}')">${FP.open===g.name?'▲':'▼'}</button></td></tr>
           ${FP.open===g.name?`<tr><td colspan="4" class="fac-expand"><div class="fac-expand-in">${fpExpanded(g)}</div></td></tr>`:''}`).join('')}
       </tbody></table></div>
       <div class="cc-pager">${pagerHtml(groups.length, 1, FP.size, 'fpGo')}</div></div>
@@ -6454,11 +6464,11 @@ function fpExpanded(g){
   const tabs = `<div class="fac-tabs"><button type="button" class="${FP.tab==='svc'?'on':''}" onclick="fpTab('svc')">Servicios</button><button type="button" class="${FP.tab==='gen'?'on':''}" onclick="fpTab('gen')">Provisiones Generadas</button></div>`;
   if(FP.tab==='svc') return tabs + `
     <div class="fac-btns" style="margin:0 0 10px;align-items:center">${fm('Agrega: ETA',FAC_HU.prov,'I-041','PEN-I041-01')} ${fm('Una sola nave',FAC_HU.prov,'I-014','PEN-I014-02')}<button type="button" class="cc-btn" onclick="fpGenerate()">Generar Provisión</button></div>
-    <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th></th><th>Nave</th><th>Número de Viaje</th><th>ETA</th><th>Servicios</th><th>Sucursal</th><th>Puerto</th></tr></thead><tbody>
-      ${g.pend.map(s=>{ const v = facVoy(s.nave,s.nro); return `<tr><td><input type="checkbox" style="width:auto" ${s.sel?'checked':''} onchange="fpPick('${s.id}',this.checked)"></td><td>${esc(s.nave)}</td><td>${esc(s.nro)}</td><td>${facEta(v)}</td><td>${esc(s.svc)}</td><td>Callao</td><td>${esc(v.puerto)}</td></tr>`; }).join('') || '<tr><td colspan="7" class="fac-empty">No se encontraron servicios pendientes</td></tr>'}
+    <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th></th><th>Nave</th><th>Número de Viaje</th><th class="cc-prop">ETA</th><th>Servicios</th><th>Sucursal</th><th>Puerto</th></tr></thead><tbody>
+      ${g.pend.map(s=>{ const v = facVoy(s.nave,s.nro); return `<tr><td><input type="checkbox" style="width:auto" ${s.sel?'checked':''} onchange="fpPick('${s.id}',this.checked)"></td><td>${esc(s.nave)}</td><td>${esc(s.nro)}</td><td class="cc-prop">${facEta(v)}</td><td>${esc(s.svc)}</td><td>Callao</td><td>${esc(v.puerto)}</td></tr>`; }).join('') || '<tr><td colspan="7" class="fac-empty">No se encontraron servicios pendientes</td></tr>'}
     </tbody></table></div>`;
-  return tabs + `<div style="margin-bottom:8px">${fm('Agrega: Número de Documento, Nave, Viaje y Servicio',FAC_HU.prov,'I-014','PEN-I014-01')} ${fm('Agrega: ETA',FAC_HU.prov,'I-041','PEN-I041-01')}</div><div class="fac-scroll"><table class="fac-tbl fac-fix"><thead><tr><th>Número de Provisión</th><th>Número de Provisión de Origen</th><th>Situación</th><th>Tipo de Documento</th><th>Número de Documento</th><th>Fecha de Documento</th><th>Nave</th><th>Número de Viaje</th><th>ETA</th><th>Servicio</th><th>Moneda</th><th class="num">Monto</th><th>Estado de Provisión</th><th></th></tr></thead><tbody>
-    ${g.provs.map(p=>{ const l = p.lines[0]||{}, v = facVoy(l.nave,l.nro); return `<tr><td><button type="button" class="fac-link" onclick="fpOpen(${p.id})">${p.code}</button></td><td>${esc(p.origin)}</td><td>${p.sit}</td><td>${esc(p.docType||'-')}</td><td>${p.docNum?`${esc(p.docSerie)}-${esc(p.docNum)}`:'-'}</td><td>${fmtDate(p.docDate)}</td><td>${esc(l.nave)}</td><td>${esc(l.nro)}</td><td>${facEta(v)}</td><td>${esc(l.svc)}</td><td>${p.cur}</td><td class="num">${fMoney(fpTotal(p))}</td><td>${p.status}${p.reopen?` <span class="fac-pill wait">Reabierta por ${esc(p.reopen)}</span>`:''}</td>
+  return tabs + `<div style="margin-bottom:8px">${fm('Agrega: Número de Documento, Nave, Viaje y Servicio',FAC_HU.prov,'I-014','PEN-I014-01')} ${fm('Agrega: ETA',FAC_HU.prov,'I-041','PEN-I041-01')}</div><div class="fac-scroll"><table class="fac-tbl fac-fix"><thead><tr><th>Número de Provisión</th><th>Número de Provisión de Origen</th><th>Situación</th><th>Tipo de Documento</th><th class="cc-prop">Número de Documento</th><th>Fecha de Documento</th><th class="cc-prop">Nave</th><th class="cc-prop">Número de Viaje</th><th class="cc-prop">ETA</th><th class="cc-prop">Servicio</th><th>Moneda</th><th class="num">Monto</th><th>Estado de Provisión</th><th></th></tr></thead><tbody>
+    ${g.provs.map(p=>{ const l = p.lines[0]||{}, v = facVoy(l.nave,l.nro); return `<tr><td><button type="button" class="fac-link" onclick="fpOpen(${p.id})">${p.code}</button></td><td>${esc(p.origin)}</td><td>${p.sit}</td><td>${esc(p.docType||'-')}</td><td class="cc-prop">${p.docNum?`${esc(p.docSerie)}-${esc(p.docNum)}`:'-'}</td><td>${fmtDate(p.docDate)}</td><td class="cc-prop">${esc(l.nave)}</td><td class="cc-prop">${esc(l.nro)}</td><td class="cc-prop">${facEta(v)}</td><td class="cc-prop">${esc(l.svc)}</td><td>${p.cur}</td><td class="num">${fMoney(fpTotal(p))}</td><td>${fpStL(p.status)}${p.reopen?` <span class="fac-pill wait cc-prop">Reabierta por ${esc(p.reopen)}</span>`:''}</td>
       <td>${p.status==='PROVISIONADO'&&p.sit==='Provisional'&&!p.linked?`<button type="button" class="fac-link" title="Canjear a Original" onclick="fpExchange(${p.id})">Canjear</button>`:''}</td></tr>`; }).join('') || '<tr><td colspan="14" class="fac-empty">No se encontraron provisiones</td></tr>'}
   </tbody></table></div>`;
 }
@@ -6468,15 +6478,34 @@ function fpGenerate(){
   if(!picked.length){ toast('No se han seleccionado servicios','error'); return; }
   if(new Set(picked.map(s=>s.nave)).size>1){ toast('Una provisión admite servicios de una sola nave (Propuesta TI, por validar)','error'); return; }
   if(new Set(picked.map(s=>s.prov)).size>1){ toast('Selecciona servicios de un solo proveedor','error'); return; }
-  const id = FP.nextPrv++, v = facVoy(picked[0].nave, picked[0].nro);
+  const v = facVoy(picked[0].nave, picked[0].nro), hoy = new Date().toISOString().slice(0,10);
   const lines = picked.map(s=>{ const ts = facTariffs(s.prov, s.svc); return fpMkLine(ts[0]||{}, s.nave, s.nro, v.cliente, 'Reembolsable', 1, v.eta); });
-  const p = fpNew({id, code:'PRV'+String(id).padStart(11,'0'), prov:picked[0].prov, docType:'', docDate:new Date().toISOString().slice(0,10), desc:v.pda?`Servicios de ${v.pda}`:'', lines, hist:[{ts:facNow(), user:curUser(), prev:'SIN PROVISIÓN', next:'PROVISIONADO', comment:'Provisión generada'}]});
-  FP.list.push(p); FP.pending = FP.pending.filter(s=>!s.sel);
-  toast('Provisión creada exitosamente','success'); fpOpen(id);
+  /* Como Connect: Generar Provisión abre Crear Provisión con los servicios elegidos */
+  FP.draft = fpNew({id:0, prov:picked[0].prov, docType:'Aviso', docSerie:'PROV', docNum:String(FP.nextPrv).padStart(10,'0'), docDate:hoy, recDate:hoy, payDate:hoy, desc:v.pda?`Servicios de ${v.pda}`:'', lines, picked:picked.map(s=>s.id)});
+  fpOpen(0);
 }
-function fpOpen(id){ FP.view = 'detail'; FP.sel = id; renderFp(); window.scrollTo({top:0}); }
-function fpBack(){ FP.view = 'list'; FP.sel = null; renderFp(); }
-function fpById(id){ return FP.list.find(p=>p.id===id); }
+/* Crear Provisión (Connect). Provisional: serie PROV y correlativo automático; Original: serie y número del documento del proveedor */
+function fpDraftSet(k, v){
+  const d = FP.draft; d[k] = v;
+  if(k==='sit'){ if(v==='Provisional'){ d.docType = 'Aviso'; d.op = 'Venta Interna'; d.docSerie = 'PROV'; d.docNum = String(FP.nextPrv).padStart(10,'0'); } else { d.docType = 'Factura'; d.docSerie = ''; d.docNum = ''; } }
+  renderFp();
+}
+function fpCreate(){
+  const d = FP.draft; if(!d) return;
+  if(!d.docDate || !d.sit || !d.docType || !d.cur || !d.tc || !d.recDate || !d.payDate || !d.op || !d.lang || (d.sit==='Original' && (!d.docSerie || !d.docNum))){ toast('Por favor, complete los campos requeridos','error'); return; }
+  if(!d.lines.length){ toast('La provisión debe tener al menos un detalle agregado.','error'); return; }
+  const id = FP.nextPrv++;
+  const p = {...d, id, code:'PRV'+String(id).padStart(11,'0'), status:'PROVISIONADO', hist:[{ts:facNow(), user:curUser(), prev:'SIN PROVISIÓN', next:'PROVISIONADO', comment:d.origin?'Canje de '+d.origin:'Provisión generada. Transmitida a SAP'}]};
+  if(d.sit==='Provisional') p.docNum = String(id).padStart(10,'0');
+  delete p.picked; FP.list.push(p);
+  FP.pending = FP.pending.filter(s=>!(d.picked||[]).includes(s.id));
+  if(d.origin){ const o = FP.list.find(x=>x.code===d.origin); if(o){ o.linked = id; o.hist.push({ts:facNow(), user:curUser(), prev:o.status, next:o.status, comment:'Canje a '+p.code}); } }
+  FP.draft = null; toast('Provisión creada exitosamente','success'); fpOpen(id);
+}
+function fpCancelDraft(){ FP.draft = null; FP.edit = null; fpBack(); }
+function fpOpen(id){ FP.view = 'detail'; FP.sel = id; if(FP.edit!==id) FP.edit = null; renderFp(); window.scrollTo({top:0}); }
+function fpBack(){ FP.view = 'list'; FP.sel = null; FP.edit = null; renderFp(); }
+function fpById(id){ return id===0 ? FP.draft : FP.list.find(p=>p.id===id); }
 function fpAnnulBlock(p){
   if(!facCanBill()) return 'Solo Facturación y Gerencia pueden anular (Propuesta TI, por validar).';
   if(p.status==='LIQUIDADO') return 'La provisión ya tiene documento emitido. No se puede anular.';
@@ -6486,39 +6515,75 @@ function fpAnnulBlock(p){
 }
 function renderFpDetail(){
   const p = fpById(FP.sel); if(!p){ fpBack(); return; }
-  facSetBar('screenProvisions','Editar Provisión',['Inicio','Provisiones','Editar Provisión'],'fpBack()');
-  const block = fpAnnulBlock(p), locked = /LIQUIDADO|ANULADO/.test(p.status);
-  const total = fpTotal(p);
+  const nuevo = p.id===0, ed = fpEditable(p), titulo = nuevo ? 'Crear Provisión' : 'Editar Provisión';
+  facSetBar('screenProvisions',titulo,['Inicio','Provisiones',titulo],nuevo?'fpCancelDraft()':'fpBack()');
+  const block = fpAnnulBlock(p), total = fpTotal(p), dis = ed?'':'disabled';
+  const chips = facProp() ? FP_STATES.filter(s=>s!=='SIN PROVISIÓN') : ['PROVISIONADO','SIN PROVISIÓN','LIQUIDADO','ANULADO','ERROR'];
+  const inp = (label, k, type, cls) => ed ? fF(label, `<input ${type?`type="${type}"`:''} value="${esc(p[k]??'')}" onchange="fpHeadSet('${k}',this.value)">`, cls) : fRo(label, type==='date'?fmtDate(p[k]):p[k], cls);
+  const sel = (label, k, opts) => ed ? fF(label, fSel(opts, p[k], `onchange="fpHeadSet('${k}',this.value)"`)) : fRo(label, p[k]||'-');
+  const prov = p.sit==='Provisional';
   document.getElementById('fpRoot').innerHTML = `
-    <div class="fac-card"><div class="fac-head">
+    ${nuevo?'':`<div class="fac-card"><div class="fac-head">
       <div><div class="cc-ph-code" style="font-weight:600;font-size:15px;margin-bottom:8px">${p.code}${p.origin?`  (${p.origin})`:''}</div>
-        <div class="cc-chips fac-mk" ${fb('Modifica',FAC_HU.prov,'I-014','PEN-I014-01')}>${FP_STATES.filter(s=>s!=='SIN PROVISIÓN').map(s=>`<span class="cc-chip ${s===p.status?'on':''}">${s}</span>`).join('')}</div></div>
-      <div class="fac-acts">${fChgBtn()}<button type="button" class="cc-btn" onclick="fpHistory()">Historial</button>
+        <div class="cc-chips fac-mk" ${fb('Modifica',FAC_HU.prov,'I-014','PEN-I014-01')}>${chips.map(s=>`<span class="cc-chip ${s===p.status?'on':''}">${fpStL(s)}</span>`).join('')}</div></div>
+      <div class="fac-acts">${fChgBtn()}<span ${fPs('Historial de la provisión')}><button type="button" class="cc-btn" onclick="fpHistory()">Historial</button></span>
+        ${p.status==='ERROR'&&!ed?`<button type="button" class="cc-btn" id="fpEditar" onclick="fpEditOn()">Editar</button>`:''}
         <span class="fac-mk" ${fb('Modifica',FAC_HU.prov,'I-014','PEN-I014-02')}><button type="button" id="fpAnular" class="cc-btn pink" ${block?'disabled':''} title="${esc(block)}" onclick="fpAnnul()">Anular</button></span></div>
     </div>
-    ${p.reopen?`<div class="fac-note">Reabierta por la nota de crédito ${esc(p.reopen)}. ${fm('Agrega',FAC_HU.reab,'I-015','PEN-I015-02')}</div>`:''}
-    </div>
+    ${p.reopen?`<div class="fac-note cc-prop">Reabierta por la nota de crédito ${esc(p.reopen)}. ${fm('Agrega',FAC_HU.reab,'I-015','PEN-I015-02')}</div>`:''}
+    </div>`}
     <div class="fac-card"><h3 style="margin-bottom:16px">Información General</h3>
       <div class="fac-g4">
-        ${fRo('Proveedor',p.prov)}${fRo('Fecha de Documento',fmtDate(p.docDate))}${fRo('Situación',p.sit)}${fRo('Cuotas',p.cuotas)}
-        ${fRo('Tipo de Documento',p.docType||'-')}${fF('Número',`<div class="fac-range"><input disabled value="${esc(p.docSerie)}"><input disabled value="${esc(p.docNum)}"></div>`)}${fRo('Moneda',p.cur==='USD'?'Dólar estadounidense':'Sol peruano')}${fRo('Tipo de Cambio',p.tc)}
-        ${fRo('Fecha de Recepción',fmtDate(p.recDate))}${fRo('Fecha de Pago',fmtDate(p.payDate))}${fRo('Tipo de Operación',p.op)}${fRo('Base Imponible',p.base)}
-        ${fRo('Total',fMoney(total))}${fRo('Tipo de Impuesto',p.tax)}${fRo('Condición de Pago',p.cond)}${fRo('Idioma',p.lang)}
-        ${fRo('Descripción',p.desc,'fac-span4')}
+        ${fRo('Proveedor',p.prov)}${inp('Fecha de Documento','docDate','date')}${ed?fF('Situación', fSel(['Provisional','Original'], p.sit, `id="fpSit" onchange="fpDraftSetAny('sit',this.value)"`)):fRo('Situación',p.sit)}${inp('Cuotas','cuotas','number')}
+        ${ed&&!prov?fF('Tipo de Documento', fSel(['Factura','Boleta'], p.docType, `onchange="fpHeadSet('docType',this.value)"`)):fRo('Tipo de Documento',p.docType||'-')}${fF('Número',`<div class="fac-range"><input ${ed&&!prov?'':'disabled'} placeholder="Serie" value="${esc(p.docSerie)}" onchange="fpHeadSet('docSerie',this.value)"><input ${ed&&!prov?'':'disabled'} placeholder="Número" value="${esc(p.docNum)}" onchange="fpHeadSet('docNum',this.value)"></div>`)}${ed?fF('Moneda', fSel([['USD','Dólar estadounidense'],['PEN','Sol peruano']], p.cur, `onchange="fpHeadSet('cur',this.value)"`)):fRo('Moneda',p.cur==='USD'?'Dólar estadounidense':'Sol peruano')}${inp('Tipo de Cambio','tc','number')}
+        ${inp('Fecha de Recepción','recDate','date')}${inp('Fecha de Pago','payDate','date')}${ed&&!prov?sel('Tipo de Operación','op',['Venta Interna','Exportación']):fRo('Tipo de Operación',p.op)}${sel('Base Imponible','base',['Operación Gravada','Operación No Gravada'])}
+        ${fRo('Total',fMoney(total))}${sel('Tipo de Impuesto','tax',['Impuesto General (18%)','Inafecto'])}${sel('Condición de Pago','cond',['Crédito','Contado'])}${sel('Idioma','lang',['Ambos','Español','Inglés'])}
+        ${inp('Descripción','desc','','fac-span4')}
       </div>
     </div>
-    <div class="fac-card"><h3 style="margin-bottom:16px">Detalle de Provisión ${fm('Bloqueo en Viaje',FAC_HU.prov,'I-014','PEN-I014-03')} ${fm('Agrega: ETA',FAC_HU.prov,'I-041','PEN-I041-01')}</h3>
-      <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th></th><th>Tipo</th><th>Nave</th><th>Número de Viaje</th><th>ETA</th><th>Servicios</th><th>Fecha de Servicio</th><th>Unidad de Tarifa</th><th>Facturar a</th><th>Cobrar a</th><th class="num">Tarifa (Costo)</th><th class="num">TC</th><th class="num">Cantidad</th><th class="num">Subtotal (${fCur(p.cur)})</th><th class="num">IGV (${fCur(p.cur)})</th><th class="num">Total (${fCur(p.cur)})</th></tr></thead><tbody>
-        ${p.lines.map((l,i)=>{ const c = fpLine(p,l), v = facVoy(l.nave,l.nro); return `<tr><td><button type="button" class="fac-link" onclick="fpDetailModal(${p.id},${i})">${locked?'Ver':'Editar'}</button></td><td>${l.tipo}</td><td>${esc(l.nave)}</td><td>${esc(l.nro)}</td><td>${facEta(v)}</td><td>${esc(l.svc)}</td><td>${fmtDate(l.date)}</td><td>${esc(l.unit)}</td><td>${esc(l.bill)}</td><td>${esc(l.collect)}</td><td class="num">${l.rate}</td><td class="num">${p.tc}</td><td class="num">${fMoney(l.qty)}</td><td class="num">${fMoney(c.sub)}</td><td class="num">${fMoney(c.igv)}</td><td class="num">${fMoney(c.total)}</td></tr>`; }).join('')}
+    <div class="fac-card"><div class="fac-head" style="margin-bottom:12px"><h3>Detalle de Provisión ${fm('Bloqueo en Viaje',FAC_HU.prov,'I-014','PEN-I014-03')} ${fm('Agrega: ETA',FAC_HU.prov,'I-041','PEN-I041-01')}</h3>
+        ${ed?`<div class="fac-acts"><button type="button" class="cc-btn" id="fpAddDet" onclick="fpAddDetail()">Agregar</button><button type="button" class="cc-btn pink" onclick="fpDelDetail()">Eliminar</button></div>`:''}</div>
+      <div class="fac-scroll"><table class="fac-tbl"><thead><tr>${ed?'<th></th>':''}<th></th><th>Tipo</th><th>Nave</th><th>Número de Viaje</th><th class="cc-prop">ETA</th><th>Servicios</th><th>Fecha de Servicio</th><th>Unidad de Tarifa</th><th>Facturar a</th><th>Cobrar a</th><th class="num">Tarifa (Costo)</th><th class="num">TC</th><th class="num">Cantidad</th><th class="num">Subtotal (${fCur(p.cur)})</th><th class="num">IGV (${fCur(p.cur)})</th><th class="num">Total (${fCur(p.cur)})</th></tr></thead><tbody>
+        ${p.lines.map((l,i)=>{ const c = fpLine(p,l), v = facVoy(l.nave,l.nro); return `<tr>${ed?`<td><input type="checkbox" style="width:auto" class="fpDetPick" value="${i}"></td>`:''}<td><button type="button" class="fac-link" onclick="fpDetailModal(${p.id},${i})">${ed?'Editar':'Ver'}</button></td><td>${l.tipo}</td><td>${esc(l.nave)}</td><td>${esc(l.nro)}</td><td class="cc-prop">${facEta(v)}</td><td>${esc(l.svc)}</td><td>${fmtDate(l.date)}</td><td>${esc(l.unit)}</td><td>${esc(l.bill)}</td><td>${esc(l.collect)}</td><td class="num">${l.rate}</td><td class="num">${p.tc}</td><td class="num">${fMoney(l.qty)}</td><td class="num">${fMoney(c.sub)}</td><td class="num">${fMoney(c.igv)}</td><td class="num">${fMoney(c.total)}</td></tr>`; }).join('') || `<tr><td colspan="17" class="fac-empty">No se encontraron resultados con los criterios seleccionados</td></tr>`}
       </tbody></table></div>
-      <div class="fac-tot"><span>Total ${fCur(p.cur)} ${fMoney(total)}</span></div>
+      <div class="fac-tot" ${fPs('Total al pie del detalle')}><span>Total ${fCur(p.cur)} ${fMoney(total)}</span></div>
       <div class="cc-pager">${pagerHtml(p.lines.length, 1, 10, 'fpGo')}</div>
-    </div>`;
+    </div>
+    ${ed?`<div class="fac-btns"><button type="button" class="cc-btn" id="fpGuardar" onclick="${nuevo?'fpCreate()':'fpSaveEdit()'}">${nuevo?'Crear':'Guardar'}</button><button type="button" class="cc-btn pink" onclick="fpCancelDraft()">Cancelar</button></div>`:''}`;
+}
+function fpHeadSet(k, v){ const p = fpById(FP.sel); if(p) p[k] = (k==='tc'||k==='cuotas') ? Number(v) : v; renderFp(); }
+function fpDraftSetAny(k, v){ if(FP.sel===0) fpDraftSet(k, v); else fpHeadSet(k, v); }
+function fpEditOn(){ FP.edit = FP.sel; renderFp(); }
+function fpSaveEdit(){ const p = fpById(FP.sel); if(!p.lines.length){ toast('La provisión debe tener al menos un detalle agregado.','error'); return; } p.hist.push({ts:facNow(), user:curUser(), prev:p.status, next:p.status, comment:'Provisión editada'}); FP.edit = null; toast('Provisión actualizada exitosamente','success'); renderFp(); }
+/* Diálogo Servicios Pendientes (Agregar) y Eliminar, como Connect */
+function fpAddDetail(){
+  const p = fpById(FP.sel), pend = FP.pending.filter(s=>s.prov===p.prov && !(p.picked||[]).includes(s.id));
+  facOpen(`<h3>Servicios Pendientes</h3><div style="height:10px"></div>
+    <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th></th><th>Nave</th><th>Número de Viaje</th><th>Servicios</th><th>Sucursal</th><th>Puerto</th></tr></thead><tbody>
+      ${pend.map(s=>`<tr><td><input type="checkbox" style="width:auto" class="fpAddPick" value="${s.id}"></td><td>${esc(s.nave)}</td><td>${esc(s.nro)}</td><td>${esc(s.svc)}</td><td>Callao</td><td>${esc(facVoy(s.nave,s.nro).puerto)}</td></tr>`).join('') || '<tr><td colspan="6" class="fac-empty">No se encontraron servicios pendientes</td></tr>'}
+    </tbody></table></div>
+    <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose()">Cancelar</button><button type="button" class="cc-btn" onclick="fpAddDetailOk()">Agregar</button></div>`, 'md');
+}
+function fpAddDetailOk(){
+  const p = fpById(FP.sel), ids = [...document.querySelectorAll('.fpAddPick:checked')].map(x=>x.value);
+  if(!ids.length){ toast('No se han seleccionado servicios','error'); return; }
+  ids.forEach(id=>{ const s = FP.pending.find(x=>x.id===id), v = facVoy(s.nave,s.nro); p.lines.push(fpMkLine(facTariffs(s.prov,s.svc)[0]||{}, s.nave, s.nro, v.cliente, 'Reembolsable', 1, v.eta)); if(p.id===0) (p.picked = p.picked||[]).push(id); else FP.pending = FP.pending.filter(x=>x.id!==id); });
+  facClose(); renderFp();
+}
+function fpDelDetail(){
+  const p = fpById(FP.sel), idx = [...document.querySelectorAll('.fpDetPick:checked')].map(x=>Number(x.value));
+  if(!idx.length){ toast('No se han seleccionado servicios','error'); return; }
+  p.lines = p.lines.filter((l,i)=>!idx.includes(i)); renderFp();
 }
 function fpHistory(){ const p = fpById(FP.sel); if(p) openHistModal(p.hist); }
 function fpAnnul(){
   const p = fpById(FP.sel); if(!p || fpAnnulBlock(p)) return;
-  openReason('Anular provisión','Anular', txt=>{
+  if(p.status==='PROVISIONADO') fConfirm('Anular provisión', 'La provisión ya fue transmitida a SAP. CONNECT no realiza la reversa o anulación automática del documento en SAP; coordina la anulación en SAP.', 'fpAnnulGo()', 'Continuar');
+  else fpAnnulGo();
+}
+function fpAnnulGo(){
+  const p = fpById(FP.sel); if(!p) return;
+  openReason('¿Está seguro que desea anular esta provisión?','Anular', txt=>{
     const prev = p.status; p.status = 'ANULADO'; p.hist.push({ts:facNow(), user:curUser(), prev, next:'ANULADO', comment:txt});
     p.lines.forEach(l=>FP.pending.push(fpPending(p.prov, l.nave, l.nro, l.svc, l.cat)));
     toast('Provisión anulada exitosamente','info'); renderFp();
@@ -6526,8 +6591,10 @@ function fpAnnul(){
 }
 function fpExchange(id){
   const p = fpById(id); if(!p) return;
+  /* Connect: el canje abre Crear Provisión con la provisión de origen. I-014 propone hacerlo en una ventana aparte */
+  if(!facProp()){ const hoy = new Date().toISOString().slice(0,10); FP.draft = fpNew({...JSON.parse(JSON.stringify(p)), id:0, code:'', origin:p.code, sit:'Original', docType:'Factura', docSerie:'', docNum:'', docDate:hoy, linked:'', reopen:'', hist:[]}); fpOpen(0); return; }
   facOpen(`<h3>Canjear a Provisión Original ${fm('',FAC_HU.prov,'I-014','PEN-I014-01')}</h3><div class="fac-sub" style="margin-bottom:14px">${p.code}</div>
-    <div class="fac-g2">${fF('Tipo de Documento', fSel(['Factura','Boleta','Nota de Crédito'], 'Factura', 'id="fxTipo"'))}${fF('Fecha de Documento', `<input type="date" id="fxFec" value="${new Date().toISOString().slice(0,10)}">`)}
+    <div class="fac-g2">${fF('Tipo de Documento', fSel(['Factura','Boleta'], 'Factura', 'id="fxTipo"'))}${fF('Fecha de Documento', `<input type="date" id="fxFec" value="${new Date().toISOString().slice(0,10)}">`)}
       ${fF('Serie', '<input id="fxSer" placeholder="F001">')}${fF('Número', '<input id="fxNum" placeholder="000123">')}</div>
     <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose()">Cancelar</button><button type="button" class="cc-btn" onclick="fpExchangeOk(${id})">Canjear</button></div>`);
 }
@@ -6538,11 +6605,15 @@ function fpExchangeOk(id){
   p.linked = nid; FP.list.push(n); facClose(); toast('Provisión actualizada exitosamente','success'); renderFp();
 }
 function fpDetailModal(pid, idx){
-  const p = fpById(pid), l = p.lines[idx], ro = /LIQUIDADO|ANULADO/.test(p.status), v = facVoy(l.nave,l.nro), dis = ro?'disabled':'';
-  const svcs = facServices(p.prov, l.cat), ts = facTariffs(p.prov, l.svc), c = fpLine(p,l);
-  const tarifa = !ts.length ? `<input disabled value="${l.rate}"><small style="color:#B3261E;font-size:12px">No se encontraron tarifas para los criterios seleccionados</small>`
+  const p = fpById(pid), l = p.lines[idx], ro = !fpEditable(p), v = facVoy(l.nave,l.nro), dis = ro?'disabled':'';
+  if(!ro && !(FP.bak && FP.bak.pid===pid && FP.bak.idx===idx)) FP.bak = {pid, idx, line:JSON.parse(JSON.stringify(l))};
+  const svcs = facProp() ? facServices(p.prov, l.cat) : [...new Set(FAC_TARIFFS.filter(t=>t.cat===l.cat).map(t=>t.svc))], ts = facTariffs(p.prov, l.svc), c = fpLine(p,l);
+  /* Connect: campo Tarifa (Costo) + "Buscar tarifas disponibles". I-040 propone precargar una o elegir entre varias */
+  const tarifa = !facProp() ? `<div class="fac-range"><input type="number" ${dis} value="${l.rate}" onchange="fpLineSet(${pid},${idx},'rate',Number(this.value))"><button type="button" class="cc-btn" ${dis} title="Buscar tarifas disponibles" onclick="fpTariffPick(${pid},${idx})">Buscar tarifas disponibles</button></div>`
+    : !ts.length ? `<input disabled value="${l.rate}"><small style="color:#B3261E;font-size:12px">No se encontraron tarifas para los criterios seleccionados</small>`
     : ts.length===1 ? `<input disabled value="${ts[0].rate}"><small style="color:var(--cc-sub);font-size:12px">Precargada: ${esc(ts[0].code)}, ${esc(ts[0].unit)}</small>`
     : fSel(ts.map(t=>[t.code, `${t.code}: ${t.unit}, ${t.cur} ${t.rate}`]), l.tariff, `${dis} onchange="fpSetTariff(${pid},${idx},this.value)"`);
+  const gasto = l.tipo==='Gasto', req = gasto ? '' : ' *';
   facOpen(`<h3>${ro?'Ver':'Editar'} Detalle</h3><div style="height:12px"></div>
     <div class="fac-g2 fac-mk" id="fpDetGrid" ${fb('Modifica: orden de campos',FAC_HU.prov,'I-014')} style="padding-top:6px">
       ${fRo('Nave',l.nave)}${fF(`Número de Viaje ${fm('Agrega: Fecha de Arribo',FAC_HU.prov,'I-014')}`, `<input disabled value="${esc(l.nro)}  |  Arribo: ${facEta(v)}">`)}
@@ -6551,20 +6622,48 @@ function fpDetailModal(pid, idx){
       ${fF('Categoría', fSel(FAC_CATS, l.cat, `${dis} onchange="fpLineSet(${pid},${idx},'cat',this.value)"`))}
       ${fF(`Servicios ${fm('Modifica: del proveedor',FAC_HU.prov,'I-040','PEN-I040-01')}`, fSel(svcs, l.svc, `${dis} onchange="fpLineSet(${pid},${idx},'svc',this.value)"`, svcs.includes(l.svc)?null:'Elegir un servicio comercial'))}
       <div class="fac-cc"><b>Centro de Costo</b><span><small>División</small>Servicios Portuarios</span><span><small>Actividad - UN</small>Agenciamiento Marítimo</span><span><small>Área</small>Operaciones</span></div>
-      ${fRo('Unidad de Tarifa',l.unit)}${fRo('Moneda',l.cur==='USD'?'Dólar estadounidense':'Sol peruano')}
-      ${fF('Contrato - Quiebre', fSel([l.quiebre,'Q02090 - GASTOS DE ESCALA'], l.quiebre, `${dis} onchange="fpLineSet(${pid},${idx},'quiebre',this.value)"`),'fac-span2')}
+      ${fF('Unidad de Tarifa *', fSel([...new Set(['Por TRG','Por maniobra','Por hora','Por servicio',l.unit])], l.unit, `${dis} onchange="fpLineSet(${pid},${idx},'unit',this.value)"`))}${fF('Moneda *', fSel([['USD','Dólar estadounidense'],['PEN','Sol peruano']], l.cur, `${dis} onchange="fpLineSet(${pid},${idx},'cur',this.value)"`))}
+      ${fF('Contrato - Quiebre *', `<div class="fac-range">${fSel([...new Set([l.quiebre,'Q02090 - GASTOS DE ESCALA',...(FP.quiebres||[])])], l.quiebre, `${dis} onchange="fpLineSet(${pid},${idx},'quiebre',this.value)"`)}<button type="button" class="cc-btn" ${dis} onclick="fpNewBreak(${pid},${idx})">Nuevo Quiebre</button></div>`,'fac-span2')}
       ${fF('Comentarios', `<input ${dis} placeholder="Ingresar comentarios" value="${esc(l.remark)}" onchange="fpLineSet(${pid},${idx},'remark',this.value)">`,'fac-span2')}
     </div>
     <div class="fac-sec">Cliente y cálculo</div>
     <div class="fac-g2">
-      ${fRo('Facturar a',l.bill)}${fRo('Dirección',l.addr)}${fRo('Cobrar a',l.collect)}
-      ${fF(`<span id="fpTarifa">Tarifa (Costo)</span> - TC ${p.tc} ${fm('Modifica: una se precarga, varias se eligen',FAC_HU.prov,'I-040','PEN-I040-01')}`, tarifa)}
-      ${fF('Cantidad', `<input type="number" min="0" ${dis} value="${l.qty}" onchange="fpLineSet(${pid},${idx},'qty',Number(this.value))">`)}
-      ${fRo('Porcentaje de IVA',l.igv?'18':'0')}
+      ${fF('Facturar a'+req, `<input ${dis} value="${esc(l.bill)}" onchange="fpLineSet(${pid},${idx},'bill',this.value)">`)}${fF('Dirección'+req, `<input ${dis} value="${esc(l.addr)}" onchange="fpLineSet(${pid},${idx},'addr',this.value)">`)}${fF('Cobrar a'+req, `<input ${dis} value="${esc(l.collect)}" onchange="fpLineSet(${pid},${idx},'collect',this.value)">`)}
+      ${fF(`<span id="fpTarifa">Tarifa (Costo) *</span> - TC ${p.tc} ${fm('Modifica: una se precarga, varias se eligen',FAC_HU.prov,'I-040','PEN-I040-01')}`, tarifa)}
+      ${fF('Cantidad *', `<input type="number" min="1" ${dis} value="${l.qty}" onchange="fpLineSet(${pid},${idx},'qty',Number(this.value))">`)}
+      ${fRo('Porcentaje de IVA *',l.igv?'18':'0')}
+      ${fF('&nbsp;', `<label class="fac-chk"><input type="checkbox" ${dis} ${l.igv?'checked':''} onchange="fpLineSet(${pid},${idx},'igv',this.checked)"> Sujeto a impuesto</label>`)}
       ${fRo('Subtotal',fMoney(c.sub))}${fRo('IGV',fMoney(c.igv))}${fRo('Total',fMoney(c.total))}
     </div>
     <div class="fac-note">*El monto se muestra en la moneda de la cabecera de la provisión</div>
-    <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose();renderFp()">Cerrar</button></div>`, 'md');
+    <div class="fac-btns">${ro?`<button type="button" class="cc-btn pink" onclick="facClose();renderFp()">Cerrar</button>`:`<button type="button" class="cc-btn pink" onclick="fpDetCancel()">Cancelar</button><button type="button" class="cc-btn" id="fpDetSave" onclick="fpDetSave()">Guardar</button>`}</div>`, 'md');
+}
+function fpDetCancel(){ const b = FP.bak; if(b){ const p = fpById(b.pid); if(p) p.lines[b.idx] = b.line; } FP.bak = null; facClose(); renderFp(); }
+function fpDetSave(){
+  const p = fpById(FP.bak?.pid ?? FP.sel), l = p && p.lines[FP.bak?.idx ?? 0];
+  if(l && (!(l.qty>=1) || !l.unit || !l.svc || (l.tipo!=='Gasto' && (!l.bill || !l.collect || !l.addr)))){ toast('Por favor, complete los campos requeridos','error'); return; }
+  FP.bak = null; facClose(); renderFp();
+}
+/* Diálogo Seleccionar Tarifa (Connect) */
+function fpTariffPick(pid, idx){
+  const p = fpById(pid), l = p.lines[idx], ts = FAC_TARIFFS.filter(t=>t.vigente && t.svc===l.svc);
+  facOpen(`<h3>Seleccionar Tarifa</h3><div style="height:10px"></div><div class="fac-scroll"><table class="fac-tbl"><thead><tr><th>Código de Tarifa</th><th>Comentarios</th><th>Tipo de Tarifa</th><th>Proveedor de Tarifa</th><th class="num">Tarifa (Costo)</th><th>Moneda</th><th>Unidad de Tarifa</th><th>Sujeto a Impuesto</th></tr></thead><tbody>
+    ${ts.map(t=>`<tr><td><button type="button" class="fac-link" onclick="fpSetTariff(${pid},${idx},'${t.code}')">${t.code}</button></td><td>-</td><td>Costo</td><td>${esc(t.prov)}</td><td class="num">${t.rate}</td><td>${t.cur}</td><td>${esc(t.unit)}</td><td>${t.igv?'Sí':'No'}</td></tr>`).join('') || '<tr><td colspan="8" class="fac-empty">No se encontraron tarifas para los criterios seleccionados</td></tr>'}
+    </tbody></table></div><div class="fac-btns"><button type="button" class="cc-btn pink" onclick="fpDetailModal(${pid},${idx})">Cerrar</button></div>`, 'lg');
+}
+/* Diálogo Nuevo Quiebre (Connect, compartido con Documentos Contables) */
+function fpNewBreak(pid, idx, doc){
+  const svc = doc ? ((FD.det||{}).svc||'') : fpById(pid).lines[idx].svc;
+  facOpen(`<h3>Nuevo Quiebre</h3><div style="height:10px"></div><div class="fac-g2">${fRo('Servicio',svc)}${fF('Código ERP *','<input id="nqErp" maxlength="10" placeholder="Ej. Q16011">')}${fF('Descripción *','<input id="nqDesc" maxlength="200">','fac-span2')}</div>
+    <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="${doc?'fdDetDialog(FD.det.i)':`fpDetailModal(${pid},${idx})`}">Cancelar</button><button type="button" class="cc-btn" onclick="fpNewBreakOk(${pid},${idx},${doc?1:0})">Guardar</button></div>`, 'md');
+}
+function fpNewBreakOk(pid, idx, doc){
+  const erp = document.getElementById('nqErp').value.trim(), desc = document.getElementById('nqDesc').value.trim();
+  if(!erp || !desc){ toast('Por favor, complete los campos requeridos','error'); return; }
+  const q = `${erp} - ${desc.toUpperCase()}`; FP.quiebres = FP.quiebres || [];
+  if(FP.quiebres.some(x=>x.startsWith(erp+' '))){ toast(`Ya existe un Quiebre con el Código ERP ${erp} para este servicio`,'error'); return; }
+  FP.quiebres.push(q); toast('Quiebre creado correctamente','success');
+  if(doc){ FD.det.quiebre = q; fdDetDialog(FD.det.i); } else { fpById(pid).lines[idx].quiebre = q; fpDetailModal(pid, idx); }
 }
 function fpLineSet(pid, idx, k, v){
   const p = fpById(pid), l = p.lines[idx]; l[k] = v;
@@ -6579,6 +6678,12 @@ function fpSetTariff(pid, idx, code){ const p = fpById(pid), l = p.lines[idx], t
 ============================================================ */
 const FD_ST = ['Borrador','Registro de documento','Enviado a SAP','SAP OK','SAP Error','Anulado'];
 const FD_TYPES = ['Factura','Boleta','Nota de Cargo','Nota de Crédito','Liquidación de Cobranza'];
+/* Connect: estado Provisionado (I-042 propone Registro de documento) y catálogo de tipos con Nota de Abono y Nota de Contabilidad (I-040 los cambia) */
+const FD_TYPES_CX = ['Factura','Boleta','Nota de Crédito','Nota de Cargo','Nota de Abono','Nota de Contabilidad'];
+function fdStL(s){ return !facProp() && s==='Registro de documento' ? 'Provisionado' : s; }
+function fdStOpts(){ return FD_ST.map(s=>[s, fdStL(s)]); }
+function fdTypes(){ return facProp() ? FD_TYPES : FD_TYPES_CX; }
+function fdCanAnnul(d){ return d.status==='Borrador' || d.status==='SAP Error'; }
 const FD_DEST = {'Factura':'serie F. PDF y XML, va a Efact y SAP. Baja en 7 días','Boleta':'serie B. PDF y XML, va a Efact y SAP. Baja en 7 días','Nota de Crédito':'serie FC o BC, hoy F002 en Connect. Exige documento de origen. PDF y XML, reduce saldo en SAP. Baja en 7 días','Nota de Cargo':'el archivo de series la llama Nota de Débito, serie FD o BD. Exige documento de origen. Baja en 7 días','Liquidación de Cobranza':'serie LC. Interna, solo PDF, no va a SUNAT, se registra en SAP. Se anula con extorno y libera reembolsos'};
 const FD_SVC_EN = {'SERVICIO DE PRACTICAJE':'PILOTAGE SERVICE','COMISION DE AGENCIA':'AGENCY FEE','AYUDAS A LA NAVEGACION':'AIDS TO NAVIGATION','SERVICIO DE REMOLCAJE':'TOWAGE SERVICE','SERVICIO DE LANCHA - RECEPCION':'LAUNCH SERVICE - INWARD','USO DE AMARRADERO':'BERTH USE','REEMBOLSO DE GASTOS':'REIMBURSEMENT'};
 const FD_SAP_CAT = {
@@ -6623,7 +6728,7 @@ function renderFd(){
   if(FD.view==='detail'){ renderFdDetail(); return; }
   updatePagebar('screenAccDocs');
   const tabs = `<div class="fac-card" style="padding:6px 24px 0;margin-bottom:16px"><div class="fac-acts" style="justify-content:space-between">
-    <div class="fac-tabs fac-mk" ${fb('Agrega: sub-vistas',FAC_HU.cover+' · '+FAC_HU.nc,'I-066 · I-065')} style="margin:0;border:none">
+    <div class="fac-tabs fac-mk cc-prop" ${fb('Agrega: sub-vistas',FAC_HU.cover+' · '+FAC_HU.nc,'I-066 · I-065')} style="margin:0;border:none">
       <button type="button" class="${FD.tab==='docs'?'on':''}" onclick="fdTab('docs')">Documentos</button>
       <button type="button" class="${FD.tab==='cover'?'on':''}" onclick="fdTab('cover')">Cover</button>
       <button type="button" class="${FD.tab==='nc'?'on':''}" onclick="fdTab('nc')">Notas de Crédito</button></div>
@@ -6636,19 +6741,25 @@ function fdSet(k, v){ FD.f[k] = v; FD.page = 1; renderFd(); }
 function fdClear(){ Object.keys(FD.f).forEach(k=>FD.f[k]= k==='sinLote'?false:''); FD.page = 1; renderFd(); }
 function fdFiltered(){
   const f = FD.f, q = x=>normTxt(x);
-  return FD.list.filter(d=>(!f.num || q(d.num).includes(q(f.num)) || q(d.internal).includes(q(f.num))) && (!f.tipo || d.tipo===f.tipo) && (!f.fact || q(d.fact).includes(q(f.fact))) && (!f.from || d.date>=f.from) && (!f.to || d.date<=f.to)
+  return FD.list.filter(d=>!d.nuevo && (!f.num || q(d.num).includes(q(f.num)) || q(d.internal).includes(q(f.num))) && (!f.tipo || d.tipo===f.tipo) && (!f.fact || q(d.fact).includes(q(f.fact))) && (!f.from || d.date>=f.from) && (!f.to || d.date<=f.to)
     && (!f.cur || d.cur===f.cur) && (!f.est || d.status===f.est) && (!f.lote || d.lote===f.lote) && (!f.sinLote || !d.lote) && (!f.orig || d.orig===f.orig) && (!f.asoc || q(d.assoc).includes(q(f.asoc))));
 }
 function fdRowActions(d){
   const ok = d.status==='SAP OK', lc = d.tipo==='Liquidación de Cobranza';
   return `<div class="fac-rowacts">${ok?`<button type="button" class="fac-link" onclick="fdPdf(${d.id})">PDF</button>`:''}${ok&&!lc?`<button type="button" class="fac-link" onclick="toast('Descarga de XML simulada','info')">XML</button><button type="button" class="fac-link" onclick="toast('Descarga de CDR simulada','info')">CDR</button>`:''}
-    ${d.status!=='Anulado'?(lc?`<button type="button" class="fac-link" onclick="fdExtorno(${d.id})">Extornar</button>`:`<button type="button" class="fac-link" onclick="fdAnnul(${d.id})">Anular</button>`):''}${d.lote?`<button type="button" class="fac-link" onclick="fdOpenLot('${d.lote}')">Ver Cover</button>`:''}</div>`;
+    ${lc?(d.status!=='Anulado'?`<button type="button" class="fac-link cc-prop" onclick="fdExtorno(${d.id})">Extornar</button>`:''):fdCanAnnul(d)?`<button type="button" class="fac-link" onclick="fdAnnul(${d.id})">Anular</button>`:''}${d.lote?`<button type="button" class="fac-link" onclick="fdOpenLot('${d.lote}')">Ver Cover</button>`:''}</div>`;
 }
 function fdCols(d){
   const usd = d.cur==='USD', n = fdNet(d), g = fdIgv(d), t = n+g;
   return `<td class="num">${fMoney(usd?0:n)}</td><td class="num">${fMoney(usd?0:g)}</td><td class="num">${fMoney(usd?0:t)}</td><td class="num">${fMoney(usd?n:0)}</td><td class="num">${fMoney(usd?g:0)}</td><td class="num">${fMoney(usd?t:0)}</td>`;
 }
-function fdStatusCell(d){ return d.status==='SAP Error' ? `<button type="button" class="fac-link err" onclick="fdSapErr(${d.id})">${d.status}</button>` : esc(d.status); }
+function fdStatusCell(d){ return d.status==='SAP Error' ? `<button type="button" class="fac-link err" onclick="fdSapErr(${d.id})">${d.status}</button>` : esc(fdStL(d.status)); }
+/* Sin Lote: Connect solo deja marcar documentos con el mismo Facturar a; el Cover además exige SAP OK */
+function fdPick2(id, on){
+  const d = fdById(id), otros = Object.keys(FD.sel2).filter(k=>FD.sel2[k] && Number(k)!==id).map(k=>fdById(Number(k)));
+  if(on && otros.some(x=>x.fact!==d.fact)){ toast('Solo se pueden seleccionar documentos con el mismo Facturar a','error'); renderFd(); return; }
+  FD.sel2[id] = on;
+}
 function fdListHtml(){
   const f = FD.f, all = fdFiltered(), pages = Math.max(1,Math.ceil(all.length/FD.size)); FD.page = Math.min(FD.page,pages);
   const list = all.slice((FD.page-1)*FD.size, FD.page*FD.size);
@@ -6657,23 +6768,23 @@ function fdListHtml(){
       <div class="fac-acts"><button type="button" class="cc-btn" onclick="cbNdOpen()">Notificar Devolución</button><button type="button" class="cc-btn" onclick="fdCoverStart()">Generar Cover</button><button type="button" class="cc-btn" onclick="fdNewModal()">+ Nuevo</button></div></div>
     <div class="fac-g4">
       ${fF('Número de Documento', `<input placeholder="Ingresar número de documento" value="${esc(f.num)}" onchange="fdSet('num',this.value)">`)}
-      ${fF(`Documento a Emitir ${fm('Modifica',FAC_HU.lc,'I-040','PEN-I167-01')}`, fSel(FD_TYPES, f.tipo, `onchange="fdSet('tipo',this.value)"`, 'Elegir documento a emitir'))}
+      ${fF(`Documento a Emitir ${fm('Modifica',FAC_HU.lc,'I-040','PEN-I167-01')}`, fSel(fdTypes(), f.tipo, `onchange="fdSet('tipo',this.value)"`, 'Elegir documento a emitir'))}
       ${fF('Facturar a', `<input placeholder="Ingresar el cliente a facturar" value="${esc(f.fact)}" onchange="fdSet('fact',this.value)">`)}
       ${fF('Fecha de Emisión', `<div class="fac-range"><input type="date" value="${f.from}" onchange="fdSet('from',this.value)"><input type="date" value="${f.to}" onchange="fdSet('to',this.value)"></div>`)}
       ${fF('Moneda', fSel([['PEN','Sol peruano'],['USD','Dólar estadounidense']], f.cur, `onchange="fdSet('cur',this.value)"`, 'Elegir moneda'))}
-      ${fF(`Estado del Documento ${fm('Modifica: Registro de documento, antes Provisionado',FAC_HU.num,'I-042','PEN-JENNY-I042-01')}`, fSel(FD_ST, f.est, `id="fdEst" onchange="fdSet('est',this.value)"`, 'Elegir estado del documento'))}
+      ${fF(`Estado del Documento ${fm('Modifica: Registro de documento, antes Provisionado',FAC_HU.num,'I-042','PEN-JENNY-I042-01')}`, fSel(fdStOpts(), f.est, `id="fdEst" onchange="fdSet('est',this.value)"`, 'Elegir estado del documento'))}
       ${fF('Número de Lote', `<input placeholder="Ingresar número de lote" value="${esc(f.lote)}" onchange="fdSet('lote',this.value)">`)}
       ${fF('&nbsp;', `<label class="fac-chk"><input type="checkbox" ${f.sinLote?'checked':''} onchange="fdSet('sinLote',this.checked)"> Sin Lote</label>`)}
       ${fF('Origen', fSel(['Documentario','Sobreestadía - Importación','Sobreestadía - Exportación'], f.orig, `onchange="fdSet('orig',this.value)"`, 'Elegir el origen'))}
-      ${fF(`Documento Asociado ${fm('Agrega',FAC_HU.nc,'I-005')}`, `<input id="fdAsoc" placeholder="Ingresar documento asociado" value="${esc(f.asoc)}" onchange="fdSet('asoc',this.value)">`)}
+      ${fF(`Documento Asociado ${fm('Agrega',FAC_HU.nc,'I-005')}`, `<input id="fdAsoc" placeholder="Ingresar documento asociado" value="${esc(f.asoc)}" onchange="fdSet('asoc',this.value)">`, 'cc-prop')}
     </div>
     <div class="fac-btns"><button type="button" class="cc-btn" onclick="renderFd()">Buscar</button><button type="button" class="cc-btn" onclick="fdClear()">Limpiar</button></div>
     ${fRemoved('Documento a Emitir', FAC_HU.lc, 'I-040', [['Nota de Abono','Extornar, sin PDF']])}
     ${fRemoved('Estado del Documento', FAC_HU.num, 'I-042', [['Provisionado','Registro de documento']])}
   </div>
-  <div class="fac-card"><div class="fac-head"><h3>Resultados (${all.length})</h3><div class="fac-acts"><button type="button" class="cc-btn" onclick="cbNdOpen()">Notificar Devolución</button><button type="button" class="cc-btn" onclick="fdNewModal()">Nuevo</button></div></div>
+  <div class="fac-card"><div class="fac-head"><h3>Resultados (${all.length})</h3></div>
     <div class="fac-scroll"><table class="fac-tbl fac-fix"><thead><tr>${f.sinLote?'<th></th>':''}<th>Número de Documento</th><th>Documento a Emitir</th><th>Facturar a</th><th>Número de Lote</th><th>Pagado</th><th>Tipo de Operación</th><th>Origen</th><th>Fecha de Emisión</th><th>Moneda</th><th class="num">Tipo de Cambio</th><th class="num">Neto PEN</th><th class="num">IGV PEN</th><th class="num">Total PEN</th><th class="num">Neto USD</th><th class="num">IGV USD</th><th class="num">Total USD</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
-      ${list.map(d=>`<tr>${f.sinLote?`<td><input type="checkbox" style="width:auto" ${d.status==='SAP OK'?'':'disabled'} ${FD.sel2[d.id]?'checked':''} onchange="FD.sel2[${d.id}]=this.checked"></td>`:''}<td><button type="button" class="fac-link" onclick="fdOpen(${d.id})">${esc(d.num)}</button></td><td>${esc(d.tipo)}</td><td>${esc(d.fact)}</td><td>${esc(d.lote||'-')}</td><td>${d.paid}</td><td>${esc(d.tipoOp)}</td><td>${esc(d.orig||'-')}</td><td>${fmtDate(d.date)}</td><td>${d.cur}</td><td class="num">${d.tc.toFixed(2)}</td>${fdCols(d)}<td>${fdStatusCell(d)}</td><td>${fdRowActions(d)}</td></tr>`).join('') || `<tr><td colspan="19" class="fac-empty">No se encontraron resultados con los criterios seleccionados</td></tr>`}
+      ${list.map(d=>`<tr>${f.sinLote?`<td><input type="checkbox" style="width:auto" ${d.status==='SAP OK'?'':'disabled'} ${FD.sel2[d.id]?'checked':''} onchange="fdPick2(${d.id},this.checked)"></td>`:''}<td><button type="button" class="fac-link" onclick="fdOpen(${d.id})">${esc(d.num)}</button></td><td>${esc(d.tipo)}</td><td>${esc(d.fact)}</td><td>${esc(d.lote||'-')}</td><td>${d.paid}</td><td>${esc(d.tipoOp)}</td><td>${esc(d.orig||'-')}</td><td>${fmtDate(d.date)}</td><td>${d.cur}</td><td class="num">${d.tc.toFixed(2)}</td>${fdCols(d)}<td>${fdStatusCell(d)}</td><td>${fdRowActions(d)}</td></tr>`).join('') || `<tr><td colspan="19" class="fac-empty">No se encontraron resultados con los criterios seleccionados</td></tr>`}
     </tbody></table></div>
     <div class="fac-btns" style="justify-content:space-between;align-items:center">
       <span class="fac-mk fac-mk-l" ${fb('Modifica: 3 columnas',FAC_HU.excel,'I-064','PEN-I064-01')}><button type="button" class="cc-btn" onclick="fdExport()">Exportar</button></span>
@@ -6700,6 +6811,9 @@ function fdExportDo(){
     fdFiltered().flatMap(d=>d.lines.map(l=>[d.num,d.tipo,d.fact,fmtDate(d.date),d.cur,fdTot(d),fdRuc(d.fact),l.svc,d.user])));
 }
 function fdExport(){
+  /* Connect: descarga directa "Documentos Contables". I-064 propone vista previa y tres columnas */
+  if(!facProp()){ facXlsx('Documentos Contables','Documentos Contables',['Número de Documento','Fecha de Emisión','Facturar a','Moneda','Tipo de Cambio','Neto PEN','IGV PEN','Total PEN','Neto USD','IGV USD','Total USD','Estado','Documento a Emitir','Pagado'],
+    fdFiltered().map(d=>{ const u = d.cur==='USD', n = fdNet(d), g = fdIgv(d); return [d.num, fmtDate(d.date), d.fact, d.cur, d.tc, u?0:n, u?0:g, u?0:n+g, u?n:0, u?g:0, u?n+g:0, fdStL(d.status), d.tipo, d.paid]; })); return; }
   const rows = fdFiltered().flatMap(d=>d.lines.map(l=>({d,l}))).slice(0,8);
   facOpen(`<h3>Exportar Excel ${fm('',FAC_HU.excel,'I-064','PEN-JENNY-I064-01')}</h3>
     <div class="fac-scroll" style="margin-top:14px"><table class="fac-tbl"><thead><tr><th>Número de Documento</th><th>Documento a Emitir</th><th>Facturar a</th><th>Fecha de Emisión</th><th>Moneda</th><th class="num">Total</th>
@@ -6722,27 +6836,33 @@ function fdSapErr(id){
 }
 /* ---------- Nuevo documento y canje desde provisión ---------- */
 const FN = {mode:'blank', tipo:'Factura', cur:'USD', pick:{}, nave:'', viaje:'', prov:''};
-function fdNewModal(){ FN.mode = 'blank'; FN.pick = {}; FN.nave = ''; FN.viaje = ''; FN.prov = ''; fdNewRender(); }
+function fdNewModal(){ FN.mode = 'blank'; FN.pick = {}; FN.nave = ''; FN.viaje = ''; FN.prov = ''; FN.puerto = ''; FN.num = ''; FN.emitir = ''; FN.esp = false; fdNewRender(); }
 function fnSet(k, v){ FN[k] = v; fdNewRender(); }
 function fnEligible(){
   return FP.list.filter(p=>p.sit==='Original' && p.status==='PROVISIONADO' && (!FN.prov || normTxt(p.prov).includes(normTxt(FN.prov)))
+    && (!FN.num || normTxt(p.code).includes(normTxt(FN.num))) && (!FN.emitir || p.lines.some(l=>normTxt(l.bill).includes(normTxt(FN.emitir)))) && (!FN.puerto || p.lines.some(l=>normTxt(facVoy(l.nave,l.nro).puerto).includes(normTxt(FN.puerto))))
     && (!FN.nave || p.lines.some(l=>normTxt(l.nave).includes(normTxt(FN.nave)))) && (!FN.viaje || p.lines.some(l=>normTxt(l.nro).includes(normTxt(fpVoyNro(FN.viaje))))));
 }
 function fdNewRender(){
   const prov = FN.mode==='prov';
   facOpen(`<h3>Nuevo Documento</h3><div style="height:10px"></div>
     <div class="fac-radio"><label><input type="radio" name="fnMode" style="width:auto" ${prov?'':'checked'} onchange="fnSet('mode','blank')"> Desde Documento en Blanco</label><label><input type="radio" name="fnMode" style="width:auto" ${prov?'checked':''} onchange="fnSet('mode','prov')"> Desde Provisión</label></div>
-    ${prov?`<div class="fac-sec">Datos al Emitir Documentos</div><div class="fac-g4">${fF('Moneda', fSel([['USD','Dólar estadounidense'],['PEN','Sol peruano']], FN.cur, `onchange="fnSet('cur',this.value)"`))}${fRo('Fecha de Emisión',fmtDate(new Date().toISOString().slice(0,10)))}${fRo('T.C.','3.38')}${fRo('T.C. Especial','')}</div>
+    ${prov?`<div class="fac-sec">Datos al Emitir Documentos</div><div class="fac-g4">${fF('Moneda', fSel([['USD','Dólar estadounidense'],['PEN','Sol peruano']], FN.cur, `onchange="fnSet('cur',this.value)"`))}${fF('Fecha de Emisión *',`<input type="date" value="${FN.fecha||new Date().toISOString().slice(0,10)}" onchange="FN.fecha=this.value">`)}${fRo('T.C. *','3.38')}${fF('&nbsp;',`<label class="fac-chk"><input type="checkbox" ${FN.esp?'checked':''} onchange="fnSet('esp',this.checked)"> Fecha Especial</label>`)}
+      ${FN.esp?`${fF('Fecha Especial',`<input type="date" value="${FN.fEsp||''}" onchange="FN.fEsp=this.value">`)}${fF('T.C. Especial',`<input type="number" step="0.001" value="${FN.tcEsp||''}" onchange="FN.tcEsp=this.value">`)}`:''}</div>
       <div class="fac-sec">Filtros</div><div class="fac-g4">
         ${fF('Nave', `<input placeholder="Ingresar nave" value="${esc(FN.nave)}" onchange="fnSet('nave',this.value)">`)}
         ${fF(`Número de Viaje ${fm('Modifica: ETA a la derecha',FAC_HU.prov,'I-041','PEN-I041-01')}`, `<input list="fnVoys" placeholder="Ingresar número de viaje" value="${esc(FN.viaje)}" onchange="fnSet('viaje',this.value)">${facVoyList('fnVoys')}`)}
+        ${fF('Puerto', `<input placeholder="Ingresar puerto" value="${esc(FN.puerto||'')}" onchange="fnSet('puerto',this.value)">`)}
+        ${fF('Número de Provisión', `<input placeholder="Ingresar número de provisión" value="${esc(FN.num||'')}" onchange="fnSet('num',this.value)">`)}
         ${fF('Proveedor', `<input placeholder="Ingresar el proveedor" value="${esc(FN.prov)}" onchange="fnSet('prov',this.value)">`)}
-        ${fF(`Documento a Emitir ${fm('Modifica',FAC_HU.lc,'I-040','PEN-I167-01')}`, fSel(FD_TYPES.filter(t=>t!=='Nota de Crédito'), FN.tipo, `id="fnTipo" onchange="fnSet('tipo',this.value)"`))}
+        ${fF('Emitir a', `<input placeholder="Ingresar cliente" value="${esc(FN.emitir||'')}" onchange="fnSet('emitir',this.value)">`)}
+        ${fF(`Documento a Emitir ${fm('Modifica',FAC_HU.lc,'I-040','PEN-I167-01')}`, fSel(fdTypes().filter(t=>t!=='Nota de Crédito'), FN.tipo, `id="fnTipo" onchange="fnSet('tipo',this.value)"`))}
       </div>
-      <div class="fac-note">${esc(FN.tipo)}: ${esc(FD_DEST[FN.tipo]||'')}</div>
+      <div class="fac-btns"><button type="button" class="cc-btn" onclick="fdNewRender()">Buscar</button><button type="button" class="cc-btn pink" onclick="Object.assign(FN,{nave:'',viaje:'',prov:'',puerto:'',num:'',emitir:''});fdNewRender()">Limpiar</button></div>
+      <div class="fac-note cc-prop">${esc(FN.tipo)}: ${esc(FD_DEST[FN.tipo]||'')}</div>
       <div class="fac-sec">Documentos Provisionales a Canjear ${fm('',FAC_HU.prov,'I-040','PEN-I116-02')}</div>
-      <div class="fac-scroll" id="fnTable"><table class="fac-tbl"><thead><tr><th></th><th>Número de Provisión</th><th>Emitir a</th><th>Número de Viaje</th><th>Fecha</th><th>Moneda</th><th class="num">Total PEN</th><th class="num">Total USD</th></tr></thead><tbody>
-        ${fnEligible().map(p=>{ const l = p.lines[0], t = fpTotal(p); return `<tr><td><input type="checkbox" style="width:auto" ${FN.pick[p.id]?'checked':''} onchange="FN.pick[${p.id}]=this.checked"></td><td>${p.code}</td><td>${esc(l.bill)}</td><td>${esc(l.nro)}</td><td>${fmtDate(p.docDate)}</td><td>${p.cur}</td><td class="num">${fMoney(p.cur==='PEN'?t:0)}</td><td class="num">${fMoney(p.cur==='USD'?t:0)}</td></tr>`; }).join('') || '<tr><td colspan="8" class="fac-empty">Debe de buscar provisiones para crear el nuevo documento</td></tr>'}
+      <div class="fac-scroll" id="fnTable"><table class="fac-tbl"><thead><tr><th></th><th>Número de Provisión</th><th>Emitir a</th><th class="cc-prop">Número de Viaje</th><th>Fecha</th><th>Moneda</th><th class="num">Total PEN</th><th class="num">Total USD</th></tr></thead><tbody>
+        ${fnEligible().map(p=>{ const l = p.lines[0], t = fpTotal(p); return `<tr><td><input type="checkbox" style="width:auto" ${FN.pick[p.id]?'checked':''} onchange="FN.pick[${p.id}]=this.checked"></td><td>${p.code}</td><td>${esc(l.bill)}</td><td class="cc-prop">${esc(l.nro)}</td><td>${fmtDate(p.docDate)}</td><td>${p.cur}</td><td class="num">${fMoney(p.cur==='PEN'?t:0)}</td><td class="num">${fMoney(p.cur==='USD'?t:0)}</td></tr>`; }).join('') || '<tr><td colspan="8" class="fac-empty">Debe de buscar provisiones para crear el nuevo documento</td></tr>'}
       </tbody></table></div>`:''}
     <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose()">Cancelar</button><button type="button" class="cc-btn" id="fnCreate" onclick="fdCreate()">Crear Documento</button></div>`, prov?'lg':'');
 }
@@ -6769,9 +6889,28 @@ function fdCreate(){
 }
 function fdNewBlank(){
   const id = Math.max(...FD.list.map(d=>d.id))+1, v = facVoy('BOX ENDURANCE');
-  FD.list.push(fdNew({id, num:fdNextNum('Factura'), fact:v.cliente, collect:v.cliente, nave:v.nave, nro:v.nro, puerto:v.puerto, date:new Date().toISOString().slice(0,10), user:curUser(), comments:`Referencia ${v.pda}`, edit:true, lines:[fdLine('COMISION DE AGENCIA',800,1,true,v.eta,'')], hist:[{ts:facNow(), user:curUser(), prev:'', next:'Borrador', comment:'Documento en blanco'}]}));
-  toast('Documento contable creado exitosamente.','success'); fdOpen(id);
+  FD.list.push(fdNew({id, num:'', nuevo:true, fact:v.cliente, collect:v.cliente, nave:v.nave, nro:v.nro, puerto:v.puerto, date:new Date().toISOString().slice(0,10), user:curUser(), comments:`Referencia ${v.pda}`, edit:true, lines:[fdLine('COMISION DE AGENCIA',800,1,true,v.eta,'')], hist:[{ts:facNow(), user:curUser(), prev:'', next:'Borrador', comment:'Documento en blanco'}]}));
+  fdOpen(id);
 }
+/* Crear Documento Contable (Connect): si hay varias series para sucursal, operación y tipo, pide elegir una */
+function fdSeriesFor(tipo){
+  const L = typeof window.lqSeriesPara==='function' ? window.lqSeriesPara('Callao', tipo) : [];
+  return L.length ? L.map(s=>s.codigo) : [fdNextNum.key(tipo)];
+}
+fdNextNum.key = tipo => tipo==='Boleta'?'B005':tipo==='Nota de Crédito'?'F002':tipo==='Liquidación de Cobranza'?'LC51':'F005';
+function fdCreateBlank(){
+  const d = fdById(FD.sel); if(!d.lines.length){ toast('Por favor complete los campos obligatorios.','error'); return; }
+  const ss = fdSeriesFor(d.tipo);
+  if(ss.length>1){ facOpen(`<h3>Seleccionar Serie</h3><div class="fac-note" style="margin:12px 0">Se encontraron varias series disponibles. Seleccione la serie con la que desea emitir el documento.</div>${fF('Serie *', fSel(ss, ss[0], 'id="fdSerieSel"'))}
+      <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose()">Cancelar</button><button type="button" class="cc-btn" id="fdSerieOk" onclick="fdCreateBlankOk(document.getElementById('fdSerieSel').value)">Continuar</button></div>`); return; }
+  fdCreateBlankOk(ss[0]);
+}
+function fdCreateBlankOk(serie){
+  const d = fdById(FD.sel); facClose();
+  FD.seq[serie] = FD.seq[serie] || 1; d.num = `${serie}-${String(FD.seq[serie]++).padStart(8,'0')}`;
+  d.nuevo = false; d.edit = false; toast('Documento contable creado exitosamente.','success'); renderFd();
+}
+function fdCancelBlank(){ const d = fdById(FD.sel); if(d && d.nuevo) FD.list = FD.list.filter(x=>x!==d); else if(d) d.edit = false; fdBack(); }
 /* ---------- Detalle del documento ---------- */
 function fdOpen(id){ FD.view = 'detail'; FD.sel = id; renderFd(); window.scrollTo({top:0}); }
 function fdBack(){ FD.view = 'list'; FD.sel = null; renderFd(); }
@@ -6780,46 +6919,60 @@ function fdIsLc(d){ return d.tipo==='Liquidación de Cobranza'; }
 function fdDField(k, v){ const d = fdById(FD.sel); d[k] = v; }
 function renderFdDetail(){
   const d = fdById(FD.sel); if(!d){ fdBack(); return; }
-  facSetBar('screenAccDocs','Editar Documento Contable',['Inicio','Documentos Contables','Editar Documento Contable'],'fdBack()');
+  const nuevo = !!d.nuevo, titulo = nuevo ? 'Crear Documento Contable' : 'Editar Documento Contable';
+  facSetBar('screenAccDocs',titulo,['Inicio','Documentos Contables',titulo],nuevo?'fdCancelBlank()':'fdBack()');
   const v = facVoy(d.nave, d.nro), ed = d.edit, dis = ed?'':'disabled', isNc = fdIsNc(d), isLc = fdIsLc(d), isReg = d.status==='Registro de documento';
-  const canSend = /Borrador|SAP Error/.test(d.status), closed = d.status==='Anulado';
+  /* Connect: Enviar a SAP desde Provisionado o SAP Error. Con I-042, en Registro de documento la acción es Emitir */
+  const canSend = d.status==='SAP Error' || (isReg && !facProp()), closed = d.status==='Anulado';
+  const canEdit = !closed && !/Enviado a SAP|SAP OK/.test(d.status);
+  const pago = d.paid==='Sí' ? '<span class="fac-pill ok">Pagado</span>' : '<span class="fac-pill wait">Pendiente de Pago</span>';
   document.getElementById('fdRoot').innerHTML = `
-    <div class="fac-card"><div class="fac-head">
-      <div><div style="font-weight:600;font-size:15px;margin-bottom:8px">${esc(d.num)}${d.internal&&d.internal!==d.num?`  <span style="color:var(--cc-gray);font-weight:400">(Código interno ${esc(d.internal)})</span>`:''}</div>
-        <div class="cc-chips fac-mk" ${fb('Modifica',FAC_HU.num,'I-042','PEN-JENNY-I042-01')}>${FD_ST.map(s=>`<span class="cc-chip ${s===d.status?'on':''}">${s}</span>`).join('')}</div>${isReg?`<div style="margin-top:8px">${fm('Asiento SAP',FAC_HU.num,'I-042','PEN-I042-02')}</div>`:''}</div>
+    ${nuevo?'':`<div class="fac-card"><div class="fac-head">
+      <div><div style="font-weight:600;font-size:15px;margin-bottom:8px">${esc(d.num)}${d.internal&&d.internal!==d.num?`  <span class="cc-prop" style="color:var(--cc-gray);font-weight:400">(Código interno ${esc(d.internal)})</span>`:''} ${pago}</div>
+        <div class="cc-chips fac-mk" ${fb('Modifica',FAC_HU.num,'I-042','PEN-JENNY-I042-01')}>${FD_ST.map(s=>`<span class="cc-chip ${s===d.status?'on':''}">${fdStL(s)}</span>`).join('')}</div>${isReg?`<div style="margin-top:8px">${fm('Asiento SAP',FAC_HU.num,'I-042','PEN-I042-02')}</div>`:''}</div>
       <div class="fac-acts">${fChgBtn()}
-        ${closed?'':`<button type="button" class="cc-btn" onclick="fdToggleEdit()">${ed?'Guardar':'Editar'}</button>`}
-        ${d.status==='Borrador'&&!isNc&&!isLc?`<button type="button" class="cc-btn" onclick="fdProvisionar()">Provisionar</button>`:''}
-        ${isReg?`<span class="fac-mk" ${fb('Agrega',FAC_HU.num,'I-042','PEN-I042-01')}><button type="button" class="cc-btn" onclick="fdEmitir()">Emitir</button></span>`:''}
-        ${canSend?`<button type="button" class="cc-btn" onclick="fdSend()">Enviar a SAP</button>`:''}
-        ${d.status==='SAP OK'?`<button type="button" class="cc-btn" onclick="fdPdf(${d.id})">Vista previa PDF</button>`:(canSend||isReg?`<span class="fac-mk" ${fb('Agrega',isLc?FAC_HU.lc:FAC_HU.pdf,isLc?'I-040':'I-007',isLc?'PEN-I167-02':'PEN-I007-01')}><button type="button" class="cc-btn ghost" onclick="fdPdf(${d.id})">Vista previa PDF</button></span>`:'')}
-        ${closed?'':isLc?`<span class="fac-mk" ${fb('Agrega: sin PDF',FAC_HU.lc,'I-040','PEN-I167-03')}><button type="button" class="cc-btn pink" onclick="fdExtorno(${d.id})">Extornar</button></span>`:`<button type="button" class="cc-btn pink" onclick="fdAnnul(${d.id})">Anular</button>`}
+        ${canEdit&&!ed?`<button type="button" class="cc-btn" onclick="fdToggleEdit()">Editar</button>`:''}
+        ${d.status==='Borrador'&&!isNc&&!isLc?`<button type="button" class="cc-btn" onclick="fConfirm('Provisionar','¿Está seguro que desea enviar este documento a Provisionado?','fdProvisionar()')">Provisionar</button>`:''}
+        ${isReg&&facProp()?`<span class="fac-mk" ${fb('Agrega',FAC_HU.num,'I-042','PEN-I042-01')}><button type="button" class="cc-btn" onclick="fdEmitir()">Emitir</button></span>`:''}
+        ${canSend?`<button type="button" class="cc-btn" onclick="fConfirm('Enviar a SAP','¿Está seguro que desea enviar este documento a SAP?','fdSend()')">Enviar a SAP</button>`:''}
+        ${d.status==='SAP OK'?`<span class="cc-prop"><button type="button" class="cc-btn" onclick="fdPdf(${d.id})">Vista previa PDF</button></span>`:(canSend||isReg||d.status==='Borrador'?`<span class="fac-mk cc-prop" ${fb('Agrega',isLc?FAC_HU.lc:FAC_HU.pdf,isLc?'I-040':'I-007',isLc?'PEN-I167-02':'PEN-I007-01')}><button type="button" class="cc-btn ghost" onclick="fdPdf(${d.id})">Vista previa PDF</button></span>`:'')}
+        ${closed?'':isLc?`<span class="fac-mk cc-prop" ${fb('Agrega: sin PDF',FAC_HU.lc,'I-040','PEN-I167-03')}><button type="button" class="cc-btn pink" onclick="fdExtorno(${d.id})">Extornar</button></span>`:fdCanAnnul(d)?`<button type="button" class="cc-btn pink" onclick="fdAnnul(${d.id})">Anular</button>`:''}
       </div></div>
-    </div>
-    ${d.canje?fdCanjeHtml(d):''}
+    </div>`}
+    ${d.canje?`<div class="cc-prop">${fdCanjeHtml(d)}</div>`:''}
     <div class="fac-card"><h3 style="margin-bottom:16px">Información General</h3>
       <div class="fac-g3">
-        ${fRo('Sucursal','Callao')}${fRo('Tipo de Operación',d.tipoOp)}<button type="button" class="fac-link" style="align-self:end;justify-self:start;padding-bottom:10px" onclick="fdHistory()">Ver Historial</button>
+        ${fRo('Sucursal','Callao')}${fRo('Tipo de Operación',d.tipoOp)}<div style="align-self:end;padding-bottom:10px;display:flex;gap:16px"><button type="button" class="fac-link" onclick="fdProvsAsoc()">Ver Provisiones</button><button type="button" class="fac-link" onclick="fdHistory()">Ver Historial</button></div>
         ${fRo('Tipo de Documento',d.tipo)}${fRo('Origen',d.orig||'-')}<div></div>
         ${isNc?`${fRo('Documento Asociado',d.assoc)}${fRo('Tipo de Movimiento',d.mov)}${fRo('Motivo de NC',d.motivo)}`:''}
         ${fRo('Fecha de Emisión',fmtDate(d.date))}${fRo('Fecha de Vencimiento',fmtDate(d.due))}${fRo('Moneda',d.cur==='USD'?'Dólar estadounidense':'Sol peruano')}
         ${fRo('Tipo de Cambio',d.tc)}${fRo('Idioma',d.lang)}${fRo('Método de Pago',d.pay)}
         ${fRo('Condición de Pago',d.cond)}${fRo('Tipo de Impuesto',d.tax)}
         ${fF('Orden de Compra',`<input ${dis} value="${esc(d.oc)}" onchange="fdDField('oc',this.value)">`)}
-        ${fF(`HE ${fm('Agrega: opcional',FAC_HU.reab,'I-015','PEN-I015-02')}`,`<input ${dis} placeholder="Opcional" value="${esc(d.he)}" onchange="fdDField('he',this.value)">`)}
+        ${fF(`HE ${fm('Agrega: opcional',FAC_HU.reab,'I-015','PEN-I015-02')}`,`<input ${dis} placeholder="Opcional" value="${esc(d.he)}" onchange="fdDField('he',this.value)">`, 'cc-prop')}
         ${fF('Comentarios',`<input ${dis} value="${esc(d.comments)}" onchange="fdDField('comments',this.value)">`)}
         ${fF('Descripción Cover',`<input ${dis} value="${esc(d.coverDesc)}" onchange="fdDField('coverDesc',this.value)">`)}
       </div>
     </div>
     ${isNc?fdNcBoxHtml(d):''}
     <div class="fac-card"><h3 style="margin-bottom:16px">Información del Cliente</h3>
-      <div class="fac-g2">${fRo('Facturar a',`${d.fact} - ${fdRuc(d.fact)}`)}${fRo('Cobrar a',`${d.collect} - ${fdRuc(d.collect)}`)}${fRo('Dirección',d.addr,'fac-span2')}</div>
+      <div class="fac-g2">${fRo('Facturar a',facProp()?`${d.fact} - ${fdRuc(d.fact)}`:d.fact)}${fRo('Cobrar a',facProp()?`${d.collect} - ${fdRuc(d.collect)}`:d.collect)}${fRo('Dirección',d.addr,'fac-span2')}</div>
     </div>
     <div class="fac-card" id="fdViaje"><h3 style="margin-bottom:16px">Información del Viaje</h3>
-      <div class="fac-g4">${fRo('Nave',d.nave)}${fF(`Número de Viaje`,`<input disabled value="${esc(d.nro)}">`)}${fF(`ETA ${fm('Agrega',FAC_HU.prov,'I-041','PEN-I041-01')}`,`<input id="fdEta" disabled value="${facEta(v)}">`)}${fRo('Puerto',d.puerto)}</div>
+      <div class="fac-g4">${fRo('Nave',d.noNave?'':d.nave)}${fF(`Número de Viaje`,`<input disabled value="${esc(d.noNave?'':d.nro)}">`)}${fF(`ETA ${fm('Agrega',FAC_HU.prov,'I-041','PEN-I041-01')}`,`<input id="fdEta" disabled value="${facEta(v)}">`,'cc-prop')}${fRo('Puerto',d.noNave?'':d.puerto)}
+        ${fF('&nbsp;',`<label class="fac-chk"><input type="checkbox" ${dis} ${d.noNave?'checked':''} onchange="fdDField('noNave',this.checked);renderFd()"> No requiere Nave/Viaje</label>`)}</div>
     </div>
     ${fdLinesHtml(d)}
-    ${!isNc&&!isLc?fdDetrHtml(d):''}`;
+    ${!isNc&&!isLc?`<div class="cc-prop">${fdDetrHtml(d)}</div>`:''}
+    ${nuevo?`<div class="fac-btns"><button type="button" class="cc-btn" id="fdCrear" onclick="fdCreateBlank()">Crear</button><button type="button" class="cc-btn pink" onclick="fdCancelBlank()">Cancelar</button></div>`
+      :ed?`<div class="fac-btns"><button type="button" class="cc-btn" id="fdActualizar" onclick="fdToggleEdit()">Actualizar</button><button type="button" class="cc-btn pink" onclick="fdCancelBlank()">Cancelar</button></div>`:''}`;
+}
+/* Diálogo Provisiones Asociadas (Connect) */
+function fdProvsAsoc(){
+  const d = fdById(FD.sel);
+  facOpen(`<h3>Provisiones Asociadas</h3><div class="fac-scroll" style="margin-top:12px"><table class="fac-tbl"><thead><tr><th>Código de Provisión</th></tr></thead><tbody>
+    ${d.provs.map(c=>`<tr><td>${esc(c)}</td></tr>`).join('') || '<tr><td class="fac-empty">No hay provisiones asociadas a este documento</td></tr>'}</tbody></table></div>
+    <div class="fac-btns"><button type="button" class="cc-btn" onclick="facClose()">Cerrar</button></div>`);
 }
 function fdCanjeHtml(d){
   const c = d.canje;
@@ -6830,14 +6983,40 @@ function fdCanjeHtml(d){
     </tbody></table></div></div>`;
 }
 function fdLinesHtml(d){
-  const ed = d.edit && d.status!=='Anulado', isNc = fdIsNc(d);
-  return `<div class="fac-card" id="fdLines"><h3 style="margin-bottom:16px">Detalle del Documento ${isNc?fm('Importe',FAC_HU.nc,'I-005','PEN-I005-01'):''}</h3>
+  const ed = d.edit && d.status!=='Anulado', isNc = fdIsNc(d), inl = ed && isNc && facProp(), sal = isNc && facProp();
+  /* Connect: Agregar / Eliminar con selección y diálogo Agregar o Editar Detalle; columna Monto de Descuento. I-005 e I-065: edición en la tabla y Saldo en la NC */
+  return `<div class="fac-card" id="fdLines"><div class="fac-head" style="margin-bottom:12px"><h3>Detalle del Documento ${isNc?fm('Importe',FAC_HU.nc,'I-005','PEN-I005-01'):''}</h3>
+      ${ed&&!inl?`<div class="fac-acts"><button type="button" class="cc-btn" onclick="fdDetDialog(-1)">Agregar</button><button type="button" class="cc-btn pink" onclick="fdDelPicked()">Eliminar</button></div>`:''}</div>
     ${isNc?fRemoved('Detalle del Documento', FAC_HU.nc, 'I-065', [['Monto de Descuento','Saldo, pedido de Facturación del 12/10']]):''}
-    <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th>Servicio</th><th>Fecha Servicio</th><th class="num">Tarifa</th><th>Moneda</th><th class="num">TC</th><th class="num">Cantidad</th><th class="num">Subtotal</th><th class="num">IGV</th><th class="num">Total</th>${isNc?`<th class="num">Saldo ${fm('Modifica: antes Monto de Descuento',FAC_HU.nc,'I-065','PEN-JENNY-I065-01')}</th>`:''}${ed&&isNc?'<th></th>':''}</tr></thead><tbody>
-      ${d.lines.map((l,i)=>{ const s = l.tarifa*l.qty, g = l.igv?s*.18:0; return `<tr><td>${esc(l.svc)}${l.remark?`<br><small style="color:var(--cc-gray)">${esc(l.remark)}</small>`:''}</td><td>${fmtDate(l.date)}</td><td class="num">${ed?`<input type="number" step="0.01" value="${l.tarifa}" onchange="fdLineSet(${i},'tarifa',Number(this.value))">`:fMoney(l.tarifa)}</td><td>${d.cur}</td><td class="num">${d.tc}</td><td class="num">${ed?`<input type="number" step="1" value="${l.qty}" onchange="fdLineSet(${i},'qty',Number(this.value))">`:fMoney(l.qty)}</td><td class="num">${fMoney(s)}</td><td class="num">${fMoney(g)}</td><td class="num">${fMoney(s+g)}</td>${isNc?`<td class="num">${fMoney(s)}</td>`:''}${ed&&isNc?`<td><button type="button" class="fac-link" onclick="fdLineDel(${i})">Quitar</button></td>`:''}</tr>`; }).join('') || `<tr><td colspan="11" class="fac-empty">No hay líneas de detalle. Presione Agregar para añadir una.</td></tr>`}
-    </tbody><tfoot><tr><td colspan="6" class="num">Totales:</td><td class="num">${fMoney(fdNet(d))}</td><td class="num">${fMoney(fdIgv(d))}</td><td class="num">${fMoney(fdTot(d))}</td>${isNc?`<td class="num">${fMoney(fdNet(d))}</td>`:''}${ed&&isNc?'<td></td>':''}</tr></tfoot></table></div>
+    <div class="fac-scroll"><table class="fac-tbl"><thead><tr>${ed&&!inl?'<th></th>':''}<th>Servicio</th><th>Fecha Servicio</th><th class="num">Tarifa</th><th>Moneda</th><th class="num">TC</th><th class="num">Cantidad</th><th class="num">Subtotal</th><th class="num">IGV</th><th class="num">Total</th><th class="num">${sal?`Saldo ${fm('Modifica: antes Monto de Descuento',FAC_HU.nc,'I-065','PEN-JENNY-I065-01')}`:'Monto de Descuento'}</th>${inl?'<th></th>':'<th>Acciones</th>'}</tr></thead><tbody>
+      ${d.lines.map((l,i)=>{ const s = l.tarifa*l.qty, g = l.igv?s*.18:0; return `<tr>${ed&&!inl?`<td><input type="checkbox" style="width:auto" class="fdDetPick" value="${i}"></td>`:''}<td>${esc(l.svc)}${l.remark?`<br><small style="color:var(--cc-gray)">${esc(l.remark)}</small>`:''}</td><td>${fmtDate(l.date)}</td><td class="num">${inl?`<input type="number" step="0.01" value="${l.tarifa}" onchange="fdLineSet(${i},'tarifa',Number(this.value))">`:fMoney(l.tarifa)}</td><td>${d.cur}</td><td class="num">${d.tc}</td><td class="num">${inl?`<input type="number" step="1" value="${l.qty}" onchange="fdLineSet(${i},'qty',Number(this.value))">`:fMoney(l.qty)}</td><td class="num">${fMoney(s)}</td><td class="num">${fMoney(g)}</td><td class="num">${fMoney(s+g)}</td><td class="num">${isNc?fMoney(s):fMoney(l.desc||0)}</td>${inl?`<td><button type="button" class="fac-link" onclick="fdLineDel(${i})">Quitar</button></td>`:`<td><button type="button" class="fac-link" onclick="fdDetDialog(${i})">${ed?'Editar':'Ver'}</button></td>`}</tr>`; }).join('') || `<tr><td colspan="12" class="fac-empty">No hay líneas de detalle. Presione Agregar para añadir una.</td></tr>`}
+    </tbody><tfoot ${fPs('Totales al pie del detalle')}><tr><td colspan="${ed&&!inl?7:6}" class="num">Totales:</td><td class="num">${fMoney(fdNet(d))}</td><td class="num">${fMoney(fdIgv(d))}</td><td class="num">${fMoney(fdTot(d))}</td><td class="num">${isNc?fMoney(fdNet(d)):''}</td><td></td></tr></tfoot></table></div>
   </div>`;
 }
+/* Diálogo Agregar Detalle / Editar Detalle (Connect) */
+function fdDetDialog(i){
+  const d = fdById(FD.sel), ro = !d.edit;
+  if(!FD.det || FD.det.i!==i) FD.det = i<0 ? {i, cat:FAC_CATS[0], svc:'COMISION DE AGENCIA', date:new Date().toISOString().slice(0,10), remark:'', quiebre:'Q02089 - COSTOS GENERALES', desc:0, unit:'Por servicio', cur:d.cur, tarifa:0, qty:1, igv:true} : {i, cat:FAC_CATS[0], quiebre:'Q02089 - COSTOS GENERALES', unit:'Por servicio', cur:d.cur, desc:0, ...JSON.parse(JSON.stringify(d.lines[i]))};
+  const x = FD.det, dis = ro?'disabled':'', s = x.tarifa*x.qty, g = x.igv?s*.18:0, set = k=>`onchange="FD.det['${k}']=this.type==='checkbox'?this.checked:(this.type==='number'?Number(this.value):this.value);fdDetDialog(${i})"`;
+  facOpen(`<h3>${i<0?'Agregar Detalle':ro?'Ver Detalle':'Editar Detalle'}</h3><div style="height:10px"></div><div class="fac-g2">
+    ${fF('Categoría *', fSel(FAC_CATS, x.cat, `${dis} ${set('cat')}`))}${fF('Servicio *', fSel(Object.keys(FD_SVC_EN), x.svc, `${dis} ${set('svc')}`))}
+    <div class="fac-cc fac-span2"><b>Centro de Costo</b><span><small>División</small>Servicios Portuarios</span><span><small>Actividad - UN</small>Agenciamiento Marítimo</span><span><small>Área</small>Operaciones</span></div>
+    ${fF('Fecha Servicio *', `<input type="date" ${dis} value="${x.date}" ${set('date')}>`)}${fF('Comentario *', `<input ${dis} value="${esc(x.remark)}" ${set('remark')}>`)}
+    ${fF('Contrato - Quiebre *', `<div class="fac-range">${fSel([...new Set([x.quiebre,'Q02090 - GASTOS DE ESCALA',...(FP.quiebres||[])])], x.quiebre, `${dis} ${set('quiebre')}`)}<button type="button" class="cc-btn" ${dis} onclick="fpNewBreak(0,0,1)">Nuevo Quiebre</button></div>`,'fac-span2')}
+    ${fF('Unidad de Tarifa *', fSel(['Por servicio','Por maniobra','Por hora','Por TRG'], x.unit, `${dis} ${set('unit')}`))}${fF('Moneda *', fSel([['USD','Dólar estadounidense'],['PEN','Sol peruano']], x.cur, `${dis} ${set('cur')}`))}
+    ${fF('Tarifa - Venta *', `<input type="number" step="0.01" ${dis} value="${x.tarifa}" ${set('tarifa')}>`)}${fF('Cantidad *', `<input type="number" min="1" ${dis} value="${x.qty}" ${set('qty')}>`)}
+    ${fF('Monto de Descuento', `<input type="number" step="0.01" ${dis} value="${x.desc||0}" ${set('desc')}>`)}${fF('&nbsp;', `<label class="fac-chk"><input type="checkbox" ${dis} ${x.igv?'checked':''} ${set('igv')}> Sujeto a Impuesto</label>`)}
+    ${fRo('Subtotal',fMoney(s))}${fRo('IGV',fMoney(g))}${fRo('Total',fMoney(s+g))}</div>
+    <div class="fac-btns">${ro?`<button type="button" class="cc-btn" onclick="FD.det=null;facClose()">Cerrar</button>`:`<button type="button" class="cc-btn pink" onclick="FD.det=null;facClose()">Cancelar</button><button type="button" class="cc-btn" id="fdDetOk" onclick="fdDetSave()">${i<0?'Agregar':'Guardar'}</button>`}</div>`, 'md');
+}
+function fdDetSave(){
+  const d = fdById(FD.sel), x = FD.det;
+  if(!x.svc || !x.date || !String(x.remark).trim() || !(x.tarifa>0) || !(x.qty>=1)){ toast('Algunos detalles tienen campos obligatorios sin completar.','error'); return; }
+  const l = fdLine(x.svc, x.tarifa, x.qty, x.igv, x.date, x.remark); l.desc = x.desc; l.quiebre = x.quiebre;
+  if(x.i<0) d.lines.push(l); else d.lines[x.i] = l;
+  FD.det = null; facClose(); renderFd();
+}
+function fdDelPicked(){ const d = fdById(FD.sel), idx = [...document.querySelectorAll('.fdDetPick:checked')].map(x=>Number(x.value)); if(!idx.length){ toast('Seleccione al menos un detalle.','error'); return; } d.lines = d.lines.filter((l,i)=>!idx.includes(i)); renderFd(); }
 function fdLineSet(i, k, v){ const d = fdById(FD.sel); d.lines[i][k] = v; renderFd(); }
 function fdLineDel(i){ const d = fdById(FD.sel); d.lines.splice(i,1); renderFd(); }
 function fdDetrHtml(d){
@@ -6858,10 +7037,11 @@ function fdToggleEdit(){
 }
 function fdProvisionar(){
   const d = fdById(FD.sel), code = `RD-2026-${String(FD.seq.RD++).padStart(6,'0')}`;
-  d.internal = code; d.num = code; fdHist(d,'Registro de documento','Registro previo con código interno'); toast('Documento cambiado a Registro de documento exitosamente','success'); renderFd();
+  if(facProp()){ d.internal = code; d.num = code; }
+  fdHist(d,'Registro de documento','Registro previo con código interno'); toast(`Documento cambiado a ${fdStL('Registro de documento')} exitosamente`,'success'); renderFd();
 }
 function fdEmitir(){
-  const d = fdById(FD.sel), prev = d.num; d.num = fdNextNum(d.tipo); fdHist(d,'SAP OK',`Emitido desde ${prev}, conserva la referencia`); toast('Documento emitido. Conserva el código interno.','success'); renderFd();
+  const d = fdById(FD.sel), prev = d.num; d.num = fdNextNum(d.tipo); if(d.canje) d.canje.sap = 'Recibido en SAP'; fdHist(d,'SAP OK',`Emitido desde ${prev}, conserva la referencia`); toast('Documento emitido. Conserva el código interno.','success'); renderFd();
 }
 function fdSend(){
   const d = fdById(FD.sel);
@@ -6871,7 +7051,8 @@ function fdSend(){
 }
 function fdAnnul(id){
   const d = fdById(id);
-  openReason('Anular Documento','Anular', txt=>{ fdHist(d,'Anulado',txt); toast('Documento anulado exitosamente.','info'); renderFd(); });
+  if(!fdCanAnnul(d)){ toast('Documento Contable no se encuentra en estado Borrador o Error de Sap.','error'); return; }
+  openReason('Anular Documento','Enviar', txt=>{ fdHist(d,'Anulado',txt); toast('Documento anulado exitosamente.','info'); renderFd(); });
 }
 function fdExtorno(id){
   const d = fdById(id);
@@ -6989,7 +7170,21 @@ function fcCommit(inv, answer){
   facClose(); toast('Documento contable creado exitosamente.','success'); FD.tab = 'nc'; fdOpen(id);
 }
 /* ---------- Sub-vista Cover ---------- */
-function fdCoverStart(){ FD.tab = 'cover'; FD.view = 'list'; FD.cover = null; renderFd(); window.scrollTo({top:0}); }
+function fdCoverStart(){
+  FD.tab = 'cover'; FD.view = 'list'; FD.cover = null;
+  /* Connect: si vienes de la consulta con documentos marcados en Sin Lote, entra con esos documentos */
+  const picks = Object.keys(FD.sel2).filter(k=>FD.sel2[k]).map(k=>fdById(Number(k))).filter(Boolean);
+  if(FD.f.sinLote && picks.length){ FD.cover = {n:'', client:picks[0].fact, nro:'', ids:picks.map(d=>d.num), adv:[], sent:false, lang:'Inglés', incl:false, control:null, step:'batch', isNew:true}; FD.sel2 = {}; }
+  renderFd(); window.scrollTo({top:0});
+}
+function fcvContacts(client){ return /MINING/i.test(client) ? [] : ['cobranzas@cliente.example','comercial@cliente.example']; }
+function fcvAddNum(){
+  const c = FD.cover, n = document.getElementById('fcvNum').value.trim(), d = fdByNum(n);
+  if(!d || d.status!=='SAP OK'){ toast('El documento debe estar en estado SAP OK.','error'); return; }
+  if(d.fact!==c.client){ toast('El documento debe tener el mismo Facturar a del lote.','error'); return; }
+  if(d.lote && d.lote!==c.n){ toast('El documento ya pertenece a otro lote.','error'); return; }
+  c.ids = [...new Set([...c.ids, d.num])]; c.extra = [...new Set([...(c.extra||[]), d.num])]; renderFd();
+}
 function fdOpenLot(n){
   const l = FD.lots[n]; if(!l) return;
   FD.tab = 'cover'; FD.view = 'list'; FD.cover = JSON.parse(JSON.stringify(l)); FD.cover.step = 'batch'; FD.cover.isNew = false; renderFd(); window.scrollTo({top:0});
@@ -7004,7 +7199,7 @@ function fdCoverView(){
 }
 function fcvAvail(){
   const c = FD.cover;
-  return FD.list.filter(d=>d.fact===c.client && d.status==='SAP OK' && (!d.lote || d.lote===c.n) && (!c.nro || d.nro===c.nro));
+  return FD.list.filter(d=>d.fact===c.client && d.status==='SAP OK' && (!d.lote || d.lote===c.n) && (!c.nro || d.nro===c.nro || (c.extra||[]).includes(d.num) || c.ids.includes(d.num)));
 }
 function fcvToggle(num, on){ const c = FD.cover; c.ids = on ? [...new Set([...c.ids,num])] : c.ids.filter(x=>x!==num); renderFd(); }
 function fcvAll(kind, on){ const c = FD.cover, list = fcvAvail().filter(d=>fdIsNc(d)===(kind==='nc')).map(d=>d.num); c.ids = on ? [...new Set([...c.ids,...list])] : c.ids.filter(x=>!list.includes(x)); renderFd(); }
@@ -7021,7 +7216,7 @@ function fdCoverHtml(){
         ${fF('Facturar a', fSel(fcClients(), FCV.client, `id="fcvClient" onchange="fcvSet('client',this.value)"`, 'Ingresar el cliente a facturar'))}
         ${fF('Número de Viaje', fSel(voys.map(v=>[facVoyLabel(v),`${v.nro} - ${v.nave} - ${v.puerto} - ${facEta(v)}`]), FCV.viaje, `${FCV.client?'':'disabled'} onchange="fcvSet('viaje',this.value)"`, 'Ingresar número de viaje'))}
       </div>
-      <div class="fac-btns"><button type="button" class="cc-btn" id="fcvView" onclick="fdCoverView()">Ver Documentos</button></div></div>`;
+      <div class="fac-btns"><button type="button" class="cc-btn" id="fcvView" onclick="fdCoverView()">Ver Documentos</button>${facProp()?'':`<button type="button" class="cc-btn pink" onclick="fdTab('docs')">Cancelar</button>`}</div></div>`;
   }
   const avail = fcvAvail(), docs = avail.filter(d=>!fdIsNc(d)), notes = avail.filter(fdIsNc), ro = c.sent, dis = ro?'disabled':'', bal = fcvBalance();
   const tbl = (rows, kind)=>{
@@ -7032,33 +7227,34 @@ function fdCoverHtml(){
     <div class="fac-tot"><span>Total S/: ${fMoney(rows.filter(d=>d.cur==='PEN'&&c.ids.includes(d.num)).reduce((a,d)=>a+fdTot(d),0))}</span><span>Total US$: ${fMoney(rows.filter(d=>d.cur==='USD'&&c.ids.includes(d.num)).reduce((a,d)=>a+fdTot(d),0))}</span></div>`;
   };
   return `<div class="fac-card"><div class="fac-head"><div><h3>Generar Cover${c.n?` - N° ${esc(c.n)}`:''}</h3><div class="fac-sub">${esc(c.client)}${c.nro?`, viaje ${esc(c.nro)}`:''}</div></div>
-      <div class="fac-acts"><button type="button" class="cc-btn ghost" onclick="fdCoverStart()">Cambiar cliente</button></div></div>
+      <div class="fac-acts" ${fPs('Cambiar cliente')}><button type="button" class="cc-btn ghost" onclick="fdCoverStart()">Cambiar cliente</button></div></div>
     ${ro?`<div class="fac-note warn">Este lote fue ENVIADO: no admite cambios en los documentos.</div>`:''}
+    ${ro?'':`<div class="fac-g2" style="margin-top:10px">${fF('Número de Documento',`<div class="fac-range"><input id="fcvNum" placeholder="Buscar documento SAP OK sin lote" list="fcvNums"><datalist id="fcvNums">${FD.list.filter(d=>d.status==='SAP OK'&&!d.lote&&d.fact===c.client).map(d=>`<option value="${esc(d.num)}"></option>`).join('')}</datalist><button type="button" class="cc-btn" id="fcvAddNum" onclick="fcvAddNum()">Agregar Lote</button></div>`)}</div>`}
     <div class="fac-sec">Documentos ${fm('Sin lote',FAC_HU.cover,'I-066','PEN-I009-01')}</div><div id="fcvDocs">${tbl(docs,'doc')}</div>
     <div class="fac-sec">Notas</div>${tbl(notes,'nc')}
   </div>
-  <div class="fac-card fac-mk" id="fcvAdv" ${fb('Agrega: adelantos',FAC_HU.cover,'I-066','PEN-I009-02')}><h3 style="margin-bottom:14px">Adelantos</h3>
+  <div class="fac-card fac-mk cc-prop" id="fcvAdv" ${fb('Agrega: adelantos',FAC_HU.cover,'I-066','PEN-I009-02')}><h3 style="margin-bottom:14px">Adelantos</h3>
     <div class="fac-g4">${fF('Fecha',`<input id="fcvAdvDate" type="date" ${dis} value="${new Date().toISOString().slice(0,10)}">`)}${fF('Número de Operación',`<input id="fcvOp" ${dis} placeholder="Ingresar número de operación">`)}${fF('Banco',`<input id="fcvBank" ${dis} placeholder="Ingresar banco">`)}${fF('Monto',`<input id="fcvAmt" type="number" min="0" step="0.01" ${dis} placeholder="0.00">`)}${fF('Moneda',fSel([['USD','US$'],['PEN','S/']],'USD',`id="fcvCur" ${dis}`))}</div>
     <div class="fac-btns" style="margin-top:10px"><button type="button" class="cc-btn" id="fcvAddAdv" ${dis} onclick="fcvAddAdv()">Agregar adelanto</button></div>
     ${c.adv.length?`<div class="fac-scroll" style="margin-top:10px"><table class="fac-tbl"><thead><tr><th>Fecha</th><th>Número de Operación</th><th>Banco</th><th>Moneda</th><th class="num">Monto</th><th></th></tr></thead><tbody>${c.adv.map((a,i)=>`<tr><td>${fmtDate(a.date)}</td><td>${esc(a.op)}</td><td>${esc(a.banco)}</td><td>${a.cur}</td><td class="num">${fMoney(a.monto)}</td><td>${ro?'':`<button type="button" class="fac-link" onclick="FD.cover.adv.splice(${i},1);renderFd()">Quitar</button>`}</td></tr>`).join('')}</tbody></table></div>`:''}
   </div>
-  <div class="fac-card fac-mk" id="fcvBal" ${fb('Agrega: balance',FAC_HU.cover,'I-066','PEN-I009-02')}><h3 style="margin-bottom:14px">Balance</h3>
+  <div class="fac-card fac-mk cc-prop" id="fcvBal" ${fb('Agrega: balance',FAC_HU.cover,'I-066','PEN-I009-02')}><h3 style="margin-bottom:14px">Balance</h3>
     <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th>Moneda</th><th class="num">Documentos</th><th class="num">Notas</th><th class="num">Pagado</th><th class="num">Adelantos</th><th class="num">Saldo</th></tr></thead><tbody>
       ${bal.map(b=>`<tr><td>${fCur(b.cur)}</td><td class="num">${fMoney(b.fac)}</td><td class="num">${fMoney(b.nc)}</td><td class="num">${fMoney(b.pag)}</td><td class="num">${fMoney(b.adv)}</td><td class="num"><b>${fMoney(b.saldo)}</b></td></tr>`).join('')}
     </tbody></table></div></div>
-  <div class="fac-card"><h3 style="margin-bottom:14px">Envío</h3>
+  <div class="fac-card">${c.n?`<h3 style="margin-bottom:14px">Envío</h3>
     <div class="fac-g2">${fF('Idioma',fSel(['Inglés','Español','Ambos'],c.lang,`${dis} onchange="FD.cover.lang=this.value"`))}<div style="display:flex;align-items:end"><label class="fac-chk"><input type="checkbox" ${dis} ${c.incl?'checked':''} onchange="FD.cover.incl=this.checked"> Incluir comprobantes</label></div></div>
-    <div class="fac-mk" id="fcvEnvio" ${fb('Modifica: muestra origen',FAC_HU.cover,'I-066','PEN-I039-01')} style="margin-top:16px;font-size:13px;line-height:1.7;padding:8px">
-      <b>Para (cliente):</b> cobranzas@cliente.example <span style="color:var(--cc-gray)">(Contacto Cobranza del socio)</span>, comercial@cliente.example <span style="color:var(--cc-gray)">(Contacto Comercial del socio)</span><br>
-      <b>Copia (interno):</b> facturacion@agencia.example <span style="color:var(--cc-gray)">(Configuración por sucursal)</span>
-    </div>
+    ${fcvContacts(c.client).length?`<div class="fac-mk" id="fcvEnvio" ${fb('Modifica: muestra origen',FAC_HU.cover,'I-066','PEN-I039-01')} style="margin-top:16px;font-size:13px;line-height:1.7;padding:8px">
+      <b>Para (cliente):</b> cobranzas@cliente.example <span class="cc-prop" style="color:var(--cc-gray)">(Contacto Cobranza del socio)</span>, comercial@cliente.example <span class="cc-prop" style="color:var(--cc-gray)">(Contacto Comercial del socio)</span><br>
+      <b>Copia (interno):</b> facturacion@agencia.example <span class="cc-prop" style="color:var(--cc-gray)">(Configuración por sucursal)</span>
+    </div>`:`<div class="fac-note warn" id="fcvEnvio">El cliente no tiene contactos de Comercial/Cobranza configurados. No se puede enviar el Cover.</div>`}`:''}
     <div class="fac-btns">
       ${!c.n?`<button type="button" class="cc-btn" id="fcvGen" onclick="fcvGenerate()">Generar Cover</button>`:ro?'':`<button type="button" class="cc-btn" onclick="fcvSave()">Guardar</button>`}
-      <span class="fac-mk" ${fb('Modifica: con importes y descarga',FAC_HU.cover,'I-066','PEN-JENNY-COVER-01')}><button type="button" class="cc-btn" id="fcvPrev" onclick="fcvPreview()">Ver Cover</button></span>
-      ${c.n?`<button type="button" class="cc-btn" ${ro?'disabled':''} onclick="fcvSend()">Enviar</button>`:''}
-      <button type="button" class="cc-btn pink" onclick="fdCoverStart()">Cancelar</button>
+      ${c.n||facProp()?`<span class="fac-mk" ${fb('Modifica: con importes y descarga',FAC_HU.cover,'I-066','PEN-JENNY-COVER-01')}><button type="button" class="cc-btn" id="fcvPrev" onclick="fcvPreview()">Ver Cover</button></span>`:''}
+      ${c.n?`<button type="button" class="cc-btn" id="fcvSend" ${fcvContacts(c.client).length?'':'disabled'} onclick="fcvSend()">Enviar</button>`:''}
+      <button type="button" class="cc-btn pink" onclick="${facProp()?'fdCoverStart()':"fdTab('docs')"}">Cancelar</button>
     </div></div>
-  <div class="fac-card fac-mk" ${fb('Agrega: Control de envío',FAC_HU.cover,'I-066','PEN-I066-01')}><h3 style="margin-bottom:14px">Control de envío de documentos ${fm('Numeración y responsables',FAC_HU.cover,'I-066','PEN-I066-02')}</h3>
+  <div class="fac-card fac-mk cc-prop" ${fb('Agrega: Control de envío',FAC_HU.cover,'I-066','PEN-I066-01')}><h3 style="margin-bottom:14px">Control de envío de documentos ${fm('Numeración y responsables',FAC_HU.cover,'I-066','PEN-I066-02')}</h3>
     ${c.control?`<div class="fac-acts" style="margin-bottom:10px"><span class="fac-pill ${c.control.st==='Vigente'?'ok':'err'}">${esc(c.control.st)}</span><span style="font-size:13px">${esc(c.control.num||'')}, Lote ${esc(c.control.lote)}</span>${c.control.reason?`<span style="font-size:13px;color:var(--cc-gray)">Motivo: ${esc(c.control.reason)}</span>`:''}</div>`:''}
     <div class="fac-acts">
       <button type="button" class="cc-btn" id="fcvCtl" ${c.n?'':'disabled'} title="${c.n?'':'Primero genera el Cover'}" onclick="fcvControl()">${c.control&&c.control.st==='Vigente'?'Ver Control de envío':'Generar Control de envío'}</button>
@@ -7239,7 +7435,7 @@ const FAC_GUIDES = [
     {go:()=>fgCover(), el:'#fcvAdv', h:'Adelantos', p:'Fecha, operación, banco y monto.'},
     {go:()=>fgCover(), el:'#fcvBal', h:'Balance', p:'Saldo por moneda.'},
     {go:()=>{ fgCover(); fcvPreview(); }, el:'#facModalBox', h:'Ver Cover', p:'Formato del modelo, con números, importes, remittance y Balance due.'},
-    {go:()=>fgCover(), el:'#fcvEnvio', h:'Envío', p:'Para y Copia automáticos, con el origen de cada correo.'},
+    {go:()=>{ fgCover(); FD.cover.n = 'Ejemplo'; renderFd(); }, el:'#fcvEnvio', h:'Envío', p:'Para y Copia automáticos, con el origen de cada correo.'},
     {go:()=>{ fgCover(); fgControl(); }, el:'#facModalBox', h:'Control de envío', p:'Correlativo, lote, documentos, responsables y PDF. Se puede anular o revertir.'}]},
   {t:'I-005 NC: filtro y persistencia', ...FAC_END, steps:[
     {go:()=>fgDocs('nc'), el:'#fdNcAsoc', h:'Documento Asociado', p:'Devuelve solo las notas de esa factura.'},
@@ -7384,8 +7580,8 @@ function cbMoney(c, v){ return `${fCur(c)} ${fMoney(v)}`; }
 function openCobranzas(tab){ cbSeed(); CB.tab = tab||'val'; CB.view = 'list'; CB.sel = null; facEnter('screenCobranzas'); renderCb(); }
 function renderCb(){
   const r = document.getElementById('cbRoot');
-  if(CB.tab==='mp'){ facSetBar('screenCobranzas','Medios de pago',['Inicio','Cobranzas','Medios de pago']); r.innerHTML = cbMpHtml(); return; }
-  if(CB.tab==='rep'){ facSetBar('screenCobranzas','Reportes',['Inicio','Cobranzas','Reportes']); r.innerHTML = cbRepHtml(); return; }
+  if(CB.tab==='mp'){ facSetBar('screenCobranzas','Medios de pago',['Inicio','Cobranzas','Medios de pago']); r.innerHTML = `<div ${CC.propuesta('I-180','Medios de pago, no existe en Connect')}>${cbMpHtml()}</div>`; return; }
+  if(CB.tab==='rep'){ facSetBar('screenCobranzas','Reportes',['Inicio','Cobranzas','Reportes']); r.innerHTML = `<div ${CC.propuesta('I-181','Reportes de Cobranzas, no existen en Connect')}>${cbRepHtml()}</div>`; return; }
   if(CB.view==='detail'){ facSetBar('screenCobranzas',`Detalle de Orden de Pago - ${CB.sel}`,['Inicio','Cobranzas','Validación de Pagos'],'cbBack()'); r.innerHTML = cbDetailHtml(cbOrder(CB.sel)); return; }
   updatePagebar('screenCobranzas'); r.innerHTML = cbListHtml();
 }
@@ -7401,7 +7597,7 @@ function cbListHtml(){
   return `<div class="fac-card" id="cbF"><div class="fac-head"><div><h3>Buscar pagos por validar</h3><div class="fac-sub">Ingrese los criterios de búsqueda para filtrar los pagos</div></div>
       <div class="fac-acts"><button type="button" class="cc-btn" id="cbNuevo" onclick="cbNpOpen()">+ Nuevo</button></div></div><div class="fac-acts cb-chg">${fChgBtn()}</div>
     <div class="fac-g3">
-      ${fF('N° Orden Pago', `<input placeholder="Ingrese el N° de orden de pago" value="${esc(f.num)}" onchange="cbSet('num',this.value)">`)}
+      ${fF('N° Orden Pago', `<input list="cbNums" placeholder="Ingrese el N° de orden de pago" value="${esc(f.num)}" onchange="cbSet('num',this.value)"><datalist id="cbNums">${CB.orders.map(o=>`<option value="${o.n}"></option>`).join('')}</datalist>`)}
       ${fF('Fecha de Registro', `<div class="fac-range"><input type="date" value="${f.from}" onchange="cbSet('from',this.value)"><input type="date" value="${f.to}" onchange="cbSet('to',this.value)"></div>`)}
       ${fF('Método', fSel(CB_METHODS, f.met, `onchange="cbSet('met',this.value)"`, 'Elegir el método de pago'))}
       ${fF('Moneda', fSel(CB_CURS, f.cur, `onchange="cbSet('cur',this.value)"`, 'Elegir la moneda'))}
@@ -7409,17 +7605,17 @@ function cbListHtml(){
     </div>
     <div class="fac-btns"><button type="button" class="cc-btn" onclick="renderCb()">Buscar</button><button type="button" class="cc-btn" onclick="cbClear()">Limpiar</button></div></div>
   <div class="fac-card" id="cbRes"><div class="fac-head"><h3>Resultados (${all.length})</h3></div>
-    <div class="fac-scroll"><table class="fac-tbl fac-fix"><thead><tr><th>N° Orden</th><th>Fecha de Registro</th><th>Método</th><th>Condición ${fm('Modifica: CONTADO DOC y CONTADO I',CB_HU.none,'I-178','PEN-CRE-01')}</th><th>Estado</th><th class="num">N° operaciones</th><th>Moneda</th><th class="num">Monto total</th><th class="num" id="cbSaldoCol">Saldo pendiente ${fm('Agrega',CB_HU.none,'I-178','PEN-CRE-02')}</th><th>Tiene Factura o Boleta</th><th>Acciones</th></tr></thead><tbody>
-      ${list.map(o=>`<tr><td><button type="button" class="fac-link" onclick="cbOpen('${o.n}')">${o.n}</button></td><td>${fmtDate(o.reg)}</td><td>${esc(o.met)}</td><td>${esc(o.cond)}</td><td>${esc(o.est)}</td><td class="num">${o.ops.length}</td><td>${esc(CB_CURS.find(c=>c[0]===o.cur)[1])}</td><td class="num">${fMoney(o.total)}</td><td class="num">${fMoney(cbSaldo(o))}</td><td><span class="cb-dot ${o.doc?'on':''}"></span>${o.doc?` <button type="button" class="fac-link" onclick="cbDocOpen('${o.doc}')">${o.doc}</button>`:''}</td><td><button type="button" class="fac-link" onclick="cbOpen('${o.n}')">Ver detalle</button></td></tr>`).join('') || `<tr><td colspan="11" class="fac-empty">No se encontraron resultados con los criterios seleccionados.</td></tr>`}
+    <div class="fac-scroll"><table class="fac-tbl fac-fix"><thead><tr><th>N° Orden</th><th>Fecha de Registro</th><th>Método</th><th>Condición ${fm('Modifica: CONTADO DOC y CONTADO I',CB_HU.none,'I-178','PEN-CRE-01')}</th><th>Estado</th><th class="num">N° operaciones</th><th>Moneda</th><th class="num">Monto total</th><th class="num cc-prop" id="cbSaldoCol">Saldo pendiente ${fm('Agrega',CB_HU.none,'I-178','PEN-CRE-02')}</th><th>Tiene Factura o Boleta</th><th>Acciones</th></tr></thead><tbody>
+      ${list.map(o=>`<tr><td><button type="button" class="fac-link" onclick="cbOpen('${o.n}')">${o.n}</button></td><td>${fmtDate(o.reg)}</td><td>${esc(o.met)}</td><td>${esc(o.cond)}</td><td>${esc(o.est)}</td><td class="num">${o.ops.length}</td><td>${esc(CB_CURS.find(c=>c[0]===o.cur)[1])}</td><td class="num">${fMoney(o.total)}</td><td class="num cc-prop">${fMoney(cbSaldo(o))}</td><td><span class="cb-dot ${o.doc?'on':''}"></span>${o.doc?(facProp()?` <button type="button" class="fac-link" onclick="cbDocOpen('${o.doc}')">${o.doc}</button>`:` ${o.doc}`):''}${o.doc&&cbDocStatus(o.doc)==='SAP Error'?` <span class="fac-pill err" title="Factura con Error SAP: revisarla en Consulta de Documentos Contables">!</span>`:''}</td><td><button type="button" class="fac-link" onclick="cbOpen('${o.n}')">Ver detalle</button></td></tr>`).join('') || `<tr><td colspan="11" class="fac-empty">No se encontraron resultados con los criterios seleccionados.</td></tr>`}
     </tbody></table></div>
     <div class="fac-btns" style="justify-content:space-between;align-items:center">
-      <span class="fac-mk fac-mk-l" id="cbExpBtn" ${fb('Agrega: Exportar',CB_HU.amp,'I-177','PEN-UAT122-02')}><button type="button" class="cc-btn" onclick="cbExport()">Exportar</button></span>
+      <span class="fac-mk fac-mk-l cc-prop" id="cbExpBtn" ${fb('Agrega: Exportar',CB_HU.amp,'I-177','PEN-UAT122-02')}><button type="button" class="cc-btn" onclick="cbExport()">Exportar</button></span>
       <div class="cc-pager" style="border:none">${pagerHtml(all.length, CB.page, CB.size, 'cbGo')}</div></div></div>
   ${cbAvisosHtml()}`;
 }
 /* ---------- Avisos recibidos ---------- */
 function cbAvisosHtml(){
-  return `<div class="fac-card" id="cbAvisos"><div class="fac-head"><h3>Avisos recibidos</h3></div>
+  return `<div class="fac-card cc-prop" id="cbAvisos"><div class="fac-head"><h3>Avisos recibidos</h3></div>
     <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th>Fecha</th><th>Tipo ${fm('Agrega: constancia cargada',CB_HU.val,'I-158','PEN-I158-01')} ${fm('Agrega: saldo de liquidación',CB_HU.ti,'I-164','PEN-JENNY-I164-01')}</th><th>Documento</th><th>Cliente</th><th class="num">Monto</th><th>Moneda</th><th>Detalle</th><th>Acciones</th></tr></thead><tbody>
       ${CB.avisos.map((a,i)=>`<tr><td>${new Date(a.at).toLocaleString('es-PE',{hour12:false})}</td><td>${a.tipo==='Saldo'?'Saldo de liquidación':'Constancia cargada'}</td><td>${esc(a.doc)}</td><td>${esc(a.cli)}</td><td class="num">${fMoney(a.monto)}</td><td>${a.cur}</td><td>${a.tipo==='Saldo'?esc(a.dir):a.ver>1?`<span class="fac-pill wait">Nueva versión ${a.ver}</span>`:'Versión 1'}</td><td><button type="button" class="fac-link" onclick="cbAvisoOpen(${i})">Ver aviso</button></td></tr>`).join('')}
     </tbody></table></div></div>`;
@@ -7456,33 +7652,53 @@ function cbNpRender(){
   facOpen(`<h3>Nuevo Pago</h3><div class="fac-sec">Filtros de búsqueda</div>
     <div class="fac-g3">${fF('N° Orden Pago',`<input placeholder="Ingrese el N° de orden de pago" value="${esc(f.num)}" onchange="cbNpSet('num',this.value)">`)}${fF('Nro. Documento',`<input placeholder="Ingrese el Nro. de documento" value="${esc(f.doc)}" onchange="cbNpSet('doc',this.value)">`)}${fF('Cliente',`<input placeholder="Buscar cliente..." value="${esc(f.cli)}" onchange="cbNpSet('cli',this.value)">`)}${fF('Estado',fSel(CB_ORDER_ST,f.est,`onchange="cbNpSet('est',this.value)"`,'Elegir el estado'))}</div>
     <div class="fac-sec">Resultados (${rows.length})</div>
-    <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th></th><th>N° Orden</th><th>Nro. Documento</th><th>Cliente</th><th>Moneda</th><th class="num">Monto total</th><th class="num">Monto pagado</th><th class="num">Saldo pendiente</th><th>Estado</th></tr></thead><tbody>
-      ${rows.map(o=>`<tr><td><input type="checkbox" style="width:auto" ${CB.np.pick[o.n]?'checked':''} onchange="CB.np.pick['${o.n}']=this.checked"></td><td>${o.n}</td><td>${esc(o.doc||'-')}</td><td>${esc(o.cli)}</td><td>${o.cur}</td><td class="num">${fMoney(o.total)}</td><td class="num">${fMoney(cbConc(o))}</td><td class="num">${fMoney(cbSaldo(o))}</td><td>${esc(o.est)}</td></tr>`).join('') || '<tr><td colspan="9" class="fac-empty">Sin resultados</td></tr>'}
+    <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th></th><th>N° Orden</th><th>Nro. Documento</th><th>Cliente</th><th>Moneda</th><th class="num">Monto total</th><th class="num">Monto pagado</th><th class="num">Saldo pendiente</th><th>Estado</th><th>Acción</th></tr></thead><tbody>
+      ${rows.map(o=>`<tr><td><input type="checkbox" style="width:auto" ${CB.np.pick[o.n]?'checked':''} onchange="CB.np.pick['${o.n}']=this.checked"></td><td>${o.n}</td><td>${esc(o.doc||'-')}</td><td>${esc(o.cli)}</td><td>${o.cur}</td><td class="num">${fMoney(o.total)}</td><td class="num">${fMoney(cbConc(o))}</td><td class="num">${fMoney(cbSaldo(o))}</td><td>${esc(o.est)}</td><td><button type="button" class="fac-link" onclick="cbNpPay('${o.n}')">Pagar</button></td></tr>`).join('') || '<tr><td colspan="10" class="fac-empty">Sin resultados</td></tr>'}
     </tbody></table></div>
     <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose()">Cancelar</button><button type="button" class="cc-btn" onclick="cbNpPay()">Pagar</button></div>`, 'lg');
 }
-function cbNpPay(){
-  const n = Object.keys(CB.np.pick).find(k=>CB.np.pick[k]);
-  if(!n){ toast('Elige una orden','error'); return; }
-  const o = cbOrder(n);
-  CB.np.d = {order:n, date:'', banco:'', fin:'', num:'', amt:cbSaldo(o), com:''}; cbNpForm();
+/* Connect: Pagar por fila o en lote; con varias órdenes el total pagado debe igualar el saldo pendiente total */
+function cbNpPay(one){
+  const ns = one ? [one] : Object.keys(CB.np.pick).filter(k=>CB.np.pick[k]);
+  if(!ns.length){ toast('Elige una orden','error'); return; }
+  const saldo = ns.reduce((a,n)=>a+cbSaldo(cbOrder(n)),0);
+  CB.np.d = {orders:ns, order:ns[0], date:'', banco:'', fin:'', num:'', amt:saldo, cur:cbOrder(ns[0]).cur, com:'', voucher:'', pagos:[]}; cbNpForm();
 }
 function cbNpSetF(k, v){ CB.np.d[k] = v; if(k==='banco') CB.np.d.fin = ''; cbNpForm(); }
 function cbNpForm(){
-  const d = CB.np.d, o = cbOrder(d.order), banks = CB_ORG_FIN.map(x=>x.banco), accs = CB_ORG_FIN.filter(x=>x.banco===d.banco).map(x=>x.cuenta);
+  const d = CB.np.d, os = d.orders.map(cbOrder), o = os[0], banks = CB_ORG_FIN.map(x=>x.banco), accs = CB_ORG_FIN.filter(x=>x.banco===d.banco).map(x=>x.cuenta);
+  const total = os.reduce((a,x)=>a+x.total,0), pagado = os.reduce((a,x)=>a+cbConc(x),0), saldo = os.reduce((a,x)=>a+cbSaldo(x),0);
   facOpen(`<h3>Nuevo Pago - Transferencia</h3><div class="fac-sec">Orden de Pago</div>
-    <div class="fac-g3">${fRo('Número OP',o.n)}${fRo('Nro. Documento',o.doc||'-')}${fRo('Cliente',o.cli)}${fRo('Moneda OP',o.cur)}${fRo('Monto total OP',fMoney(o.total))}${fRo('Saldo pendiente',fMoney(cbSaldo(o)))}</div>
+    <div class="fac-g3">${fRo('Número OP',os.map(x=>x.n).join(', '))}${fRo('Nro. Documento',os.map(x=>x.doc||'-').join(', '))}${fRo('Cliente',o.cli)}${fRo('Moneda OP',o.cur)}</div>
+    <div class="fac-sec">Montos</div>
+    <div class="fac-g3">${fRo('Monto total OP',fMoney(total))}${fRo('Monto pagado',fMoney(pagado))}${fRo('Saldo pendiente',fMoney(saldo))}</div>
     <div class="fac-sec">Datos de la operación (obligatorios *)</div>
-    <div class="fac-g3">${fF('Fecha del pago *',`<input type="date" id="npDate" value="${d.date}" onchange="cbNpSetF('date',this.value)">`)}${fF('Banco origen *',fSel(banks,d.banco,`id="npBanco" onchange="cbNpSetF('banco',this.value)"`,'Elegir el banco origen'))}${fF('Nro. Cuenta *',fSel(accs,d.fin,`id="npCta" ${d.banco?'':'disabled'} onchange="cbNpSetF('fin',this.value)"`,'Elegir'))}${fF('N° operación bancaria *',`<input id="npNum" value="${esc(d.num)}" onchange="cbNpSetF('num',this.value)">`)}${fF('Monto pagado *',`<input id="npAmt" type="number" min="0" step="0.01" value="${d.amt}" onchange="cbNpSetF('amt',this.value)">`)}${fF('Comentarios',`<input value="${esc(d.com)}" onchange="cbNpSetF('com',this.value)">`)}</div>
-    <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose()">Cancelar</button><button type="button" class="cc-btn" id="npPay" onclick="cbNpSave()">Pagar</button></div>`, 'md');
+    <div class="fac-g3">${fF('Fecha del pago *',`<input type="date" id="npDate" value="${d.date}" onchange="cbNpSetF('date',this.value)">`)}${fF('Banco origen *',fSel(banks,d.banco,`id="npBanco" onchange="cbNpSetF('banco',this.value)"`,'Elegir el banco origen'))}${fF('Nro. Cuenta *',fSel(accs,d.fin,`id="npCta" ${d.banco?'':'disabled'} onchange="cbNpSetF('fin',this.value)"`,'Elegir'))}${fF('N° operación bancaria *',`<input id="npNum" value="${esc(d.num)}" onchange="cbNpSetF('num',this.value)">`)}${fF('Monto pagado *',`<input id="npAmt" type="number" min="0.01" step="0.01" value="${d.amt}" onchange="cbNpSetF('amt',this.value)">`)}${fF('Moneda *',fSel(['USD','PEN'],d.cur,`id="npCur" onchange="cbNpSetF('cur',this.value)"`))}${fF('Comentarios',`<input value="${esc(d.com)}" onchange="cbNpSetF('com',this.value)">`)}${fF('Voucher',`<div class="fac-range"><input disabled value="${esc(d.voucher||'Sin archivo')}"><button type="button" class="cc-btn" onclick="cbNpSetF('voucher','voucher_'+(CB.np.d.num||'pago')+'.pdf')">Subir</button></div>`)}</div>
+    <div class="fac-btns" style="justify-content:flex-start"><button type="button" class="cc-btn" id="npAdd" onclick="cbNpAdd()">Agregar</button></div>
+    <div class="fac-sec">Pagos realizados</div>
+    <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th>Nro. Operación</th><th>Banco</th><th>Nro. Cuenta</th><th>Fecha de Pago</th><th class="num">Monto pagado</th><th>Comentario</th><th>Voucher</th><th>Acción</th></tr></thead><tbody>
+      ${d.pagos.map((x,i)=>`<tr><td>${esc(x.num)}</td><td>${esc(x.banco)}</td><td>${esc(x.fin)}</td><td>${fmtDate(x.date)}</td><td class="num">${fMoney(x.amt)}</td><td>${esc(x.com||'-')}</td><td>${esc(x.voucher||'-')}</td><td><button type="button" class="fac-link" onclick="CB.np.d.pagos.splice(${i},1);cbNpForm()">Eliminar</button></td></tr>`).join('') || '<tr><td colspan="8" class="fac-empty">Sin pagos agregados</td></tr>'}
+    </tbody></table></div>
+    <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose()">Cancelar</button><button type="button" class="cc-btn" id="npPay" onclick="cbNpSave()">Pagar</button></div>`, 'lg');
+}
+function cbNpAdd(){
+  const d = CB.np.d, saldo = d.orders.reduce((a,n)=>a+cbSaldo(cbOrder(n)),0), ya = d.pagos.reduce((a,x)=>a+x.amt,0);
+  if(!d.date || !d.banco || !d.fin || !d.num || !(Number(d.amt)>=0.01) || !d.cur){ toast('Por favor, complete todos los campos obligatorios.','error'); return; }
+  if(ya + Number(d.amt) > saldo + .001){ toast('El monto pagado excede el saldo pendiente.','error'); return; }
+  d.pagos.push({date:d.date, banco:d.banco, fin:d.fin, num:d.num, amt:Number(d.amt), cur:d.cur, com:d.com, voucher:d.voucher});
+  Object.assign(d, {num:'', amt:Math.max(0, saldo - ya - Number(d.amt)), com:'', voucher:''}); cbNpForm();
 }
 function cbNpSave(){
-  const d = CB.np.d, o = cbOrder(d.order);
-  if(!d.date || !d.banco || !d.fin || !d.num || !(Number(d.amt)>0)){ toast('Por favor, complete todos los campos obligatorios.','error'); return; }
-  o.ops.push(cbOpNew({id:'n'+o.ops.length, num:d.num, date:d.date, banco:d.banco, cta:d.fin, inf:Number(d.amt), apl:Number(d.amt), cur:o.cur}));
-  if(o.est==='Creada') o.est = 'Pendiente de validación';
-  o.hist.push({ts:facNow(), user:curUser(), prev:'', next:o.est, comment:`Pago registrado: ${d.num}`});
-  facClose(); toast('Pago registrado','success'); renderCb();
+  const d = CB.np.d;
+  if(!d.pagos.length && d.num){ cbNpAdd(); if(!d.pagos.length) return; }
+  if(!d.pagos.length){ toast('Por favor, complete todos los campos obligatorios.','error'); return; }
+  const os = d.orders.map(cbOrder), saldo = os.reduce((a,x)=>a+cbSaldo(x),0), pag = d.pagos.reduce((a,x)=>a+x.amt,0);
+  if(os.length>1 && Math.abs(pag-saldo)>.001){ toast('Cuando se pagan varias órdenes de pago, el monto total pagado debe ser exactamente igual al saldo pendiente total.','error'); return; }
+  os.forEach(o=>{ const parte = os.length>1 ? cbSaldo(o) : null;
+    d.pagos.forEach(x=>{ const m = parte==null ? x.amt : parte*x.amt/pag; o.ops.push(cbOpNew({id:'n'+o.ops.length, num:x.num, date:x.date, banco:x.banco, cta:x.fin, inf:m, apl:m, cur:x.cur})); });
+    if(o.est==='Creada') o.est = 'Pendiente de validación';
+    o.hist.push({ts:facNow(), user:curUser(), prev:'', next:o.est, comment:`Pago registrado: ${d.pagos.map(x=>x.num).join(', ')}`}); });
+  facClose(); toast('Pago registrado correctamente.','success'); renderCb();
 }
 /* ---------- Detalle de Orden de Pago ---------- */
 function cbOpen(n){ CB.tab = 'val'; CB.sel = n; CB.view = 'detail'; if(document.querySelector('section.panel.active')?.id!=='screenCobranzas') facEnter('screenCobranzas'); renderCb(); }
@@ -7496,14 +7712,14 @@ function cbDocOpen(n){
 function cbCondHtml(o){
   const cj = o.cond==='CONTADO DOC', ci = o.cond==='CONTADO I', p = cbSocioFind(o.cli), s = cbSaldo(o), ok = s===0 && !o.credito;
   return `<div class="fac-card" id="cbCond"><div class="fac-head"><div><h3>${esc(o.cli)}</h3><div class="fac-sub">${esc(o.met)} · Estado: ${esc(o.est)}</div></div>
-      <div class="fac-acts"><button type="button" class="cc-btn ghost" onclick="openHistModal(cbOrder('${o.n}').hist)">Historial</button></div></div><div class="fac-acts cb-chg">${fChgBtn()}</div>
-    <div class="fac-mk" ${fb('Agrega: condición y saldo',CB_HU.none,'I-178','PEN-CRE-02')}><div class="fac-saldo" id="cbSaldoBox"><div>Condición<b>${esc(o.cond)}</b></div><div>Total<b>${cbMoney(o.cur,o.total)}</b></div><div>Conciliado<b>${cbMoney(o.cur,cbConc(o))}</b></div><div>Saldo<b id="cbSaldoVal">${cbMoney(o.cur,s)}</b></div></div></div>
-    ${cj?`<div class="fac-note" id="cbEjemplo">Factura ${cbMoney('USD',CB_EJ_DOC.total)} = saldo a favor ${cbMoney('USD',CB_EJ_DOC.aFavor)} + abono ${cbMoney('USD',CB_EJ_DOC.abono)}. <b>${ok?'Cancelada: USD 300 conciliados.':`Sigue con saldo: faltan ${cbMoney('USD',s)} por conciliar.`}</b></div>`:''}
-    ${ci?`<div class="fac-note warn" id="cbContadoI">${fm('Agrega',CB_HU.none,'I-178','PEN-CRE-01')} Cosmos paga el VB a la línea y lo traslada como crédito: esta cuenta sigue por cobrar.</div>`:''}
+      <div class="fac-acts" ${fPs('Historial de la orden')}><button type="button" class="cc-btn ghost" onclick="openHistModal(cbOrder('${o.n}').hist)">Historial</button></div></div><div class="fac-acts cb-chg">${fChgBtn()}</div>
+    <div class="fac-mk cc-prop" ${fb('Agrega: condición y saldo',CB_HU.none,'I-178','PEN-CRE-02')}><div class="fac-saldo" id="cbSaldoBox"><div>Condición<b>${esc(o.cond)}</b></div><div>Total<b>${cbMoney(o.cur,o.total)}</b></div><div>Conciliado<b>${cbMoney(o.cur,cbConc(o))}</b></div><div>Saldo<b id="cbSaldoVal">${cbMoney(o.cur,s)}</b></div></div></div>
+    ${cj?`<div class="fac-note cc-prop" id="cbEjemplo">Factura ${cbMoney('USD',CB_EJ_DOC.total)} = saldo a favor ${cbMoney('USD',CB_EJ_DOC.aFavor)} + abono ${cbMoney('USD',CB_EJ_DOC.abono)}. <b>${ok?'Cancelada: USD 300 conciliados.':`Sigue con saldo: faltan ${cbMoney('USD',s)} por conciliar.`}</b></div>`:''}
+    ${ci?`<div class="fac-note warn cc-prop" id="cbContadoI">${fm('Agrega',CB_HU.none,'I-178','PEN-CRE-01')} Cosmos paga el VB a la línea y lo traslada como crédito: esta cuenta sigue por cobrar.</div>`:''}
     <div class="fac-g4" style="margin-top:14px">
-      <div class="fac-f" id="cbDocLink"><label>Documento ${fm('Agrega: enlace',CB_HU.none,'I-180','PEN-ABO-01')}</label>${o.doc?`<button type="button" class="fac-link" style="text-align:left" onclick="cbDocOpen('${o.doc}')">${o.doc}</button>`:'<span>-</span>'}</div>
-      <div class="fac-f" id="cbMpLink"><label>Medios de pago ${fm('Agrega: enlace',CB_HU.none,'I-180','PEN-ABO-02')}</label>${o.doc&&fdByNum(o.doc)?`<button type="button" class="fac-link" style="text-align:left" onclick="cbMpOpen('${o.doc}')">Ver medios de pago</button>`:'<span>-</span>'}</div>
-      <div class="fac-f fac-span2" id="cbCred"><label>Condición de Pago en Socio ${fm('Agrega: solo lectura',CB_HU.none+' · dependencia HU-DM-01','I-178','PEN-CRE-01')}</label><span>${esc(p?p.pago:'-')} · Días: Por definir · Límite: Por definir${p?` · <button type="button" class="fac-link" onclick="openPartner('${p.id}','landing')">Ver Socio</button>`:''}</span></div>
+      <div class="fac-f cc-prop" id="cbDocLink"><label>Documento ${fm('Agrega: enlace',CB_HU.none,'I-180','PEN-ABO-01')}</label>${o.doc?`<button type="button" class="fac-link" style="text-align:left" onclick="cbDocOpen('${o.doc}')">${o.doc}</button>`:'<span>-</span>'}</div>
+      <div class="fac-f cc-prop" id="cbMpLink"><label>Medios de pago ${fm('Agrega: enlace',CB_HU.none,'I-180','PEN-ABO-02')}</label>${o.doc&&fdByNum(o.doc)?`<button type="button" class="fac-link" style="text-align:left" onclick="cbMpOpen('${o.doc}')">Ver medios de pago</button>`:'<span>-</span>'}</div>
+      <div class="fac-f fac-span2 cc-prop" id="cbCred"><label>Condición de Pago en Socio ${fm('Agrega: solo lectura',CB_HU.none+' · dependencia HU-DM-01','I-178','PEN-CRE-01')}</label><span>${esc(p?p.pago:'-')} · Días: Por definir · Límite: Por definir${p?` · <button type="button" class="fac-link" onclick="openPartner('${p.id}','landing')">Ver Socio</button>`:''}</span></div>
     </div></div>`;
 }
 function cbDetailHtml(o){
@@ -7511,16 +7727,16 @@ function cbDetailHtml(o){
   return `${cbCondHtml(o)}
   <div class="fac-card"><h3 id="cbTransTitle" style="margin-bottom:12px">Detalle de transferencias asociadas</h3>
     <div class="fac-scroll" id="cbTrans"><table class="fac-tbl fac-fix"><thead><tr><th>Nº operación</th><th>Fecha de pago</th><th>Banco origen</th><th>Cuenta origen</th><th class="num">Monto informado</th><th class="num">Monto registrado</th><th class="num">Monto aplicado</th><th>Estado</th><th>Validado por</th><th>Fecha validación</th>
-      <th>Operación confirmada ${fm('Agrega',CB_HU.amp,'I-177','PEN-UAT122-01')}</th><th>Fecha efectiva ${fm('Agrega',CB_HU.amp,'I-177','PEN-UAT122-01')}</th><th>Banco receptor ${fm('Agrega',CB_HU.amp,'I-177','PEN-UAT122-04')}</th><th>Correo ${fm('Agrega',CB_HU.amp,'I-158','PEN-I158-04')}</th><th>Voucher</th><th>Acciones</th></tr></thead><tbody>
+      <th class="cc-prop">Operación confirmada ${fm('Agrega',CB_HU.amp,'I-177','PEN-UAT122-01')}</th><th class="cc-prop">Fecha efectiva ${fm('Agrega',CB_HU.amp,'I-177','PEN-UAT122-01')}</th><th class="cc-prop">Banco receptor ${fm('Agrega',CB_HU.amp,'I-177','PEN-UAT122-04')}</th><th class="cc-prop">Correo ${fm('Agrega',CB_HU.amp,'I-158','PEN-I158-04')}</th><th>Voucher</th><th>Acciones</th></tr></thead><tbody>
       ${o.ops.map(x=>`<tr><td>${esc(x.num)}${x.concepto?` <span class="fac-pill">${esc(x.concepto)}</span>`:''}</td><td>${fmtDate(x.date)}</td><td>${esc(x.banco)}</td><td>${esc(x.cta)}</td><td class="num">${fMoney(x.inf)}</td><td class="num">${fMoney(x.reg)}</td><td class="num">${fMoney(x.apl)}</td><td>${esc(x.st)}</td><td>${esc(x.by||'-')}</td><td>${x.at?new Date(x.at).toLocaleDateString('es-PE'):'-'}</td>
-        <td>${esc(x.conf?.num||'-')}</td><td>${x.conf?.date?fmtDate(x.conf.date):'-'}</td><td>${esc(x.conf?.br||'-')}</td><td>${x.mail.n?`<button type="button" class="fac-link" onclick="cbMail('${o.n}','${x.id}')">Enviado (${x.mail.n})</button>`:x.conf?`<button type="button" class="fac-link" onclick="cbMail('${o.n}','${x.id}')">Sin enviar</button>`:'-'}</td>
-        <td><button type="button" class="fac-link" onclick="toast('Descarga de comprobante simulada','info')">Descargar</button></td><td><button type="button" class="fac-link cb-det" onclick="cbOpOpen('${o.n}','${x.id}')">Ver detalle</button></td></tr>`).join('') || `<tr><td colspan="16" class="fac-empty">Sin transferencias asociadas</td></tr>`}
+        <td class="cc-prop">${esc(x.conf?.num||'-')}</td><td class="cc-prop">${x.conf?.date?fmtDate(x.conf.date):'-'}</td><td class="cc-prop">${esc(x.conf?.br||'-')}</td><td class="cc-prop">${x.mail.n?`<button type="button" class="fac-link" onclick="cbMail('${o.n}','${x.id}')">Enviado (${x.mail.n})</button>`:x.conf?`<button type="button" class="fac-link" onclick="cbMail('${o.n}','${x.id}')">Sin enviar</button>`:'-'}</td>
+        <td><button type="button" class="fac-link" onclick="${/^ASB/.test(x.num)?`toast('Esta transferencia/depósito no cuenta con voucher para descarga.','info')`:`toast('Descarga de comprobante simulada','info')`}">Descargar comprobante</button></td><td><button type="button" class="fac-link cb-det" onclick="cbOpOpen('${o.n}','${x.id}')">Ver detalle</button></td></tr>`).join('') || `<tr><td colspan="16" class="fac-empty">Sin transferencias asociadas</td></tr>`}
     </tbody></table></div>
     <h3 style="margin:20px 0 12px">Liquidaciones</h3>
     <div class="fac-scroll" id="cbLiqs"><table class="fac-tbl"><thead><tr><th>Nº liquidación</th><th>Tipo</th><th>BL asociado</th><th class="num">Monto liquidación</th><th>Moneda</th><th>Estado liquidación</th></tr></thead><tbody>
-      ${o.liqs.map(l=>`<tr><td>${esc(l.n)}</td><td>${esc(l.tipo)}</td><td><button type="button" class="fac-link" onclick="openDocBl('imp','${l.bl}')">${esc(l.bl)}</button></td><td class="num">${fMoney(l.monto)}</td><td>${esc(CB_CURS.find(c=>c[0]===l.cur)[1])}</td><td>${esc(l.st)}</td></tr>`).join('') || `<tr><td colspan="6" class="fac-empty">Sin liquidaciones</td></tr>`}
+      ${o.liqs.map(l=>`<tr><td>${esc(l.n)}</td><td>${esc(l.tipo)}</td><td>${facProp()?`<button type="button" class="fac-link" onclick="openDocBl('imp','${l.bl}')">${esc(l.bl)}</button>`:esc(l.bl)}</td><td class="num">${fMoney(l.monto)}</td><td>${esc(CB_CURS.find(c=>c[0]===l.cur)[1])}</td><td>${esc(l.st)}</td></tr>`).join('') || `<tr><td colspan="6" class="fac-empty">Sin liquidaciones</td></tr>`}
     </tbody></table></div>
-    <div class="fac-btns"><span class="fac-mk" id="cbRevWrap" ${fb('Agrega: reverso',CB_HU.val,'I-158','PEN-I158-02')}><button type="button" class="cc-btn pink" id="cbRevBtn" ${canRev?'':'disabled'} onclick="cbRevOpen('${o.n}')">Revertir validación</button></span><button type="button" class="cc-btn" onclick="cbBack()">Cerrar</button></div></div>`;
+    <div class="fac-btns"><span class="fac-mk cc-prop" id="cbRevWrap" ${fb('Agrega: reverso',CB_HU.val,'I-158','PEN-I158-02')}><button type="button" class="cc-btn pink" id="cbRevBtn" ${canRev?'':'disabled'} onclick="cbRevOpen('${o.n}')">Revertir validación</button></span><button type="button" class="cc-btn" onclick="cbBack()">Cerrar</button></div></div>`;
 }
 /* ---------- Detalle de operación ---------- */
 function cbOpOpen(n, id){
@@ -7533,19 +7749,18 @@ function cbOpRender(){
   const d = CB.d, o = cbOrder(d.n), x = o.ops.find(q=>q.id===d.id), ro = cbOk(x) || x.st==='Rechazado' || x.st==='Revertido', dis = ro?'disabled':'', recv = CB_ORG_FIN.map(f=>f.banco), reqMot = d.res!=='Aprobado';
   facOpen(`<h3>Detalle de operación - ${esc(x.num)}</h3>
     <div class="fac-sec">Datos de la operación bancaria</div>
-    <div class="fac-mk cb-mk" id="cbOpDecl" ${fb('Modifica: declarados por el cliente',CB_HU.amp,'I-177','PEN-UAT122-01')}><div class="fac-g2">${fRo('Nº operación / referencia',x.num)}${fRo('Moneda',CB_CURS.find(c=>c[0]===x.cur)[1])}${fRo('Fecha de pago',fmtDate(x.date))}${fRo('Banco origen',x.banco)}</div></div>
-    <div class="fac-sec">Confirmado por Cobranzas ${fm('Agrega',CB_HU.amp,'I-177','PEN-UAT122-01')}</div>
+    <div class="fac-mk cb-mk" id="cbOpDecl" ${fb('Modifica: declarados por el cliente',CB_HU.amp,'I-177','PEN-UAT122-01')}><div class="fac-g2">${fRo('Nº operación / referencia',x.num)}${fRo('Moneda',CB_CURS.find(c=>c[0]===x.cur)[1])}${fRo('Fecha de pago',fmtDate(x.date))}${fRo('Banco origen',x.banco)}${fF('Monto registrado por Cobranzas *',`<input id="cbReg" type="number" min="0.01" step="0.01" ${dis} value="${d.reg}" onchange="cbOpSet('reg',this.value)">`)}</div></div>
+    <div class="cc-prop"><div class="fac-sec">Confirmado por Cobranzas ${fm('Agrega',CB_HU.amp,'I-177','PEN-UAT122-01')}</div>
     <div class="fac-g2" id="cbOpConf">
       ${fF('Nº operación confirmado',`<input id="cbConfNum" ${dis} placeholder="Ingresar número de operación" value="${esc(d.num)}" onchange="cbOpSet('num',this.value)">`)}
       ${fF('Fecha efectiva de pago',`<input id="cbConfDate" type="date" ${dis} value="${d.date}" onchange="cbOpSet('date',this.value)">`)}
       ${fF(`Banco de origen ${fm('Agrega',CB_HU.amp,'I-177','PEN-UAT122-04')}`,fSel(CB_BANKS,d.bo,`id="cbBancoO" ${dis} onchange="cbOpSet('bo',this.value)"`,'Elegir banco'))}
       ${fF(`Banco receptor ${fm('Agrega',CB_HU.amp,'I-177','PEN-UAT122-04')}`,fSel(recv,d.br,`id="cbBancoR" ${dis} onchange="cbOpSet('br',this.value)"`,'Elegir banco'))}
       ${fF(`Moneda ${fm('Modifica',CB_HU.amp,'I-177','PEN-UAT122-06')}`,fSel(CB_CURS,d.cur,`id="cbMoneda" ${dis} onchange="cbOpSet('cur',this.value)"`))}
-      ${fF('Monto registrado por Cobranzas',`<input id="cbReg" type="number" min="0" step="0.01" ${dis} value="${d.reg}" onchange="cbOpSet('reg',this.value)">`)}
       ${d.cur==='PEN'?`<div class="fac-span4" id="cbJefeBox"><label class="fac-chk"><input type="checkbox" id="cbJefe" ${dis} ${d.jefe?'checked':''} onchange="cbOpSet('jefe',this.checked)"> Aprobado por jefatura el cambio a Sol peruano</label></div>`:''}
     </div>
     <div class="fac-note warn" id="cbCorte">${fm('Agrega: aviso',CB_HU.amp,'I-177','PEN-UAT122-01')} Después de las 20:00 o en interbancarios, revisa la fecha efectiva.${x.late?' Esta operación entró a las 20:35.':''}</div>
-    <div class="fac-note" id="cbSapNote">${fm('Agrega: nota',CB_HU.amp,'I-177','PEN-UAT122-05')} La fecha de pago iría a SAP como vencimiento.</div>
+    <div class="fac-note" id="cbSapNote">${fm('Agrega: nota',CB_HU.amp,'I-177','PEN-UAT122-05')} La fecha de pago iría a SAP como vencimiento.</div></div>
     <div class="fac-sec">Decisión de Cobranzas</div>
     <div class="fac-g2" id="cbDecision">
       ${fF(`Resultado de la validación ${fm('Modifica: efecto sobre el pago',CB_HU.amp,'I-177','PEN-UAT122-06')}`,fSel(CB_RESULTS,d.res,`id="cbResult" ${dis} onchange="cbOpSet('res',this.value)"`))}
@@ -7555,15 +7770,17 @@ function cbOpRender(){
 }
 function cbOpConfirm(){
   const d = CB.d, o = cbOrder(d.n), x = o.ops.find(q=>q.id===d.id);
-  if(!d.num || !d.date || !d.bo || !d.br){ toast('Completa operación, fecha efectiva y ambos bancos','error'); return; }
+  if(!d.res || d.res==='Pendiente de revisión'){ toast('Elegir el resultado','error'); return; }
+  if(facProp() && (!d.num || !d.date || !d.bo || !d.br)){ toast('Completa operación, fecha efectiva y ambos bancos','error'); return; }
   if(d.cur==='PEN' && !d.jefe){ toast('Cambiar a Sol peruano requiere aprobación de jefatura','error'); return; }
   if(d.res!=='Aprobado' && !String(d.mot).trim()){ toast('La observación es requerida','error'); return; }
-  if(CB_APPROVED.includes(d.res) && !(Number(d.reg)>0)){ toast('Ingresa el monto registrado por Cobranzas','error'); return; }
+  if(!(Number(d.reg)>=0.01)){ toast('Ingresa el monto registrado por Cobranzas','error'); return; }
+  if(!CB.d.ok){ fConfirm('Validar operación','¿Está seguro de que desea validar esta operación de pago?','CB.d.ok=true;cbOpConfirm()'); document.getElementById('facConfOk').id = 'cbConfirmOk'; return; }
   const prev = x.st, u = curUser();
   x.st = d.res; x.reg = Number(d.reg)||0; x.motivo = d.mot; x.by = u; x.at = facNow(); x.conf = {num:d.num, date:d.date, bo:d.bo, br:d.br, cur:d.cur};
   if(CB_APPROVED.includes(d.res)) x.apl = Math.min(x.apl||x.reg, x.reg);
   o.hist.push({ts:x.at, user:u, prev, next:x.st, comment:`Operación ${d.num}${d.mot?`: ${d.mot}`:''}`});
-  cbRecalc(o); renderCb(); cbMail(o.n, x.id);
+  cbRecalc(o); renderCb(); toast('Validación de pago actualizada correctamente.','success'); if(facProp()) cbMail(o.n, x.id);
 }
 /* ---------- Vista previa del correo al cliente ---------- */
 function cbMailTxt(x){ return x.st==='Rechazado' ? 'fue rechazado' : x.st==='Aprobado' ? 'fue aprobado' : x.st==='Aprobado con observaciones' ? 'fue aprobado con observaciones' : 'sigue pendiente de revisión'; }
@@ -7716,18 +7933,19 @@ function cbNdSet(k, v){
 function cbNdRender(){
   const d = CB_ND;
   facOpen(`<h3>Notificar devolución</h3><div style="height:12px"></div>
-    <div class="fac-g2">${fF('Nave',`<input id="ndNave" placeholder="Ingresar nave" value="${esc(d.nave)}" onchange="cbNdSet('nave',this.value)">`)}${fF('Viaje',`<input id="ndViaje" placeholder="Seleccionar viaje" value="${esc(d.viaje)}" onchange="cbNdSet('viaje',this.value)">`)}${fF('Puerto',`<input placeholder="Ingresar puerto" value="${esc(d.puerto)}" onchange="cbNdSet('puerto',this.value)">`)}${fF('Cliente',`<input id="ndCli" value="${esc(d.cli)}" onchange="cbNdSet('cli',this.value)">`)}
-      ${fF('Saldo',`<div class="fac-range"><input id="ndSaldo" type="number" min="0" step="0.01" placeholder="Ingresar saldo" value="${esc(d.saldo)}" onchange="cbNdSet('saldo',this.value)"><select style="width:90px" onchange="cbNdSet('cur',this.value)">${['USD','PEN'].map(c=>`<option ${c===d.cur?'selected':''}>${c}</option>`).join('')}</select></div>`)}${fF('Motivo',`<textarea id="ndMot" rows="2" placeholder="Motivo / Observación *" onchange="cbNdSet('mot',this.value)">${esc(d.mot)}</textarea>`)}</div>
-    <div class="fac-sec">Vista previa del aviso automático ${fm('Agrega',CB_HU.ti,'I-164','PEN-JENNY-I164-01')}</div>
+    <div class="fac-g2">${fF('Nave *',`<input id="ndNave" placeholder="Ingresar nave" value="${esc(d.nave)}" onchange="cbNdSet('nave',this.value)">`)}${fF('Viaje *',`<input id="ndViaje" placeholder="Seleccionar viaje" value="${esc(d.viaje)}" onchange="cbNdSet('viaje',this.value)">`)}${fF('Puerto',`<input disabled placeholder="Sin Puerto" value="${esc(d.puerto)}">`)}${fF('Cliente *',`<input id="ndCli" value="${esc(d.cli)}" onchange="cbNdSet('cli',this.value)">`)}
+      ${fF('Saldo *',`<div class="fac-range"><input id="ndSaldo" type="number" min="0.01" step="0.01" placeholder="Ingresar saldo" value="${esc(d.saldo)}" onchange="cbNdSet('saldo',this.value)"><select style="width:90px" onchange="cbNdSet('cur',this.value)">${['USD','PEN'].map(c=>`<option ${c===d.cur?'selected':''}>${c}</option>`).join('')}</select></div>`)}${fF('Motivo / Observación *',`<textarea id="ndMot" rows="2" maxlength="1000" placeholder="Motivo / Observación *" onchange="cbNdSet('mot',this.value)">${esc(d.mot)}</textarea>`)}</div>
+    <div class="cc-prop"><div class="fac-sec">Vista previa del aviso automático ${fm('Agrega',CB_HU.ti,'I-164','PEN-JENNY-I164-01')}</div>
     <div class="fac-g2" id="ndAuto">${fF('Documento',fSel(FD.list.filter(x=>!fdIsNc(x)).map(x=>x.num),d.doc,`id="ndDoc" onchange="cbNdSet('doc',this.value)"`,'Elegir documento'))}${fF(`Tipo ${fm('',CB_HU.ti,'I-164','PEN-I164-02')}`,fSel(['A cobrar','A devolver'],d.dir,`id="ndDir" onchange="cbNdSet('dir',this.value)"`))}</div>
-    <div class="fac-pdf" id="ndPrev" style="margin-top:10px"><dl class="fac-kv"><dt>Para</dt><dd>cobranzas@cosmos.example</dd><dt>Asunto</dt><dd>Saldo ${esc(d.dir.toLowerCase())}: ${esc(d.doc||'-')}</dd><dt>Cliente</dt><dd>${esc(d.cli||'-')}</dd><dt>Monto</dt><dd>${d.saldo?cbMoney(d.cur,d.saldo):'-'}</dd></dl></div>
+    <div class="fac-pdf" id="ndPrev" style="margin-top:10px"><dl class="fac-kv"><dt>Para</dt><dd>cobranzas@cosmos.example</dd><dt>Asunto</dt><dd>Saldo ${esc(d.dir.toLowerCase())}: ${esc(d.doc||'-')}</dd><dt>Cliente</dt><dd>${esc(d.cli||'-')}</dd><dt>Monto</dt><dd>${d.saldo?cbMoney(d.cur,d.saldo):'-'}</dd></dl></div></div>
     <div class="fac-btns"><button type="button" class="cc-btn" id="ndSend" onclick="cbNdSend()">Enviar</button><button type="button" class="cc-btn pink" onclick="facClose()">Cancelar</button></div>`, 'md');
 }
 function cbNdSend(){
   const d = CB_ND;
-  if(!d.saldo || !String(d.mot).trim()){ toast('Por favor, complete todos los campos obligatorios.','error'); return; }
+  if(!d.nave || !d.viaje || !d.cli || !(Number(d.saldo)>=0.01) || !String(d.mot).trim()){ toast('Por favor, complete todos los campos obligatorios.','error'); return; }
+  if(String(d.mot).trim().length<10){ toast('El motivo debe tener entre 10 y 1000 caracteres.','error'); return; }
   CB.avisos.unshift({tipo:'Saldo', doc:d.doc||'-', cli:d.cli||'-', monto:Number(d.saldo), cur:d.cur, at:facNow(), dir:d.dir});
-  facClose(); toast('Notificación enviada a Cobranzas','success');
+  facClose(); toast('Notificación enviada a Tesorería exitosamente.','success');
 }
 /* ---------- Documentación: espejo de la consulta de BL, con Estado Pago ---------- */
 const DB = {kind:'imp', f:{nave:'',nro:'',bl:'',ind:'',mani:'',from:'',to:'',st:'',pay:''}, prov:false, page:1, size:10};
