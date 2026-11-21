@@ -2103,3 +2103,10 @@
   .panel .results-head + .results-table{border-width:22px 26px 0}
   .fac-card > h3:first-child:not(:has(+ .fac-sub)){font-size:17px;font-weight:500}
   .fac-cc small{color:var(--cx-muted)}
+
+/* HU-DM-01 · I-035: datos por rol en Socio */
+.pt-rd-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(520px,1fr));gap:14px;margin-top:10px}
+.pt-rd-card{border:1px solid #E3E8EB;border-radius:8px;padding:12px 14px;background:#fff}
+.pt-rd-hd{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.pt-rd-sp{flex:1}
+.pt-rd-btn{padding:7px 14px}
