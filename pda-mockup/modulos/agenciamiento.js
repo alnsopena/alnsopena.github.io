@@ -85,7 +85,7 @@ function terminales(puerto){ return [...new Set([...(TERMINALS_BY_PORT[puerto]||
 const ptoPe = () => PORTS.map(p=>`${p.code} - ${p.k}`);
 const ptoTodos = () => CC.datos.puertos.map(p=>p.nombre);
 const clientes = () => [...new Set([...state.clients.map(c=>c.name), ...CC.datos.socios.clientes.map(c=>c.razonSocial)])];
-const armadores = () => [...new Set([...SHIPS_CATALOG.map(s=>s.armador).filter(Boolean), ...CC.datos.lineas.map(l=>l.nombre)])];
+const armadores = () => [...new Set([...SHIPS_CATALOG.map(s=>s.armador).filter(Boolean), ...CC.datos.lineas.map(l=>l.nombre), ...SQ.filter(s=>s.roles.includes('Armador')).map(s=>s.razonSocial)])];
 const proveedores = () => [...new Set([...W.homologatedSuppliers(), ...CC.datos.socios.proveedores.map(p=>p.razonSocial)])];
 const lineasNav = () => CC.datos.lineas.map(l=>l.nombre);
 
@@ -129,6 +129,26 @@ const anulado = v => v && /^(Anulado|Canceled)$/.test(v.estado);
 const agenteOk = v => norm(v.agente)===norm(ORG);
 const canV = () => /Agenciamiento|Gerencia|Operaciones/.test(usr());
 function vyBls(v){ return CC.datos.blImportacion.concat(CC.datos.blExportacion).filter(b=>norm(b.nave)===norm(v.nave) && b.viaje && norm(b.viaje)===norm(v.nro)); }
+
+/* ---------- Propuestas sobre Viaje: I-013 (quiebres SAP), I-021 (rectificar o anular manifiesto), I-036 (alta rápida de socio) ---------- */
+const PQ = (txt, cls) => CC.propuesta('I-013', 'HU-FAC-01 · ' + txt, cls);
+const PM = (txt, cls) => CC.propuesta('I-021', 'HU-OPS-01 · ' + txt, cls);
+const PS = (txt, cls) => CC.propuesta('I-036', 'HU-DOC-02 · ' + txt, cls);
+/* Quiebres creados en SAP y sincronizados a Connect (ficticios). Inactivo: no se ofrece, pero se conserva donde ya se usó. */
+const QB_SAP = [
+  {cod:'QB-0101', desc:'Turno diurno', activo:true}, {cod:'QB-0102', desc:'Turno nocturno', activo:true}, {cod:'QB-0103', desc:'Domingo y feriado', activo:true},
+  {cod:'QB-0104', desc:'Operación en bahía', activo:true}, {cod:'QB-0105', desc:'Operación en muelle', activo:true}, {cod:'QB-0199', desc:'Tarifa 2025', activo:false}];
+const QB_SYNC = '20/11/2026 06:00';
+function qbDe(nombre){   /* quiebres activos asociados al servicio (simulado y fijo por servicio) */
+  const act = QB_SAP.filter(q=>q.activo), n = [...String(nombre||'')].reduce((a,c)=>a+c.charCodeAt(0),0);
+  return [act[n % act.length], act[(n+1) % act.length]];
+}
+const qbTxt = cod => { const q = QB_SAP.find(x=>x.cod===cod); return q ? `${q.cod} · ${q.desc}` : ''; };
+function qbHeredar(r){ if(r.pda && r.quiebre===undefined){ r.quiebre = qbDe(r.name)[0].cod; r.qbOrigen = 'PDA'; } }
+W.agQbOpts = nombre => { const s = $('sv_qb'); if(s) s.innerHTML = '<option value="">Sin quiebre</option>' + (nombre ? qbDe(nombre).map(q=>`<option value="${q.cod}">${esc(q.cod+' · '+q.desc)}</option>`).join('') : ''); };
+/* Socios creados con alta rápida (en memoria; quedan Pendiente de aprobación en Data Maestra) */
+const SQ = [];
+const sqDe = nombre => SQ.find(s=>norm(s.razonSocial)===norm(nombre));
 
 /* ---------- Consulta Viaje ---------- */
 W.openVoyages = function(pre, returnTo){
@@ -307,6 +327,10 @@ W.renderVyDetail = function(){
       b += `<button type="button" class="cc-btn" ${s.t0117||s.sending==='0117'?`disabled ${tip(s.t0117?'Aviso de arribo ya transmitido a SUNAT.':'Envío en curso.')}`:''} onclick="agSun('0117')">${s.sending==='0117'?'Enviando…':'Transmitir Aviso de Arribo (0117)'}</button>`;
       const no19 = v.t.noDesc ? `disabled ${tip('El viaje está marcado como «No tiene descarga»: no corresponde transmitir el término de descarga.')}` : s.t0119||s.sending==='0119' ? `disabled ${tip(s.t0119?'Término de descarga ya transmitido a SUNAT.':'Envío en curso.')}` : '';
       b += `<button type="button" class="cc-btn" ${no19} onclick="agSun('0119')">${s.sending==='0119'?'Enviando…':'Transmitir Término de Descarga (0119)'}</button>`;
+      if(agenteOk(v)){   /* I-021: solo con manifiesto generado y rol autorizado */
+        const mfDis = !/Gerencia/.test(usr()) ? `disabled ${tip('Solo jefatura o supervisión puede rectificar o anular el manifiesto.')}` : (s.p0102||s.p0103) ? `disabled ${tip('Rectificación o anulación en curso. Espere la respuesta de SUNAT.')}` : '';
+        b += `<button type="button" ${PM('Rectificar o anular manifiesto','cc-btn')} id="agMfBtn" ${mfDis} onclick="agMfDlg()">${s.p0102||s.p0103?'Enviando…':'Rectificar o Anular Manifiesto'}</button>`;
+      }
     }
   }
   if(ex && view && !v.motivoAn && !pend) b += `<button type="button" class="cc-btn pink" onclick="agVyAnular()">Anular</button>`;
@@ -374,7 +398,8 @@ function tabInfo(v){
     ${fld('Nombre Capitán', inpV(v,'capitan',{max:100, ph:'Ingresar Nombre Capitán'}))}
     ${fld('Email Capitán', inpV(v,'capEmail',{type:'email', max:200, ph:'Ingresar Email Capitán'}))}</div>`;
   const cli = `<div class="fac-sec">Cliente / Facturación</div><div class="fac-g4">
-    ${fld('Armador'+req, inpV(v,'armador',{list:'agArm2', max:100, ph:'Ingresar Armador'}))}
+    ${fld('Armador'+req, `<div class="ag-row">${inpV(v,'armador',{list:'agArm2', max:100, ph:'Ingresar Armador'})}${editable(v)?`<button type="button" ${PS('Crear socio','ag-ico')} id="agSocioBtn" title="Crear socio" onclick="agSocioDlg()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button>`:''}</div>`
+      + (sqDe(v.armador) ? (s => `<div class="cc-prop fac-sub">Socio pendiente de aprobación · creado por ${esc(s.creadoPor)} el ${fdt(s.fecha)} desde ${esc(s.origen)}</div>`)(sqDe(v.armador)) : ''))}
     ${fld('Cliente'+req, inpV(v,'cliente',{list:'agCli3', max:100, ph:'Ingresar Cliente'})+err('cliente'))}
     ${fld('Armador principal', inpV(v,'armPrin',{max:200, ph:'Ingresar Armador principal'}))}
     ${fld('Fletador', inpV(v,'fletador',{list:'agCli3', max:100, ph:'Ingresar Fletador'}))}
@@ -504,15 +529,16 @@ function tabServicios(v){
   const sn = b => b ? 'Sí' : 'No';
   const ico = {MATCH:['✓','Coincide','ok'], MISMATCH:['⚑','No coincide','err'], NO_PROVISION:['◷','Sin provisión','wait']};
   const head = `<tr><th>Servicio</th><th>Fecha/Hora Inicio estimada</th><th>Fecha/Hora Inicio</th><th>Fecha/Hora Fin</th><th>Validado</th><th>Proveedor</th><th>Requiere Coordinación</th><th>Referencias</th>
-    <th class="num">Cantidad Archivos</th><th>Código PDA</th><th>Documentos adjuntos</th><th>Acciones</th>${saved?'<th>PDA vs Provisión</th>':''}</tr>`;
+    <th class="num">Cantidad Archivos</th><th>Código PDA</th><th ${PQ('Quiebre SAP por servicio')}>Quiebre SAP</th><th>Documentos adjuntos</th><th>Acciones</th>${saved?'<th>PDA vs Provisión</th>':''}</tr>`;
   return top + (cats.map(c=>{
     const rows = v.rows.filter(r=>r.cat===c), open = ed || vy.open[c]!==false;
     return `<div class="vy-acc ${open?'open':''}"><div class="ag-acch"><button type="button" class="vy-acc-h" ${ed?'':`onclick="vy.open['${c}']=${!open};renderVyDetail()"`}>${esc(W.catLabel(c))} <span class="cc-prop">${rows.length}</span>${ed?'':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>'}</button>
       ${ed?`<button type="button" class="cc-btn ghost" onclick="agSvcDlg('${c}')">Agregar Servicio</button>`:''}</div>
-      ${open ? `<div class="fac-scroll vy-tbl"><table class="fac-tbl"><thead>${head}</thead><tbody>${rows.map(r=>{ const p = pvp(v,r), ic = ico[p.st];
+      ${open ? `<div class="fac-scroll vy-tbl"><table class="fac-tbl"><thead>${head}</thead><tbody>${rows.map(r=>{ qbHeredar(r); const p = pvp(v,r), ic = ico[p.st];
         return `<tr class="${r.pda?(r.nuevo?'vy-frompda ag-nuevo':'vy-frompda'):''}"><td>${esc(r.name)}</td><td>${W.vyDate(r.ini_est)}</td><td>${W.vyDate(r.ini)}</td><td>${W.vyDate(r.fin)}</td><td>${sn(r.validado)}</td><td>${esc(r.proveedor||'')}</td>
         <td>${sn(r.coord)}</td><td>${esc(r.ref||'')}</td><td class="num">${r.docs.length||r.files||0}</td>
         <td>${r.pda?`<a href="#" class="pda-code-link" onclick="openPdaFromVoyage('${r.pda}');return false">${r.pda}</a>`:''}</td>
+        <td class="cc-prop">${r.quiebre?esc(qbTxt(r.quiebre))+(r.qbOrigen==='PDA'?' <span class="fac-sub">(heredado de la PDA)</span>':''):'<span class="fac-sub">Sin quiebre</span>'}</td>
         <td>${ed?`<button type="button" class="ag-ico" title="Adjuntar Documentos" onclick="agAdjDlg('${r.id}')">${ICO.up}</button>`:`<button type="button" class="ag-ico" title="Documentos Adjuntos" ${r.docs.length?'':'disabled'} onclick="agAdjDlg('${r.id}')">${ICO.eye}</button>`}</td>
         <td><button type="button" class="ag-ico" title="Editar" ${ed?'':'disabled'} onclick="agSvcDlg('${c}','${r.id}')">${ICO.edit}</button><button type="button" class="ag-ico" title="Eliminar" ${ed && !r.validado && !an?'':'disabled'} onclick="agSvcDel('${r.id}')">${ICO.del}</button></td>
         ${saved?`<td><button type="button" class="ag-ico" title="Ver comparación de importes" onclick="agPvp('${r.id}')">${ICO.cmp}</button> <span class="fac-pill ${ic[2]}" title="${ic[1]}">${ic[0]} ${ic[1]}</span></td>`:''}</tr>`; }).join('')}</tbody></table></div>` : ''}</div>`;
@@ -542,6 +568,7 @@ W.agSvcDlg = function(cat, id){
   const L = W.masterCatalog().filter(m=>m.cat===cat).map(m=>m.name); if(r.name && !L.includes(r.name)) L.unshift(r.name);
   W.agSvcOk = () => {
     const g = k => $('sv_'+k), d = {name:g('name').value, ini_est:g('ini_est').value, ini:g('ini').value, fin:g('fin').value, proveedor:g('prov').value.trim(), coord:g('coord').checked, validado:g('val').checked, citado:g('cit').checked, ref:g('ref').value};
+    if($('sv_qb')){ const q = $('sv_qb').value; if(q!==(r.quiebre||'')){ d.quiebre = q; d.qbOrigen = 'Viaje'; } }
     if(d.proveedor && !proveedores().includes(d.proveedor)) d.proveedor = '';
     if(!d.name){ CC.toast('Por favor complete todos los campos obligatorios','error'); return; }
     if((d.ini || d.fin) && !d.validado){ CC.toast('El servicio debe ser Validado cuando cuente con Fecha/Hora Inicio o Fecha/Hora Fin','error'); return; }
@@ -551,11 +578,12 @@ W.agSvcDlg = function(cat, id){
   };
   CC.modal(`<h3>${id?'Editar Servicio':'Agregar Servicio'}</h3><div class="fac-sub">${esc(W.catLabel(cat))}</div>
     <div class="fac-g2" style="margin-top:12px">
-    ${fld('Servicio *', sel(L, r.name, 'id="sv_name"', 'Seleccionar Servicio'), 'fac-span2')}
+    ${fld('Servicio *', sel(L, r.name, 'id="sv_name" onchange="agQbOpts(this.value)"', 'Seleccionar Servicio'), 'fac-span2')}
     ${fld('Fecha/Hora Inicio estimada', `<input type="datetime-local" id="sv_ini_est" value="${esc(String(r.ini_est||'').slice(0,16))}">`)}
     ${fld('Fecha/Hora Inicio', `<input type="datetime-local" id="sv_ini" value="${esc(String(r.ini||'').slice(0,16))}">`)}
     ${fld('Fecha/Hora Fin', `<input type="datetime-local" id="sv_fin" value="${esc(String(r.fin||'').slice(0,16))}">`)}
     ${fld('Proveedor', `<input id="sv_prov" list="agProv" maxlength="100" placeholder="Ingresar Proveedor" value="${esc(r.proveedor||'')}">`)}
+    <div ${PQ('Quiebre SAP del servicio','fac-span2')}>${fld('Quiebre SAP', `<select id="sv_qb"><option value="">Sin quiebre</option>${(r.name?qbDe(r.name):[]).concat(r.quiebre && !(r.name?qbDe(r.name):[]).some(q=>q.cod===r.quiebre) ? [QB_SAP.find(q=>q.cod===r.quiebre)].filter(Boolean) : []).map(q=>`<option value="${q.cod}" ${q.cod===r.quiebre?'selected':''}>${esc(q.cod+' · '+q.desc)}</option>`).join('')}</select>`)}<div class="fac-sub">Solo quiebres activos asociados al servicio, creados en SAP. Última sincronización: ${QB_SYNC}.</div></div>
     <div class="fac-span2 ag-chks"><label class="fac-chk"><input type="checkbox" id="sv_coord" ${r.coord?'checked':''}> Requiere Coordinación</label><label class="fac-chk"><input type="checkbox" id="sv_val" ${r.validado?'checked':''}> Validado</label><label class="fac-chk"><input type="checkbox" id="sv_cit" ${r.citado?'checked':''}> Citado</label></div>
     ${fld('Comentarios', `<textarea id="sv_ref" rows="3" maxlength="400" placeholder="Ingresar Referencias">${esc(r.ref||'')}</textarea>`, 'fac-span2')}</div>${dl('agProv', proveedores())}
     <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="CC.cerrarModal()">Cancelar</button><button type="button" class="cc-btn" onclick="agSvcOk()">Guardar</button></div>`);
@@ -833,6 +861,63 @@ W.agManifOk = function(t){
   else { v.manifSal = n; v.hist.push({ts:now(), user:usr(), prev:v.estado, next:v.estado, comment:`Se ingresó nro. manifiesto de salida ${n}`, sunat:{}}); CC.toast(`Se generó correctamente el número de manifiesto de salida. Nro: ${n}`,'success'); }
   W.renderVyDetail();
 };
+/* I-021 · HU-OPS-01: Rectificar (0102) o Anular (0103) el número de manifiesto. Propuesta: contrato SUNAT por aprobar (PEN-I021-01/02). */
+W.agMfDlg = function(){
+  const v = cur(); if(!v || !v.manif) return;
+  const nb = vyBls(v).length;
+  W.agMfChk = () => { $('mfOk').disabled = !D.querySelector('input[name="mfAcc"]:checked') || !$('mfMot').value.trim();
+    const an = (D.querySelector('input[name="mfAcc"]:checked')||{}).value==='0103'; $('mfAvisoBl').style.display = an && nb ? '' : 'none'; };
+  CC.modal(`<h3>Rectificar o Anular Manifiesto</h3><div class="fac-sub">Número de Manifiesto: ${esc(v.manif)}</div><div style="height:10px"></div>
+    <div class="fac-radio" id="mfAcc"><label><input type="radio" name="mfAcc" value="0102" onchange="agMfChk()"> Rectificar (0102): retransmite a SUNAT los datos actuales del viaje con el mismo número.</label>
+      <label><input type="radio" name="mfAcc" value="0103" onchange="agMfChk()"> Anular (0103): deja sin efecto el número. El viaje podrá solicitar o ingresar uno nuevo.</label></div>
+    <div class="fac-note warn" id="mfAvisoBl" style="display:none">El viaje tiene ${nb} BL. Al anular el manifiesto, esos BL quedan sin número de manifiesto hasta generar uno nuevo.</div>
+    ${fld('Motivo *', `<textarea id="mfMot" rows="4" maxlength="800" placeholder="Ingrese el motivo" oninput="agMfChk()"></textarea>`)}
+    <div class="fac-note">Si SUNAT rechaza la transmisión, el viaje conserva el número original y el error queda en el historial.</div>
+    <div class="fac-btns"><button type="button" class="cc-btn ghost" onclick="CC.cerrarModal()">Cancelar</button><button type="button" class="cc-btn" id="mfOk" disabled onclick="agMfOk()">Transmitir a SUNAT</button></div>`);
+};
+W.agMfOk = function(){
+  const v = cur(), s = v.sun, tr = (D.querySelector('input[name="mfAcc"]:checked')||{}).value, mot = $('mfMot').value.trim();
+  if(!tr || !mot){ CC.toast('Seleccione la acción e ingrese el motivo','error'); return; }
+  const L = faltantes(v, '0101'); if(L.length){ sunatValid(L); return; }
+  const n = v.manif, an = tr==='0103', acc = an ? 'Anulación' : 'Rectificación';
+  s['p'+tr] = true; CC.cerrarModal();
+  v.hist.push({ts:now(), user:usr(), prev:v.estado, next:'Pendiente', comment:`${acc} del manifiesto ${n} (${tr}) enviada a SUNAT. Motivo: ${mot}`, sunat:{}});
+  CC.toast(`${acc} del manifiesto enviada a SUNAT. La respuesta aparecerá en el historial del viaje en unos minutos.`,'success'); W.renderVyDetail();
+  respuesta(v, 2500, ()=>{ s['p'+tr] = false;
+    if(an){ v.manifAnulados = (v.manifAnulados||[]).concat([n]); v.manif = ''; }
+    v.hist.push({ts:now(), user:'SUNAT', prev:'Pendiente', next:'Aceptado', comment:`Respuesta de SUNAT: ${acc.toLowerCase()} del manifiesto ${n} (${tr}) aceptada.${an?' El viaje queda sin número de manifiesto.':''}`, sunat:{}}); });
+};
+
+/* I-036 · HU-DOC-02: alta rápida de socio desde el campo Armador (mínimos del área para Viaje) */
+const SQ_PAISES = ['Perú','Chile','Colombia','Ecuador','México','Panamá','Estados Unidos','China','Dinamarca','Alemania'];
+W.agSocioDlg = function(){
+  W.agSqTipo = t => { $('sqDocL').textContent = t==='RUC' ? 'Número de documento *' : 'Número de documento'; if(t==='RUC') $('sqPais').value = 'Perú'; };
+  CC.modal(`<h3>Crear Socio</h3><div class="fac-sub">Alta rápida sin salir del viaje. El socio queda Pendiente de aprobación y se completa después en Data Maestra.</div>
+    <div class="fac-g2" style="margin-top:12px">
+    ${fld('Tipo de documento *', sel(['RUC','Documento extranjero'], 'RUC', 'id="sqTipo" onchange="agSqTipo(this.value)"', null))}
+    <div class="fac-f"><label id="sqDocL">Número de documento *</label><input id="sqDoc" maxlength="20" placeholder="Ingresar Número de documento"></div>
+    ${fld('Razón social *', '<input id="sqRazon" maxlength="200" placeholder="Ingresar Razón social">', 'fac-span2')}
+    ${fld('Dirección *', '<input id="sqDir" maxlength="200" placeholder="Ingresar Dirección">', 'fac-span2')}
+    ${fld('País *', sel(SQ_PAISES, 'Perú', 'id="sqPais"', null))}
+    ${CC.campoLectura('Rol', 'Armador')}</div>
+    <div id="sqDup"></div>
+    <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="CC.cerrarModal()">Cancelar</button><button type="button" class="cc-btn" id="sqOk" onclick="agSocioOk()">Guardar</button></div>`);
+};
+function sqElegir(v, nombre){ v.armador = nombre; if(vy.errs) delete vy.errs.armador; CC.cerrarModal(); W.renderVyDetail(); }
+W.agSocioUsar = nombre => { const v = cur(), s = sqDe(nombre); if(s && !s.roles.includes('Armador')) s.roles.push('Armador');
+  sqElegir(v, nombre); CC.toast(`Se seleccionó el socio existente ${nombre} como Armador.`,'success'); };
+W.agSocioOk = function(){
+  const v = cur(), g = id => ($(id).value||'').trim(), tipo = g('sqTipo'), doc = g('sqDoc'), razon = g('sqRazon').toUpperCase(), dir = g('sqDir'), pais = g('sqPais');
+  if(!razon || !dir || !pais || (tipo==='RUC' && !doc)){ CC.toast('Por favor complete todos los campos obligatorios','error'); return; }
+  if(tipo==='RUC' && !/^\d{11}$/.test(doc)){ CC.toast('El RUC debe tener 11 dígitos','error'); return; }
+  const otros = [...CC.datos.socios.clientes, ...CC.datos.socios.embarcadores, ...CC.datos.socios.consignatarios, ...CC.datos.socios.proveedores].map(s=>({razonSocial:s.razonSocial, ruc:s.ruc}));
+  const dup = [...SQ, ...otros, ...armadores().map(n=>({razonSocial:n}))].find(s=>norm(s.razonSocial)===norm(razon) || (doc && s.ruc && s.ruc===doc));
+  if(dup){ $('sqDup').innerHTML = `<div class="fac-note warn">Ya existe el socio <b>${esc(dup.razonSocial)}</b>${dup.ruc?` (${esc(dup.ruc)})`:''}. Para no duplicarlo, use el existente: se le agrega el rol Armador si no lo tiene.
+      <div class="fac-btns"><button type="button" class="cc-btn" id="sqUsar" onclick="agSocioUsar(this.dataset.n)" data-n="${esc(dup.razonSocial)}">Usar socio existente</button></div></div>`; return; }
+  SQ.push({id:'SQ'+Date.now(), tipoDoc:tipo, ruc:doc, razonSocial:razon, direccion:dir, pais, roles:['Armador'], estado:'Pendiente de aprobación', creadoPor:usr(), fecha:now(), origen:`Viaje ${v.code||'(nuevo)'}`});
+  sqElegir(v, razon); CC.toast(`Socio ${razon} creado en estado Pendiente de aprobación y seleccionado como Armador.`,'success');
+};
+
 /* Editar dato transmitido a SUNAT (ATA, ATB, Fin Descarga) */
 W.agSunEdit = function(k){
   const v = cur(), lbl = T_LBL[k];
