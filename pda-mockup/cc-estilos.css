@@ -1806,3 +1806,42 @@
 .fac-tabs button:disabled{color:var(--cc-gray);opacity:.55;cursor:not-allowed}
 .ac-anulado td{color:var(--cc-gray);text-decoration:line-through}
 .ac-anulado td:last-child,.ac-anulado td:nth-last-child(2){text-decoration:none}
+/* ===== Módulo Agenciamiento y Tarifa (Viaje, Itinerario, Tarifa) ===== */
+  .ag-msg{font-size:13.5px;color:var(--cc-text);margin:10px 0 14px;line-height:1.45}
+  .ag-rng{display:flex;gap:6px;align-items:center}.ag-rng input{min-width:0}.ag-rng span{font-size:12px;color:var(--cc-gray)}
+  .ag-row{display:flex;gap:8px;align-items:center}.ag-row>input,.ag-row>select{flex:1;min-width:0}
+  .ag-sort{cursor:pointer;user-select:none}
+  .ag-quick{margin-right:auto}.ag-quickbox{margin-right:auto;display:flex;gap:6px;flex-wrap:wrap}
+  .ag-vy .fac-head .md-actions{justify-content:flex-end}
+  .ag-vy .tf-title{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .ag-aviso{display:flex;gap:10px;align-items:center;margin:0 0 10px}.ag-aviso svg{width:18px;height:18px;flex:none}
+  .ag-aviso span{flex:1}.ag-aviso button{background:none;border:none;cursor:pointer;color:inherit;padding:2px}.ag-aviso button svg{width:16px;height:16px}
+  .ag-ico{background:none;border:none;cursor:pointer;color:var(--cc-blue);padding:4px;border-radius:6px;display:inline-flex;align-items:center;vertical-align:middle}
+  .ag-ico svg{width:17px;height:17px}.ag-ico:hover{background:#EEF3FB}.ag-ico:disabled{color:#B8C0CC;cursor:not-allowed;background:none}.ag-ico.err{color:#B3261E}
+  .ag-alert{color:#B26A00;display:inline-flex}.ag-alert svg{width:17px;height:17px}
+  .ag-histbtn{white-space:nowrap;padding:8px 12px!important}
+  .ag-sech{display:flex;justify-content:space-between;align-items:center;gap:10px}.ag-sech span{display:flex;gap:8px}
+  .ag-g4c{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 24px;margin-bottom:14px}.ag-g4c>div{display:flex;flex-direction:column;gap:14px}
+  @media(max-width:1000px){.ag-g4c{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  .ag-chk{margin:2px 0}.ag-chks{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+  .ag-subtabs button{font-size:13px}
+  .ag-acch{display:flex;align-items:center;gap:10px}.ag-acch .vy-acc-h{flex:1}
+  .ag-chklist{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow:auto;background:var(--cc-band);border-radius:8px;padding:12px}
+  .ag-file{position:relative;overflow:hidden;display:inline-flex;align-items:center}.ag-file input{position:absolute;inset:0;opacity:0;cursor:pointer}
+  .ag-drop{border:1.5px dashed var(--cc-line);border-radius:10px;padding:26px;text-align:center;color:var(--cc-gray);font-size:13px}.ag-drop svg{width:28px;height:28px}
+  .ag-mute{color:var(--cc-gray)}.ag-ul{margin:6px 0 0 18px;padding:0}
+  .ag-dif td{background:#FFF7E6}
+  .ag-amlist{max-height:300px;overflow:auto;margin-top:12px}
+  .vy-frompda.ag-nuevo td{background:#EEF6FF}
+  .ag-adv{background:none;border:none;color:var(--cc-blue);font:inherit;font-size:13.5px;cursor:pointer;display:inline-flex;align-items:center;gap:2px;margin-top:12px;padding:0}
+  .ag-adv svg{width:18px;height:18px;transition:transform .15s}.ag-adv.open svg{transform:rotate(180deg)}
+  .ag-green{background:#1E8E4E!important}
+  .ag-ms{position:relative}.ag-ms summary{list-style:none;cursor:pointer;padding:9px 12px;border:1px solid var(--cc-line);border-radius:7px;font-size:13.5px;background:#fff;color:var(--cc-text)}
+  .ag-ms summary::-webkit-details-marker{display:none}
+  .ag-ms-list{position:absolute;z-index:20;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1px solid var(--cc-line);border-radius:8px;box-shadow:0 8px 24px rgba(16,24,40,.12);max-height:240px;overflow:auto;padding:8px}
+  .ag-ms-list label{display:flex;gap:8px;align-items:center;font-size:13px;padding:5px 4px;cursor:pointer}.ag-ms-list input{width:auto}
+  .ag-mszone{margin-bottom:6px}
+  .ag-dot{display:inline-block;width:12px;height:12px;border-radius:3px;background:#C9CED6}.ag-dot.on{background:#1E8E4E}
+  .ag-subrow>td{background:#F7F9FC;padding:8px 18px}
+  .ag-cnt{font-size:11.5px;color:var(--cc-gray);text-align:right}
+  #screenTariffs .fac-tbl td.cc-prop,#screenTariffs .fac-tbl th.cc-prop,#screenVoyages .fac-tbl td.cc-prop,#screenVoyages .fac-tbl th.cc-prop{background:#FAF7FF}
