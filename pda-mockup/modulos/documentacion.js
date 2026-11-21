@@ -2,6 +2,7 @@
    Importación: Documentos (búsqueda y BL), Transbordo, Direccionamiento.
    Exportación: Documentos (búsqueda y Reserva), Cutoff.
    Propuesta I-037 (HU-DOC-23): restricciones de exportación (mantenimiento y alertas que solo avisan).
+   Propuestas I-062, I-017, I-080, I-081, I-185, I-069, I-055, I-074, I-078 e I-036: ver bloque "PROPUESTAS sobre Documentación".
    Todo en memoria, con CC.datos y datos ficticios propios. La pantalla antigua screenDocBl queda sin enlace en el menú. */
 (function(){
 'use strict';
@@ -25,6 +26,7 @@ const btn = (t, f, cls, extra) => `<button type="button" class="cc-btn ${cls||''
 const ghost = (t, f, extra) => btn(t, f, 'ghost', extra);
 const sinDatos = v => (v===''||v==null) ? '<span class="doc-mut">Sin datos</span>' : esc(v);
 const P37 = () => CC.verPropuestas;
+const PV = () => CC.verPropuestas;
 const M37 = (tipo) => CC.marca(tipo||'Agrega', 'HU-DOC-23', 'I-037');
 
 /* ---------- Íconos ---------- */
@@ -141,7 +143,7 @@ function seed(){
     o.res.forEach(t=>o.hist.push(ev(`Transmisión SUNAT ${t.c} (${COD[t.c]}): ${ST_SUNAT[t.st]}`,'Usuario SUNAT',t.ts,{code:t.c,status:t.st})));
     o.bl.forEach(t=>o.hist.push(ev(`Transmisión SUNAT ${t.c} (${COD[t.c]}): ${ST_SUNAT[t.st]}`,'Usuario SUNAT',t.ts,{code:t.c,status:t.st})));
     if(o.version>1) o.cambios.push({ver:2, origen:'Matriz', sobre:1, ts:b.emision+'T12:00:00', user:'Portal externo', campos:[{campo:'Consignatario', antes:'', despues:o.consignatario},{campo:'Notificante Principal', antes:'', despues:o.notificante}]});
-    if(o.version>2) o.cambios.push({ver:3, origen:'Corrector 1', sobre:2, ts:b.emision+'T18:00:00', user:'Portal externo', campos:[{campo:'Descripción de la Carga', antes:'MERCANCIA', despues:eq.descCarga}]});
+    if(o.version>2) o.cambios.push({ver:3, origen:'Corrector 1', sobre:2, ts:b.emision+'T18:00:00', user:'Portal externo', comentario:'Se corrige la descripción según la factura comercial final del embarcador.', avisoTs:b.emision+'T18:01:00', campos:[{campo:'Descripción de la Carga', antes:'MERCANCIA', despues:eq.descCarga}]});
     S.exp.push(o); });
   [...new Set(S.exp.filter(b=>b.atd).map(b=>b.nave+'|'+b.viaje))].slice(0,1).forEach(k=>S.manifSalida.add(k));
   /* I-037: restricciones de exportación */
@@ -286,10 +288,10 @@ function pintarHist(){
   const evs = b.hist.slice().reverse().map((e,i)=>`<tr><td>${fdt(e.ts)}</td><td>${esc(e.user)}</td><td style="white-space:normal">${esc(e.comment)}${h.linea===i&&e.sunat?`<ol class="doc-linea"><li>Enviado a SUNAT por ${esc(e.user)}</li><li>Recibido por SUNAT</li><li>Respuesta: ${esc(ST_SUNAT[e.sunat.status]||e.sunat.status)} (${esc(e.sunat.code)})</li></ol>`:''}</td><td>${e.sunat?ico('linea','Ver línea de tiempo de auditoría',`docHistLinea(${i})`):''}</td></tr>`).join('');
   const evT = `<table class="fac-tbl"><thead><tr><th>Fecha</th><th>Usuario</th><th>Comentario</th><th></th></tr></thead><tbody>${evs||'<tr><td colspan="4" class="fac-empty">Sin eventos</td></tr>'}</tbody></table>`;
   const vis = cams.filter(c=>(!h.f.ver||String(c.ver)===h.f.ver) && (!h.f.origen||(h.f.origen==='Portal'?c.origen!=='Edición interna':c.origen==='Edición interna'))).map(c=>({...c, campos:c.campos.filter(x=>!h.f.campo||x.campo===h.f.campo)})).filter(c=>c.campos.length);
-  const camT = `<div class="fac-g4">${campo('Versión',`<input type="number" min="1" value="${esc(h.f.ver)}" onchange="docHistF('ver',this.value)">`)}${campo('Origen',sel(['Todos','Portal','Edición interna'],h.f.origen||'Todos',`onchange="docHistF('origen',this.value==='Todos'?'':this.value)"`))}${campo('Campo',sel(['Todos',...campos],h.f.campo||'Todos',`onchange="docHistF('campo',this.value==='Todos'?'':this.value)"`))}<div class="fac-f"><label>&nbsp;</label>${ghost('Limpiar filtros','docHistF()')}</div></div>
-    ${vis.length ? vis.slice().reverse().map(c=>`<div class="doc-ver"><div class="doc-ver-h"><b>V${c.ver}</b><span class="cc-chip">${esc(c.origen)}</span>${c.sobre?`<span class="cc-chip">Sobre la V${c.sobre}</span>`:''}<span class="doc-mut">${c.campos.length} ${c.campos.length===1?'campo':'campos'} · ${esc(c.user)} · ${fdt(c.ts)}</span></div>
-      <table class="fac-tbl"><thead><tr><th>Campo</th><th>Antes</th><th>Después</th></tr></thead><tbody>${c.campos.map(x=>`<tr><td>${esc(x.campo)}</td><td>${x.antes===''?'<span class="doc-mut">Sin valor</span>':esc(x.antes)}</td><td>${x.despues===''?'<span class="doc-mut">Vacío</span>':esc(x.despues)}</td></tr>`).join('')}</tbody></table></div>`).join('') : '<p class="doc-mut">Aún no hay cambios de campos registrados para este BL</p>'}`;
-  CC.modal(`<h3>Historial <span class="doc-mut">${esc(b.numero||'Pendiente')}</span></h3>${h.solo?evT:`<div class="fac-tabs"><button type="button" class="${h.tab==='cam'?'on':''}" onclick="docHistTab('cam')">Cambios</button><button type="button" class="${h.tab==='ev'?'on':''}" onclick="docHistTab('ev')">Eventos</button></div>${h.tab==='cam'?camT:evT}`}<div class="fac-btns">${btn('Cerrar','docCbSi()')}</div>`, 'lg');
+  const camT = `<div class="fac-g4">${campo('Versión',`<input type="number" min="1" value="${esc(h.f.ver)}" onchange="docHistF('ver',this.value)">`)}${campo('Origen',sel(['Todos','Portal','Edición interna'],h.f.origen||'Todos',`onchange="docHistF('origen',this.value==='Todos'?'':this.value)"`))}${campo('Campo',sel(['Todos',...campos],h.f.campo||'Todos',`onchange="docHistF('campo',this.value==='Todos'?'':this.value)"`))}<div class="fac-f"><label>&nbsp;</label>${ghost('Limpiar filtros','docHistF()')}</div></div>${PV()?leyendaAprob(b):''}
+    ${vis.length ? vis.slice().reverse().map(c=>`<div class="doc-ver"><div class="doc-ver-h"><b>V${c.ver}</b><span class="cc-chip">${esc(c.origen)}</span>${c.sobre?`<span class="cc-chip">Sobre la V${c.sobre}</span>`:''}<span class="doc-mut">${c.campos.length} ${c.campos.length===1?'campo':'campos'} · ${esc(c.user)} · ${fdt(c.ts)}</span>${PV()?chipAprob(c, b):''}</div>${PV()&&c.comentario?`<p ${CC.propuesta('I-078','Comentario del corrector')} style="margin:6px 0"><b>Comentario del cliente:</b> ${esc(c.comentario)}</p>`:''}
+      <table class="fac-tbl"><thead><tr><th>Campo</th><th>Antes</th><th>Después</th>${PV()?`<th>Estado de aprobación ${CC.marca('Agrega','HU-DOC-22','I-080','PEN-I080-01')}</th>`:''}</tr></thead><tbody>${c.campos.map(x=>`<tr${PV()?` style="${estiloAprob(c, b)}"`:''}><td>${esc(x.campo)}</td><td>${x.antes===''?'<span class="doc-mut">Sin valor</span>':esc(x.antes)}</td><td>${x.despues===''?'<span class="doc-mut">Vacío</span>':esc(x.despues)}</td>${PV()?`<td>${esc(estadoAprob(c, b))}</td>`:''}</tr>`).join('')}</tbody></table></div>`).join('') : '<p class="doc-mut">Aún no hay cambios de campos registrados para este BL</p>'}`;
+  CC.modal(`<h3>Historial <span class="doc-mut">${esc(b.numero||'Pendiente')}</span></h3>${PV()?vinculoTrb(b):''}${h.solo?evT:`<div class="fac-tabs"><button type="button" class="${h.tab==='cam'?'on':''}" onclick="docHistTab('cam')">Cambios</button><button type="button" class="${h.tab==='ev'?'on':''}" onclick="docHistTab('ev')">Eventos</button></div>${h.tab==='cam'?camT:evT}`}<div class="fac-btns">${btn('Cerrar','docCbSi()')}</div>`, 'lg');
 }
 window.docHistTab = t => { K.h.tab = t; pintarHist(); };
 window.docHistF = (k, v) => { if(!k) K.h.f = {ver:'', origen:'', campo:''}; else K.h.f[k] = v; pintarHist(); };
@@ -307,7 +309,7 @@ function filasImp(){
 function htmlImp(){
   seed(); if(!('nave' in S.fi.f)){ S.fi.f = FI0(); S.fi.q = FI0(); }
   const f = S.fi.f, all = filasImp(), pg = CC.paginar(all, S.fi.pag, S.fi.tam), selN = S.fi.sel.size;
-  const filtros = `<div class="fac-card" id="docIF"><div class="fac-head"><div><h3>Consulta y carga</h3><div class="fac-sub">Ingresar datos y/o documentos</div></div><div class="fac-acts">${ghost('Cargar archivos',"docUpAbrir('imp')")}${btn('Nuevo','docImpNuevo()')}</div></div>
+  const filtros = `<div class="fac-card" id="docIF"><div class="fac-head"><div><h3>Consulta y carga</h3><div class="fac-sub">Ingresar datos y/o documentos</div></div><div class="fac-acts"><span ${CC.propuesta('I-062','Configuración de avisos')}>${ghost('Configurar avisos',"docAvAbrir('Llegada')",'id="docIAvBtn"')}</span>${ghost('Cargar archivos',"docUpAbrir('imp')")}${btn('Nuevo','docImpNuevo()')}</div></div>
     <div class="fac-g4">
       ${campo('Nave',`<input id="docINave" list="docINaves" placeholder="Ingresar nave" value="${esc(f.nave)}" onchange="docIF('nave',this.value)">${dl('docINaves',naves())}`)}
       ${campo('Número de Viaje',`<input id="docIViaje" list="docIViajes" placeholder="Ingresar número de viaje" value="${esc(f.viaje)}" ${f.nave?'':'disabled'} onchange="docIF('viaje',this.value)">${dl('docIViajes',viajesDe(f.nave))}`)}
@@ -330,7 +332,7 @@ function htmlImp(){
     {t:'Ver historial', v:b=>ico('hist','Ver historial',`docHist('${b.id}')`)},{t:'Fecha Descarga (COARRI)', v:b=>fd(b.coarri)},
     {t:'Acciones', v:b=>ico('desc','Descargar Aviso de Llegada',`docPdf('Aviso de Llegada','${b.id}')`,{dis:b.provisional})}];
   const res = tabla({id:'docIRes', titulo:`Resultados (${all.length})`, cols, filas:pg.filas,
-    acciones:`${btn('Transmitir BL','docImpLote()')}${ghost('Aviso de llegada','docAvisoLlegada()')}${ghost('Enviar CDL',"docCdl('enviar')")}${ghost('Enviar Discrepancias','docDiscrepancias()')}${selN?`<span class="doc-mut">${selN} seleccionado(s)</span>`:''}`,
+    acciones:`${btn('Transmitir BL','docImpLote()')}${ghost('Aviso de llegada','docAvisoLlegada()')}${ghost('Enviar CDL',"docCdl('enviar')")}${ghost('Enviar Discrepancias','docDiscrepancias()')}<span ${CC.propuesta('I-055','Eliminación en bloque')}>${ghost('Eliminar BL en bloque',"docElAbrir('imp')",'id="docIElBtn"')}</span>${selN?`<span class="doc-mut">${selN} seleccionado(s)</span>`:''}`,
     pie:`<div class="fac-acts">${ghost('Exportar','docImpExportar()')}<span title="Incluye los BL de la nave y viaje seleccionados, o los de todas las naves en el rango de fecha de emisión (máximo un mes).">${ghost('Reporte de Documentación',"docReporte('imp')",'id="docIRep"')}</span>${ghost('Descargar CDL',"docCdl('descargar')")}</div>${pager(all.length, pg.pagina, S.fi.tam, 'docIPag')}`});
   return filtros + res;
 }
@@ -482,7 +484,7 @@ window.docGenFin = k => { CC.cerrarModal(); CC.toast(k==='imp'?'El proceso de im
    MANTENIMIENTO: Crear/Editar BL (Importación) y Crear/Editar Reserva (Exportación)
 ===================================================================== */
 const OPC = {
-  lineas:()=>CC.datos.lineas.map(l=>l.nombre), cons:()=>CC.datos.socios.consignatarios.map(s=>s.razonSocial), emb:()=>CC.datos.socios.embarcadores.map(s=>s.razonSocial),
+  lineas:()=>CC.datos.lineas.map(l=>l.nombre), cons:()=>CC.datos.socios.consignatarios.map(s=>s.razonSocial).concat(sociosNuevos(['Consignatario','Notificante'])), emb:()=>CC.datos.socios.embarcadores.map(s=>s.razonSocial).concat(sociosNuevos(['Embarcador'])),
   dep:()=>DEPOSITOS.map(d=>d.n), puertos
 };
 const GEN_IMP = [['tipo','Tipo de BL','s',TIPO_BL],['indicador','Indicador','s',IND_IMP,1],['tipoInd','Tipo de indicador','s',TIPO_IND,1],['linea','Línea Naviera','dl','lineas'],
@@ -600,7 +602,7 @@ function edHtml(k){
     ${!imp && !E.nuevo && d.estado==='APROBADO' && resOk(d) && !S.manifSalida.has(d.nave+'|'+d.viaje) ? '<div class="fac-card"><h3>Manifiesto de salida pendiente</h3><p>El viaje del BL aún no cuenta con el manifiesto de salida completado.</p></div>' : ''}
     ${!imp && !E.nuevo && d.estado!=='POR REVISAR' && pendSunatExp(d).length ? `<div class="fac-card" id="docEdPendS"><h3>Campos pendientes para transmitir a SUNAT</h3><ul class="doc-ul">${pendSunatExp(d).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}`;
   const botones = ro ? '' : `<div class="fac-btns">${ghost('Cancelar','docEdCancelar()')}${btn(E.nuevo?'Crear':'Guardar','docEdGuardar()','','id="docEdGuardar"')}</div>`;
-  return `${alerta}${cab}${ident}${nv}${sunatInfo}<div class="fac-card" id="docEdTabs"><div class="fac-tabs">${tabs.map(([t,l])=>`<button type="button" class="${E.tab===t?'on':''}" onclick="docEdTab('${t}')">${l}</button>`).join('')}</div>${cuerpo}</div>${pie}${botones}`;
+  return `${alerta}${cab}${!imp && !E.nuevo && PV() ? borradorHtml(d) : ''}${ident}${nv}${sunatInfo}<div class="fac-card" id="docEdTabs"><div class="fac-tabs">${tabs.map(([t,l])=>`<button type="button" class="${E.tab===t?'on':''}" onclick="docEdTab('${t}')">${l}</button>`).join('')}</div>${cuerpo}</div>${pie}${botones}`;
 }
 function lastOf(l){ return last(l); }
 function botonesCab(k, d){
@@ -633,14 +635,14 @@ function inputDe(tipo, val, on, opts, dis, extra){
 function genHtml(k, d, ro){
   const spec = k==='imp' ? GEN_IMP : GEN_EXP, dis = ro ? 'disabled' : '';
   const cs = spec.filter(f=>!f[5] || f[5](d)).map(([key,l,t,o,req])=>{
-    const lbl = l + (req?' *':''), on = `docEd('${key}',this.value)`;
+    const lbl = l + (req?' *':''), on = `docEd('${key}',this.value)`, sx = (!ro && PV() && ROL_SOCIO[k+'.'+key]) ? socioBtn(k, key) : '';
     if(t==='ro') return CC.campoLectura(l, d[key]);
     if(t==='calc') return CC.campoLectura(l, o(d));
-    if(t==='dl') return campo(lbl, `<input list="docEdL${key}" value="${esc(d[key])}" ${dis} onchange="${on}">${dl('docEdL'+key, OPC[o]())}`);
-    if(t==='emb') return d.tipoInd==='Nominativo' ? campo(lbl, `<input list="docEdLemb" value="${esc(d[key])}" ${dis} maxlength="200" onchange="${on}">${dl('docEdLemb', OPC.emb())}`) : campo(lbl, `<input value="${esc(d[key])}" ${dis} maxlength="200" onchange="${on}">`);
+    if(t==='dl') return campo(lbl, `<input list="docEdL${key}" value="${esc(d[key])}" ${dis} onchange="${on}">${dl('docEdL'+key, OPC[o]())}${sx}`);
+    if(t==='emb') return d.tipoInd==='Nominativo' ? campo(lbl, `<input list="docEdLemb" value="${esc(d[key])}" ${dis} maxlength="200" onchange="${on}">${dl('docEdLemb', OPC.emb())}${sx}`) : campo(lbl, `<input value="${esc(d[key])}" ${dis} maxlength="200" onchange="${on}">${sx}`);
     if(key==='codAduana' && d.via==='Embarque Directo') return CC.campoLectura(l, '9998');
     if(key==='entidad' && d.via==='Embarque Directo') return CC.campoLectura(l, d.embarcador);
-    return campo(lbl, inputDe(t, d[key], on, o, dis), t==='ta'?'':'');
+    return campo(lbl, inputDe(t, d[key], on, o, dis) + sx, t==='ta'?'':'');
   }).join('');
   const manual = k==='exp' && !S.ed.nuevo ? `<div class="fac-sec">Transmisión de Reserva Manual</div><div class="doc-man"><label class="doc-chk" title="Registro de transmisión de reserva manual 0171"><input type="checkbox" ${d.manual?'checked':''} disabled> Transmisión de reserva manual</label>
       ${!lastRes(d) || lastRes(d).st!=='COMPLETED' ? ico('lapiz','Actualizar datos de transmisión manual',`docManual('${d.id}')`) : ''}
@@ -958,7 +960,7 @@ function htmlExp(){
   seed(); if(!('nave' in S.fe.f)){ S.fe.f = FE0(); S.fe.q = FE0(); }
   const f = S.fe.f, all = filasExp(), pg = CC.paginar(all, S.fe.pag, S.fe.tam), conViaje = f.nave && f.viaje;
   const filtros = `<div class="fac-card" id="docEF"><div class="fac-head"><div><h3>Consulta y carga</h3><div class="fac-sub">Ingresar datos y/o documentos</div></div><div class="fac-acts">
-      <span ${CC.propuesta('I-037','Restricciones de exportación')}>${ghost('Restricciones de exportación',"CC.abrir('screenDocExpRestr')",'id="docERestrBtn"')}</span>${ghost('Cargar archivos',"docUpAbrir('exp')")}${btn('Nuevo','docExpNuevo()')}</div></div>
+      <span ${CC.propuesta('I-037','Restricciones de exportación')}>${ghost('Restricciones de exportación',"CC.abrir('screenDocExpRestr')",'id="docERestrBtn"')}</span><span ${CC.propuesta('I-062','Configuración de avisos')}>${ghost('Configurar avisos',"docAvAbrir('Salida')",'id="docEAvBtn"')}</span>${ghost('Cargar archivos',"docUpAbrir('exp')")}${btn('Nuevo','docExpNuevo()')}</div></div>
     <div class="fac-g4">
       ${campo('Nave',`<input id="docENave" list="docENaves" placeholder="Ingresar nave" value="${esc(f.nave)}" onchange="docEF('nave',this.value)">${dl('docENaves',naves())}`)}
       ${campo('Número de Viaje',`<input id="docEViaje" list="docEViajes" placeholder="Ingresar número de viaje" value="${esc(f.viaje)}" ${f.nave?'':'disabled'} onchange="docEF('viaje',this.value)">${dl('docEViajes',viajesDe(f.nave))}`)}
@@ -974,7 +976,7 @@ function htmlExp(){
     {t:'', v:b=>puedeCorreo(b)?`<input type="checkbox" ${S.fe.sel.has(b.id)?'checked':''} onchange="docESel('${b.id}',this.checked)">`:''},
     {t:'Número de Reserva', v:b=>{ const x = P37() ? excesos(b) : [];
       return `<button type="button" class="fac-link" onclick="docExpEditar('${b.id}')">${esc(b.numero)}</button>${b.extRes?' <span class="doc-ext" title="Reserva transmitida dentro de las 24h previas al ETA del viaje">(Reserva extemporánea)</span>':''}${b.extBl?' <span class="doc-ext" title="BL transmitido después de los 2 días calendario del Fin de Embarque">(BL extemporáneo)</span>':''}${x.length?` <span class="doc-r37 cc-prop" title="${esc('Restricción de exportación: '+x.map(excTxt).join(' '))}">${svgI('peso')}</span>`:''}`; }},
-    {t:'Embarcador', v:'embarcador'},{t:'Nave', v:'nave'},{t:'Número de Viaje', v:'viaje'},{t:'ATA', v:b=>fd(b.ata)},{t:'Versión', v:'version'},{t:'Fecha de Emisión', v:b=>fd(b.emision)},{t:'Número de Manifiesto', v:'manifiesto'},
+    {t:'Embarcador', v:'embarcador'},{t:'Nave', v:'nave'},{t:'Número de Viaje', v:'viaje'},{t:'ATA', v:b=>fd(b.ata)},{t:'Versión', v:'version'},...colCorrectores(),{t:'Fecha de Emisión', v:b=>fd(b.emision)},{t:'Número de Manifiesto', v:'manifiesto'},
     {t:'Puerto de Embarque', v:'puertoCarga'},{t:'Puerto de Descarga', v:'puertoDescarga'},{t:'Puerto Final', v:'puertoFinal'},{t:'Tipo de BL', v:'tipo'},{t:'Indicador', v:'indicador'},
     {t:'Estado BL', v:b=>chipBL(b.estado)},{t:'Última Tx SUNAT', v:b=>ultTx([...b.res,...b.bl].sort((x,y)=>x.ts<y.ts?-1:1).pop())},{t:'Estado Pago', v:'pago'},
     {t:'Auditoría', v:b=>`<div class="doc-aud"><span class="doc-mut">Creación: ${fdt(b.audit.cts)} · ${esc(b.audit.c)}</span><span class="doc-mut">Modificación: ${fdt(b.audit.ts)} · ${esc(b.audit.u)}</span></div>`},
@@ -985,7 +987,7 @@ function htmlExp(){
     {t:'Ver historial', v:b=>ico('hist','Ver historial',`docHist('${b.id}')`)},{t:'Equipos Confirmados', v:cnt},
     {t:'Acciones', v:b=>puedeCorreo(b)?ico('desc','Descargar Aviso de Zarpe',`docPdf('Aviso de Zarpe','${b.id}')`):''}];
   return filtros + tabla({id:'docERes', titulo:`Resultados (${all.length})`, cols, filas:pg.filas, vacio:'No se encontraron resultados con los criterios seleccionados',
-    acciones:`${btn('Transmitir BL','docExpLote()', '', all.length && conViaje ? '' : 'disabled')}${ghost('Enviar Aviso de Zarpe','docZarpe()', S.fe.sel.size?'':'disabled')}`,
+    acciones:`${btn('Transmitir BL','docExpLote()', '', all.length && conViaje ? '' : 'disabled')}${ghost('Enviar Aviso de Zarpe','docZarpe()', S.fe.sel.size?'':'disabled')}<span ${CC.propuesta('I-055','Eliminación en bloque')}>${ghost('Eliminar BL en bloque',"docElAbrir('exp')",'id="docEElBtn"')}</span>`,
     pie:`<div class="fac-acts">${ghost('Exportar','docExpExportar()')}<span title="Incluye los BL de la nave y viaje seleccionados, o los de todas las naves en el rango de fecha de emisión (máximo un mes).">${ghost('Reporte de Documentación',"docReporte('exp')",'id="docERep"')}</span></div>${pager(all.length, pg.pagina, S.fe.tam, 'docEPag')}`});
 }
 window.docEF = (k, v) => { S.fe.f[k] = v; if(k==='nave') S.fe.f.viaje = ''; if(k==='nave' || k==='viaje') rerender('screenDocExp'); };
@@ -1120,7 +1122,7 @@ function htmlTrb(){
     if(b.solicitud) o.push(ico('cancel','Cancelar Numeración de Transbordo',`docTCancelar('${b.id}')`,{cls:'rojo', dis:pend}));
     return `<div class="doc-sunat">${estSunat(l)}<span class="doc-ics">${o.join('')}</span></div>`; };
   const res = tabla({id:'docTRes', titulo:`Resultados (${all.length})`, filas:pg.filas, antes:resumen,
-    acciones:`${ghost('Registro Nave Conexión','docTConex()')}${btn('Numeración de solicitud de transbordo','docTNum()')}${ghost('Enviar Listado','docTListado()')}`,
+    acciones:`${ghost('Registro Nave Conexión','docTConex()')}${btn('Numeración de solicitud de transbordo','docTNum()')}${ghost('Enviar Listado','docTListado()')}<span ${CC.propuesta('I-069','Anulación en bloque')}>${ghost('Anulación de numeración en bloque','docAnAbrir()','id="docTAnBtn"')}</span>`,
     cols:[{t:'Número de BL', v:b=>`<button type="button" class="fac-link" onclick="docImpEditar('${b.id}')">${esc(b.numero)}</button>`},{t:'Nave - Viaje', v:b=>sinDatos(`${b.nave} - ${b.viaje}`)},{t:'Nave Conexión - Viaje Conexión', v:b=>b.naveCx?esc(`${b.naveCx} - ${b.viajeCx}`):sinDatos('')},
       {t:'N° de Solicitud', v:b=>b.solicitud?esc(b.solicitud):'Sin Asignar'},{t:'N° de Detalle', v:b=>b.detalleTrb?esc(b.detalleTrb):'Sin Asignar'},{t:'Embarcador', v:b=>sinDatos(b.embarcador)},{t:'Fecha de Emisión', v:b=>sinDatos(fd(b.emision))},
       {t:'Número de Manifiesto', v:b=>sinDatos(b.manifiesto)},{t:'Puerto de Carga', v:b=>sinDatos(b.puertoCarga)},{t:'Puerto de Descarga', v:b=>sinDatos(b.puertoDescarga)},{t:'Puerto Final de Destino', v:b=>sinDatos(b.puertoFinal)},
@@ -1185,6 +1187,7 @@ window.docTCancelar = id => { const b = buscarBL(id);
     cb:(m, exp)=>{ b.hist.push(ev(`Numeración de transbordo ${b.solicitud} anulada. Expediente ${exp}. Motivo: ${m}`, CC.usuario())); b.solicitud = ''; b.detalleTrb = ''; CC.toast('La numeración de transbordo fue anulada correctamente','success'); rerender('screenDocTrb'); }}); };
 window.docTListado = () => { const q = S.ft.q; if(!q){ CC.toast('Por favor complete todos los campos obligatorios','error'); return; }
   if(!/callao/i.test(voyInfo(q.nave, q.viaje).puerto||'Callao')){ CC.toast('No se encontró tipo de contacto de Control Cargo configurado para la sucursal del viaje seleccionado.','error'); return; }
+  if(PV()) trsDe(q.nave, q.viaje).forEach(b=>b.hist.push(ev('Listado de transbordo enviado (traza propuesta I-017)', CC.usuario())));
   CC.toast('El listado ha sido enviado exitosamente','success'); };
 
 /* =====================================================================
@@ -1285,14 +1288,15 @@ function htmlCutForm(){
     <div class="fac-f"><label>Buscar Exportación por</label><div class="doc-radios"><label class="doc-chk"><input type="radio" name="docCoPor" ${x.por==='emb'?'checked':''} onchange="docCoX('por','emb')"> Embarcador</label><label class="doc-chk"><input type="radio" name="docCoPor" ${x.por==='res'?'checked':''} onchange="docCoX('por','res')"> Número(s) de Reserva</label></div>
       ${x.por==='emb'?`<input id="docCoEmb" list="docCoEmbs" maxlength="100" placeholder="Ingresar embarcador" value="${esc(x.emb)}" onchange="docCoX('emb',this.value,1)">${dl('docCoEmbs',[...new Set(S.exp.filter(b=>b.nave===d.nave&&b.viaje===d.viaje).map(b=>b.embarcador))])}`
         :`<div class="doc-chips">${x.res.map((r,i)=>`<span class="cc-chip">${esc(r)} <button type="button" class="doc-x" onclick="docCoResDel(${i})">x</button></span>`).join('')}<input id="docCoResIn" placeholder="Ingresar número de reservas" onkeydown="if(event.key==='Enter'){docCoResAdd(this.value);}" onchange="docCoResAdd(this.value)"></div>`}</div>
+    ${PV()?`<div class="fac-f cc-prop" data-prop="${esc(CC.textoPropuesta('I-074','Vencimiento'))}" style="max-width:320px"><label>Vence el ${CC.marca('Agrega','HU-DOC-25','I-074','PEN-I074-01')}</label><input type="datetime-local" id="docCoVence" value="${esc(x.vence||'')}" onchange="docCoX('vence',this.value,1)"><span class="doc-mut">Vacío: sin vencimiento.</span></div>`:''}
     <div class="fac-f"><label>Motivo de la excepción *</label><textarea id="docCoMot" rows="3" maxlength="500" placeholder="Ingresar el motivo de la excepción" oninput="docCoX('motivo',this.value,1);document.getElementById('docCoCnt').textContent=this.value.length+' / 500'">${esc(x.motivo)}</textarea><div class="doc-cnt-row"><span class="doc-mut">Se aplicará a todas las reservas que agregues.</span><span id="docCoCnt">${x.motivo.length} / 500</span></div></div>
     <div class="fac-btns">${btn('Agregar','docCoAgregar()','','id="docCoAgregar"')}${ghost('Eliminar','docCoEliminar()', C.sel.size?'':'disabled')}</div></div>`;
   const filas = d.exc.filter(e=>e.activa);
-  const grilla = `<div class="fac-card" id="docCoGrid"><div class="fac-scroll"><table class="fac-tbl"><thead><tr>${ro?'':'<th></th>'}<th>Número de Reserva</th><th>Embarcador</th><th>RUC</th><th>Tipo de Excepción</th><th>Ampliación de Fecha</th><th>Exoneración de Pago</th><th>Motivo</th><th>Aprobado por</th><th>Historial</th></tr></thead><tbody>
+  const grilla = `<div class="fac-card" id="docCoGrid"><div class="fac-scroll"><table class="fac-tbl"><thead><tr>${ro?'':'<th></th>'}<th>Número de Reserva</th><th>Embarcador</th><th>RUC</th><th>Tipo de Excepción</th><th>Ampliación de Fecha</th><th>Exoneración de Pago</th><th>Motivo</th><th>Aprobado por</th>${PV()?`<th>Vencimiento ${CC.marca('Agrega','HU-DOC-25','I-074','PEN-I074-01')}</th>`:''}<th>Historial</th></tr></thead><tbody>
     ${filas.map(e=>`<tr>${ro?'':`<td><input type="checkbox" ${C.sel.has(e.id)?'checked':''} onchange="docCoSel('${e.id}',this.checked)"></td>`}<td>${esc(e.reserva)} ${e.marca?`<span class="cc-chip">${e.marca}</span>`:''}</td><td>${esc(e.embarcador)}</td><td>${esc(e.ruc)}</td><td>${esc(e.tipo)}</td>
       <td>${ro?esc(fdt(e.amp)):`<input type="datetime-local" value="${esc(e.amp)}" onchange="docCoFila('${e.id}','amp',this.value)" style="width:190px">`}</td><td>${esc(e.exo)}</td>
       <td style="white-space:normal;min-width:220px">${ro?(e.motivo?`<details><summary>${esc(e.motivo.slice(0,40))}${e.motivo.length>40?'…':''}</summary>${esc(e.motivo)}</details>`:'Sin registro'):`<label class="doc-mut">Motivo de la reserva ${esc(e.reserva)}</label><textarea rows="2" maxlength="500" onchange="docCoFila('${e.id}','motivo',this.value)">${esc(e.motivo)}</textarea>`}</td>
-      <td>${e.marca==='Nueva'?'Se registrará al guardar':e.apr?`${esc(e.apr)}<div class="doc-mut">${fdt(e.aprTs)}</div>`:'Sin registro'}</td><td>${ico('hist','Historial',`docCoHist('${esc(e.reserva)}')`)}</td></tr>`).join('') || `<tr><td colspan="10" class="fac-empty">Sin excepciones</td></tr>`}</tbody></table></div></div>`;
+      <td>${e.marca==='Nueva'?'Se registrará al guardar':e.apr?`${esc(e.apr)}<div class="doc-mut">${fdt(e.aprTs)}</div>`:'Sin registro'}</td>${PV()?`<td>${e.vence?esc(fdt(e.vence)):'Sin vencimiento'}</td>`:''}<td>${ico('hist','Historial',`docCoHist('${esc(e.reserva)}')`)}</td></tr>`).join('') || `<tr><td colspan="11" class="fac-empty">Sin excepciones</td></tr>`}</tbody></table></div></div>`;
   return `<div class="fac-card" id="docCoViaje"><div class="fac-head"><h3>Información del Viaje</h3>${ro?btn('Editar','docCoEditar()','','id="docCoEditar"'):''}</div><div class="fac-g4">${CC.campoLectura('Viaje', d.viaje)}${CC.campoLectura('Nave', d.nave)}${CC.campoLectura('Número de Manifiesto', d.manifiesto)}${CC.campoLectura('Puerto de Embarque', d.puerto)}</div></div>
     <div class="fac-card"><h3>Cutoffs Operativos</h3><div class="fac-g2">${campo('Dry Cutoff', dt('', d.dry, 'Ingresar fecha dry cutoff', "docCoD('dry',this.value)"))}${campo('Reefer Cutoff', dt('', d.reefer, 'Ingresar fecha reefer cutoff', "docCoD('reefer',this.value)"))}</div></div>
     <div class="fac-card" id="docCoDoc"><h3>Cutoffs Documentarios</h3><div class="fac-g2">${campo('Matrices *', dt('', d.matrices, 'Ingresar fecha matriz', "docCoD('matrices',this.value)"))}${campo('Correctores *', dt('', d.correctores, 'Ingresar fecha corrector', "docCoD('correctores',this.value)"))}</div>${grupos}</div>
@@ -1318,17 +1322,19 @@ window.docCoAgregar = () => {
   const lim = x.tipo==='MTX' ? d.matrices : d.correctores;
   if(x.amp && x.amp < lim){ CC.toast(`La ampliación de fecha no puede ser anterior a la fecha de Cutoff Documentario de ${x.tipo==='MTX'?'Matrices':'Correctores'}.`,'error'); return; }
   if(x.motivo.trim().length < 10){ CC.toast('El motivo debe tener entre 10 y 500 caracteres.','error'); return; }
+  if(PV() && x.vence && x.vence < masHoras(0)){ CC.toast('La fecha de vencimiento no puede ser anterior a la fecha actual.','error'); return; }
   const cand = S.exp.filter(b=>b.nave===d.nave && b.viaje===d.viaje && (x.por==='emb' ? nt(b.embarcador)===nt(x.emb) : x.res.includes(b.numero)));
   if(!cand.length){ CC.toast('No se encontraron reservas con los criterios proporcionados.','error'); return; }
   const tipoT = x.tipo==='MTX' ? 'Matrices' : 'Correctores', dup = cand.filter(b=>d.exc.some(e=>e.activa && e.reserva===b.numero && e.tipo===tipoT)), nuevas = cand.filter(b=>!dup.includes(b));
-  const agregar = () => { nuevas.forEach(b=>d.exc.push({id:'X'+(++S.seq), reserva:b.numero, embarcador:b.embarcador, ruc:(CC.datos.socios.embarcadores.find(s=>s.razonSocial===b.embarcador)||{}).ruc||'', tipo:tipoT, amp:x.amp||'', exo:x.exo||'', motivo:x.motivo.trim(), apr:'', aprTs:'', marca:'Nueva', activa:true}));
-    C.ex = {tipo:'', crit:'', amp:'', exo:'', por:x.por, emb:'', res:[], motivo:''}; coRe(); };
+  const agregar = () => { nuevas.forEach(b=>d.exc.push({id:'X'+(++S.seq), reserva:b.numero, embarcador:b.embarcador, ruc:(CC.datos.socios.embarcadores.find(s=>s.razonSocial===b.embarcador)||{}).ruc||'', tipo:tipoT, amp:x.amp||'', exo:x.exo||'', motivo:x.motivo.trim(), apr:'', aprTs:'', marca:'Nueva', activa:true, vence:PV()?(x.vence||''):''}));
+    C.ex = {tipo:'', crit:'', amp:'', exo:'', por:x.por, emb:'', res:[], motivo:'', vence:''}; coRe(); };
   const seguir = () => { if(!nuevas.length) return;
     const antes = x.amp ? nuevas.filter(b=>{ const g = grupoDe(d, b.puertoDescarga); const gl = g && (x.tipo==='MTX' ? g.matrices : g.correctores); return gl && x.amp < gl; }) : [];
     if(antes.length) confirmar('Confirmar', `La ampliación de fecha es anterior al cutoff del puerto de descarga de: ${esc(antes.map(b=>b.numero).join(', '))}. ¿Desea continuar?`, 'Continuar', agregar); else agregar(); };
   if(dup.length) aviso('Información', `<p>No se pudo agregar la(s) reserva(s) ${esc(dup.map(b=>b.numero).join(', '))} porque ya existe(n) en las excepciones.</p>`, seguir); else seguir();
 };
 window.docCoEliminar = () => { const C = S.co; if(!C.sel.size) return;
+  if(PV()) return bajaConMotivo(C);
   confirmar('Eliminar','¿Está seguro que desea eliminar esta(s) excepción(es) de cutoff? La baja queda registrada en el historial de cada reserva.','Eliminar',()=>{
     C.d.exc.forEach(e=>{ if(C.sel.has(e.id)){ if(e.marca==='Nueva') e.activa = false; else { e.activa = false; e.baja = true; } } }); C.sel.clear(); coRe(); }); };
 window.docCoCancelar = () => { const C = S.co, salir = () => { if(C.nuevo) CC.abrir('screenDocCut'); else { S.co = {...C, ro:true, dirty:false, d:clone(S.cut[C.k]), sel:new Set()}; rerender('screenDocCutForm'); } };
@@ -1347,13 +1353,254 @@ window.docCoGuardar = () => {
   const fin = () => {
     d.exc.forEach(e=>{ const b = S.exp.find(x=>x.numero===e.reserva);
       if(e.activa && e.marca){ e.apr = CC.usuario(); e.aprTs = ahora(); if(b) b.hist.push(ev(`Excepción de cutoff (${e.tipo}) ${e.marca==='Nueva'?'registrada':'modificada'}. Motivo: ${e.motivo}`, CC.usuario())); e.marca = ''; }
-      if(e.baja && !e.bajaReg){ e.bajaReg = true; if(b) b.hist.push(ev(`Excepción de cutoff (${e.tipo}) dada de baja`, CC.usuario())); } });
+      if(e.baja && !e.bajaReg){ e.bajaReg = true; if(b) b.hist.push(ev(`Excepción de cutoff (${e.tipo}) dada de baja${e.motivoBaja?'. Motivo: '+e.motivoBaja:''}`, CC.usuario())); } });
     if(!d.id) d.id = 'C' + (++S.seq); S.cut[C.k] = clone(d);
     CC.toast(C.nuevo ? 'Cutoff creado exitosamente.' : 'Cutoff actualizado exitosamente.', 'success');
     S.co = {...C, nuevo:false, ro:true, dirty:false, d:clone(d), sel:new Set()}; rerender('screenDocCutForm'); };
   const antes = mod.filter(e=>{ const b = S.exp.find(x=>x.numero===e.reserva), g = b && grupoDe(d, b.puertoDescarga), gl = g && (e.tipo==='Matrices' ? g.matrices : g.correctores); return e.amp && gl && e.amp < gl; });
   if(antes.length) confirmar('Confirmar', `La ampliación de fecha es anterior al cutoff del puerto de descarga de: ${esc(antes.map(e=>e.reserva).join(', '))}. ¿Desea continuar?`, 'Continuar', fin); else fin();
 };
+
+/* =====================================================================
+   PROPUESTAS sobre Documentación (todo marcado en morado; se oculta con "Ver propuestas" apagado)
+   I-062 HU-DOC-05 avisos · I-017/I-080/I-081/I-185 HU-DOC-22 trazabilidad · I-069 HU-DOC-09 anulación en bloque
+   I-055 HU-DOC-20 eliminación en bloque · I-074 HU-DOC-25 vencimiento y baja con motivo · I-078 HU-DOC-19 correctores
+   I-036 HU-DOC-02 creación rápida de socios
+===================================================================== */
+const MKP = (hu, t, pen) => CC.marca('Agrega', hu, t, pen);
+
+/* ---------- I-080 / I-185: estado de aprobación y log de cambios ---------- */
+const TONO_AP = {'Aprobado':['#E8F5EE','#1E7B45'], 'Pendiente de aprobación':['#FFF7E6','#8A5A00'], 'Rechazado':['#FDECEC','#B3261E']};
+const estadoAprob = (c, b) => c.estadoAprob || (/^Corrector/.test(c.origen) && b.estado==='POR RECTIFICAR' && c.ver===b.version ? 'Pendiente de aprobación' : 'Aprobado');
+const estiloAprob = (c, b) => `background:${TONO_AP[estadoAprob(c, b)][0]}`;
+const chipAp = e => `<span class="cc-chip" style="background:${TONO_AP[e][0]};color:${TONO_AP[e][1]}">${e}</span>`;
+const chipAprob = (c, b) => chipAp(estadoAprob(c, b));
+const leyendaAprob = b => `<div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">
+  <span ${CC.propuesta('I-080','Leyenda de estados')} id="docHistLeyenda" style="display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="doc-mut">Leyenda ${MKP('HU-DOC-22','I-080','PEN-I080-01')}</span>${Object.keys(TONO_AP).map(chipAp).join('')}<span class="doc-mut">Todos los campos de una misma corrección llevan el mismo color.</span></span>
+  <span ${CC.propuesta('I-185','Log de cambios')}>${ghost('Exportar log de cambios',`docLogExp('${b.id}')`,'id="docLogExp"')}</span></div>`;
+window.docLogExp = id => { const b = buscarBL(id);
+  CC.exportarExcel(`Log_cambios_${b.numero||'BL'}_${sello()}`, 'Cambios', ['Versión','Origen','Campo','Valor anterior','Valor nuevo','Usuario','Fecha y hora','Estado de aprobación','Comentario'],
+    (b.cambios||[]).flatMap(c=>c.campos.map(x=>['V'+c.ver, c.origen, x.campo, x.antes, x.despues, c.user, fdt(c.ts), estadoAprob(c, b), c.comentario||''])));
+  b.hist.push(ev('Log de cambios exportado a Excel', CC.usuario())); };
+
+/* ---------- I-017: vínculo del transbordo con el BL de Exportación ---------- */
+const vinculoTrb = b => b.indicador!=='Transbordo' ? '' : `<div class="fac-note" ${CC.propuesta('I-017','Vínculo con BL de Exportación')} id="docHistVinc"><b>Vínculo con el BL de Exportación</b> ${MKP('HU-DOC-22','I-017','PEN-I017-03')}<br>
+  ${b.solicitud ? `BL replicado en la nave de conexión ${esc(b.naveCx)} / ${esc(b.viajeCx)} con el número ${esc(b.numero)} y N° de Solicitud ${esc(b.solicitud)}. Conserva los campos del BL de importación.`
+    : b.naveCx ? `Se replicará en la nave de conexión ${esc(b.naveCx)} / ${esc(b.viajeCx)} al numerar la solicitud de transbordo.` : 'Sin nave de conexión registrada.'}
+  <br><span class="doc-mut">Las acciones críticas (transmisión, rectificación, anulación, nave de conexión, numeración y listado) quedan en Eventos con usuario y fecha.</span></div>`;
+
+/* ---------- I-081: borrador vigente en la Reserva ---------- */
+function borradorHtml(d){
+  const real = buscarBL(d.id) || d, fin = (real.bl||[]).some(t=>t.c==='0154' && t.st==='COMPLETED');
+  const filas = (real.cambios||[]).map(c=>({ts:c.ts, op:`Versión V${c.ver} guardada (${c.origen})`, user:c.user, res:'Guardada'}))
+    .concat((real.hist||[]).filter(e=>/^Descarga de (borrador|BL final)/.test(e.comment)).map(e=>({ts:e.ts, op:e.comment, user:e.user, res:'Completada'})))
+    .sort((x,y)=>x.ts<y.ts?1:-1);
+  return `<div class="fac-card" ${CC.propuesta('I-081', fin?'BL final':'Borrador vigente')} id="docEdDraft"><div class="fac-head"><div><h3>${fin?'BL final':'BL borrador'}: versión vigente V${esc(real.version||0)} ${MKP('HU-DOC-22','I-081','PEN-I081-01')}</h3>
+    <div class="fac-sub">${fin?'El BL ya fue transmitido (0154). La descarga corresponde al BL final.':'Es la última versión guardada y todavía no es el BL final. Para cambiarla use Editar.'}</div></div>
+    <div class="fac-acts"><span class="cc-chip" style="background:${TONO_AP[fin?'Aprobado':'Pendiente de aprobación'][0]};color:${TONO_AP[fin?'Aprobado':'Pendiente de aprobación'][1]}">${fin?'Final':'Borrador'}</span>${ghost(fin?'Descargar BL final':'Descargar borrador',`docDraftDesc('${real.id}')`,'id="docDraftDesc"')}</div></div>
+    <details><summary>Historial de versiones y descargas (${filas.length})</summary><table class="fac-tbl"><thead><tr><th>Fecha y hora</th><th>Operación</th><th>Usuario</th><th>Resultado</th></tr></thead><tbody>
+    ${filas.map(f=>`<tr><td>${fdt(f.ts)}</td><td>${esc(f.op)}</td><td>${esc(f.user)}</td><td>${f.res}</td></tr>`).join('') || '<tr><td colspan="4" class="fac-empty">Sin versiones guardadas</td></tr>'}</tbody></table></details></div>`;
+}
+window.docDraftDesc = id => { const b = buscarBL(id), fin = (b.bl||[]).some(t=>t.c==='0154' && t.st==='COMPLETED');
+  b.hist.push(ev(`${fin?'Descarga de BL final':'Descarga de borrador'} V${b.version||0} en PDF`, CC.usuario()));
+  CC.toast(`${fin?'BL final':'Borrador'} V${b.version||0} de ${b.numero} descargado en PDF`,'success'); rerender(ED_ID('exp')); };
+
+/* ---------- I-078: correctores en la búsqueda de Exportación ---------- */
+const correctoresDe = b => (b.cambios||[]).filter(c=>/^Corrector/.test(c.origen));
+const colCorrectores = () => PV() ? [{t:`Correctores ${MKP('HU-DOC-19','I-078','PEN-I078-01')}`, v:b=>{ const l = correctoresDe(b), c = l[l.length-1];
+  return c ? `<button type="button" class="fac-link" onclick="docCorrDet('${b.id}')">${esc(c.origen)}</button>` : '<span class="doc-mut">Sin correctores</span>'; }}] : [];
+window.docCorrDet = id => { const b = buscarBL(id);
+  CC.modal(`<div ${CC.propuesta('I-078','Detalle de correctores')} id="docCorrDet"><h3>Correctores de la reserva ${esc(b.numero)} ${MKP('HU-DOC-19','I-078','PEN-I078-01')}</h3>
+    <p class="doc-mut">El corrector actualiza el BL al guardarse de forma definitiva en el portal externo; no hay traslado manual. Consultar esta ventana no genera avisos nuevos.</p>
+    ${correctoresDe(b).slice().reverse().map(c=>`<div class="doc-ver"><div class="doc-ver-h"><b>${esc(c.origen)}</b><span class="cc-chip">V${c.ver}</span>${chipAprob(c, b)}<span class="doc-mut">Guardado definitivo · ${esc(c.user)} · ${fdt(c.ts)}</span></div>
+      <table class="fac-tbl"><thead><tr><th>Campo</th><th>Valor anterior</th><th>Valor propuesto</th><th>Comentario</th></tr></thead><tbody>${c.campos.map(x=>`<tr><td>${esc(x.campo)}</td><td>${x.antes===''?'<span class="doc-mut">Sin valor</span>':esc(x.antes)}</td><td>${esc(x.despues)}</td><td style="white-space:normal">${esc(c.comentario||'Sin comentario')}</td></tr>`).join('')}</tbody></table>
+      <p class="doc-mut">Aviso enviado al buzón de Exportación de la sede ${SUCURSAL} (contactos tipo Exportación; alterno Importación/Exportación) el ${fdt(c.avisoTs||c.ts)}.</p></div>`).join('')}</div>
+    <div class="fac-btns">${btn('Cerrar','CC.cerrarModal()')}</div>`, 'lg'); };
+
+/* ---------- I-069: anulación de numeración en bloque por nave de origen ---------- */
+const anElegible = b => !['APROBADO','TRANSMITIDO A SUNAT','POR RECTIFICAR'].includes(b.estado) ? 'El BL no cumple las condiciones para anular la numeración' : (last(b.sunat)||{}).st==='PENDING' ? 'Transmisión SUNAT en curso' : '';
+window.docAnAbrir = () => { const q = S.ft.q; if(!q || !q.nave || !q.viaje){ CC.toast('Seleccione la nave y el viaje de origen para anular en bloque.','error'); return; }
+  K.an = {l:trsDe(q.nave, q.viaje).filter(b=>b.solicitud), sel:new Set(), exp:'', mot:'', err:''}; pintarAn(); };
+function pintarAn(){ const a = K.an, q = S.ft.q, elig = a.l.filter(b=>!anElegible(b));
+  CC.modal(`<div ${CC.propuesta('I-069','Anulación en bloque')} id="docAnDlg"><h3>Anulación de numeración en bloque ${MKP('HU-DOC-09','I-069','PEN-I069-01')}</h3>
+    <p>Nave de origen <b>${esc(q.nave)}</b>, viaje <b>${esc(q.viaje)}</b>. Seleccione las solicitudes de transbordo que desea anular.</p>
+    ${a.l.length ? `<table class="fac-tbl"><thead><tr><th><input type="checkbox" title="Seleccionar todas" ${elig.length && elig.every(b=>a.sel.has(b.id))?'checked':''} onchange="docAnTodos(this.checked)"></th><th>Número de BL</th><th>N° de Solicitud</th><th>Nave Conexión - Viaje Conexión</th><th>Estado BL</th><th>Observación</th></tr></thead><tbody>
+      ${a.l.map(b=>{ const m = anElegible(b); return `<tr><td><input type="checkbox" ${a.sel.has(b.id)?'checked':''} ${m?'disabled':''} onchange="docAnSel('${b.id}',this.checked)"></td><td>${esc(b.numero)}</td><td>${esc(b.solicitud)}</td><td>${esc(b.naveCx)} - ${esc(b.viajeCx)}</td><td>${chipBL(b.estado)}</td><td>${esc(m||'Elegible')}</td></tr>`; }).join('')}</tbody></table>`
+      : '<p class="doc-mut">No hay BL con N° de Solicitud en la nave y viaje de origen.</p>'}
+    <div class="fac-g2">${campo('Nro Expediente *',`<input id="docAnExp" maxlength="60" value="${esc(a.exp)}" onchange="K_an('exp',this.value)">`)}${campo('Motivo *',`<textarea id="docAnMot" rows="2" maxlength="500" onchange="K_an('mot',this.value)">${esc(a.mot)}</textarea>`)}</div>
+    <span class="doc-err" id="docAnErr">${esc(a.err)}</span></div>
+    <div class="fac-btns">${ghost('Cancelar','CC.cerrarModal()')}${btn(`Anular (${a.sel.size})`,'docAnOk()','',`id="docAnOk" ${a.sel.size?'':'disabled'}`)}</div>`, 'lg'); }
+window.K_an = (k, v) => { K.an[k] = v; };
+window.docAnSel = (id, on) => { K.an.sel[on?'add':'delete'](id); pintarAn(); };
+window.docAnTodos = on => { K.an.l.filter(b=>!anElegible(b)).forEach(b=>K.an.sel[on?'add':'delete'](b.id)); pintarAn(); };
+window.docAnOk = () => { const a = K.an; a.exp = ($('docAnExp').value||'').trim(); a.mot = ($('docAnMot').value||'').trim();
+  a.err = !a.exp ? 'El Nro de Expediente es obligatorio.' : a.exp.length>50 ? 'El Nro de Expediente no puede superar 50 caracteres.' : a.mot.length<10 || a.mot.length>500 ? 'El motivo debe tener entre 10 y 500 caracteres.' : '';
+  if(a.err) return pintarAn();
+  const bls = a.l.filter(b=>a.sel.has(b.id));
+  confirmar('Anulación de numeración en bloque', `Se anulará la numeración de transbordo de ${bls.length} BL(s) de la nave de origen. ¿Confirma?`, 'Anular', ()=>{
+    const res = bls.map(b=>{ const m = anElegible(b); if(m) return {b, sol:b.solicitud, m};
+      const sol = b.solicitud; b.hist.push(ev(`Numeración de transbordo ${sol} anulada en bloque. Expediente ${a.exp}. Motivo: ${a.mot}`, CC.usuario())); b.solicitud = ''; b.detalleTrb = ''; return {b, sol, m:''}; });
+    rerender('screenDocTrb');
+    dlg('Resultado de la anulación en bloque', `<p>Anuladas: ${res.filter(r=>!r.m).length}. No anuladas: ${res.filter(r=>r.m).length}.</p><table class="fac-tbl"><thead><tr><th>Número de BL</th><th>N° de Solicitud</th><th>Resultado</th></tr></thead><tbody>${res.map(r=>`<tr class="${r.m?'doc-fila-err':''}"><td>${esc(r.b.numero)}</td><td>${esc(r.sol)}</td><td>${esc(r.m||'Anulada')}</td></tr>`).join('')}</tbody></table>`, [['Aceptar','docCbSi()']], 'md'); }); };
+
+/* ---------- I-055: eliminación de BL en bloque con permiso especial ---------- */
+const puedeEliminarBloque = () => /Gerencia|Supervis|Coordinad|Jefatur/i.test(CC.usuario());
+const elElegible = b => { const tx = b.sunat ? b.sunat : [...(b.res||[]), ...(b.bl||[])].sort((x,y)=>x.ts<y.ts?-1:1), ok = tx.filter(t=>t.st==='COMPLETED'), u = ok[ok.length-1];
+  if(tx.some(t=>t.st==='PENDING')) return 'Transmisión SUNAT en curso';
+  if(u && !['0104','0173','0156'].includes(u.c)) return 'Transmitido a SUNAT: requiere anulación SUNAT aprobada';
+  if(b.pago) return 'Tiene estado de pago o liquidación';
+  return ''; };
+window.docElAbrir = k => { const q = (k==='imp'?S.fi:S.fe).q;
+  if(!q.nave || !q.viaje){ CC.toast('Busque primero por nave y número de viaje para eliminar BL en bloque.','error'); return; }
+  K.el = {k, nave:q.nave, viaje:q.viaje, ind:'', sel:new Set(), mot:'', err:''}; pintarEl(); };
+function pintarEl(){ const e = K.el, imp = e.k==='imp', l = (imp?S.imp:S.exp).filter(b=>b.nave===e.nave && b.viaje===e.viaje && (!e.ind || b.indicador===e.ind)), perm = puedeEliminarBloque();
+  e.l = l; const elig = l.filter(b=>!elElegible(b));
+  CC.modal(`<div ${CC.propuesta('I-055','Eliminación en bloque')} id="docElDlg"><h3>Eliminar BL en bloque ${MKP('HU-DOC-20','I-055','PEN-I055-01')}</h3>
+    ${perm ? '' : '<div class="fac-note err" id="docElSinPerm">Su perfil no tiene el permiso especial Eliminar BL en bloque. Lo tienen los perfiles Coordinador, Supervisor y Jefatura.</div>'}
+    <p>Nave <b>${esc(e.nave)}</b>, viaje <b>${esc(e.viaje)}</b>. La eliminación es definitiva en la operación; la traza (usuario, fecha y motivo) se conserva.</p>
+    <div class="fac-g3">${campo('Tipo de operación', sel(imp?IND_IMP:IND_EXP, e.ind, `onchange="docElInd(this.value)"`, 'Todas'))}</div>
+    <table class="fac-tbl"><thead><tr><th><input type="checkbox" title="Seleccionar elegibles" ${!perm?'disabled':''} ${elig.length && elig.every(b=>e.sel.has(b.id))?'checked':''} onchange="docElTodos(this.checked)"></th><th>${imp?'Número BL':'Número de Reserva'}</th><th>Indicador</th><th>Estado BL</th><th>Elegibilidad</th></tr></thead><tbody>
+    ${l.map(b=>{ const m = elElegible(b); return `<tr><td><input type="checkbox" ${e.sel.has(b.id)?'checked':''} ${m||!perm?'disabled':''} onchange="docElSel('${b.id}',this.checked)"></td><td>${esc(b.numero||'Pendiente')}</td><td>${esc(b.indicador)}</td><td>${chipBL(b.estado)}</td><td>${esc(m||'Elegible')}</td></tr>`; }).join('') || '<tr><td colspan="5" class="fac-empty">Sin BL para la nave y viaje</td></tr>'}</tbody></table>
+    ${campo('Motivo *',`<textarea id="docElMot" rows="2" maxlength="500" ${!perm?'disabled':''} onchange="docSoV('mot',this.value,1)">${esc(e.mot)}</textarea>`)}<span class="doc-err" id="docElErr">${esc(e.err)}</span></div>
+    <div class="fac-btns">${ghost('Cancelar','CC.cerrarModal()')}${btn(`Eliminar (${e.sel.size})`,'docElOk()','',`id="docElOk" ${perm && e.sel.size?'':'disabled'}`)}</div>`, 'lg'); }
+window.docElInd = v => { K.el.ind = v; K.el.sel.clear(); pintarEl(); };
+window.docElSel = (id, on) => { K.el.mot = ($('docElMot')||{}).value||K.el.mot; K.el.sel[on?'add':'delete'](id); pintarEl(); };
+window.docElTodos = on => { K.el.mot = ($('docElMot')||{}).value||K.el.mot; K.el.l.filter(b=>!elElegible(b)).forEach(b=>K.el.sel[on?'add':'delete'](b.id)); pintarEl(); };
+window.docElOk = () => { const e = K.el; if(!puedeEliminarBloque()) return; e.mot = ($('docElMot').value||'').trim();
+  e.err = e.mot.length<10 || e.mot.length>500 ? 'El motivo debe tener entre 10 y 500 caracteres.' : ''; if(e.err) return pintarEl();
+  const imp = e.k==='imp', lista = imp ? S.imp : S.exp, bls = e.l.filter(b=>e.sel.has(b.id));
+  confirmar('Eliminar BL en bloque', `Se eliminarán ${bls.length} BL de forma definitiva. Esta acción no se puede deshacer. ¿Confirma?`, 'Eliminar', ()=>{
+    S.elim = S.elim || [];
+    const res = bls.map(b=>{ const m = elElegible(b); if(m) return {b, m};
+      const i = lista.indexOf(b); if(i>=0) lista.splice(i,1); (imp?S.fi:S.fe).sel.delete(b.id);
+      S.elim.push({numero:b.numero, nave:b.nave, viaje:b.viaje, user:CC.usuario(), ts:ahora(), motivo:e.mot}); return {b, m:''}; });
+    rerender(imp ? 'screenDocImp' : 'screenDocExp');
+    dlg('Resultado de la eliminación en bloque', `<p>Eliminados: ${res.filter(r=>!r.m).length}. No eliminados: ${res.filter(r=>r.m).length}.</p><table class="fac-tbl"><thead><tr><th>Número BL</th><th>Resultado</th></tr></thead><tbody>${res.map(r=>`<tr class="${r.m?'doc-fila-err':''}"><td>${esc(r.b.numero||'Pendiente')}</td><td>${esc(r.m||'Eliminado. Traza registrada con usuario, fecha y motivo.')}</td></tr>`).join('')}</tbody></table>`, [['Aceptar','docCbSi()']], 'md'); }); };
+
+/* ---------- I-074: baja de excepción con motivo ---------- */
+function bajaConMotivo(C){
+  pedirMotivo({titulo:'Dar de baja excepción', texto:`Excepciones seleccionadas: ${C.sel.size}. La baja y su motivo quedan en el historial de cada reserva. ${MKP('HU-DOC-25','I-074','PEN-I074-01')}`, min:10, max:500, boton:'Dar de baja',
+    cb:m=>{ C.d.exc.forEach(e=>{ if(C.sel.has(e.id)){ e.activa = false; if(e.marca!=='Nueva'){ e.baja = true; e.motivoBaja = m; } } }); C.sel.clear(); coRe(); }});
+}
+
+/* ---------- I-036: creación rápida de socios desde el BL ---------- */
+const ROL_SOCIO = {'imp.embarcador':'Embarcador','imp.consignatario':'Consignatario','imp.notificante':'Notificante','exp.embarcador':'Embarcador','exp.consignatario':'Consignatario','exp.notificante':'Notificante','exp.notif2':'Notificante'};
+const DIR_SOCIO = {embarcador:'dirEmb', consignatario:'dirCons', notificante:'dirNot'};
+const PAISES = ['Perú', ...new Set(Object.values(PAIS).filter(p=>p!=='Perú')), 'Chile', 'Ecuador', 'Estados Unidos'];
+const sociosNuevos = roles => S && S.socios ? S.socios.filter(s=>s.roles.some(r=>roles.includes(r))).map(s=>s.razonSocial) : [];
+const socioBtn = (k, key) => `<span ${CC.propuesta('I-036','Alta rápida')}><button type="button" class="fac-link doc-socbtn" id="docSoc_${key}" onclick="docSocAbrir('${key}')">+ Crear socio (${ROL_SOCIO[k+'.'+key]})</button></span>`;
+window.docSocAbrir = key => { const k = S.ed.k, rol = ROL_SOCIO[k+'.'+key];
+  K.so = {key, rol, tipoDoc:'RUC', num:'', razon:'', dir:'', pais:'Perú', tipoCont:k==='imp'?'Importación':'Exportación', correo:'', err:'', dup:null}; pintarSoc(); };
+function pintarSoc(){ const o = K.so, v = (f, ph, extra) => `<input id="docSo_${f}" value="${esc(o[f])}" placeholder="${ph}" onchange="docSoV('${f}',this.value)" ${extra||''}>`;
+  CC.modal(`<div ${CC.propuesta('I-036','Creación rápida de socio')} id="docSocDlg"><h3>Crear socio: ${esc(o.rol)} ${MKP('HU-DOC-02','I-036','PEN-I036-02')}</h3>
+    <p class="doc-mut">Solo los datos mínimos. El socio queda en estado Pendiente de aprobación y se completa después en Data Maestra. Lo ingresado en el BL se conserva.</p>
+    <div class="fac-g2">${CC.campoLectura('Rol', o.rol)}${campo('País *', sel(PAISES, o.pais, `id="docSo_pais" onchange="docSocPais(this.value)"`))}
+      ${campo('Tipo de documento *', sel(o.pais==='Perú'?['RUC']:['Documento extranjero (Tax ID)','Sin documento'], o.tipoDoc, `id="docSo_tipoDoc" onchange="docSoV('tipoDoc',this.value)"`))}${campo(`Número de documento${o.pais==='Perú'?' *':''}`, v('num', o.pais==='Perú'?'11 dígitos':'Opcional', 'maxlength="20"'))}
+      ${campo('Razón social *', v('razon','Ingresar razón social','maxlength="200"'))}${campo('Dirección *', v('dir','Ingresar dirección','maxlength="200"'))}
+      ${campo('Tipo de contacto *', sel(['Importación','Exportación','Importación/Exportación'], o.tipoCont, `id="docSo_tipoCont" onchange="docSoV('tipoCont',this.value)"`))}${campo('Correo de contacto *', v('correo','correo@empresa.example','type="email" maxlength="120"'))}</div>
+    ${o.dup ? `<div class="fac-note warn" id="docSocDup">Ya existe el socio ${esc(o.dup.razonSocial)} (${esc(o.dup.ruc||'sin documento')}, ${esc(o.dup.estado||'Aprobado')}). Para no duplicarlo puede usarlo en el BL y agregarle el rol ${esc(o.rol)}.</div>` : ''}
+    <span class="doc-err" id="docSocErr">${esc(o.err)}</span></div>
+    <div class="fac-btns">${ghost('Cancelar','CC.cerrarModal()')}${o.dup ? btn('Usar socio existente','docSocUsar()','','id="docSocUsar"') : btn('Crear socio','docSocCrear()','','id="docSocCrear"')}</div>`, 'md'); }
+window.docSoV = (f, v, el) => { (el ? K.el : K.so)[f] = v; };
+window.docSocPais = p => { const o = K.so; ['num','razon','dir','correo'].forEach(f=>{ const x = $('docSo_'+f); if(x) o[f] = x.value; }); o.pais = p; o.tipoDoc = p==='Perú' ? 'RUC' : 'Documento extranjero (Tax ID)'; o.dup = null; pintarSoc(); };
+const todosSocios = () => { const s = CC.datos.socios; return [...s.clientes, ...s.embarcadores, ...s.consignatarios, ...(S.socios||[])]; };
+window.docSocCrear = () => { const o = K.so; ['num','razon','dir','correo'].forEach(f=>{ o[f] = ($('docSo_'+f).value||'').trim(); });
+  o.err = !o.razon || !o.dir || !o.correo || (o.pais==='Perú' && !o.num) ? 'Por favor complete todos los campos obligatorios' : o.pais==='Perú' && !/^(10|20)\d{9}$/.test(o.num) ? 'El RUC debe tener 11 dígitos y empezar con 10 o 20.' : !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(o.correo) ? 'Ingrese un correo de contacto válido.' : '';
+  if(o.err) return pintarSoc();
+  o.dup = todosSocios().find(s=>(o.num && s.ruc===o.num) || nt(s.razonSocial)===nt(o.razon)) || null;
+  if(o.dup) return pintarSoc();
+  S.socios = S.socios || [];
+  const s = {id:'SN'+(++S.seq), tipo:o.tipoDoc, ruc:o.num, razonSocial:o.razon.toUpperCase(), direccion:o.dir, pais:o.pais, roles:[o.rol], contactos:[{tipo:o.tipoCont, correo:o.correo}], estado:'Pendiente de aprobación',
+    origen:S.ed.k==='imp'?'Documentación > BL de Importación':'Documentación > Reserva de Exportación', user:CC.usuario(), ts:ahora()};
+  S.socios.push(s); aplicarSocio(s.razonSocial, o.dir, `Socio ${s.razonSocial} creado en estado Pendiente de aprobación y seleccionado en el BL.`); };
+window.docSocUsar = () => { const o = K.so, s = o.dup; if(s.roles && !s.roles.includes(o.rol)) s.roles.push(o.rol);
+  (S.rolesAgregados = S.rolesAgregados || []).push({socio:s.razonSocial, rol:o.rol, user:CC.usuario(), ts:ahora()});
+  aplicarSocio(s.razonSocial, '', `Se usó el socio existente ${s.razonSocial} con el rol ${o.rol}.`); };
+function aplicarSocio(nombre, dir, msg){ const E = S.ed, key = K.so.key, dk = DIR_SOCIO[key];
+  E.d[key] = nombre; if(dir && dk && !E.d[dk]) E.d[dk] = dir; E.dirty = true; CC.cerrarModal(); CC.toast(msg,'success'); rerender(ED_ID(E.k)); }
+
+/* ---------- I-062: configuración de Avisos de Llegada y Salida ---------- */
+const AV_PUERTOS = ['Callao','Paita','Pisco'], AV_SECC = [['fletes','Fletes y recargos'],['direcc','Instrucciones de direccionamiento'],['deposito','Depósito por defecto'],['devolucion','Devolución de contenedores'],['sobrestadia','Sobrestadía'],['cuentas','Cuentas bancarias']];
+const AV_URL = 'https://connect.cosmos.example';
+function avSeed(){
+  if(S.av) return S.av;
+  const ls = CC.datos.lineas.map(l=>l.codigo), otra = ls.find(c=>c!=='ZIM') || 'MSC';
+  const mk = (tipo, linea, puerto, x) => Object.assign({id:'AV'+(++S.seq), tipo, linea, puerto, suc:puerto,
+    contacto:`${tipo==='Llegada'?'importaciones':'exportaciones'}.${nt(puerto)}@cosmos.example`,
+    secc:{fletes:true, direcc:tipo==='Llegada', deposito:tipo==='Llegada', devolucion:tipo==='Llegada', sobrestadia:true, cuentas:true},
+    esp:'Su carga arribará al puerto de {PUERTO}. Para consultas comuníquese con {CONTACTO}.', eng:'Your cargo will arrive at the port of {PUERTO}. For inquiries please contact {CONTACTO}.',
+    enlDir:AV_URL+'/direccionamiento', enlDes:AV_URL+'/desglose', enlPag:AV_URL+'/pagos', depCont:DEPOSITOS[0].n, depRod:DEPOSITOS[2].n,
+    devol:`Devolver el contenedor vacío en el depósito asignado por la línea en ${puerto}.`, sobre:'Según tarifa vigente de la línea: días libres del BL y luego cobro diario por contenedor.',
+    cuentas:'Banco de ejemplo, cuenta corriente USD 000-0000000-0-00 (ficticia)', user:'J. Ramos (Documentación)', ts:'2026-11-10T10:00:00'}, x||{});
+  S.av = {tipo:'Llegada', f:{linea:'', puerto:'', suc:''}, ed:null, cfg:[mk('Llegada','ZIM','Callao'), mk('Llegada','ZIM','Paita'), mk('Llegada',otra,'Callao',{secc:{fletes:true, direcc:true, deposito:true, devolucion:false, sobrestadia:false, cuentas:true}}), mk('Llegada',otra,'Pisco'),
+    mk('Salida','ZIM','Callao'), mk('Salida',otra,'Callao')]};
+  return S.av;
+}
+window.docAvAbrir = tipo => { seed(); avSeed().tipo = tipo; S.av.ed = null; CC.abrir('screenDocAvisos'); };
+const avModelo = l => l==='ZIM' ? 'Modelo 1: logos Cosmos y ZIM' : 'Modelo 2: solo logo Cosmos';
+const avTxt = (t, c) => String(t||'').replace(/\{PUERTO\}/g, c.puerto).replace(/\{CONTACTO\}/g, c.contacto);
+function avPrevia(c){
+  const ej = (c.tipo==='Llegada' ? S.imp : S.exp).find(b=>(b.lineaCod||'')===c.linea) || (c.tipo==='Llegada' ? S.imp[0] : S.exp[0]) || {};
+  const s = k => c.secc[k];
+  return `<div id="docAvPrev" style="border:1px solid #DDE3EC;border-radius:10px;padding:14px;background:#fff;font-size:12.5px;line-height:1.5">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="display:flex;gap:6px"><b style="border:1px solid #1F3B6E;color:#1F3B6E;padding:2px 8px;border-radius:4px">COSMOS</b>${c.linea==='ZIM'?'<b style="border:1px solid #333;padding:2px 8px;border-radius:4px">ZIM</b>':''}</span><span class="doc-mut">${esc(avModelo(c.linea))}</span></div>
+    <h4 style="margin:4px 0">${c.tipo==='Llegada'?'AVISO DE LLEGADA / ARRIVAL NOTICE':'AVISO DE SALIDA / DEPARTURE NOTICE'}</h4>
+    <div class="doc-mut">BL ${esc(ej.numero||'EJEMPLO0001')} · Nave ${esc(ej.nave||'')} · Viaje ${esc(ej.viaje||'')} · Puerto de operación ${esc(c.puerto)} · Sucursal ${esc(c.suc)}</div>
+    <p style="margin:8px 0 2px">${esc(avTxt(c.esp, c))}</p><p style="margin:0 0 8px" class="doc-mut">${esc(avTxt(c.eng, c))}</p>
+    ${s('fletes')?`<div><b>Fletes y recargos:</b> según condición de pago del BL (reglas de I-019).</div>`:''}
+    ${s('direcc')?`<div><b>Direccionamiento:</b> <span style="color:#1F5FBF">${esc(c.enlDir)}</span></div>`:''}
+    ${s('deposito')?`<div><b>Depósito por defecto:</b> contenedor ${esc(c.depCont)}; rodante ${esc(c.depRod)}</div>`:''}
+    ${s('devolucion')?`<div><b>Devolución:</b> ${esc(c.devol)}</div>`:''}
+    ${s('sobrestadia')?`<div><b>Sobrestadía:</b> ${esc(c.sobre)}</div>`:''}
+    ${s('cuentas')?`<div><b>Cuentas bancarias:</b> ${esc(c.cuentas)}</div>`:''}
+    <div><b>Desglose:</b> <span style="color:#1F5FBF">${esc(c.enlDes)}</span> · <b>Pagos:</b> <span style="color:#1F5FBF">${esc(c.enlPag)}</span></div>
+    <div style="margin-top:8px"><b>Contacto de ${c.tipo==='Llegada'?'Importación':'Exportación'} (${esc(c.suc)}):</b> ${esc(c.contacto)}</div>
+    <p class="doc-mut" style="margin-top:8px">El correo y el PDF usan esta misma configuración.</p></div>`;
+}
+function htmlAvisos(){
+  seed(); const A = avSeed(), f = A.f, ls = CC.datos.lineas.map(l=>l.codigo);
+  const filas = A.cfg.filter(c=>c.tipo===A.tipo && (!f.linea||c.linea===f.linea) && (!f.puerto||c.puerto===f.puerto) && (!f.suc||c.suc===f.suc));
+  const tabs = `<div class="fac-tabs">${['Llegada','Salida'].map(t=>`<button type="button" class="${A.tipo===t?'on':''}" onclick="docAvTipo('${t}')">Aviso de ${t}</button>`).join('')}</div>`;
+  const filtros = `<div class="fac-card" id="docAvF"><div class="fac-head"><div><h3>Configuración de avisos ${MKP('HU-DOC-05','I-062','PEN-I062-01')}</h3><div class="fac-sub">Contenido, cláusulas, enlaces y datos por línea, puerto y sucursal</div></div><div class="fac-acts">${btn('Nueva configuración','docAvNuevo()','','id="docAvNuevo"')}</div></div>${tabs}
+    <div class="fac-g3">${campo('Línea', sel(ls, f.linea, `onchange="docAvF('linea',this.value)"`, 'Todas'))}${campo('Puerto de operación', sel(AV_PUERTOS, f.puerto, `onchange="docAvF('puerto',this.value)"`, 'Todos'))}${campo('Sucursal', sel(AV_PUERTOS, f.suc, `onchange="docAvF('suc',this.value)"`, 'Todas'))}</div>
+    <div class="fac-note warn">Por definir: PEN-I062-01 (logos y secciones visibles por línea), PEN-I062-02 (prioridad entre instrucciones permanentes, maestro de línea, puerto y sucursal) y PEN-I062-03 (cuentas, depósitos, contactos y enlaces finales). Los valores son de ejemplo.</div></div>`;
+  const res = tabla({id:'docAvRes', titulo:`Resultados (${filas.length})`, filas, cols:[
+    {t:'Línea', v:c=>`<button type="button" class="fac-link" onclick="docAvEditar('${c.id}')">${esc(lineaNombre(c.linea)||c.linea)}</button>`},{t:'Puerto de operación', v:'puerto'},{t:'Sucursal', v:'suc'},{t:'Modelo', v:c=>esc(avModelo(c.linea))},
+    {t:'Contacto', v:'contacto'},{t:'Secciones visibles', v:c=>String(AV_SECC.filter(([k])=>c.secc[k]).length)+' de '+AV_SECC.length},{t:'Modificado por', v:c=>`${esc(c.user)}<div class="doc-mut">${fdt(c.ts)}</div>`}], pie:'<span></span>'});
+  return filtros + res + (A.ed ? avForm(A.ed) : '');
+}
+function avForm(c){
+  const ls = CC.datos.lineas.map(l=>l.codigo), on = k => `onchange="docAvE('${k}',this.value)"`, t = (k, ph) => `<input value="${esc(c[k])}" placeholder="${ph||''}" ${on(k)} oninput="docAvE('${k}',this.value,1)">`;
+  return `<div class="fac-card" id="docAvEd"><div class="fac-head"><h3>${c.id?'Editar':'Nueva'} configuración: Aviso de ${esc(c.tipo)}</h3></div>
+    <div class="fac-g2" style="align-items:start"><div>
+      <div class="fac-g3">${campo('Línea *', sel(ls, c.linea, `id="docAvLinea" ${on('linea')}`, 'Elegir'))}${campo('Puerto de operación *', sel(AV_PUERTOS, c.puerto, `id="docAvPuerto" ${on('puerto')}`, 'Elegir'))}${campo('Sucursal *', sel(AV_PUERTOS, c.suc, `id="docAvSuc" ${on('suc')}`, 'Elegir'))}</div>
+      ${CC.campoLectura('Modelo', c.linea ? avModelo(c.linea) : '')}
+      ${campo(`Contacto de ${c.tipo==='Llegada'?'Importación':'Exportación'} *`, `<input id="docAvContacto" type="email" value="${esc(c.contacto)}" ${on('contacto')} oninput="docAvE('contacto',this.value,1)">`)}
+      <div class="fac-f"><label>Secciones visibles</label><div class="doc-radios" style="flex-wrap:wrap">${AV_SECC.map(([k,l])=>`<label class="doc-chk"><input type="checkbox" ${c.secc[k]?'checked':''} onchange="docAvSec('${k}',this.checked)"> ${l}</label>`).join('')}</div></div>
+      ${campo('Cláusula en español (use {PUERTO} y {CONTACTO})', `<textarea id="docAvEsp" rows="2" ${on('esp')} oninput="docAvE('esp',this.value,1)">${esc(c.esp)}</textarea>`)}
+      ${campo('Cláusula en inglés', `<textarea rows="2" ${on('eng')} oninput="docAvE('eng',this.value,1)">${esc(c.eng)}</textarea>`)}
+      <div class="fac-g3">${campo('Enlace de direccionamiento', t('enlDir'))}${campo('Enlace de desglose', t('enlDes'))}${campo('Enlace de pagos', t('enlPag'))}</div>
+      <div class="fac-g2">${campo('Depósito por defecto (contenedor)', sel(DEPOSITOS.map(x=>x.n), c.depCont, on('depCont')))}${campo('Depósito por defecto (rodante)', sel(DEPOSITOS.map(x=>x.n), c.depRod, on('depRod')))}</div>
+      ${campo('Devolución de contenedores', t('devol'))}${campo('Sobrestadía', t('sobre'))}${campo('Cuentas bancarias', t('cuentas'))}
+    </div><div><div class="fac-sec" style="margin-top:0">Vista previa</div>${avPrevia(c)}</div></div>
+    <div class="fac-btns">${ghost('Cancelar','docAvCancelar()')}${btn('Guardar','docAvGuardar()','','id="docAvGuardar"')}</div></div>`;
+}
+const avPrevRe = () => { const p = $('docAvPrev'); if(p) p.outerHTML = avPrevia(S.av.ed); };
+window.docAvTipo = t => { S.av.tipo = t; S.av.ed = null; rerender('screenDocAvisos'); };
+window.docAvF = (k, v) => { S.av.f[k] = v; rerender('screenDocAvisos'); };
+window.docAvEditar = id => { S.av.ed = clone(S.av.cfg.find(c=>c.id===id)); rerender('screenDocAvisos'); setTimeout(()=>$('docAvEd')?.scrollIntoView({block:'start'}), 30); };
+window.docAvNuevo = () => { const A = S.av, base = A.cfg.find(c=>c.tipo===A.tipo) || {};
+  A.ed = Object.assign(clone(base), {id:'', tipo:A.tipo, linea:'', puerto:'', suc:'', contacto:'', user:'', ts:''}); rerender('screenDocAvisos'); setTimeout(()=>$('docAvEd')?.scrollIntoView({block:'start'}), 30); };
+window.docAvE = (k, v, soloPrevia) => { const c = S.av.ed; c[k] = v; if(k==='puerto' && !c.suc) c.suc = v; if(soloPrevia) avPrevRe(); else rerender('screenDocAvisos'); };
+window.docAvSec = (k, on) => { S.av.ed.secc[k] = on; avPrevRe(); };
+window.docAvCancelar = () => { S.av.ed = null; rerender('screenDocAvisos'); };
+window.docAvGuardar = () => { const A = S.av, c = A.ed;
+  if(!c.linea || !c.puerto || !c.suc || !c.contacto){ CC.toast('Por favor complete todos los campos obligatorios','error'); return; }
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(c.contacto)){ CC.toast('Ingrese un correo de contacto válido.','error'); return; }
+  if(A.cfg.some(x=>x.id!==c.id && x.tipo===c.tipo && x.linea===c.linea && x.puerto===c.puerto && x.suc===c.suc)){ CC.toast('Ya existe una configuración para esa línea, puerto y sucursal.','error'); return; }
+  c.user = CC.usuario(); c.ts = ahora();
+  if(c.id){ const i = A.cfg.findIndex(x=>x.id===c.id); A.cfg[i] = clone(c); } else { c.id = 'AV'+(++S.seq); A.cfg.push(clone(c)); }
+  A.ed = null; CC.toast('Configuración de aviso guardada correctamente','success'); rerender('screenDocAvisos'); };
 
 /* =====================================================================
    Registro de pantallas
@@ -1376,6 +1623,9 @@ CC.registrarPantalla({id:'screenDocExpRestr', grupo:G, propuesta:'I-037', titulo
   guia:[{t:'I-037 Restricciones de exportación', steps:[{el:'#docRsNota', h:'Solo avisa', p:'La alerta no bloquea el guardado ni la transmisión.'},{el:'#docRsRes', h:'Mantenimiento', p:'Límite de payload o peso bruto por tipo de contenedor, línea, cliente y puerto o país, con vigencia y responsable.'}]}]});
 CC.registrarPantalla({id:'screenDocCut', grupo:G, subgrupo:'Exportación', opcion:'Cutoff', titulo:'Cutoff', migas:['Inicio','Exportación','Cutoff'], html:htmlCut,
   guia:[{t:'Cutoff', steps:[{el:'#docCF', h:'Nave, viaje y puerto', p:'Los tres son obligatorios. Abre la edición si el cutoff existe o el registro si es nuevo.'}]}]});
+CC.registrarPantalla({id:'screenDocAvisos', grupo:G, propuesta:'I-062', titulo:'Configuración de avisos', migas:['Inicio','Documentación','Configuración de avisos'], html:htmlAvisos,
+  alAbrir:()=>CC.barra('Configuración de avisos', ['Inicio', S.av.tipo==='Llegada'?'Importación':'Exportación', 'Configuración de avisos'], S.av.tipo==='Llegada'?"CC.abrir('screenDocImp')":"CC.abrir('screenDocExp')"),
+  guia:[{t:'I-062 Configuración de avisos', steps:[{el:'#docAvF', h:'Llegada y Salida', p:'Filtra por línea, puerto de operación y sucursal.'},{el:'#docAvRes', h:'Configuraciones', p:'Clic en la línea para editar y ver la vista previa del aviso.'}]}]});
 CC.registrarPantalla({id:'screenDocCutForm', grupo:G, titulo:'Edición de Cutoffs', migas:['Inicio','Exportación','Cutoff'], html:htmlCutForm,
   alAbrir:()=>CC.barra(S.co.nuevo?'Registro de Cutoffs':'Edición de Cutoffs', ['Inicio','Exportación','Cutoff', S.co.nuevo?'Registro de Cutoffs':'Edición de Cutoffs'], "CC.abrir('screenDocCut')")});
 })();
