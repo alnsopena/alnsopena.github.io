@@ -49,7 +49,7 @@
   <section class="panel" id="screenDashboard" aria-label="Dashboard operativo">
     <iframe id="operationalDashboard" title="COSMOS Dashboard Operativo v3" data-src="dashboard/?v=v37" scrolling="no"></iframe>
   </section>
-  <section class="panel active cc-prop" id="screenType" data-prop="Propuesta sin ticket · Terrestre o Marítimo">
+  <section class="panel active cc-prop" id="screenType" data-prop="Propuesta · I-016 · Terrestre o Marítimo">
     <span class="hero-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="265 341 550 398"><path fill="#00293B" d="M 705.61 438.32 C 669.30 397.82 624.10 347.41 540 347.41 C 455.89 347.41 410.69 397.82 374.38 438.32 C 339.16 477.60 314.92 502.16 271.17 503.69 L 271.17 572.14 C 347.89 570.37 390.75 522.56 425.32 484.00 C 459.47 445.91 486.44 415.83 540 415.83 C 593.55 415.83 620.52 445.91 654.67 484.00 C 689.24 522.56 732.11 570.37 808.82 572.14 L 808.82 503.69 C 765.07 502.16 740.83 477.60 705.61 438.32 "/><path fill="#011B2B" d="M 600.08 548.24 C 575.85 523.17 561.23 508.03 540 508.03 C 518.76 508.03 504.14 523.17 479.91 548.25 C 438.54 591.05 369.71 662.27 271.17 664.34 L 271.17 732.77 C 398.65 730.80 483.36 643.13 529.19 595.71 C 532.04 592.76 535.88 591.13 540 591.13 C 544.11 591.13 547.95 592.76 550.88 595.79 C 596.64 643.13 681.35 730.80 808.82 732.77 L 808.82 664.34 C 710.29 662.27 641.46 591.05 600.08 548.24 "/><path fill="#003D53" d="M 333.47 366.85 C 339.23 360.78 345.56 354.12 352.39 347.22 L 271.17 347.22 L 271.17 411.53 C 292.99 409.49 309.40 392.21 333.47 366.85 "/><path fill="#003D53" d="M 746.52 367.04 C 770.59 392.40 787 409.68 808.82 411.72 L 808.82 347.41 L 727.60 347.41 C 734.44 354.32 740.76 360.98 746.52 367.04 "/></svg></span>
     <h1>Bienvenido al prototipo de Cosmos Connect</h1>
     <p class="sub">Elige el tipo de cotización.</p>
@@ -73,7 +73,7 @@
     <div class="buscar-head">
       <div>
         <h1>Buscar PDA
-          <span class="type-chip cc-prop" id="typeChip" title="Propuesta sin ticket · Terrestre o Marítimo">
+          <span class="type-chip cc-prop" id="typeChip" title="Propuesta · I-016 · Terrestre o Marítimo">
             <span id="typeChipLabel">-</span>
             <button class="switch-type" onclick="changeType()" style="display:none">Cambiar tipo</button>
           </span>
@@ -161,7 +161,7 @@
   <!-- ============ MAESTRO DE SERVICIOS Y FÓRMULAS ============ -->
   <section class="panel" id="screenMaster">
     <div class="buscar-head">
-      <div><h1>Buscar Servicios <span class="type-chip cc-prop" data-prop="Propuesta sin ticket · Tipo de PDA" id="masterTypeChip"></span></h1><div class="fac-sub">Ingrese datos para buscar</div></div>
+      <div><h1>Buscar Servicios <span class="type-chip cc-prop" data-prop="Propuesta · I-016 · Tipo de PDA" id="masterTypeChip"></span></h1><div class="fac-sub">Ingrese datos para buscar</div></div>
       <div class="buscar-head-actions">
         <button class="btn-corp-outline cc-prop" data-prop="Propuesta sin ticket · Volver a la PDA" id="masterBackBtn" onclick="closeMaster()">← Volver</button>
         <button class="btn-corp-outline" id="masterReqBtn" onclick="openRequests('master')">Solicitudes <span class="req-count cc-prop" id="reqCount"></span></button>
@@ -183,13 +183,13 @@
           <div class="filter-field"><label>Tipo de Nave</label><select id="mfVt" onchange="setMasterFilter('vt',this.value)"></select></div>
           <datalist id="mfCtaList"></datalist><datalist id="mfCcList"></datalist>
         </div>
-        <div class="tf-advbar cc-prop" data-prop="Propuesta sin ticket · Filtros por fórmula y tarifa"><button type="button" class="tf-advbtn" id="mAdvBtn" onclick="toggleMAdv()">Filtros Avanzados <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg></button></div>
+        <div class="tf-advbar cc-prop" data-prop="Propuesta · I-170 · Filtros por fórmula y tarifa"><button type="button" class="tf-advbtn" id="mAdvBtn" onclick="toggleMAdv()">Filtros Avanzados <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg></button></div>
         <div class="filters-grid g4 cc-prop" id="mAdv" style="display:none">
           <div class="filter-field"><label>Fórmula</label><select id="mfFormula" onchange="setMasterFilter('fcode',this.value)"></select></div>
           <div class="filter-field"><label>Tarifa</label><select id="mfTarifa" onchange="setMasterFilter('tar',this.value)"><option value="">Todas</option><option value="con">Con tarifa vigente</option><option value="sin">Sin tarifa vigente</option></select></div>
         </div>
         <div class="filter-actions">
-          <label class="obs-filter cc-prop" data-prop="Propuesta sin ticket"><input type="checkbox" id="masterPend" onchange="setMasterFilter('pend',this.checked)"> Solo pendientes</label>
+          <label class="obs-filter cc-prop" data-prop="Propuesta · I-170 · Solo pendientes"><input type="checkbox" id="masterPend" onchange="setMasterFilter('pend',this.checked)"> Solo pendientes</label>
           <button class="btn-corp-outline" onclick="clearMasterFilters()">Limpiar</button>
           <button class="btn-corp" onclick="renderMasterList()">Buscar</button>
         </div>
@@ -244,7 +244,7 @@
         </div>
       </div>
       <div class="results-head"><h2>Resultados <span class="count" id="ptCount"></span></h2>
-        <div class="tf-quick cc-prop" data-prop="Propuesta sin ticket · Accesos rápidos" id="ptQuick"></div>
+        <div class="tf-quick cc-prop" data-prop="Propuesta · I-016 · Accesos rápidos" id="ptQuick"></div>
         <button class="btn-corp-outline" id="ptExp" onclick="exportPtCsv()">Exportar</button></div>
       <div class="results-table"><table>
         <thead><tr><th>Número Documento</th><th>Nombre Corto</th><th>Dirección</th><th class="cc-prop">Roles</th><th>Estado</th></tr></thead>
@@ -281,7 +281,7 @@
         <div class="filters-grid g4" id="nvAdv" style="display:none"></div>
         <div class="filter-actions tf-actions"><button class="btn-corp-outline" id="nvLimpiar" onclick="clearNvFilters()">Limpiar</button><button class="btn-corp" id="nvBuscar" onclick="nvBuscarRango()">Buscar</button></div>
       </div>
-      <div class="results-head"><h2>Resultados <span class="count" id="nvCount"></span></h2><div class="tf-quick cc-prop" data-prop="Propuesta sin ticket · Accesos rápidos" id="nvQuick"></div><button class="btn-corp-outline" id="nvExp" onclick="nvExport()">Exportar</button></div>
+      <div class="results-head"><h2>Resultados <span class="count" id="nvCount"></span></h2><div class="tf-quick cc-prop" data-prop="Propuesta · I-016 · Accesos rápidos" id="nvQuick"></div><button class="btn-corp-outline" id="nvExp" onclick="nvExport()">Exportar</button></div>
       <div class="results-table"><table>
         <thead><tr><th>Nombre de Nave</th><th>Código Lloyds (IMO)</th><th>Estado</th><th>Tipo de Nave</th><th>Bandera</th><th>Armador</th><th>Fecha de Creación</th><th class="r">LOA</th><th class="r">Manga</th><th class="r">Calado</th><th class="r">TRG</th><th class="r">TRN</th></tr></thead>
         <tbody id="nvResults"></tbody></table><div class="cc-pager" id="nvPager"></div></div>
@@ -312,7 +312,7 @@
   <section class="panel" id="screenTemplates">
     <div class="buscar-head">
       <div>
-        <h1>Consulta Plantilla PDA <span class="type-chip cc-prop" id="tplTypeChip" title="Propuesta sin ticket · Terrestre o Marítimo"></span></h1>
+        <h1>Consulta Plantilla PDA <span class="type-chip cc-prop" id="tplTypeChip" title="Propuesta · I-016 · Terrestre o Marítimo"></span></h1>
       </div>
       <div class="buscar-head-actions">
         <button class="btn-corp" onclick="openTplEditor()">Nuevo</button>
@@ -389,7 +389,7 @@
     <div id="step1Notice"></div>
     <div class="actions">
       <button class="btn btn-ghost" onclick="pdaCancel()">Cancelar</button>
-      <button class="btn btn-primary cc-prop" data-prop="Propuesta sin ticket" onclick="goStep(2)">Continuar a Detalle →</button>
+      <button class="btn btn-primary cc-prop" data-prop="Propuesta · I-016 · Continuar a Detalle" onclick="goStep(2)">Continuar a Detalle →</button>
       <button class="btn btn-primary edit-only" onclick="pdaSave()">Guardar</button>
     </div>
   </section>
@@ -409,7 +409,7 @@
     <div class="i191-nota cc-prop" data-prop="Propuesta · HU-COM-02 · I-191 · Usabilidad del detalle (UAT 18/11)"><b>Grilla como hoja de cálculo.</b> Enter o flecha abajo pasa a la línea siguiente, Shift+Enter o flecha arriba sube, Esc deshace lo escrito. Si la cantidad queda vacía, negativa o con letras, se avisa y vuelve al valor anterior. Al reabrir una PDA guardada, el Total de cada línea se ve sin pulsar Recalcular.</div>
     <div class="svc-card">
       <h3>Servicios <span id="pdaAddCat" style="margin-left:12px"></span></h3>
-      <div class="cat-tools cc-prop" data-prop="Propuesta sin ticket"><button class="link-btn" onclick="setAllCats(false)">Expandir todo</button><span>·</span><button class="link-btn" onclick="setAllCats(true)">Contraer todo</button></div>
+      <div class="cat-tools cc-prop" data-prop="Propuesta · I-169 · Expandir y contraer"><button class="link-btn" onclick="setAllCats(false)">Expandir todo</button><span>·</span><button class="link-btn" onclick="setAllCats(true)">Contraer todo</button></div>
       <div id="calcSections"></div>
       <div class="totals-bar">
         <div class="tb-main"><span class="tb-lbl">Total Neto</span><span class="value" id="totNet2" style="font-size:15px">$ 0.00</span></div>
@@ -437,13 +437,13 @@
       <div class="st-actions" id="statusActions"></div>
     </div>
     <div id="statusActionBanner"></div>
-    <div class="cc-prop" data-prop="Propuesta sin ticket · Observación y subsanación">
+    <div class="cc-prop" data-prop="Propuesta · I-016 · Observación y subsanación">
     <div class="section-title"><span class="st-label">Observación</span></div>
     <div id="obsBox"></div>
     </div>
     <div class="pnote later"><span class="pn-tag">Fase posterior</span><b>Liquidación: cotizado vs real.</b> Después de aprobar, Operaciones confirmará las cantidades reales (horas sobre lo cotizado, viajes adicionales de lancha, etc.). El sistema recalculará la PDA respetando los mínimos y mostrará las diferencias contra lo cotizado.</div>
     <div class="pnote proc"><span class="pn-tag">Pendiente de proceso</span><b>Formalizar el flujo de Jenny.</b> Comunicación oficial a Comercial con fecha de inicio y responsables de cada registro (aprobado por gerencia, falta la difusión formal).</div>
-    <div class="cc-prop" data-prop="Propuesta sin ticket · OS y correo a Operaciones al aprobar">
+    <div class="cc-prop" data-prop="Propuesta · I-016 · OS y correo a Operaciones al aprobar">
     <div class="section-title"><span class="st-label">Notificaciones a Operaciones</span></div>
     <div class="field" style="margin-bottom:14px">
       <label>Correos que reciben la notificación al aprobar</label>
@@ -455,7 +455,7 @@
       </div>
     </div>
     </div>
-    <div class="actions cc-prop" data-prop="Propuesta sin ticket">
+    <div class="actions cc-prop" data-prop="Propuesta · I-029 · Ver PDF">
       <button class="btn btn-primary" onclick="openPdfPreview()">Ver PDF de la PDA</button>
     </div>
   </section>
@@ -709,7 +709,7 @@
 <div class="modal-bg" id="emailModal">
   <div class="modal">
     <h3>Enviar PDA</h3>
-    <div class="modal-sub">La PDA <b id="emailPdaRef" class="mono"></b> se envía en PDF a los contactos del cliente configurados en Data Maestra, con la plantilla de correo.<span class="cc-prop"> Incluye el anexo de desglose de cálculo al final (propuesta sin ticket).</span></div>
+    <div class="modal-sub">La PDA <b id="emailPdaRef" class="mono"></b> se envía en PDF a los contactos del cliente configurados en Data Maestra, con la plantilla de correo.<span class="cc-prop"> Incluye el anexo de desglose de cálculo al final (propuesta · I-029).</span></div>
     <div class="field"><label>Para (contactos del cliente)</label><div id="emailChips"></div></div>
     <div class="field" style="margin-top:12px"><label>Asunto</label><input id="emailSubject" readonly style="background:#F6F7F7"></div>
     <div class="field" style="margin-top:12px"><label>Mensaje (plantilla de correo)</label>
@@ -726,7 +726,7 @@
 <!-- Modal auto-email -->
 <div class="modal-bg" id="autoEmailModal">
   <div class="modal" style="max-width:520px">
-    <h3>Enviando notificación a Operaciones <span class="chg-tag">Propuesta sin ticket</span></h3>
+    <h3>Enviando notificación a Operaciones <span class="chg-tag">Propuesta · I-016</span></h3>
     <div class="modal-sub">Al aprobar la PDA se notifica automáticamente al área operativa.</div>
     <div style="background:#F6F7F7;border-radius:12px;padding:16px;font-size:13px;line-height:1.8">
       <div><b>De:</b> agencia@cosmos.pe</div>
@@ -2187,7 +2187,7 @@ function renderTplEditor(){
       <div class="field"><label>Tipo de Agenciamiento *</label>${sel("teSet('agencia',this.value)", TPL_AGENCIAS, t.agencia, 'Elegir')}</div>
       <div class="field"><label>Tipo de Operación *</label>${sel("teSet('operation',this.value)", OPERATIONS, t.operation, 'Elegir')}</div>
       <div class="field"><label>Tipo de Carga *</label>${sel("teCargo(this.value)", CARGO_TYPES, t.cargo, 'Elegir')}</div>`
-    : `<div class="field cc-prop" data-prop="Propuesta sin ticket · Terrestre"><label>Origen</label><input ${dis} value="${esc(t.terrestrial?.origin||'')}" oninput="teTerr('origin',this.value)"></div>
+    : `<div class="field cc-prop" data-prop="Propuesta · I-016 · Terrestre"><label>Origen</label><input ${dis} value="${esc(t.terrestrial?.origin||'')}" oninput="teTerr('origin',this.value)"></div>
       <div class="field cc-prop"><label>Destino</label><input ${dis} value="${esc(t.terrestrial?.destination||'')}" oninput="teTerr('destination',this.value)"></div>
       <div class="field cc-prop"><label>Tipo de carga</label><input ${dis} value="${esc(t.terrestrial?.cargo||'')}" oninput="teTerr('cargo',this.value)"></div>`}
     <div class="field"><label>Moneda *</label>${sel("teSet('moneda',this.value)", TPL_MONEDAS, t.moneda, 'Elegir')}</div>
@@ -2723,7 +2723,7 @@ function renderStep2(){
       </div>
       <div class="tbl-wrap cat-body ${closed?'closed':''}" id="cb_${cat}"><table class="data"><thead>
         <tr>
-          <th style="width:36px" class="cc-prop" title="Propuesta sin ticket: incluir o excluir la línea"></th><th>Servicio</th>
+          <th style="width:36px" class="cc-prop" title="Propuesta · I-111: incluir o excluir la línea"></th><th>Servicio</th>
           <th style="width:150px">Tarifa (P)</th><th style="width:110px">Cantidad (Q)</th>
           <th class="num" style="width:130px">Total</th>
           <th style="width:190px">Proveedor</th><th>Cálculo</th>
@@ -2949,7 +2949,7 @@ function rowService(s){
   const cur = s.currency || 'USD';
   const main = `
     <tr class="${s.enabled?'':'disabled'} ${isOpen?'editing':''}">
-      <td class="cc-prop"><input type="checkbox" tabindex="-1" ${s.enabled?'checked':''} title="Incluir en la PDA (propuesta sin ticket)" onchange="toggleSvc('${s.id}',this.checked)"></td>
+      <td class="cc-prop"><input type="checkbox" tabindex="-1" ${s.enabled?'checked':''} title="Incluir en la PDA (propuesta · I-111)" onchange="toggleSvc('${s.id}',this.checked)"></td>
       <td style="font-weight:600">${s.name}<span id="badges_${s.id}">${badgesHtml(s)}</span>
         <div class="row-note" id="nt_${s.id}">${esc(s.note||'')}</div></td>
       <td>${rateCellHtml(s)}</td>
@@ -2961,7 +2961,7 @@ function rowService(s){
       <td class="ops-only"><input type="checkbox" ${s.valOpe?'checked':''} ${/Operaciones/.test(curUser())?'':'disabled'} title="Validado por Operaciones" onchange="pdaValOpe('${s.id}',this.checked)"></td>
       <td><div class="row-actions">
         <button class="btn-edit ${isOpen?'on':''}" tabindex="-1" onclick="toggleEdit('${s.id}')" title="${isOpen?'Cerrar':'Moneda, unidad e IGV'}">${isOpen?'▲':ICON.edit}</button>
-        <button class="btn-adj cc-prop ${s.adj?'on':''}" tabindex="-1" onclick="openAdj('${s.id}')" title="Ajuste de línea (propuesta sin ticket: Monto fijo y No imprimir fórmula)">±</button>
+        <button class="btn-adj cc-prop ${s.adj?'on':''}" tabindex="-1" onclick="openAdj('${s.id}')" title="Ajuste de línea (propuesta · I-111: Monto fijo y No imprimir fórmula)">±</button>
         <button class="btn-del" tabindex="-1" onclick="removeService('${s.id}')" title="Quitar servicio">✕</button>
       </div></td>
     </tr>`;
@@ -3806,7 +3806,7 @@ function renderMasterEditor(){
     ? `<button class="btn-corp-outline" onclick="discardMaster()">Cancelar</button><button class="btn-corp" id="masterSaveBtn" onclick="saveMaster()">Guardar</button>`
     : can ? `<button class="btn-corp" onclick="startMasterEdit()">Editar</button>` : '';
   const info = `<div class="buscar-filters">
-      <div class="md-cardhead"><div><h3 class="md-h">Información General</h3><div class="md-flags cc-prop" data-prop="Propuesta sin ticket · Estado y tarifas del servicio">${dataStateHtml(d)}${master.isNew?'':(d.ratePending||!d.tariffCode
+      <div class="md-cardhead"><div><h3 class="md-h">Información General</h3><div class="md-flags cc-prop" data-prop="Propuesta · I-170 · Estado y tarifas del servicio">${dataStateHtml(d)}${master.isNew?'':(d.ratePending||!d.tariffCode
         ? (canEditTariffs() ? `<button class="link-btn" onclick="newTariffForSvc('${d.id}','master')">+ Crear tarifa</button>` : '<span class="ds warn">Sin tarifa</span>')
         : `<button class="link-btn" onclick="openTariffs({svcId:'${d.id}',svc:master.draft.name},'master')">Tarifas (${tariffsOfSvc(d.id).length})</button>`)}</div></div><div class="md-actions">${actions}</div></div>
       <div class="filters-grid g3">
@@ -3849,7 +3849,7 @@ function renderMasterEditor(){
           return `<div class="tf-ex">Ej. ${esc(formulaWithValues(d.formula, ctx, sym))} = <b>${sym}${money2(r.value)}</b>${Number(d.min)>0?` · mín. ${sym}${fmtNum(d.min)}`:''}</div>`; })()}</td>
       </tr></tbody></table></div>
       ${d.fcode==='PxCONT' ? `<div class="m-cont">${CONT_KEYS.map(k=>`<label><input type="checkbox" ${dis} ${keys.includes(k)?'checked':''} onchange="toggleContKey('${k}',this.checked)"> ${FACTOR_DEFS[k].label}</label>`).join('')}</div>` : ''}
-      ${d.fcode==='PERS' && edit ? `<div class="m-custom cc-prop" data-prop="Propuesta sin ticket · Fórmula personalizada">
+      ${d.fcode==='PERS' && edit ? `<div class="m-custom cc-prop" data-prop="Propuesta · I-170 · Fórmula personalizada">
           <div class="f-strip" id="fPalette"></div>
           <div class="f-canvas" id="fCanvas"></div>
           <div class="f-tools"><span class="f-status" id="fStatus"></span>
@@ -4335,7 +4335,7 @@ function renderNvEditor(){
     : lastRej ? `<div ${DM_SIN_TK('Rechazar')}><div class="tf-reason rechazada"><b>Rechazada</b> · ${esc(lastRej.user)} · ${fmtDate(lastRej.ts)}: ${esc(lastRej.comment)}</div></div>` : '')
     + (pend && !tbn ? '<div class="tf-reason pend">Para guardar o aprobar la nave se requieren todos los campos marcados con *.</div>' : '');
   ed.innerHTML = `<div class="buscar-filters">
-    <div class="md-cardhead"><div class="tf-title"><h3 class="md-h">Información General</h3>${nv.isNew?'':`<button class="tf-hist cc-prop" data-prop="Propuesta sin ticket · Historial" title="Historial" onclick="openHistModal(nv.draft.hist||[])">${DM_HIST_IC}</button>`}</div>
+    <div class="md-cardhead"><div class="tf-title"><h3 class="md-h">Información General</h3>${nv.isNew?'':`<button class="tf-hist cc-prop" data-prop="Propuesta · I-016 · Historial" title="Historial" onclick="openHistModal(nv.draft.hist||[])">${DM_HIST_IC}</button>`}</div>
       <div class="md-actions">${dmChip(d.estado)}${actions}</div></div>${banner}
     <div class="filters-grid g4">
       ${fld('Nombre de Nave *', inp('name','Ingresar Nombre de Nave',0,100), 'name')}
@@ -5178,7 +5178,7 @@ function renderStep3(){
            <button class="btn btn-primary btn-sm" ${dis} onclick="finalizePda()">Finalizar</button>`)
       + (can || st==='Anulada' || st==='Finalizada' ? '' : `<div class="hint" style="margin:6px 0 0">Aprobar, volver a pendiente y finalizar: según permisos (Comercial y Gerencia). Cambia el usuario arriba. Anular está en la cabecera.</div>`);
   const banner = document.getElementById('statusActionBanner');
-  banner.className = 'cc-prop'; banner.dataset.prop = 'Propuesta sin ticket · Aviso de estado en la pestaña';
+  banner.className = 'cc-prop'; banner.dataset.prop = 'Propuesta · I-016 · Aviso de estado en la pestaña';
   banner.innerHTML = st==='Finalizada'
     ? `<div class="status-banner"><div><b>Finalizada</b>${state.finish?` por ${esc(state.finish.by)} el ${new Date(state.finish.ts).toLocaleString('es-PE')}`:''}. Ya no se puede editar ni agregar nada.</div></div>`
     : st==='Anulada'
@@ -5372,7 +5372,7 @@ function resolveObservation(){
 }
 /* ---------- Estado principal ---------- */
 const ST_MODAL = {
-  approve:{title:'Aprobar PDA', sub:'¿Está seguro de que desea cambiar el estado a Aprobada? (Propuesta sin ticket: se genera la OS y se notifica a Operaciones.)',
+  approve:{title:'Aprobar PDA', sub:'¿Está seguro de que desea cambiar el estado a Aprobada? (Propuesta · I-016: se genera la OS y se notifica a Operaciones.)',
            label:'Nota de aprobación (opcional)', ph:'Ej. Aprobada con tarifa pactada vigente; confirmar horas de lancha al cierre', req:false, btn:'Aprobar', cls:'btn-success'},
   reopen: {title:'Volver a pendiente', sub:'¿Está seguro de que desea cambiar el estado a Pendiente de aprobación? El motivo es obligatorio y queda en el historial.',
            label:'Motivo para volver a pendiente *', ph:'Ej. El cliente pidió cambiar la terminal', req:true, btn:'Confirmar', cls:'btn-primary'}
@@ -5398,7 +5398,7 @@ function openStatusModal(kind){
   document.getElementById('stSub').textContent = c.sub;
   document.getElementById('stLabel').textContent = c.label;
   const fld = document.getElementById('stText').closest('.field');
-  if(kind==='approve'){ fld.className = 'field cc-prop'; fld.dataset.prop = 'Propuesta sin ticket · Nota de aprobación'; } else { fld.className = 'field'; delete fld.dataset.prop; }
+  if(kind==='approve'){ fld.className = 'field cc-prop'; fld.dataset.prop = 'Propuesta · I-016 · Nota de aprobación'; } else { fld.className = 'field'; delete fld.dataset.prop; }
   const ta = document.getElementById('stText'); ta.value = ''; ta.placeholder = c.ph;
   const ok = document.getElementById('stOk'); ok.textContent = c.btn; ok.className = 'btn ' + c.cls;
   document.getElementById('stAdj').innerHTML = kind==='approve' ? adjSummary().html : '';
@@ -5840,9 +5840,9 @@ function ptPill(e){ return `<span class="tf-st ${e==='Homologado'?'aprobada':e==
    El valor interno sigue siendo el del flujo PDA (Por homologar / Homologado) para no tocar los bloqueos de la PDA. */
 const DM_EST = {'Por homologar':'Pendiente de aprobación', 'Homologado':'Aprobado', 'Rechazado':'Rechazado'};
 function dmEstTxt(e){ return DM_EST[e] || e; }
-function dmPill(e){ return `<span class="tf-st ${e==='Homologado'?'aprobada':e==='Rechazado'?'rechazada cc-prop':'pendiente'}"${e==='Rechazado'?' data-prop="Propuesta sin ticket · Rechazado"':''}>${esc(dmEstTxt(e))}</span>`; }
+function dmPill(e){ return `<span class="tf-st ${e==='Homologado'?'aprobada':e==='Rechazado'?'rechazada cc-prop':'pendiente'}"${e==='Rechazado'?' data-prop="Propuesta · I-016 · Rechazado"':''}>${esc(dmEstTxt(e))}</span>`; }
 function dmChip(e){ return `<span class="cc-chip on st-${e==='Homologado'?'aprobada':e==='Rechazado'?'rechazada':'pendiente'}">${esc(dmEstTxt(e))}</span>`; }
-const DM_SIN_TK = (t, cls) => `class="cc-prop${cls?' '+cls:''}" data-prop="Propuesta sin ticket${t?' · '+t:''}"`;
+const DM_SIN_TK = (t, cls) => `class="cc-prop${cls?' '+cls:''}" data-prop="Propuesta · I-016${t?' · '+t:''}"`;
 const DM_HIST_IC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>';
 
 /* ---------- Pantalla ---------- */
@@ -5963,7 +5963,7 @@ function renderPtEditor(){
     + (pend ? '<div class="tf-reason pend">Para guardar o aprobar el socio se requieren dirección, código ERP y al menos un rol.</div>' : '');
   const docs = d.nac==='Nacional' ? ['RUC','DNI','Carné de Extranjería'] : ['Tax ID','Pasaporte'];
   const head = `<div class="buscar-filters">
-    <div class="md-cardhead"><div class="tf-title"><h3 class="md-h">Información General</h3>${pt.isNew?'':`<button class="tf-hist cc-prop" data-prop="Propuesta sin ticket · Historial" title="Historial" onclick="openPtHistory()">${DM_HIST_IC}</button>`}</div>
+    <div class="md-cardhead"><div class="tf-title"><h3 class="md-h">Información General</h3>${pt.isNew?'':`<button class="tf-hist cc-prop" data-prop="Propuesta · I-016 · Historial" title="Historial" onclick="openPtHistory()">${DM_HIST_IC}</button>`}</div>
       <div class="md-actions">${dmChip(d.estado)}${actions}</div></div>${banner}
     <div class="filters-grid g4">
       ${fld('Tipo Persona *', sel('tipoPersona',['Persona Jurídica','Persona Natural'],false,'Elegir Tipo Persona'), 'tipoPersona')}
@@ -6129,7 +6129,7 @@ function updPtCount(){ const n = PARTNERS.filter(p=>p.estado==='Por homologar').
 let supLineId = null;
 function supplierOptions(sel){
   return `<option value="" ${sel?'':'selected'}>Elegir proveedor</option>` + state.suppliers.map(x=>`<option value="${esc(x)}" ${x===sel?'selected':''}>${esc(x)}${partnerPending(x)?' (por homologar)':''}</option>`).join('')
-    + `<option value="__otro">Otro proveedor…</option><option value="__new" class="cc-prop">+ Preregistrar proveedor… (propuesta sin ticket)</option>`;
+    + `<option value="__otro">Otro proveedor…</option><option value="__new" class="cc-prop">+ Preregistrar proveedor… (propuesta · I-016)</option>`;
 }
 function onSupplierChange(id, el){
   const s = state.services.find(x=>x.id===id);
@@ -6441,10 +6441,10 @@ syInit();
    Morado continuo = nuevo o cambiado · morado punteado = quitado
 ============================================================ */
 const CHG_REMOVED = {
-  head: { t:'Cabecera y pestañas', items:[
+  head: { t:'Cabecera y pestañas', tk:'I-016', items:[
     ['Barra con los 9 estados (Borrador, Creada, Validada, Completada, En Ajuste, Aprobada, Rechazada, En Viaje, Anulada)','queda una sola etiqueta con el estado actual'],
     ]},
-  1: { t:'Información General', items:[
+  1: { t:'Información General', tk:'I-016', items:[
     ['Tipo de Nave','se toma del maestro de naves'], ['Tonelaje',''], ['País',''],
     ['Código Lloyd\'s','ahora IMO'], ['Nombre del Capitán',''], ['Email del Capitán',''],
     ['Armador',''], ['Moneda','cada servicio tiene su moneda ($ / S/)'], ['Tipo de Cambio manual','ahora T/C del día SBS / SUNAT'],
@@ -6452,7 +6452,7 @@ const CHG_REMOVED = {
     ['Requiere adelanto',''], ['Nominada',''], ['Tipo de Servicio','va en la cabecera (Líneas / Tramps)'],
     ['Tipo de Agenciamiento',''], ['Último Puerto','ahora Procedencia de la nave'],
     ['ETA y ETD','quedan en el módulo Viaje'], ['Comentarios adicionales','ahora Observaciones (REMARKS)']]},
-  2: { t:'Detalle', items:[
+  2: { t:'Detalle', tk:'I-169', items:[
     ['Columna Tarifa Unitaria',''], ['Columna Moneda','va como prefijo $ / S/ en la tarifa'],
     ['Columna A/E',''], ['Columna VAT','ahora etiqueta IGV 18% en el servicio'],
     ['Columna Comentarios','ahora dentro de editar línea (sale en el PDF)'],
@@ -6469,7 +6469,7 @@ function toggleChg(){
 }
 function chgRemovedHtml(key){
   const r = CHG_REMOVED[key]; if(!r || !r.items.length) return '';
-  return `<div class="chg-h">Se quitó respecto a Connect actual · ${r.t}<span class="chg-legend">Morado continuo: nuevo o cambiado · Punteado: quitado</span></div>
+  return `<div class="chg-h">Se quitó respecto a Connect actual · ${r.t}${r.tk?' · '+r.tk:''}<span class="chg-legend">Morado continuo: nuevo o cambiado · Punteado: quitado</span></div>
     <ul>${r.items.map(([a,b])=>`<li><s>${esc(a)}</s>${b?` <span>→ ${esc(b)}</span>`:''}</li>`).join('')}</ul>`;
 }
 function chgMark(el, label){
@@ -6503,47 +6503,47 @@ function markChanges(){
   // cabecera
   const head = document.getElementById('ccPdaHead');
   if(head){
-    chgTag(head.querySelector('.cc-ph-code'), 'Nuevo: tipo y modalidad');
-    chgMark(head.querySelector('.cc-chips'), 'Cambia: un solo estado');
+    chgTag(head.querySelector('.cc-ph-code'), 'Nuevo: tipo y modalidad · I-016');
+    chgMark(head.querySelector('.cc-chips'), 'Cambia: un solo estado · I-016');
   }
   /* La pestaña Estado existe en Ver PDA de Connect */
   // paso 1
   const s1 = document.getElementById('step1');
   if(s1 && s1.classList.contains('active')){
-    chgMark(s1.querySelector('.client-pill'), 'Nuevo: elegir o registrar cliente');
-    chgMark(document.getElementById('shipSourceSeg'), 'Nuevo: nave registrada o TBN');
-    chgField(s1, /^Seleccionar nave registrada/i, 'Nuevo');
-    chgField(s1, /^IMO/i, 'Cambia: antes Código Lloyd\'s');
-    chgField(s1, /^Procedencia de la nave/i, 'Cambia: antes Último Puerto');
-    chgField(s1, /^T\/C del día/i, 'Cambia: automático SBS / SUNAT');
-    chgField(s1, /^Observaciones/i, 'Cambia: antes Comentarios adicionales');
+    chgMark(s1.querySelector('.client-pill'), 'Nuevo: elegir o registrar cliente · I-016');
+    chgMark(document.getElementById('shipSourceSeg'), 'Nuevo: nave registrada o TBN · I-016');
+    chgField(s1, /^Seleccionar nave registrada/i, 'Nuevo · I-016');
+    chgField(s1, /^IMO/i, 'Cambia: antes Código Lloyd\'s · I-016');
+    chgField(s1, /^Procedencia de la nave/i, 'Cambia: antes Último Puerto · I-016');
+    chgField(s1, /^T\/C del día/i, 'Cambia: automático SBS / SUNAT · I-016');
+    chgField(s1, /^Observaciones/i, 'Cambia: antes Comentarios adicionales · I-016');
   }
   // paso 2
   const s2 = document.getElementById('step2');
   if(s2 && s2.classList.contains('active')){
-    chgMark(document.getElementById('kpis2'), 'Nuevo: datos de cálculo editables');
-    chgMark(s2.querySelector('.cat-tools'), 'Nuevo');
+    chgMark(document.getElementById('kpis2'), 'Nuevo: datos de cálculo editables · I-169');
+    chgMark(s2.querySelector('.cat-tools'), 'Nuevo · I-169');
     s2.querySelectorAll('#calcSections .section-title').forEach(h=>{
       const lbl = h.querySelector('.st-label');
-      if(lbl && !CHG_CATS_CONNECT.some(c=>lbl.textContent.toLowerCase().startsWith(c))) chgTag(lbl, 'Nueva categoría');
-      chgTag(h.querySelector('.btn-add'), 'Nuevo');
+      if(lbl && !CHG_CATS_CONNECT.some(c=>lbl.textContent.toLowerCase().startsWith(c))) chgTag(lbl, 'Nueva categoría · I-169');
+      chgTag(h.querySelector('.btn-add'), 'Nuevo · I-170');
     });
     s2.querySelectorAll('#calcSections thead tr').forEach(tr=>{
       const th = tr.children;
-      chgTag(th[0], 'Nuevo'); chgTag(th[5], 'Nuevo'); chgTag(th[6], 'Nuevo'); chgTag(th[7], 'Nuevo');
+      chgTag(th[0], 'Nuevo · I-111'); chgTag(th[5], 'Nuevo · I-169'); chgTag(th[6], 'Nuevo · I-169'); chgTag(th[7], 'Nuevo · I-169');
     });
-    chgMark(document.getElementById('pdaReqs').firstElementChild, 'Nuevo: pendientes para aprobar');
+    chgMark(document.getElementById('pdaReqs').firstElementChild, 'Nuevo: pendientes para aprobar · I-016');
     /* Totales Neto, VAT y Bruto: igual que Connect */
-    chgMark(s2.querySelector(':scope > .actions'), 'Nuevo: plantilla, Excel y PDF');
+    chgMark(s2.querySelector(':scope > .actions'), 'Nuevo: plantilla, Excel y PDF · I-029 (Excel y PDF)');
   }
   // paso 3: toda la pestaña es nueva
   const s3 = document.getElementById('step3');
   if(s3 && s3.classList.contains('active')){
-    chgTag(s3.querySelector('h2'), 'Nueva pestaña');
-    chgMark(s3.querySelector('.st-head'), 'Nuevo: aprobar aquí');
-    chgMark(document.getElementById('obsBox'), 'Nuevo: observación');
-    chgMark(document.getElementById('opEmailsChips') && document.getElementById('opEmailsChips').closest('.field'), 'Nuevo: notificar a Operaciones');
-    chgMark(s3.querySelector(':scope > .actions'), 'Nuevo');
+    chgTag(s3.querySelector('h2'), 'Nueva pestaña · I-016');
+    chgMark(s3.querySelector('.st-head'), 'Nuevo: aprobar aquí · I-016');
+    chgMark(document.getElementById('obsBox'), 'Nuevo: observación · I-016');
+    chgMark(document.getElementById('opEmailsChips') && document.getElementById('opEmailsChips').closest('.field'), 'Nuevo: notificar a Operaciones · I-016');
+    chgMark(s3.querySelector(':scope > .actions'), 'Nuevo · I-029');
   }
 }
 try{ if(localStorage.getItem('pdaChg')!=='0') document.body.classList.add('chg-on'); }catch(e){ document.body.classList.add('chg-on'); }

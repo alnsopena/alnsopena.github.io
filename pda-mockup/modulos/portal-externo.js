@@ -380,7 +380,7 @@ function mdCols(){ return [
   {t:'Vigencia', v:m=>m.tipo==='Por Vigencia' ? `${CC.fecha(m.desde)} a ${CC.fecha(m.hasta)}` : sd('')},
   {t:'BL', v:m=>sd(m.bl)}, {t:'Tipo de Operación', k:'oper'}, {t:'Estado', v:m=>CC.chipEstado(MST[m.estado], MTONO[m.estado])},
   {t:'Fecha registro', v:m=>CC.fecha(m.fReg)}, {t:'Adjunto', v:m=>m.archivo ? ic('desc','Descargar',`peDescarga('${e(m.archivo)}')`) : sd('')},
-  ...(esRevisor() ? [{t:`Acciones ${corrige('Solo Administrador externo o Mesa de ayuda')}`, v:mdAcc}] : [])]; }
+  ...(esRevisor() ? [{t:`Acciones ${CC.marca('Corrige', 'Solo Administrador externo o Mesa de ayuda', 'Error de Connect · I-046')}`, v:mdAcc}] : [])]; }
 function mdHtml(){
   const u = mdUI();
   if(u.modo!=='buscar') return mdForm();
@@ -657,7 +657,7 @@ function mxHtml(){
     {t:'ATA', v:b=>fh((viaje(b.nave,b.viaje).eta||'').slice(0,10))}, {t:'Nombre de Nave', k:'nave'}, {t:'Número de Viaje', k:'viaje'}, {t:'Recalada', k:'puertoCarga'},
     {t:'Puerto de Descarga', k:'puertoDescarga'}, {t:'RUC Shipper', v:b=>sd(rucDe(b.embarcador))}, {t:'Razón Social', k:'embarcador'}, {t:'Última Edición', v:b=>fh(mx(b.numero).ultEd)},
     {t:'Cantidad de Ediciones', v:b=>`${mx(b.numero).ediciones} ${ic('hist','Ver versiones',`peMxHist('${b.numero}')`)}`},
-    {t:`Descargar ${CC.etiquetaPropuesta('HU-FAC-07','BL No Negociable en Matriz')}`, v:b=>`<span class="fac-rowacts">${mx(b.numero).estado!=='ANULADO' ? ic('imp','Descargar Borrador',`peDescarga('Borrador ${b.numero}.pdf')`) : ''}<span class="cc-prop pe-nn">${ic('doc', gateNN(b.numero) || 'Descargar BL No Negociable', `peNN('${b.numero}')`, !!gateNN(b.numero))}</span></span>`}];
+    {t:`Descargar ${CC.etiquetaPropuesta('HU-FAC-07 · I-010','BL No Negociable en Matriz')}`, v:b=>`<span class="fac-rowacts">${mx(b.numero).estado!=='ANULADO' ? ic('imp','Descargar Borrador',`peDescarga('Borrador ${b.numero}.pdf')`) : ''}<span class="cc-prop pe-nn">${ic('doc', gateNN(b.numero) || 'Descargar BL No Negociable', `peNN('${b.numero}')`, !!gateNN(b.numero))}</span></span>`}];
   return filt + (u.buscado ? CC.tablaResultados({id:'peMxRes', columnas:cols, filas:mxFilas(), pagina:u.pagina, tam:u.tam, fnPagina:'peMxPagina', exportar:'peMxExportar()', vacio:'No se encontraron resultados con los criterios seleccionados'}) : '')
     + dl('peDlNave', dat().naves.map(n=>n.nombre)) + dl('peDlMxVj', vjsDe(f.nave));
 }
@@ -967,7 +967,7 @@ function rlForm(){
   const adjT = `<div class="fac-head" style="margin:18px 0 8px">${ed ? '<h3 style="font-size:15px">Adjuntar Documentos</h3>' : '<span></span>'}<div class="fac-acts">${ed ? '<button type="button" class="cc-btn ghost" id="peRlSubir" onclick="peRlSubir()">Subir Archivos</button><button type="button" class="cc-btn ghost" onclick="peRlAdjDel()">Eliminar</button>' : ''}</div></div>
     <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th></th><th>Archivo</th><th>Tipo de Documento</th><th>Fecha</th><th>Usuario</th><th>Acciones</th></tr></thead><tbody>
     ${m.adj.map((a,i)=>`<tr><td><input type="checkbox" ${dis(ed)} onchange="PE.ui.rl.selA[${i}]=this.checked"></td><td>${e(a.archivo)}</td><td>${e(a.tipo)}</td><td>${fhh(a.fecha)}</td><td>${e(a.usuario||'Usuario')}</td><td>${ic('desc','Descargar',`peDescarga('${e(a.archivo)}')`)}</td></tr>`).join('') || '<tr><td colspan="6" class="fac-empty">Sin documentos adjuntos</td></tr>'}</tbody></table></div>`;
-  const pago = ed ? `<div ${CC.propuesta('HU-ATC-12','Pago pendiente antes de enviar','fac-note' + (pend.length ? ' warn' : ''))} id="peRlPago" style="margin-top:16px"><b>Estado de pago del BL</b><br>
+  const pago = ed ? `<div ${CC.propuesta('HU-ATC-12 · I-098','Pago pendiente antes de enviar','fac-note' + (pend.length ? ' warn' : ''))} id="peRlPago" style="margin-top:16px"><b>Estado de pago del BL</b><br>
     ${pend.length ? `${pend.map(e).join('<br>')}<br>Puedes enviar la solicitud, pero Atención al Cliente no la aprobará hasta que estos pagos estén confirmados. <button type="button" class="fac-link" onclick="CC.ir('Liquidaciones y Pagos','Pago')">Ir a Pago</button>` : 'Sin pagos pendientes: la solicitud puede aprobarse.'}</div>` : '';
   return `<div class="fac-card" id="peRlForm">${cur ? chipsTodos(REL_ST, cur.estado, relTono) : chipsTodos(REL_ST, '', relTono)}
     <div class="fac-head"><h3>Registro de Solicitud</h3><div class="fac-acts">${md==='ver' && cur && cur.estado==='PENDING' && !esRevisor() ? '<button type="button" class="cc-btn" id="peRlEditar" onclick="peRlEditar()">Editar</button>' : ''}</div></div>
@@ -1160,10 +1160,10 @@ function pgFilas(){ const f = pgUI().f;
 function pgHtml(){
   const u = pgUI(), f = u.f, prop = CC.verPropuestas;
   const clientes = prop && f.oper ? (f.oper==='Importación' ? CONS() : EMBS()) : EMBS();
-  const lblCli = prop && f.oper ? `Cliente (${f.oper==='Importación' ? 'Consignatario' : 'Embarcador'}) ${CC.marca('Modifica','HU-DM-01','Consignatario o Embarcador')}` : 'Cliente';
+  const lblCli = prop && f.oper ? `Cliente (${f.oper==='Importación' ? 'Consignatario' : 'Embarcador'}) ${CC.marca('Modifica','HU-DM-01','I-002 · Consignatario o Embarcador')}` : 'Cliente';
   const campos = [F('Nave', `<input id="pePgNave" list="peDlNave" placeholder="Ingrese nave" value="${e(f.nave)}" onchange="pePgNave()">`),
     F('Viaje', `<input id="pePgViaje" list="peDlPgVj" placeholder="Ingrese viaje" value="${e(f.viaje)}" ${dis(f.nave)}>`),
-    esCli() ? '' : `<div ${CC.propuesta('HU-DM-01','Tipo de Operación')}>${F('Tipo de Operación', CC.selector(['Importación','Exportación'], f.oper, 'id="pePgOper" onchange="pePgOper()"', 'Todos'))}</div>`,
+    esCli() ? '' : `<div ${CC.propuesta('HU-DM-01 · I-002','Tipo de Operación')}>${F('Tipo de Operación', CC.selector(['Importación','Exportación'], f.oper, 'id="pePgOper" onchange="pePgOper()"', 'Todos'))}</div>`,
     esCli() ? '' : F(lblCli, `<input id="pePgCli" list="peDlPgCli" placeholder="Ingrese cliente" value="${e(f.cli)}">`),
     F('Información de Pago *', CC.selector(INFO, f.info, 'id="pePgInfo" onchange="pePgInfo()"', 'Elegir Información de Pago')),
     F('BL', `<input id="pePgBl" placeholder="Ingrese BL" value="${e(f.bl)}">`), F('Puerto', `<input id="pePgPuerto" list="peDlPgPto" placeholder="Ingrese puerto" value="${e(f.puerto)}">`)].filter(Boolean);
@@ -1239,7 +1239,7 @@ function genModal(){
         <div style="margin-top:12px">${ost}${tblLineas(ls)}</div><div class="fac-tot"><span>Total a pagar: USD ${CC.dinero(sum(ls,'neto'))}</span></div>
         <div class="fac-g3">${F('Agente de Aduana', CC.selector([AGENTE.razonSocial], g.agente, `onchange="peGenG(${i},'agente',this.value)"`, 'Seleccione agente de aduana'))}
           ${F('Operador Logístico', CC.selector([OPERADOR.razonSocial], g.operador, `onchange="peGenG(${i},'operador',this.value)"`, 'Seleccione operador logístico'))}
-          ${F(`Facturar a *${exp ? ' ' + CC.marca('Modifica','HU-DM-01','Embarcador por defecto en exportación') : ''}`, `<input list="peDlFact" placeholder="Ingrese cliente" value="${e(g.facturar)}" onchange="peGenG(${i},'facturar',this.value)">`)}
+          ${F(`Facturar a *${exp ? ' ' + CC.marca('Modifica','HU-DM-01','I-002 · Embarcador por defecto en exportación') : ''}`, `<input list="peDlFact" placeholder="Ingrese cliente" value="${e(g.facturar)}" onchange="peGenG(${i},'facturar',this.value)">`)}
           ${CC.campoLectura('Condición de pago', 'Contado')}
           ${F('Comentarios', `<textarea rows="3" onchange="peGenG(${i},'com',this.value)">${e(g.com)}</textarea><span class="pe-help">La información que se consigne en esta casilla se verá reflejada en la factura.</span>`, 'fac-span2')}
           <div class="fac-f"><label>&nbsp;</label><span><input type="file" id="peGenFile${i}" hidden accept=".pdf" onchange="peGenG(${i},'archivo',this.files[0]?this.files[0].name:'')"><button type="button" class="cc-btn ghost" ${dis(g.facturar && g.facturar!==consDe(b))} onclick="document.getElementById('peGenFile${i}').click()">Subir archivo</button> <span class="pe-help">${g.archivo ? e(g.archivo) : ''} * Carta de facturación a terceros</span></span></div></div></div>`; }).join('')}

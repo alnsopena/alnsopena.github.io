@@ -204,7 +204,7 @@ W.renderVyList = function(){
       ${fld('Estado', `<select id="vf_estado" onchange="agVyF('estado',this.value)"><option value="">Elegir Estado</option>${VY_EST.map(e=>`<option ${f.estado===e?'selected':''}>${e}</option>`).join('')}
         <option class="cc-prop" value="Por homologar" ${f.estado==='Por homologar'?'selected':''}>Por homologar</option><option class="cc-prop" value="Rechazado" ${f.estado==='Rechazado'?'selected':''}>Rechazado</option></select>`)}
     </div>
-    <div class="fac-btns">${qn || f.estado==='Por homologar' ? `<button type="button" id="vyQuick" ${P('Atajo Por homologar','tf-q pend ag-quick'+(f.estado==='Por homologar'?' on':''))} onclick="agVyQuick()">Por homologar <b>${qn}</b></button>` : ''}
+    <div class="fac-btns">${qn || f.estado==='Por homologar' ? `<button type="button" id="vyQuick" ${CC.propuesta('I-016','Atajo Por homologar','tf-q pend ag-quick'+(f.estado==='Por homologar'?' on':''))} onclick="agVyQuick()">Por homologar <b>${qn}</b></button>` : ''}
       <button type="button" class="cc-btn ag-needf" ${dis} onclick="agVyBuscar()">Buscar</button><button type="button" class="cc-btn ghost ag-needf" ${dis} onclick="clearVyFilters()">Limpiar</button></div></div>`;
   const all = AG.searched ? W.vyFiltered() : [];
   if(all.length){
@@ -309,7 +309,7 @@ W.renderVyDetail = function(){
   const view = AG.mode==='view', ex = AG.mode!=='new', noAn = !anulado(v), pend = isPend(v), s = v.sun;
   let b = '';
   if(pend){
-    if(v.estado==='Por homologar' && W.canEditVessel()) b = `<span ${P('Homologación del viaje preregistrado desde la PDA')}><button type="button" class="cc-btn ghost" onclick="rejectVoyage()">Rechazar</button> <button type="button" class="cc-btn" onclick="homologateVoyage()">Homologar</button></span>`;
+    if(v.estado==='Por homologar' && W.canEditVessel()) b = `<span ${CC.propuesta('I-016','Homologación del viaje preregistrado desde la PDA')}><button type="button" class="cc-btn ghost" onclick="rejectVoyage()">Rechazar</button> <button type="button" class="cc-btn" onclick="homologateVoyage()">Homologar</button></span>`;
   } else if(ex && view && noAn){
     const tip = t => `title="${esc(t)}"`;
     b += `<button type="button" class="cc-btn" id="vyAssocBtn" onclick="openAssocPda()">Asociar PDA</button>`;
@@ -336,7 +336,7 @@ W.renderVyDetail = function(){
   if(ex && view && !v.motivoAn && !pend) b += `<button type="button" class="cc-btn pink" onclick="agVyAnular()">Anular</button>`;
   if(ex && AG.mode==='edit') b += `<button type="button" class="cc-btn" onclick="agVyGuardar()">Guardar</button><button type="button" class="cc-btn pink" onclick="agVyCancelar()">Cancelar</button>`;
   const av = avisos(v).map(([k,t])=>`<div class="fac-note warn ag-aviso">${ICO.warn}<span>${esc(t)}</span><button type="button" title="Cerrar" onclick="agVyCerrarAviso('${k}')">${ICO.x}</button></div>`).join('');
-  const pre = pend && v.origen ? `<div ${P('Preregistro del viaje desde la PDA','fac-note warn')}>Preregistrado por ${esc(v.origen.by)} · ${W.fmtDate(v.origen.ts)} · <a href="#" onclick="openPdaFromVoyage('${v.origen.pda}');return false">${esc(v.origen.pda)}</a>${v.estado==='Por homologar'?' · Complete los datos y homologue el viaje.':''}</div>` : '';
+  const pre = pend && v.origen ? `<div ${CC.propuesta('I-016','Preregistro del viaje desde la PDA','fac-note warn')}>Preregistrado por ${esc(v.origen.by)} · ${W.fmtDate(v.origen.ts)} · <a href="#" onclick="openPdaFromVoyage('${v.origen.pda}');return false">${esc(v.origen.pda)}</a>${v.estado==='Por homologar'?' · Complete los datos y homologue el viaje.':''}</div>` : '';
   const tabs = [['info','Información General'],['times','Tiempos de Arribo y Zarpe'],['ops','Servicios operativos'],['docs','Documentos adjuntos']]
     .map(([k,l])=>`<button type="button" class="${k===vy.tab?'on':''}" onclick="setVyTab('${k}')">${l}${k==='ops'?` <span class="cc-prop">(${v.rows.length})</span>`:''}</button>`).join('');
   const body = vy.tab==='times' ? tabTiempos(v) : vy.tab==='ops' ? tabServicios(v) : vy.tab==='docs' ? tabDocs(v) : tabInfo(v);
@@ -389,7 +389,7 @@ function tabInfo(v){
   const cab = `<div class="fac-g4">${ro('Número de Manifiesto' + (v.sun.p0101?' (Pendiente)':v.manif?' (Aceptado)':''), v.manif)}${ro('Número manifiesto salida', v.manifSal)}${ro('Código de Viaje', v.code)}
     <div class="fac-f"><label>Estado</label><div class="ag-row"><input disabled value="${esc(v.estado||'')}">${histBtn}</div></div></div>`;
   const sh = W.vesselByName(v.nave);
-  const homNave = isPend(v) && sh && sh.estado!=='Homologado' ? `<div ${P('Homologación de la nave preregistrada','fac-note warn')}>La nave ${esc(v.nave)} está por homologar. <a href="#" onclick="agVyHomNave();return false">Homologar la nave</a></div>` : '';
+  const homNave = isPend(v) && sh && sh.estado!=='Homologado' ? `<div ${CC.propuesta('I-016','Homologación de la nave preregistrada','fac-note warn')}>La nave ${esc(v.nave)} está por homologar. <a href="#" onclick="agVyHomNave();return false">Homologar la nave</a></div>` : '';
   const buque = `<div class="fac-sec">Datos del buque</div><div class="fac-g4">
     ${fld('Nro Viaje'+req, inpV(v,'nro',{max:10, ph:'Ingresar Nro Viaje'})+err('nro'))}
     ${fld('Nave'+req, inpV(v,'nave',{list:'agNaves', max:200, ph:'Ingresar Nave', re:1, lock:isPend(v)}))}
@@ -1066,7 +1066,7 @@ W.agConfirmar = confirmar; W.agPager = pager;
 'use strict';
 const W = window, D = document, $ = id => D.getElementById(id), esc = x => CC.esc(x), norm = x => W.normTxt(x);
 const P = (txt, cls) => CC.propuesta('sin ticket', txt, cls), TAG = txt => CC.etiquetaPropuesta('sin ticket', txt);
-const PH = (txt, cls) => CC.propuesta('HU-ATC-10', txt, cls), TAGH = txt => CC.etiquetaPropuesta('HU-ATC-10', txt);
+const PH = (txt, cls) => CC.propuesta('HU-ATC-10 · I-001', txt, cls), TAGH = txt => CC.etiquetaPropuesta('HU-ATC-10 · I-001', txt);
 const fld = (l, i, c) => CC.campo(l, i, c), sel = (o, v, a, p) => CC.selector(o, v, a, p);
 const dl = (id, arr) => `<datalist id="${id}">${arr.map(x=>`<option value="${esc(x)}"></option>`).join('')}</datalist>`;
 const confirmar = (...a) => W.agConfirmar(...a), pager = (...a) => W.agPager(...a);
@@ -1185,7 +1185,7 @@ W.renderTfList = function(){
   const inp = (key, ph, max) => `<input id="tf_${key}" maxlength="${max||100}" placeholder="${ph}" value="${esc(f[key]||'')}" oninput="setTfFilter('${key}',this.value)">`;
   const s = (key, opts, ph, id) => sel(opts, f[key], `id="${id||'tf_'+key}" onchange="setTfFilter('${key}',this.value)"`, ph);
   const terms = f.puerto ? [...new Set([...(TERMINALS_BY_PORT[f.puerto]||[]), (PORTS.find(p=>p.k===f.puerto)||{}).terminal].filter(Boolean))] : [];
-  const chip = `<span ${P('Tarifas por tipo Marítimo o Terrestre','type-chip '+state.categoryType)} id="tfTypeChip">${state.categoryType==='maritimo'?'Marítimo':'Terrestre'}</span>`;
+  const chip = `<span ${CC.propuesta('I-016','Tarifas por tipo Marítimo o Terrestre','type-chip '+state.categoryType)} id="tfTypeChip">${state.categoryType==='maritimo'?'Marítimo':'Terrestre'}</span>`;
   const acts = `${chip}<button type="button" ${P('Volver al flujo del prototipo','cc-btn ghost')} id="tfBackBtn" onclick="closeTariffs()">${tf.returnTo==='master'?'← Volver al servicio':tf.returnTo==='pda'?'← Volver a la PDA':'← Volver'}</button>
     ${can?'<button type="button" class="cc-btn" id="tfNewBtn" onclick="newTariff()">+ Nuevo</button>':''}`;
   const basic = [fld('Código', inp('code','Ingresar Código',25)), fld('Referencia', inp('ref','Ingresar Referencia')), fld('Clase', s('clase', TF_CLS, 'Elegir Clase')),
@@ -1337,7 +1337,7 @@ function tabSvc(d, edit){
     return main + sub; }).join('');
   return addB + `<div class="fac-scroll"><table class="fac-tbl"><thead><tr><th>Servicios</th><th>Tipo de Cálculo</th><th>Unidad</th><th>Factor por Unidad</th><th>Cantidad Mínima</th><th>Precio de Costo</th><th>Precio de Venta</th>
     <th>Porcentaje de Tipo de Impuesto</th><th>Sujeto a Impuestos</th><th>Es Retroactivo</th><th>Es Mandatorio</th>${ex?'<th>Monto editable</th>':''}<th>Aplicar descuento</th><th>Valor de descuento</th>
-    <th class="cc-prop">Monto mínimo ${TAG('Monto mínimo')}</th>${ex?'':`<th class="cc-prop">Editable en la PDA ${TAG('Editable en la PDA')}</th>`}<th>Acciones</th><th></th></tr></thead><tbody>
+    <th class="cc-prop">Monto mínimo ${CC.etiquetaPropuesta('I-111','Monto mínimo')}</th>${ex?'':`<th class="cc-prop">Editable en la PDA ${TAG('Editable en la PDA')}</th>`}<th>Acciones</th><th></th></tr></thead><tbody>
     ${rows || `<tr><td colspan="18" class="fac-empty">Sin servicios.</td></tr>`}</tbody></table></div>`;
 }
 W.agTfExp = i => { TS.exp[i] = !TS.exp[i]; W.renderTfEditor(); };
@@ -1379,7 +1379,7 @@ function ldPinta(){
   if(k!=='com') ex.push(chk('desc','Aplicar descuento'));
   if(ex.length) h += `<div class="ag-chks" style="grid-column:1/-1">${ex.join('')}</div>`;
   if(l.desc) h += fld('Tipo de descuento *', sel([['P','Porcentaje'],['F','Fijo']], l.descType, `${dis} onchange="agTfL('descType',this.value,1)"`, 'Elegir Tipo de descuento')+e('descType')) + fld('Valor de descuento *', num('descVal'));
-  h += `<div ${P('Monto mínimo por servicio')}>${fld('Monto mínimo', num('min'))}</div>`;
+  h += `<div ${CC.propuesta('I-111','Monto mínimo por servicio')}>${fld('Monto mínimo', num('min'))}</div>`;
   if(!excep(d.clase)) h += `<div ${P('Precio editable en la PDA')} style="align-self:end">${chk('editable','Editable en la PDA')}</div>`;
   h += '</div>';
   if(pr){

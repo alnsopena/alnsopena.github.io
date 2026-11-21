@@ -298,7 +298,7 @@ function dvFormHtml(){
   if(t==='Por Contenedor'){
     const info = ce.prov ? null : maestro().find(x=>x.numero===String(ce.num||'').toUpperCase());
     out.push(sec('Gestión de Contenedores', (ro ? '' : `
-      <div ${CC.propuesta('HU-ATC-02','Contenedor provisional')} id="dvProv" style="margin-bottom:10px;padding:10px;border-radius:8px">
+      <div ${CC.propuesta('HU-ATC-02 · I-003','Contenedor provisional')} id="dvProv" style="margin-bottom:10px;padding:10px;border-radius:8px">
         <label class="fac-chk"><input type="checkbox" id="dvCProv" ${ce.prov?'checked':''} onchange="dvRe()"> Contenedor no registrado en el maestro</label>
         ${ce.prov ? `<div class="fac-note warn">El contenedor quedará como <b>provisional</b>, pendiente de regularizar cuando llegue por manifiesto. Se enlaza por número cuando el manifiesto lo registre.</div>
         <div class="fac-g4" style="margin-top:8px">${CC.campo('Número de contenedor *', `<input id="dvCNum" maxlength="11" placeholder="Ej. CAAU5242074" value="${esc(ce.num||'')}" style="text-transform:uppercase">`)}
