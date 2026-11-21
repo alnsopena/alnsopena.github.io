@@ -162,9 +162,13 @@ function libSeed(){
       contenedores: AC.contsDe(b.numero).map((c,k)=>({ num:c.numero, tipo:AC.isoDe(c.tipo), dep: (i===6 && k===1) ? '' : AC.depositos[(i+k) % 3].razon,
         origen: (i===6 && k===1) ? 'Sin depósito' : ['Preasignación','Instrucción de BL','Prioridad de Depósito'][(i+k) % 3], memo:'' })),
       adjuntos:[Object.assign({tipo:'BL Endosado'}, AC.archivo('BL_Endosado','pdf'))], memos:[], hist:[] };
-    if(e==='Aprobado') libEmitir(r);
+    if(e==='Aprobado'){ libEmitir(r); r.fechaVb = `${AC.sumarDias(r.creado, 1)}T16:20`; }
     return r; });
 }
+/* HU-ATC-02 (I-045): Visto Bueno generado = liberación de la carga aprobada. Devuelve {id, fecha, bl} o null */
+AC.vbDe = num => { libSeed();
+  const r = LIB.lista.find(x=>x.estado==='Aprobado' && x.contenedores.some(c=>c.num===num));
+  return r ? { id:r.id, bl:r.bl, fecha: r.fechaVb || ((r.memos[0]||{}).fecha) || r.creado } : null; };
 function libDeposito(c){ if(c.dep) return c; const d = typeof AC.depositoInstruccion==='function' ? AC.depositoInstruccion(c.num) : null; return d ? Object.assign({}, c, {dep:d.dep, origen:d.origen}) : c; }
 function libValidaciones(r){
   const susp = typeof AC.suspensionVigente==='function' && AC.suspensionVigente(r.consignatario);
@@ -473,15 +477,20 @@ window.insMasiva = () => {
   const html = () => AC.cab('Actualización masiva')
     + `<div class="fac-g2">${CC.campo('Tamaño/Tipo de Contenedor *', CC.selector(AC.iso, st.tipo||'', 'id="insMT"', 'Elegir Tamaño/Tipo Contenedor'))}
       ${CC.campo('Días Libres *', `<input type="number" min="0" id="insMD" value="${esc(st.dias??'')}">`)}
-      ${CC.campo('Archivo *', `<div class="ac-row"><input disabled value="${esc(st.archivo ? st.archivo.nombre : '')}" style="flex:1">${AC.btn('Subir Archivo', AC.cb(()=>{ st.tipo = AC.v('insMT'); st.dias = AC.v('insMD');
+      <div ${CC.propuesta('I-044','HU-ATC-05 · Unidad y fecha en el masivo','fac-span4')} id="insMProp" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:8px;border-radius:8px">
+        ${CC.campo('Unidad de Conteo', CC.selector(AC.unidades, st.unidad||'', 'id="insMU"', 'Mantener la unidad actual'))}
+        ${CC.campo('Fecha Inicial de Cálculo', CC.selector(AC.fechasIni, st.fini||'', 'id="insMF"', 'Mantener la fecha actual'))}
+        <div class="ac-mut" style="grid-column:1/-1">Si deja un campo vacío, cada contenedor conserva su valor actual (por definir con negocio, PEN-I044-01). Las opciones de fecha dependen de la línea naviera.</div></div>
+      ${CC.campo('Archivo *', `<div class="ac-row"><input disabled value="${esc(st.archivo ? st.archivo.nombre : '')}" style="flex:1">${AC.btn('Subir Archivo', AC.cb(()=>{ st.tipo = AC.v('insMT'); st.dias = AC.v('insMD'); st.unidad = AC.v('insMU'); st.fini = AC.v('insMF');
           AC.adjuntar({unico:true, base:'Actualizacion_masiva', ext:'pdf'}, f=>{ st.archivo = f[0]; AC.repintar(bg, html()); }); }), 'ghost', 'data-ac="masiva-archivo"')}</div>`, 'fac-span4')}</div>`
     + AC.pie(AC.btn('Cancelar','acCerrar()','ghost'), AC.btn('Guardar', AC.cb(()=>{
-        const tipo = AC.v('insMT'), dias = AC.v('insMD');
+        const tipo = AC.v('insMT'), dias = AC.v('insMD'), unidad = CC.verPropuestas ? AC.v('insMU') : '', fini = CC.verPropuestas ? AC.v('insMF') : '';
         if(!tipo || dias==='' || Number(dias)<0 || !st.archivo){ CC.toast('Por favor, complete todos los campos obligatorios.','error'); return; }
         const af = INS.d.b.conts.filter(c=>c.tipo===tipo);
         if(!af.length){ CC.toast(`No hay contenedores afectados para ${AC.isoTxt(tipo)}.`,'error'); return; }
         AC.confirmar('Confirmar Actualización Masiva', `¿Desea aplicar la actualización en la grilla para los contenedores de Tamaño/Tipo Contenedor ${esc(AC.isoTxt(tipo))}?`, ()=>{
-          af.forEach(c=>c.dias = Number(dias)); INS.d.b.adjuntos.push(st.archivo); INS.d.nuevos++; AC.cerrar(); insRe(); CC.toast(`Días libres aplicados a ${af.length} contenedor(es). Falta Guardar.`,'info'); }, 'Aceptar');
+          af.forEach(c=>{ c.dias = Number(dias); if(unidad) c.unidad = unidad; if(fini) c.fini = fini; }); INS.d.b.adjuntos.push(st.archivo); INS.d.nuevos++; AC.cerrar(); insRe();
+          CC.toast(`${unidad || fini ? 'Días libres, unidad y fecha inicial' : 'Días libres'} aplicados a ${af.length} contenedor(es). Falta Guardar.`,'info'); }, 'Aceptar');
       }), '', 'data-ac="masiva-guardar"'));
   bg = AC.dlg(html(), 'md');
 };
