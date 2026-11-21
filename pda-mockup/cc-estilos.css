@@ -1894,3 +1894,20 @@
   .doc-x{background:none;border:none;cursor:pointer;color:inherit;padding:0 0 0 4px}
   .doc-man{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
   #docCoExc .fac-f{margin-bottom:12px}
+
+
+/* ===== Prototipos PDA Comercial y Facturación (I-118, I-120, I-161, I-191, I-197, I-198, I-159) ===== */
+.i118-rango{display:flex;gap:6px}.i118-rango input{flex:1;min-width:0}
+.i191-nota{margin:0 0 10px;padding:8px 12px;border-radius:8px;background:#F5F7FB;font-size:12px;color:var(--muted)}
+.i198-aviso{margin-top:10px;padding:10px 12px;border-radius:8px;background:#F5F7FB;font-size:12px;color:var(--muted)}
+.a197-buscar{width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:10px;font:inherit;font-size:13px}
+.a197-lista{max-height:320px;overflow:auto;margin-top:10px;border:1px solid var(--border);border-radius:10px;padding:6px 10px}
+.a197-item{display:flex;gap:8px;align-items:center;padding:6px 0;font-size:13px;border-bottom:1px solid #F0F2F2;cursor:pointer}
+.a197-item:last-of-type{border-bottom:none}.a197-meta{margin-left:auto;color:var(--muted);font-size:11px;white-space:nowrap}
+.i120-card,#pdaMultiCli .svc-card{margin-top:16px}
+.i120-tbl select,.i120-tbl input{width:100%;min-width:90px;font:inherit;font-size:12px;padding:5px 6px;border:1px solid var(--border);border-radius:6px}
+.i120-pie{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:10px;font-size:12px;color:var(--muted)}
+.i161-resumen{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
+.i161-resumen div{display:flex;flex-direction:column;padding:8px 14px;border:1px solid var(--border);border-radius:10px;font-size:12px;color:var(--muted)}
+.i161-resumen b{font-size:14px;color:var(--indigo)}
+.i159-cat{margin-top:10px}

@@ -114,13 +114,25 @@
           <label>Cliente</label>
           <input id="searchCliente" list="dlSearchCliente" placeholder="Elegir cliente" onkeydown="if(event.key==='Enter')applyFilters()"><datalist id="dlSearchCliente"></datalist>
         </div>
-        <div class="filter-field cc-prop" data-prop="Propuesta sin ticket · Tipo de servicio">
+        <div class="filter-field cc-prop" data-prop="Propuesta · HU-COM-01 · I-118 · Tipo de servicio">
           <label>Tipo de servicio</label>
           <select id="searchTipo"></select>
         </div>
+        <div class="filter-field cc-prop" data-prop="Propuesta · HU-COM-01 · I-118 · Viaje">
+          <label>Viaje</label>
+          <input id="searchViaje" maxlength="25" placeholder="Ingresar viaje" onkeydown="if(event.key==='Enter')applyFilters()">
+        </div>
+        <div class="filter-field cc-prop" data-prop="Propuesta · HU-COM-01 · I-118 · Terminal">
+          <label>Terminal</label>
+          <select id="searchTerminal"><option value="Todos">Elegir terminal</option></select>
+        </div>
+        <div class="filter-field cc-prop" data-prop="Propuesta · HU-COM-01 · I-118 · Fecha operativa (ETA)">
+          <label>ETA desde / hasta</label>
+          <div class="i118-rango"><input type="date" id="searchEtaDe" aria-label="ETA desde"><input type="date" id="searchEtaA" aria-label="ETA hasta"></div>
+        </div>
       </div>
       <div class="filter-actions">
-        <label class="obs-filter cc-prop" data-prop="Propuesta sin ticket · Observación"><input type="checkbox" id="searchObs"> Solo con observación</label>
+        <label class="obs-filter cc-prop" data-prop="Propuesta · HU-COM-01 · I-118 · Observación"><input type="checkbox" id="searchObs"> Solo con observación</label>
         <button class="btn-corp" id="lpBuscar" onclick="applyFilters()">Buscar</button>
         <button class="btn-corp-outline" id="lpLimpiar" onclick="clearFilters()">Limpiar</button>
       </div>
@@ -136,7 +148,7 @@
         <thead>
           <tr id="lpHead">
             <th style="width:22%" data-s="code">Código PDA</th>
-            <th data-s="nave">Nombre de Nave</th><th class="cc-prop" data-s="servicio">Servicio <span class="chg-tag cc-prop">Propuesta sin ticket</span></th><th class="cc-prop" data-s="viaje">Viaje <span class="chg-tag cc-prop">Propuesta sin ticket</span></th><th data-s="puerto">Puerto</th>
+            <th data-s="nave">Nombre de Nave</th><th class="cc-prop" data-s="servicio">Servicio <span class="chg-tag cc-prop">Agrega · HU-COM-01 · I-118</span></th><th class="cc-prop" data-s="viaje">Viaje <span class="chg-tag cc-prop">Agrega · HU-COM-01 · I-118</span></th><th data-s="puerto">Puerto</th>
             <th data-s="cliente">Cliente</th><th data-s="estado">Estado</th>
           </tr>
         </thead>
@@ -394,6 +406,7 @@
     <div class="recalc-bar" style="display:flex;align-items:center;gap:12px;margin:10px 0">
       <button class="btn btn-ghost btn-sm edit-only" onclick="pdaRecalcular()">Recalcular (F9)</button>
       <span class="hint" style="margin:0">Vuelve a buscar las tarifas con los datos actuales y recalcula toda la PDA.</span></div>
+    <div class="i191-nota cc-prop" data-prop="Propuesta · HU-COM-02 · I-191 · Usabilidad del detalle (UAT 18/11)"><b>Grilla como hoja de cálculo.</b> Enter o flecha abajo pasa a la línea siguiente, Shift+Enter o flecha arriba sube, Esc deshace lo escrito. Si la cantidad queda vacía, negativa o con letras, se avisa y vuelve al valor anterior. Al reabrir una PDA guardada, el Total de cada línea se ve sin pulsar Recalcular.</div>
     <div class="svc-card">
       <h3>Servicios <span id="pdaAddCat" style="margin-left:12px"></span></h3>
       <div class="cat-tools cc-prop" data-prop="Propuesta sin ticket"><button class="link-btn" onclick="setAllCats(false)">Expandir todo</button><span>·</span><button class="link-btn" onclick="setAllCats(true)">Contraer todo</button></div>
@@ -405,6 +418,8 @@
       </div>
     </div>
     <div id="pdaReqs"></div>
+    <div id="pdaRecargos"></div>
+    <div id="pdaMultiCli"></div>
     <div class="actions">
       <button class="btn btn-primary edit-only" onclick="pdaSave()">Guardar</button>
       <button class="btn btn-ghost" onclick="openTplEditor(null,true)">Guardar como plantilla</button>
@@ -810,8 +825,12 @@ const CARGO_TYPES = [
   {k:'refined',  es:'Derivados de petróleo',     en:'Refined products',        kind:'mt'},
   {k:'chem',     es:'Químicos',                  en:'Chemicals',               kind:'mt'},
   {k:'lpg',      es:'Gases / GLP',               en:'Gas / LPG',               kind:'mt'},
-  {k:'general',  es:'Carga general',             en:'General cargo',           kind:'mt'}
+  {k:'general',  es:'Carga general',             en:'General cargo',           kind:'mt'},
+  /* I-196 (HU-COM-01): grupos del catálogo propio de la PDA, sin tocar la tabla común de tipos de carga */
+  {k:'petro',    es:'Petróleo y derivados',      en:'Oil and oil products',    kind:'mt', prop:'I-196'},
+  {k:'gas',      es:'Gases / LNG / LPG',         en:'Gases / LNG / LPG',       kind:'mt', prop:'I-196'}
 ];
+function cargoOptAttr(x){ return x && x.prop ? ` class="cc-prop" data-prop="Propuesta · HU-COM-01 · ${x.prop}"` : ''; }
 const OPERATIONS = [
   {k:'dis',     es:'Descarga',            en:'Discharge'},
   {k:'load',    es:'Embarque',            en:'Loading'},
@@ -1706,6 +1725,9 @@ function renderResults(data){
   const all = SAMPLE_PDAS.filter(p=>p.tipo===state.categoryType);
   const dl = (id, k) => { const el = document.getElementById(id); if(el) el.innerHTML = [...new Set(all.map(p=>p[k]))].sort().map(x=>`<option value="${esc(x)}">`).join(''); };
   dl('dlSearchNave','nave'); dl('dlSearchCliente','cliente');
+  /* I-118: terminales de las PDA del tipo elegido */
+  const st = document.getElementById('searchTerminal');
+  if(st){ const cur = st.value; st.innerHTML = '<option value="Todos">Elegir terminal</option>' + [...new Set(all.map(p=>(p.data||{}).terminal).filter(Boolean))].sort().map(x=>`<option ${x===cur?'selected':''}>${esc(x)}</option>`).join(''); }
   lpSync(); lpRender();
 }
 function lpRender(){
@@ -1734,7 +1756,7 @@ function lpSortBy(k){ lp.dir = lp.sort===k ? -lp.dir : 1; lp.sort = k; lpRender(
 /* Buscar y Limpiar se habilitan solo con algún filtro, como en Connect */
 function lpHasFilter(){
   const v = id => (document.getElementById(id)?.value||'').trim();
-  return !!(v('searchCode') || v('searchNave') || v('searchCliente') || ['searchEstado','searchTipo','searchPuerto'].some(id=>v(id) && v(id)!=='Todos') || document.getElementById('searchObs')?.checked);
+  return !!(v('searchCode') || v('searchNave') || v('searchCliente') || v('searchViaje') || v('searchEtaDe') || v('searchEtaA') || ['searchEstado','searchTipo','searchPuerto','searchTerminal'].some(id=>v(id) && v(id)!=='Todos') || document.getElementById('searchObs')?.checked);
 }
 function lpSync(){ const on = lpHasFilter(); ['lpBuscar','lpLimpiar'].forEach(id=>{ const b = document.getElementById(id); if(b) b.disabled = !on; }); }
 function lpExport(){
@@ -1757,12 +1779,20 @@ function applyFilters(){
     if(document.getElementById('searchObs').checked && !p.obs) return false;
     if(tipo !== 'Todos' && p.servicio !== tipo) return false;
     if(puerto !== 'Todos' && p.puerto !== puerto) return false;
+    /* I-118 (HU-COM-01): viaje, terminal y rango de ETA (fecha operativa, no la de creación) */
+    const g = id => facProp() ? (document.getElementById(id)?.value||'').trim() : '';
+    if(!has(p.viaje, g('searchViaje'))) return false;
+    if(g('searchTerminal') && g('searchTerminal')!=='Todos' && (p.data||{}).terminal !== g('searchTerminal')) return false;
+    const eta = String((p.data||{}).eta||'').slice(0,10);
+    if(g('searchEtaDe') && (!eta || eta < g('searchEtaDe'))) return false;
+    if(g('searchEtaA') && (!eta || eta > g('searchEtaA'))) return false;
     return true;
   });
   renderResults(data);
 }
 function clearFilters(){
-  ['searchCode','searchNave','searchCliente'].forEach(id=>document.getElementById(id).value = '');
+  ['searchCode','searchNave','searchCliente','searchViaje','searchEtaDe','searchEtaA'].forEach(id=>{ const el = document.getElementById(id); if(el) el.value = ''; });
+  if(document.getElementById('searchTerminal')) document.getElementById('searchTerminal').value = 'Todos';
   document.getElementById('searchEstado').value = 'Todos';
   document.getElementById('searchTipo').value = 'Todos';
   document.getElementById('searchPuerto').value = 'Todos';
@@ -1999,7 +2029,7 @@ function renderTemplateManager(){
     <button type="button" class="link-btn" style="margin:10px 0" onclick="tq.adv=!tq.adv;renderTemplateManager()">${tq.adv?'▲':'▼'} Filtros Avanzados</button>
     <div class="filters-grid" style="${tq.adv?'':'display:none'}">${sel('vtype','Tipo de Nave',VESSEL_TYPES.map(v=>[v.k,v.es]))}${sel('servicio','Tipo de Servicio',['LINER','TRAMP'])}
       ${sel('agencia','Tipo de Agenciamiento',TPL_AGENCIAS)}${sel('operation','Tipo de Operación',OPERATIONS.map(o=>[o.k,o.es]))}
-      ${sel('cargo','Tipo de Carga',CARGO_TYPES.map(c=>[c.k,c.es]))}${sel('moneda','Moneda',TPL_MONEDAS)}</div>
+      ${sel('cargo','Tipo de Carga',CARGO_TYPES.filter(c=>!c.prop||facProp()).map(c=>[c.k,c.es]))}${sel('moneda','Moneda',TPL_MONEDAS)}</div>
     <div class="filter-actions"><button class="btn-corp" onclick="tqBuscar()">Buscar</button><button class="btn-corp-outline" onclick="tqLimpiar()">Limpiar</button></div>`;
   renderMgrBody();
 }
@@ -2135,7 +2165,7 @@ function teDelSvc(id){ tplEditing.services = tplEditing.services.filter(x=>x.id!
 function renderTplEditor(){
   const t = tplEditing, mar = t.tipo!=='terrestre', ro = te.mode==='view', dis = ro ? 'disabled' : '';
   const sel = (fn, list, val, empty) => `<select ${dis} onchange="${fn}">${empty!=null?`<option value="">${empty}</option>`:''}${list.map(x=>
-    typeof x==='string' ? `<option ${x===val?'selected':''}>${esc(x)}</option>` : `<option value="${x.k}" ${x.k===val?'selected':''}>${esc(x.es||x.k)}</option>`).join('')}</select>`;
+    typeof x==='string' ? `<option ${x===val?'selected':''}>${esc(x)}</option>` : `<option value="${x.k}" ${x.k===val?'selected':''}${cargoOptAttr(x)}>${esc(x.es||x.k)}</option>`).join('')}</select>`;
   const title = te.mode==='view' ? 'Ver Plantilla PDA' : te.mode==='edit' ? 'Editar Plantilla PDA' : 'Nueva Plantilla PDA';
   document.getElementById('teTitle').innerHTML = `${title} ${t.id ? tplChipEstado(t) : ''}`;
   document.getElementById('teSub').innerHTML = t.code ? `<span class="mono">${esc(t.code)}</span>` : 'Plantilla PDA no registrada';
@@ -2178,7 +2208,7 @@ function renderTplEditor(){
     const avail = tplCatalog(t).filter(m=>m.cat===cat && !t.services.some(x=>x.id===m.id && x.enabled));
     return `<div class="ms-sec" style="margin-top:14px"><span>${catLabel(cat)} · ${rows.length} servicio(s)</span>
       ${ro ? '' : `<select style="max-width:260px;text-transform:none;letter-spacing:0" onchange="teAddSvc('${cat}',this.value)"><option value="">Agregar Servicio</option>${avail.map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('')}</select>`}</div>
-      <div class="tbl-wrap" style="border:1px solid var(--border);border-radius:10px"><table class="te-svc"><thead><tr><th>Servicio</th><th>Unidad de Tarifa</th><th>Moneda</th><th>Cantidad</th><th>A/E</th><th>VAT</th><th>Comentarios</th>${ro?'':'<th>Acciones</th>'}</tr></thead><tbody>
+      <div class="tbl-wrap" style="border:1px solid var(--border);border-radius:10px"><table class="te-svc"><thead><tr><th>Servicio</th><th>Unidad de Tarifa <span class="chg-tag" title="Al elegir el tipo de nave, cada servicio llega con la unidad del maestro de servicios">Modifica · HU-COM-02 · I-191</span></th><th>Moneda</th><th>Cantidad</th><th>A/E</th><th>VAT</th><th>Comentarios</th>${ro?'':'<th>Acciones</th>'}</tr></thead><tbody>
       ${rows.map(x=>{ const m = tplMeta(t,x), unit = x.unit ?? m.unit, cur = x.currency ?? m.currency, vat = Number(x.vat)||0;
         return `<tr><td>${esc(m.name)}</td>
           <td><input ${dis} value="${esc(unit||'')}" oninput="teSvc('${x.id}','unit',this.value)"></td>
@@ -2267,6 +2297,7 @@ function resetPdaData(){
   state.cargoSynced = null; state.remarks = ''; state.payment = 'none';
   state.editingId = null; state.os = null; state.lastObserverNote = ''; state.obs = null; state.annul = null;
   state.fxPref = false; state.fxNote = ''; state.collapsed = {}; state.contOpen = false; state.approval = null; state.reopen = null;
+  state.recargos = []; state.multiCli = null;   /* I-120 e I-161 */
 }
 function openSamplePda(code){
   const sp = SAMPLE_PDAS.find(x=>x.code===code); if(!sp) return;
@@ -2363,7 +2394,7 @@ function fld(label,key,val,type,ph){
   return `<div class="field"><label>${label}</label><input data-k="${key}" ${t} value="${esc(val??'')}" placeholder="${esc(ph||'')}"></div>`;
 }
 function optList(list,val,withEmpty){
-  return (withEmpty?'<option value="">Selecciona…</option>':'') + list.map(x=>`<option value="${x.k}" ${x.k===val?'selected':''}>${x.es}</option>`).join('');
+  return (withEmpty?'<option value="">Selecciona…</option>':'') + list.map(x=>`<option value="${x.k}" ${x.k===val?'selected':''}${cargoOptAttr(x)}>${x.es}</option>`).join('');
 }
 function renderMaritimeFields(){
   document.querySelectorAll('#shipSourceSeg button').forEach(b=>b.classList.toggle('on', b.dataset.src===state.shipSource));
@@ -2402,7 +2433,7 @@ function renderCargoFields(){
     : kind ? ''
     : `<div class="hint" style="align-self:end">Elige el tipo de carga para agregar sus conceptos de carga y descarga.</div>`;
   document.getElementById('cargoFields').innerHTML = `
-    <div class="field"><label>Tipo de Carga *</label><select data-k="cargo">${optList(CARGO_TYPES,v.cargo,true)}</select></div>
+    <div class="field"><label>Tipo de Carga * ${fm('Agrega: Petróleo y derivados, Gases / LNG / LPG','HU-COM-01','I-196')}</label><select data-k="cargo">${optList(CARGO_TYPES,v.cargo,true)}</select></div>
     <div class="field"><label>Tipo de Operación *</label><select data-k="operation">${optList(OPERATIONS,v.operation)}</select></div>
     ${extra}`;
   bindVessel('#cargoFields');
@@ -2710,6 +2741,7 @@ function renderStep2(){
   }).join('');
   refreshTotals();
   renderPdaReqs();
+  try{ renderPdaRecargos(); renderPdaMultiCli(); }catch(e){ console.warn('prototipos PDA', e); }
   setTimeout(()=>{ document.addEventListener('click', closeAllDropdowns, {once:true}); },0);
 }
 /* Categorías colapsables: Owner expenses empieza cerrada si no tiene servicios */
@@ -2960,6 +2992,7 @@ function rowService(s){
             ${igvOn?`<input type="text" inputmode="decimal" data-num="1" class="igv-pct" value="${(s.vat*100).toFixed(0)}"
               onclick="event.stopPropagation()" oninput="updLive('${s.id}','vat',parseNum(this.value)/100)"><span style="font-size:11px;color:var(--green);font-weight:700">%</span>`:''}
           </div></div>
+        ${pdaQuiebreHtml(s)}
       </div>
       <div class="edit-foot">
         ${masterCatalog().some(m=>m.id===s.id)
@@ -3802,7 +3835,8 @@ function renderMasterEditor(){
   let body = '';
   if(tab==='nave'){
     body = `<label class="obs-filter md-check"><input type="checkbox" ${dis} ${d.allVessels?'checked':''} onchange="updField('allVessels',this.checked);renderMasterEditor()"> Aplica para todos los tipos de nave</label>
-      ${d.allVessels ? '' : `<div class="m-cont">${VESSEL_TYPES.map(v=>`<label><input type="checkbox" ${dis} ${(d.vesselTypes||[]).includes(v.k)?'checked':''} onchange="toggleVesselType('${v.k}',this.checked)"> ${esc(v.es)}</label>`).join('')}</div>`}`;
+      ${d.allVessels ? '' : `<div class="m-cont">${VESSEL_TYPES.map(v=>`<label><input type="checkbox" ${dis} ${(d.vesselTypes||[]).includes(v.k)?'checked':''} onchange="toggleVesselType('${v.k}',this.checked)"> ${esc(v.es)}</label>`).join('')}</div>`}
+      ${d.allVessels || (d.vesselTypes||[]).length ? '' : `<div class="i198-aviso cc-prop" data-prop="Propuesta · HU-COM-05 · I-198 · Servicio sin tipo de nave"><b>Servicio sin tipo de nave.</b> Se puede guardar así. No se carga solo en una PDA nueva, ni desde cero ni por el tipo de nave; sigue disponible en «Agregar servicio» de su categoría y en las plantillas que lo incluyen.</div>`}`;
   } else if(tab==='unidad'){
     const fopts = FORMULA_CAT.filter(c=>!c.mar || type==='maritimo');
     const keys = contKeysOf(d.formula) || [];
@@ -4693,6 +4727,8 @@ function saveMaster(){
   const r = evalFormula(d.formula, testCtx());
   if(!r.ok){ toast('Corrige la fórmula antes de guardar','error'); return; }
   if(!String(d.name).trim()){ master.errs = {name:'Obligatorio'}; renderMasterEditor(); document.querySelector('#masterEditor .f-err')?.scrollIntoView({block:'center',behavior:'smooth'}); return; }
+  /* Connect bloquea un servicio sin marca y sin tipo de nave. I-198 (HU-COM-05) propone permitirlo */
+  if(!d.allVessels && !(d.vesselTypes||[]).length && !facProp()){ toast('Seleccione al menos un Tipo de Nave o marque "Aplica a todos los tipos de nave"','error'); return; }
   master.errs = null;
   const before = state.pdaNumber ? grandTotal() : null;
   const list = masterCatalog();
@@ -5167,7 +5203,9 @@ function pdaRateNoReason(){ return state.services.filter(x=>x.enabled && x.rateE
 /* Vista Operaciones: sin permiso de ver montos (PDA.ViewFinancial) se ven Unidad, Cantidad, Comentarios y Val. Ope. */
 function pdaOpsView(){ return /Operaciones/.test(curUser()); }
 function pdaValOpe(id, on){ const s = state.services.find(x=>x.id===id); if(!s) return; s.valOpe = on; log('Operaciones', `${on?'Validó':'Quitó la validación de'} "${s.name}" (Val. Ope.)`); }
-function pdaAddCat(cat){ if(!cat) return; state.addedCats = [...new Set([...(state.addedCats||[]), cat])]; state.collapsed = {...(state.collapsed||{}), [cat]:false}; renderStep2(); }
+/* Connect: "Agregar Categoría" abre una ventana con la categoría y sus servicios en casillas (ver pdaCatModal) */
+function pdaAddCat(cat){ if(!cat) return; pdaCatModal(cat); }
+function pdaAddCatDirect(cat){ if(!cat) return; state.addedCats = [...new Set([...(state.addedCats||[]), cat])]; state.collapsed = {...(state.collapsed||{}), [cat]:false}; renderStep2(); }
 function pdaRateReason(id, v){ const s = state.services.find(x=>x.id===id); if(s) s.rateReason = v; }
 /* Buscar tarifa: vuelve a tomar la tarifa vigente de la línea (catálogo o tarifa pactada del cliente) */
 function pdaBuscarTarifa(id){
@@ -7068,6 +7106,7 @@ function fdSapErr(id){
       :`<dl class="fac-kv"><dt>Qué pasó</dt><dd>Error no catalogado todavía. Escala a TI con la referencia.</dd><dt>Referencia de soporte ${fm('Agrega',FAC_HU.sap,'I-159','PEN-I159-02')}</dt><dd>SOP-2026-${String(d.id).padStart(5,'0')}</dd><dt>Tipo</dt><dd><span class="fac-pill err">Por diagnosticar</span> ${fm('',FAC_HU.sap,'I-159','PEN-I159-01')}</dd></dl>`}
     </div>
     <details class="fac-tech"><summary>Ver mensaje técnico</summary><pre>${esc(s.msg||'Sin mensaje de error registrado.')}</pre></details>
+    <div class="cc-prop i159-cat" data-prop="Propuesta · HU-FAC-12 · I-159 · Catálogo de errores SAP"><button type="button" class="fac-link" id="fdSapCatBtn" onclick="fdSapCatalogo(${d.id})">Ver catálogo de errores SAP</button></div>
     <div class="fac-btns"><button type="button" class="cc-btn" onclick="facClose()">Cerrar</button></div>`);
 }
 /* ---------- Nuevo documento y canje desde provisión ---------- */
@@ -8560,6 +8599,141 @@ GUIDES.screenUsers = [{t:'Consultar un usuario', steps:[
 </script>
 <div class="cc-dd" id="ccDropdown"></div>
 <div class="tour-layer" id="tourLayer"><div class="tour-hole" id="tourHole"></div><div class="tour-pop" id="tourPop" onclick="event.stopPropagation()"></div></div>
+<script>
+/* ============================================================
+   PROTOTIPOS COMERCIAL Y FACTURACIÓN SOBRE LA PDA (v37)
+   I-197 Agregar Categoría con buscador · I-013 Quiebre por línea · I-120 Recargos
+   I-161 Facturación por cliente · I-159 Catálogo de errores SAP. Todo en memoria.
+============================================================ */
+function pdaEditable(){ return state.status!=='Aprobada' && state.status!=='Anulada'; }
+
+/* ---------- I-197 (HU-COM-02): ventana "Agregar Categoría" con buscador ---------- */
+const A197 = {cat:'', sel:{}};
+function pdaCatModal(cat){
+  A197.cat = cat; A197.sel = {};
+  const shown = catList().filter(c=>state.services.some(s=>s.cat===c) || (state.addedCats||[]).includes(c));
+  const free = catList().filter(c=>!shown.includes(c));
+  const svcs = masterCatalog().filter(m=>m.cat===cat && !state.services.some(s=>s.id===m.id));
+  facOpen(`<h3>Agregar Categoría</h3><div style="height:10px"></div>
+    <div class="field"><label>Categoría</label><select id="a197Cat" onchange="pdaCatModal(this.value)">${free.map(c=>`<option value="${c}" ${c===cat?'selected':''}>${esc(catLabel(c))}</option>`).join('')}</select></div>
+    <div class="cc-prop" data-prop="Propuesta · HU-COM-02 · I-197 · Buscador de servicios" style="margin-top:10px">
+      <input id="a197Buscar" class="a197-buscar" placeholder="Buscar servicio (${svcs.length})" oninput="pdaCatFiltrar(this.value)"></div>
+    <div class="a197-lista" id="a197Lista">${svcs.map(m=>`<label class="a197-item" data-n="${esc(normTxt(m.name+' '+(m.sap||'')))}"><input type="checkbox" value="${m.id}" onchange="A197.sel['${m.id}']=this.checked"> ${esc(m.name)} <span class="a197-meta">${curSym(m.currency)}${m.rate} · ${esc(m.unit||'')}</span></label>`).join('') || '<div class="hint">Todos los servicios de esta categoría ya están en la PDA.</div>'}
+      <div class="hint a197-vacio" style="display:none">Sin resultados.</div></div>
+    <div class="fac-btns"><button type="button" class="cc-btn pink" onclick="facClose()">Cancelar</button><button type="button" class="cc-btn" id="a197Ok" onclick="pdaCatOk()">Agregar</button></div>`, 'md');
+}
+function pdaCatFiltrar(q){
+  const t = normTxt(q||''); let n = 0;
+  document.querySelectorAll('#a197Lista .a197-item').forEach(el=>{ const ok = !t || el.dataset.n.includes(t); el.style.display = ok ? '' : 'none'; if(ok) n++; });
+  const v = document.querySelector('#a197Lista .a197-vacio'); if(v) v.style.display = n ? 'none' : '';
+}
+function pdaCatOk(){
+  const cat = A197.cat, ids = Object.keys(A197.sel).filter(k=>A197.sel[k]);
+  facClose();
+  ids.forEach(id=>{ const m = masterCatalog().find(x=>x.id===id); if(m && !state.services.some(s=>s.id===id)){ state.services.push(newLine(m)); log('Edición', `Agregó servicio "${m.name}"`); } });
+  pdaAddCatDirect(cat);
+  if(ids.length) toast(`${ids.length} servicio(s) agregado(s) en ${catLabel(cat)}`, 'success');
+}
+
+/* ---------- I-013 (HU-FAC-01): quiebre SAP por línea de la PDA ---------- */
+const PDA_QUIEBRES_SAP = {agency:['Q01010 - COMISION DE AGENCIA'], owner:['Q05010 - GASTOS DEL ARMADOR'], port:['Q02090 - GASTOS DE ESCALA','Q02100 - PRACTICAJE Y REMOLCAJE'], cargo:['Q03010 - OPERACION DE CARGA'], auth:['Q04010 - DERECHOS DE AUTORIDAD']};
+function pdaQuiebresDe(s){
+  const m = masterCatalog().find(x=>x.id===s.id) || {};
+  const delMaestro = (m.quiebres||[]).filter(q=>q.erp && q.desc).map(q=>`${q.erp} - ${String(q.desc).toUpperCase()}`);
+  return delMaestro.length ? delMaestro : (PDA_QUIEBRES_SAP[s.cat] || PDA_QUIEBRES_SAP.port);
+}
+function pdaQuiebreHtml(s){
+  const ops = pdaQuiebresDe(s);
+  return `<div class="ef cc-prop" data-prop="Propuesta · HU-FAC-01 · I-013 · Quiebre SAP" style="grid-column:1/-1"><label>Quiebre SAP</label>
+    <select id="qb_${s.id}" ${pdaEditable()?'':'disabled'} onchange="pdaSetQuiebre('${s.id}',this.value)"><option value="">Elegir quiebre</option>${ops.map(q=>`<option ${q===s.quiebre?'selected':''}>${esc(q)}</option>`).join('')}</select>
+    <div class="hint" style="margin:4px 0 0">Solo quiebres activos de este servicio, sincronizados desde SAP. El viaje y la provisión lo heredan sin volver a digitarlo.</div></div>`;
+}
+function pdaSetQuiebre(id, v){ const s = state.services.find(x=>x.id===id); if(!s) return; s.quiebre = v; log('Edición', `Quiebre SAP de "${s.name}": ${v||'sin quiebre'}`); }
+
+/* ---------- I-120 (HU-COM-02): registro estructurado de recargos operativos ---------- */
+const PDA_RECARGOS = [
+  {k:'noct',  t:'Nocturno (18:00 a 00:00)', pct:25},
+  {k:'madr',  t:'Madrugada (00:00 a 07:00)', pct:50},
+  {k:'fer',   t:'Domingo o feriado', pct:50},
+  {k:'eslora',t:'Eslora mayor a 200 m (dos prácticos)', pct:100},
+  {k:'otro',  t:'Otro', pct:0}];
+function pdaRecImporte(r){ const s = state.services.find(x=>x.id===r.svc); return s && s.enabled ? round2(calcItem(s) * (Number(r.pct)||0) / 100) : 0; }
+function renderPdaRecargos(){
+  const el = document.getElementById('pdaRecargos'); if(!el) return;
+  state.recargos = state.recargos || [];
+  const ed = pdaEditable(), dis = ed ? '' : 'disabled';
+  const svcs = state.services.filter(s=>s.enabled);
+  const tot = state.recargos.reduce((a,r)=>a+pdaRecImporte(r),0);
+  el.innerHTML = `<div class="svc-card i120-card cc-prop" data-prop="Propuesta · HU-COM-02 · I-120 · Recargos operativos">
+    <h3>Recargos operativos ${fm('Propuesta TI por validar','HU-COM-02','I-120')}</h3>
+    <div class="hint" style="margin:0 0 10px">Recargo por horario, día o eslora sobre el total de la línea. Los porcentajes son de ejemplo hasta aprobar la tabla de recargos.</div>
+    <div class="tbl-wrap"><table class="data i120-tbl"><thead><tr><th>Servicio</th><th>Tipo de recargo</th><th style="width:80px">%</th><th class="num">Base (total línea)</th><th class="num">Importe</th><th>Fecha y hora</th><th>Justificación</th><th>Registrado por</th><th>Aprobación</th><th></th></tr></thead><tbody>
+    ${state.recargos.map((r,i)=>{ const s = state.services.find(x=>x.id===r.svc);
+      return `<tr><td><select ${dis} onchange="pdaRecSet(${i},'svc',this.value)">${svcs.map(x=>`<option value="${x.id}" ${x.id===r.svc?'selected':''}>${esc(x.name)}</option>`).join('')}</select></td>
+        <td><select ${dis} onchange="pdaRecSet(${i},'tipo',this.value)">${PDA_RECARGOS.map(t=>`<option value="${t.k}" ${t.k===r.tipo?'selected':''}>${esc(t.t)}</option>`).join('')}</select></td>
+        <td><input ${dis} inputmode="decimal" value="${r.pct}" onchange="pdaRecSet(${i},'pct',parseNum(this.value))"></td>
+        <td class="num mono">${s&&s.enabled?fmt(calcItem(s)):'-'}</td><td class="num mono"><b>${fmt(pdaRecImporte(r))}</b></td>
+        <td><input ${dis} type="datetime-local" value="${esc(r.fecha||'')}" onchange="pdaRecSet(${i},'fecha',this.value)"></td>
+        <td><input ${dis} maxlength="300" value="${esc(r.just||'')}" placeholder="Hora, día o eslora que lo sustenta" onchange="pdaRecSet(${i},'just',this.value)"></td>
+        <td>${esc(r.by)}</td>
+        <td><select ${dis} onchange="pdaRecSet(${i},'aprob',this.value)">${['Pendiente','Aprobado','Rechazado'].map(a=>`<option ${a===r.aprob?'selected':''}>${a}</option>`).join('')}</select></td>
+        <td>${ed?`<button class="btn-del" onclick="pdaRecDel(${i})" title="Quitar recargo">✕</button>`:''}</td></tr>`; }).join('')
+      || `<tr><td colspan="10" style="text-align:center;padding:14px;color:var(--muted);font-style:italic">Sin recargos registrados.</td></tr>`}
+    </tbody></table></div>
+    <div class="i120-pie">${ed && svcs.length ? `<button class="btn-add" id="i120Add" onclick="pdaRecAdd()">+ Agregar recargo</button>` : '<span></span>'}
+      <span>Total recargos estimado <b id="i120Total">${fmt(tot)}</b> · No suma al Total de la PDA hasta aprobar la tabla de recargos.</span></div></div>`;
+}
+function pdaRecAdd(){
+  const s = state.services.find(x=>x.enabled); if(!s) return;
+  state.recargos = state.recargos || [];
+  state.recargos.push({svc:s.id, tipo:'noct', pct:25, fecha:'', just:'', by:curUser(), aprob:'Pendiente'});
+  log('Edición', `Registró recargo operativo en "${s.name}"`); renderPdaRecargos();
+}
+function pdaRecSet(i, k, v){
+  const r = state.recargos[i]; if(!r) return; r[k] = v;
+  if(k==='tipo'){ const t = PDA_RECARGOS.find(x=>x.k===v); if(t) r.pct = t.pct; }
+  if(k==='aprob') r.aprobBy = v==='Pendiente' ? '' : curUser();
+  renderPdaRecargos();
+}
+function pdaRecDel(i){ state.recargos.splice(i,1); renderPdaRecargos(); }
+
+/* ---------- I-161 (HU-COM-03): una PDA con servicios para más de un cliente ---------- */
+function renderPdaMultiCli(){
+  const el = document.getElementById('pdaMultiCli'); if(!el) return;
+  const mc = state.multiCli, ed = pdaEditable(), dis = ed ? '' : 'disabled';
+  const principal = (state.client||{}).name || 'Cliente principal';
+  const otros = (state.clients||[]).filter(c=>c.name!==principal);
+  let body = '';
+  if(mc){
+    const svcs = state.services.filter(s=>s.enabled);
+    const de = s => (mc.asig[s.id]==='otro' && mc.otro) ? mc.otro : principal;
+    const t1 = svcs.filter(s=>de(s)===principal).reduce((a,s)=>a+calcItem(s),0), t2 = svcs.filter(s=>de(s)!==principal).reduce((a,s)=>a+calcItem(s),0);
+    body = `<div class="grid" style="margin:10px 0"><div class="field"><label>Segundo cliente facturable</label><select id="i161Otro" ${dis} onchange="pdaMcSet('otro',this.value)"><option value="">Elegir cliente</option>${otros.map(c=>`<option ${c.name===mc.otro?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div></div>
+      <div class="tbl-wrap"><table class="data"><thead><tr><th>Servicio</th><th class="num">Total</th><th style="width:280px">Facturar a</th></tr></thead><tbody>
+      ${svcs.map(s=>`<tr><td>${esc(s.name)}</td><td class="num mono">${fmt(calcItem(s))}</td><td><select ${dis} ${mc.otro?'':'disabled'} onchange="pdaMcAsig('${s.id}',this.value)"><option value="principal">${esc(principal)}</option>${mc.otro?`<option value="otro" ${mc.asig[s.id]==='otro'?'selected':''}>${esc(mc.otro)}</option>`:''}</select></td></tr>`).join('')}
+      </tbody></table></div>
+      <div class="i161-resumen"><div><span>${esc(principal)}</span><b>${fmt(t1)}</b></div>${mc.otro?`<div><span>${esc(mc.otro)}</span><b id="i161Tot2">${fmt(t2)}</b></div>`:''}</div>
+      <div class="hint" style="margin:8px 0 0">Cada cliente recibe su documento solo con sus servicios, importes y datos de facturación. El requerimiento de servicios (SR) y los reportes de arribo y zarpe salen separados por cliente.</div>`;
+  }
+  el.innerHTML = `<div class="svc-card cc-prop" data-prop="Propuesta · HU-COM-03 · I-161 · PDA con varios clientes">
+    <h3>Facturación por cliente ${fm('Propuesta TI por validar','HU-COM-03','I-161')}</h3>
+    <label class="obs-filter"><input type="checkbox" id="i161On" ${mc?'checked':''} ${dis} onchange="pdaMcToggle(this.checked)"> Esta PDA factura servicios a más de un cliente</label>${body}</div>`;
+}
+function pdaMcToggle(on){ state.multiCli = on ? {otro:'', asig:{}} : null; renderPdaMultiCli(); }
+function pdaMcSet(k, v){ state.multiCli[k] = v; if(k==='otro' && !v) state.multiCli.asig = {}; renderPdaMultiCli(); }
+function pdaMcAsig(id, v){ state.multiCli.asig[id] = v; const s = state.services.find(x=>x.id===id); log('Edición', `"${s?s.name:id}" se factura a ${v==='otro'?state.multiCli.otro:(state.client||{}).name}`); renderPdaMultiCli(); }
+
+/* ---------- I-159 (HU-FAC-12): catálogo de errores SAP ---------- */
+function fdSapCatalogo(id){
+  facOpen(`<h3>Catálogo de errores SAP ${fm('Propuesta TI por validar','HU-FAC-12','I-159')}</h3><div style="height:10px"></div>
+    <div class="fac-scroll"><table class="fac-tbl" id="fdSapCatTbl"><thead><tr><th>Código SAP</th><th>Qué pasó</th><th>Dato afectado</th><th>Qué hacer</th><th>Tipo</th></tr></thead><tbody>
+    ${Object.entries(FD_SAP_CAT).map(([k,c])=>`<tr><td>${esc(k)}</td><td>${esc(c.msg)}</td><td>${esc(c.dato)}</td><td>${esc(c.accion)}</td><td><span class="fac-pill wait">${esc(c.tipo)}</span></td></tr>`).join('')}
+    <tr><td>Otro código</td><td>Error no catalogado todavía.</td><td>Por diagnosticar</td><td>Escala a TI con la referencia de soporte. Se guarda la respuesta de SAP.</td><td><span class="fac-pill err">Falla del sistema o por diagnosticar</span></td></tr>
+    </tbody></table></div>
+    <div class="hint" style="margin:10px 0 0">Dato corregible: lo arregla el usuario en el documento. Falla del sistema: la revisa TI.</div>
+    <div class="fac-btns"><button type="button" class="cc-btn" onclick="fdSapErr(${Number(id)})">Volver</button></div>`, 'lg');
+}
+</script>
 <script src="dashboard-embed.js?v=v37"></script>
 <!-- Marco v37: API de pantallas (window.CC), datos compartidos y módulos. Los módulos no editan este bloque. -->
 <script src="cc-marco.js?v=v37"></script>
