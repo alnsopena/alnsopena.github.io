@@ -5871,6 +5871,7 @@ function showPtView(v){
   const nb = document.getElementById('ptNewBtn'); if(nb) nb.style.visibility = v==='list' ? '' : 'hidden';
   const bb = document.getElementById('ptBackBtn'); if(bb) bb.style.display = v==='list' || pt.returnTo!=='landing' ? '' : 'none';
   const hd = document.querySelector('#screenPartners .buscar-head > div:first-child'); if(hd) hd.style.display = v==='list' ? '' : 'none';
+  const hb = document.querySelector('#screenPartners .buscar-head'); if(hb) hb.style.display = v==='list' || (bb && bb.style.display!=='none') ? '' : 'none';
   const t = document.getElementById('ccPbTitle'), c = document.getElementById('ccCrumbs');
   if(v==='detail'){
     const ttl = pt.isNew ? 'Crear Socio' : 'Editar Socio';
@@ -6020,7 +6021,7 @@ function renderPtEditor(){
       ${d.bancos.map((b,i,_,e=rowE(b))=>`<tr${sapRow(b)?' data-rdsap':''}>${pick('bancos',i,e)}<td>${csel('bancos',i,'banco',['',...CB_BANKS],b.banco,e)}${sapB(b)}</td><td>${csel('bancos',i,'tipo',PT_BANK_TYPES,b.tipo,e)}</td><td>${cell('bancos',i,'cuenta',b.cuenta,'',25,e)}</td>
         <td>${csel('bancos',i,'moneda',['PEN','USD'],b.moneda,e)}</td>${ptRdBancoTd(b,i,e)}</tr>`).join('') || empty(9,'Sin cuentas.')}
     </tbody></table></div>${fErr(E,'bancos')}`;
-  if(edit && tab!=='comercial') body += `<div style="margin-top:10px;display:flex;gap:8px"><button class="btn-add" onclick="ptAddRow('${tab}')">Añadir</button><button class="btn-corp-outline" onclick="ptDelSel('${tab}')">Eliminar</button></div>`;
+  if(edit && tab!=='comercial') body += `<div style="margin-top:10px;display:flex;gap:8px"><button class="btn-corp" onclick="ptAddRow('${tab}')">Añadir</button><button class="btn-corp-outline" onclick="ptDelSel('${tab}')">Eliminar</button></div>`;
   ed.innerHTML = head + gen + `<div class="buscar-filters"><div class="md-tabs">${tabs}</div><div class="md-body">${body}</div></div>`;
 }
 /* ---------- Propuesta HU-DM-01 · I-035: datos por rol (Cliente / Proveedor / Ambos) y sincronización con SAP ----------
