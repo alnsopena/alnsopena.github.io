@@ -109,16 +109,18 @@
   'use strict';
   const MK = k => typeof fm==='function' ? fm(k, 'HU-FAC-01', 'I-014') : '';
   const PROP = t => `class="cc-prop" data-prop="HU-FAC-01 · I-014 · ${t}"`;
-  /* Cotizaciones de cada escala: la PDA aprobada y, si hay, una cotización adicional (equivale a una adenda de la FDA, I-202) */
-  const COTS = [
-    {nave:'PACIFIC HORIZON', nro:'115E', cot:'PDA2026000041PECLL', svcs:[['TAR-0201',1450],['TAR-0310',700],['TAR-0510',2500],['TAR-0610',540],['TAR-0420',180]]},
-    {nave:'PACIFIC HORIZON', nro:'115E', cot:'PDA2026000063PECLL', adicional:true, svcs:[['TAR-0312',360],['TAR-0421',180]]},
-    {nave:'BOX ENDURANCE', nro:'684', cot:'PDA2026000035PECLL', svcs:[['TAR-0201',1210],['TAR-0510',1250],['TAR-0312',240]]},
-    {nave:'OCEAN MERIDIAN', nro:'27N', cot:'PDA2026000047PEPAR', svcs:[['TAR-0420',180],['TAR-0311',620]]},
-    {nave:'REEFER ATLANTIC', nro:'31S', cot:'PDA2026000044PEPAI', svcs:[['TAR-0421',180],['TAR-0510',1250]]}
-  ];
-  const TIPOS_FECHA = [['docDate','Emisión Doc.'],['recDate','Recepción'],['payDate','Vencimiento']];
-  const FILTROS = () => ({doc:'',prov:'',num:'',est:'',from:'',to:'',tipo:'docDate'});
+  /* Versión mínima (22/11/2026): la grilla toma los servicios del VIAJE que traen código de PDA.
+     Un servicio cotizado que aún no pasó al viaje no está aquí; uno cargado a mano por Operaciones (sin PDA) no entra. */
+  const SVC_VIAJE = [
+    ['PACIFIC HORIZON','115E','PDA2026000041PECLL',[['TAR-0201',1450],['TAR-0310',700],['TAR-0510',2500],['TAR-0610',540],['TAR-0420',180]]],
+    ['PACIFIC HORIZON','115E','PDA2026000063PECLL',[['TAR-0312',360],['TAR-0421',180]]],
+    ['PACIFIC HORIZON','115E','',[['TAR-0710',800]]],
+    ['BOX ENDURANCE','684','PDA2026000035PECLL',[['TAR-0201',1210],['TAR-0510',1250],['TAR-0312',240]]],
+    ['OCEAN MERIDIAN','27N','PDA2026000047PEPAR',[['TAR-0420',180],['TAR-0311',620]]],
+    ['REEFER ATLANTIC','31S','PDA2026000044PEPAI',[['TAR-0421',180],['TAR-0510',1250]]]
+  ].map(([nave, nro, cot, svcs])=>({nave, nro, cot, svcs}));
+  const COTS = SVC_VIAJE.filter(c=>c.cot);
+  const FILTROS = () => ({prov:'',num:'',sit:'',cat:'',svc:'',est:'',from:'',to:''});
   const S = window.LQP = {nave:'PACIFIC HORIZON', viaje:'115E', cot:'', adv:false, f:FILTROS(), ok:true, page:1, size:10};
   const naves = () => [...new Set(facVoys().map(v=>v.nave))];
   const cotsDe = (nave, nro) => COTS.filter(c=>c.nave===nave && c.nro===nro).sort((a,b)=>a.cot.localeCompare(b.cot));
@@ -145,14 +147,16 @@
       out.push({c, t, imp, p, est:p ? fpStL(p.status) : 'Por liquidar', doc:p && p.sit==='Original' && p.docNum ? `${p.docSerie}-${p.docNum}` : 'Pendiente'});
     }));
     const f = S.f, q = x=>normTxt(x||'');
-    return out.filter(r=>(!f.doc || (r.p && q(r.doc).includes(q(f.doc))))
-      && (!f.prov || q(r.t.prov).includes(q(f.prov)))
+    /* Mismos filtros de Connect; Rango de Fechas como hoy en Connect */
+    return out.filter(r=>(!f.prov || q(r.t.prov).includes(q(f.prov)))
       && (!f.num || (r.p && q(r.p.code).includes(q(f.num))))
+      && (!f.sit || (r.p && r.p.sit===f.sit))
+      && (!f.cat || r.t.cat===f.cat) && (!f.svc || r.t.svc===f.svc)
       && (!f.est || r.est===f.est)
-      && (!f.from || (r.p && (r.p[f.tipo]||'')>=f.from)) && (!f.to || (r.p && (r.p[f.tipo]||'')<=f.to)));
+      && (!f.from || (r.p && (r.p.docDate||'')>=f.from)) && (!f.to || (r.p && (r.p.docDate||'')<=f.to)));
   }
   const tono = e => e==='Por liquidar' ? 'lqp-naranja' : /PROVISIONADO|LIQUIDADO|CANJEADO/.test(e) ? 'lqp-verde' : /ERROR/.test(e) ? 'lqp-rojo' : 'lqp-gris';
-  const cotTxt = c => c.cot + (c.adicional ? ' (Adicional)' : '');
+  const cotTxt = c => c.cot;
   window.lqpRender = function(){
     const root = document.getElementById('fpRoot'); if(!root) return;
     facSetBar('screenProvisions','Pre-registro y Provisiones',['Inicio','Facturación','Pre-registro y Provisiones']);
@@ -167,8 +171,6 @@
     <div class="fac-acts" style="justify-content:flex-end;margin-bottom:12px">${fChgBtn()}</div>
     <div class="fac-card" id="lqpBar">
       <h3>Pre-registro y Provisiones ${MK('Modifica: título, barra operativa y Consultar')}</h3>
-      <div class="fac-sub">Elige Nave y Viaje, revisa los servicios cotizados y pre-registra los que faltan liquidar.</div>
-      <div id="fpI175" ${CC.propuesta('Sin HU · I-175','Comisiones a proveedores: por definir')} style="margin:6px 0 2px;font-size:12.5px;color:var(--cc-gray)"><span class="fac-pill wait">Por definir</span> Comisiones a proveedores: cálculo, registro y liquidación sin reglas aprobadas.</div>
       <div class="lqp-bar" ${PROP('Barra operativa')}>
         ${fF('Nave', `<input id="lqpNave" list="lqpNaves" placeholder="Buscar nave" value="${esc(S.nave)}" onchange="lqpSet('nave',this.value)"><datalist id="lqpNaves">${naves().map(n=>`<option value="${esc(n)}"></option>`).join('')}</datalist>`)}
         ${fF('N° Viaje / Escala', fSel(vs.map(x=>x.nro), S.viaje, `id="lqpViaje" ${vs.length?'':'disabled'} onchange="lqpSet('viaje',this.value)"`, vs.length?'Elegir un viaje':'Elige una nave'))}
@@ -178,12 +180,13 @@
       </div>
       <button type="button" class="lqp-adv-btn" id="lqpAdvBtn" aria-expanded="${S.adv}" onclick="lqpAdv()"><span>${S.adv?'▲':'▼'}</span> Filtros avanzados</button>
       ${S.adv ? `<div class="lqp-adv" id="lqpAdv" ${PROP('Filtros avanzados')}>
-        ${fF('N° Doc. Proveedor', `<input id="lqpDoc" placeholder="F001-00045612" value="${esc(f.doc)}" onchange="lqpF('doc',this.value)">`)}
         ${fF('Proveedor', `<input id="lqpProv" list="lqpProvs" placeholder="RUC / Razón Social" value="${esc(f.prov)}" onchange="lqpF('prov',this.value)"><datalist id="lqpProvs">${FAC_PROVS.map(p=>`<option value="${esc(p)}"></option>`).join('')}</datalist>`)}
         ${fF('N° Provisión', `<input id="lqpNum" placeholder="PRV00000000071" value="${esc(f.num)}" onchange="lqpF('num',this.value)">`)}
+        ${fF('Situación', fSel(['Provisional','Original'], f.sit, `id="lqpSit" onchange="lqpF('sit',this.value)"`, 'Elegir una situación'))}
+        ${fF('Categoría', fSel(FAC_CATS, f.cat, `id="lqpCat" onchange="lqpF('cat',this.value)"`, 'Elegir una categoría'))}
+        ${fF('Servicios', fSel([...new Set(FAC_TARIFFS.filter(t=>!f.cat || t.cat===f.cat).map(t=>t.svc))], f.svc, `id="lqpSvc" onchange="lqpF('svc',this.value)"`, 'Elegir un servicio comercial'))}
         ${fF('Estado', fSel(estados, f.est, `id="lqpEst" onchange="lqpF('est',this.value)"`, 'Todos'))}
         ${fF('Rango de Fechas', `<div class="fac-range"><input type="date" id="lqpFrom" value="${f.from}" onchange="lqpF('from',this.value)"><input type="date" id="lqpTo" value="${f.to}" onchange="lqpF('to',this.value)"></div>`)}
-        ${fF('Tipo de Fecha', fSel(TIPOS_FECHA, f.tipo, `id="lqpTipo" onchange="lqpF('tipo',this.value)"`))}
         <div class="lqp-go"><button type="button" class="cc-btn pink" onclick="lqpLimpiar()">Limpiar</button></div>
       </div>` : ''}
     </div>
@@ -194,14 +197,16 @@
     </div>
     <div class="fac-card" style="padding:0" id="lqpRes">
       <div class="fac-head" style="padding:20px 26px;margin:0 0 18px;border-bottom:1px solid var(--cx-line2)"><h3>Servicios por liquidar (${rows.length}) ${MK('Modifica: grilla plana por cotización')}</h3></div>
+      <div id="lqpOrigen" ${CC.propuesta('HU-FAC-01 · I-014','Origen de la grilla','lqp-nota')} style="margin:-6px 26px 14px">Muestra los servicios del viaje con código de PDA. Lo cotizado que aún no pasa al viaje no aparece.</div>
       <div style="padding:0 26px 26px"><div class="fac-scroll" style="max-height:none"><table class="fac-tbl lqp-tbl"><thead><tr><th>N° Cotización</th><th>Servicio Cotizado</th><th>Proveedor Asignado / Estimado</th><th class="num">Importe Cotizado</th><th>N° Doc. Tercero</th><th>Estado Liquidación</th><th>Acción</th></tr></thead><tbody>
-        ${pag.map(r=>`<tr><td class="lqp-nw">${esc(r.c.cot)}${r.c.adicional?' <span class="lqp-adic">(Adicional)</span>':''}</td><td>${esc(r.t.svc)}</td><td>${esc(r.t.prov)}</td><td class="num lqp-nw">USD ${fMoney(r.imp)}</td><td class="lqp-nw">${esc(r.doc)}</td>
+        ${pag.map(r=>`<tr><td class="lqp-nw">${esc(r.c.cot)}</td><td>${esc(r.t.svc)}</td><td>${esc(r.t.prov)}</td><td class="num lqp-nw">USD ${fMoney(r.imp)}</td><td class="lqp-nw">${esc(r.doc)}</td>
           <td class="lqp-nw"><span class="lqp-est ${tono(r.est)}">● ${esc(r.est)}</span></td>
           <td class="lqp-nw">${r.p ? `<button type="button" class="fac-link" onclick="fpOpen(${r.p.id})">Ver Doc</button>` : `<button type="button" class="cc-btn lqp-pre" onclick="lqpPre('${r.c.cot}','${r.t.code}')">+ Pre-registrar</button>`}</td></tr>`).join('')
           || '<tr><td colspan="7" class="fac-empty">No se encontraron servicios cotizados con los criterios seleccionados</td></tr>'}
       </tbody></table></div>
       <div class="cc-pager">${pagerHtml(rows.length, S.page, S.size, 'lqpGo')}</div></div>
-    </div>` : ''}`;
+    </div>` : ''}
+    <div id="fpI175" ${CC.propuesta('Sin HU · I-175','Comisiones a proveedores: por definir','lqp-nota')} style="margin-top:14px">Por definir · Comisiones a proveedores: cálculo, registro y liquidación sin reglas aprobadas. No es parte de esta pantalla.</div>`;
   };
   window.lqpSet = (k, val) => {
     if(k==='nave'){ S.nave = val; const vs = facVoys().filter(x=>x.nave===val); S.viaje = vs.length===1 ? vs[0].nro : ''; S.cot = ''; S.ok = false; }

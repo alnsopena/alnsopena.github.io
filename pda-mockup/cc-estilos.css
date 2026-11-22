@@ -2223,7 +2223,7 @@ body.chg-on .lqp-txt .lqp-pr{box-shadow:inset 0 -2px 0 var(--chg)}
 .lqp-tbl td{vertical-align:middle;white-space:normal}
 .lqp-tbl th,.lqp-tbl td{padding-left:12px;padding-right:12px}
 .lqp-tbl td.lqp-nw,.lqp-tbl th{white-space:nowrap}
-.lqp-adic{font-size:12px;font-weight:600;color:#7c3aed}
+.lqp-nota{display:block;padding:6px 10px;border-left:3px solid #7c3aed;border-radius:4px;background:#f5f3ff;color:#5b21b6;font-size:12px;line-height:1.4}
 .lqp-est{font-size:12.5px;font-weight:600}
 .lqp-est.lqp-naranja{color:#c2410c}.lqp-est.lqp-verde{color:#15803d}.lqp-est.lqp-rojo{color:#b91c1c}.lqp-est.lqp-gris{color:#64748b}
 .lqp-tbl .cc-btn.lqp-pre{height:28px;min-width:0;padding:0 10px;font-size:12.5px;line-height:28px}
