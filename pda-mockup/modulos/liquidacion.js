@@ -168,6 +168,7 @@
     <div class="fac-card" id="lqpBar">
       <h3>Pre-registro y Provisiones ${MK('Modifica: título, barra operativa y Consultar')}</h3>
       <div class="fac-sub">Elige Nave y Viaje, revisa los servicios cotizados y pre-registra los que faltan liquidar.</div>
+      <div id="fpI175" ${CC.propuesta('Sin HU · I-175','Comisiones a proveedores: por definir')} style="margin:6px 0 2px;font-size:12.5px;color:var(--cc-gray)"><span class="fac-pill wait">Por definir</span> Comisiones a proveedores: cálculo, registro y liquidación sin reglas aprobadas.</div>
       <div class="lqp-bar" ${PROP('Barra operativa')}>
         ${fF('Nave', `<input id="lqpNave" list="lqpNaves" placeholder="Buscar nave" value="${esc(S.nave)}" onchange="lqpSet('nave',this.value)"><datalist id="lqpNaves">${naves().map(n=>`<option value="${esc(n)}"></option>`).join('')}</datalist>`)}
         ${fF('N° Viaje / Escala', fSel(vs.map(x=>x.nro), S.viaje, `id="lqpViaje" ${vs.length?'':'disabled'} onchange="lqpSet('viaje',this.value)"`, vs.length?'Elegir un viaje':'Elige una nave'))}
