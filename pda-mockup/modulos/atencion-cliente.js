@@ -145,6 +145,7 @@ AC.contsDe = bl => CC.datos.contenedores.filter(c=>c.bl===bl);
 ============================================================ */
 const LIB = { f:{sol:'',bl:'',hijo:'',estado:'Pendiente',nave:'',viaje:'',cons:'',agente:'',desde:'',hasta:''}, avanz:false, pagina:1, tam:10,
   lista:null, vista:'buscar', act:null, modo:'', tab:'info', sucio:false, seq:108 };
+AC.lib = () => { libSeed(); return LIB; }; /* lectura para pruebas */
 const LIB_ESTADOS = ['Pendiente','En proceso','Aprobado','Rechazado'];
 const LIB_EMISION = ['Original','Telex release','Seaway bill'];
 const LIB_TIPOS_ADJ = ['BL Endosado','Carta de Responsabilidad','DNI/ID del Representante'];
@@ -162,7 +163,7 @@ function libSeed(){
       contenedores: AC.contsDe(b.numero).map((c,k)=>({ num:c.numero, tipo:AC.isoDe(c.tipo), dep: (i===6 && k===1) ? '' : AC.depositos[(i+k) % 3].razon,
         origen: (i===6 && k===1) ? 'Sin depósito' : ['Preasignación','Instrucción de BL','Prioridad de Depósito'][(i+k) % 3], memo:'' })),
       adjuntos:[Object.assign({tipo:'BL Endosado'}, AC.archivo('BL_Endosado','pdf'))], memos:[], hist:[] };
-    if(e==='Aprobado'){ libEmitir(r); r.fechaVb = `${AC.sumarDias(r.creado, 1)}T16:20`; }
+    if(e==='Aprobado'){ libEmitir(r); r.memos.forEach(m=>m.semilla = true); r.fechaVb = `${AC.sumarDias(r.creado, 1)}T16:20`; }
     return r; });
 }
 /* HU-ATC-02 (I-045): Visto Bueno generado = liberación de la carga aprobada. Devuelve {id, fecha, bl} o null */
@@ -279,7 +280,8 @@ function libLeerForm(){ const r = LIB.act; if(!r) return; if($('libObs')) r.obs 
 
 function libDetalleHtml(){
   const r = LIB.act, crear = LIB.modo==='crear', otro = !crear && libBloqueadoOtro(r), fin = !crear && libFinal(r), editable = !otro && !fin;
-  const tabs = [['info','Información de Solicitud'],['adj','Adjuntos']].concat(crear ? [] : [['dep','Depósitos de devolución']]);
+  const tabs = [['info','Información de Solicitud'],['adj','Adjuntos']].concat(crear ? [] : [['dep','Depósitos de devolución']]).concat(libEdiVer(r) ? [['edi','MEMO y EDI']] : []);
+  if(LIB.tab==='edi' && !libEdiVer(r)) LIB.tab = 'info';
   let cuerpo = '';
   if(LIB.tab==='info'){
     const val = (!crear && (r.estado==='Pendiente' || r.estado==='En proceso')) ? libValidaciones(r) : null;
@@ -302,6 +304,8 @@ function libDetalleHtml(){
           {t:'Nombre de archivo', v:a=>`${esc(a.nombre)}<div class="ac-mut">${AC.fh(a.fecha)}</div>`}, {t:'Tipo', v:a=>esc(a.tipo || 'Sin especificar')},
           {t:'Acciones', v:(a,i)=>`<div class="fac-rowacts">${AC.link('Descargar', AC.cb(()=>AC.descargar(a.nombre)))}${editable ? AC.link('Eliminar', `libAdjEliminar(${i})`) : ''}</div>`}], r.adjuntos)
         : `<div class="ac-empty"><b>Aún no tienes adjuntos</b><p>Agrega el BL, cartas o identificaciones requeridas para la solicitud.</p>${editable ? AC.btn('Agregar', 'libAdjAgregar()') : ''}</div>`);
+  } else if(LIB.tab==='edi'){
+    cuerpo = libEdiHtml(r);
   } else {
     cuerpo = `<b>Depósitos de devolución</b><div class="fac-note">Solo informativo. El MEMO se emite con el botón Aprobar de siempre: un MEMO por depósito.</div>`
       + (r.contenedores.length ? AC.tabla([{t:'Contenedor', k:'num'}, {t:'Tipo / tamaño', v:c=>esc(`${c.tipo} · ${AC.familia(c.tipo)}`)},
@@ -316,9 +320,58 @@ function libDetalleHtml(){
     bot.push(`${crear ? '' : AC.errConnect('Guardar en edición')}${AC.btn('Guardar', 'libGuardar()', '', 'id="libGuardar"')}`);
   } else bot.push(AC.btn('Cancelar', 'libVolver()', 'ghost'));
   return `<div class="fac-card" id="libDet"><div class="fac-head"><h3>${crear ? 'Nueva liberación de carga' : 'Detalle de la liberación'}</h3>${AC.chips(LIB_ESTADOS, crear ? '' : r.estado)}</div>
-    ${AC.tabs(tabs, LIB.tab, 'libTab')}${cuerpo}<div class="fac-btns">${bot.join('')}</div></div>`;
+    ${AC.tabs(tabs, LIB.tab, 'libTab').replace('data-tab="edi" class="', `data-tab="edi" data-prop="${esc(CC.textoPropuesta(LIB_EDI_TK, 'MEMO y EDI'))}" class="cc-prop `)}${cuerpo}<div class="fac-btns">${bot.join('')}</div></div>`;
 }
 window.libSucio = () => { LIB.sucio = true; };
+
+/* ---------- Propuesta HU-ATC-04 · I-123: pestaña MEMO y EDI (solo lectura) y correo técnico de error ----------
+   La configuración EDI de cada depósito sale de Data Maestra > Socio (Configuración SFTP > EDI MEMO). Estados simulados. */
+const LIB_EDI_TK = 'HU-ATC-04 · I-123';
+const LIB_EDI_ST = {sent:['Enviado','aprobada'], retry:['Pendiente','pendiente'], err:['Error','rechazada'], noedi:['Sin EDI','anulada']};
+const libEdiVer = r => !!(r && r.memos && r.memos.length && CC.verPropuestas);
+const libEdiCfg = dep => { const p = typeof PARTNERS!=='undefined' ? PARTNERS.find(x=>x.largo===dep) : null; return p && p.edi && p.edi.on ? p.edi : null; };
+function libEdi(m){
+  if(m.edi) return m.edi;
+  const c = libEdiCfg(m.dep);
+  if(!c) return m.edi = {st:'noedi'};
+  const n = +String(m.numero).slice(-6), st = m.semilla ? ['sent','retry','err'][n % 3] : 'sent';
+  const ts = m.fecha.replace(/\D/g,'') + '30', correl = (+c.correl||0) + 1 + (n % 7);
+  const azure = c.canal==='Storage de Azure de Cosmos';
+  return m.edi = { st, rcv:c.receptor, variante:c.variante, canal:c.canal, carpeta:c.carpeta, when:m.fecha, file: `Memo_${ts}_${correl}.EDI`,
+    intento: st==='retry' ? 'intento 2 de 5' : st==='err' ? 'intento 5 de 5' : '',
+    motivo: st==='err' ? (azure ? 'No se pudo escribir en el Storage de Azure de Cosmos.' : 'No se pudo conectar al SFTP del depósito (tiempo de espera agotado).') + ' Cosmos (TI) lo reenvía tras corregir.' : '',
+    trx: `7c1f2e9a-4b0d-4a3e-9e55-${String(n).padStart(12,'0')}` };
+}
+function libEdiTip(m, e){
+  if(e.st==='noedi') return `Sin EDI\nEl depósito no es receptor de EDI MEMO. El MEMO se avisa como hoy.`;
+  return [`Último envío EDI de ${m.numero}`, `Receptor: ${e.rcv} (${e.variante})`, `Canal: ${e.canal}`, `Fecha y hora: ${AC.fh(e.when)}`,
+    `Estado: ${LIB_EDI_ST[e.st][0]}${e.intento ? ` (${e.intento})` : ''}`, `Archivo: ${e.file}`].concat(e.motivo ? [`Motivo: ${e.motivo}`] : []).join('\n');
+}
+function libEdiHtml(r){
+  const filas = r.memos.map((m,i)=>({m, i, e:libEdi(m)}));
+  return `<div ${CC.propuesta(LIB_EDI_TK, 'MEMO y EDI')} id="libEdi"><b>MEMO y EDI</b>
+    <div class="fac-note">MEMO que generó la aprobación de la solicitud, uno por depósito, y el último envío EDI de cada uno. Es de solo lectura. Pase el cursor sobre el estado para ver el detalle.</div>`
+    + AC.tabla([{t:'N.º MEMO', v:x=>`<b>${esc(x.m.numero)}</b>`}, {t:'Depósito', v:x=>esc(x.m.dep)}, {t:'Vence', v:x=>AC.f(AC.sumarDias(x.m.fecha, 7))},
+        {t:'Contenedores', v:x=>`${x.m.conts.length}<div class="ac-mut">${esc(x.m.conts.map(c=>c.num).join(', '))}</div>`},
+        {t:'Último envío EDI', v:x=>`<span class="ac-edi-st ${x.e.st} ac-edi" tabindex="0" data-edist="${x.e.st}" data-tip="${esc(libEdiTip(x.m, x.e))}">${LIB_EDI_ST[x.e.st][0]}${x.e.intento && x.e.st==='retry' ? ' · ' + x.e.intento : ''}</span>`
+          + (x.e.st==='err' ? `<div style="margin-top:4px">${AC.link('Ver correo de error', `libEdiCorreo(${x.i})`, 'data-edi-correo')}</div>` : '')}], filas)
+    + `<div class="ac-edi-ley">${[['sent','El archivo quedó en la carpeta del receptor'],['retry','Se reintenta solo'],['err','Cosmos (TI) lo reenvía tras corregir'],['noedi','El depósito no es receptor']]
+        .map(([k,t])=>`<span><span class="ac-edi-st ${k}">${LIB_EDI_ST[k][0]}</span> ${t}</span>`).join('')}</div></div>`;
+}
+window.libEdiCorreo = i => {
+  const m = LIB.act.memos[i], e = libEdi(m), fecha = (e.when||'').slice(0,10).replace(/-/g,'/');
+  const det = { memo:m.numero, receptor:e.rcv, intento:'1 de 5', estado:'Error', archivos: m.conts.map((c,k)=>({ archivo:e.file.replace(/_(\d+)\.EDI$/, (_,x)=>`_${+x + k}.EDI`), contenedor:c.num, error:e.motivo.split('.')[0] })) };
+  AC.dlg(AC.cab('Correo técnico de error del EDI MEMO', 'Vista previa. Se envía un solo correo por MEMO y receptor, en el primer error; los intentos siguientes no lo repiten.')
+    + `<div class="ac-mail" id="libEdiMail"><div class="ac-mail-h"><div><b>De</b> Notificaciones de Connect</div><div><b>Para</b> Lista de TI de Cosmos <span class="ac-mut">(la define Cosmos)</span></div>
+        <div><b>Asunto</b> Error en el envío de EDI MEMO a un depósito</div></div>
+      <div class="ac-mail-b"><p>Se produjo un error en un proceso de integración.</p><table class="ac-kv">
+        <tr><td>Integración</td><td>EDI</td></tr><tr><td>Proceso</td><td>Envío de EDI MEMO</td></tr><tr><td>MEMO</td><td>${esc(m.numero)} · ${esc(m.dep)}</td></tr>
+        <tr><td>Transacción</td><td>${esc(e.trx)}</td></tr><tr><td>Detalle</td><td>audit/edi/memo-outbound/${esc(fecha)}/${esc(e.trx)}.json</td></tr></table>
+        <p class="ac-mut">Los intentos siguientes de esta transacción no generan otro correo.</p></div></div>
+      <div class="fac-sec">Detalle en el registro de auditoría <span class="ac-mut">(el correo solo trae su ruta)</span></div><pre class="ac-json">${esc(JSON.stringify(det, null, 2))}</pre>`
+    + AC.pie(AC.btn('Cerrar','acCerrar()','','data-ac="cerrar-correo-edi"')), 'lg');
+};
+window.addEventListener('cc:propuestas', ()=>{ if(LIB.vista==='detalle' && LIB.act && document.getElementById('libDet')) libPintar(); });
 window.libMemo = i => AC.memoPdf(LIB.act.memos[i]);
 window.libAdjAgregar = () => {
   const st = { archivo:null }; let bg;
