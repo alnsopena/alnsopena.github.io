@@ -4,3 +4,6 @@ node_modules/
 node_modules/
 vendor/cosmos-paper-fx/demo/index.html
 vendor/cosmos-paper-fx/demo/assets/
+
+pda-mockup/capturas/
+.claude/
