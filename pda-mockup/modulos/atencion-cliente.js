@@ -27,6 +27,8 @@ AC.tiene = (v, q) => !q || AC.norm(v).includes(AC.norm(q));
 AC.v = id => { const e = $(id); return e ? String(e.value||'').trim() : ''; };
 AC.slug = s => AC.norm(s).replace(/[^a-z0-9]+/g,'').slice(0,18);
 AC.errConnect = txt => CC.marca('Modifica', 'Error de Connect', txt);
+/* Consulta pendiente (PEN) de un ticket: se registra en FAC_PEN para que la marca abra su ficha (solo en el portal interno) */
+AC.pen = (id, t, hu, q, p, w) => { try { if(typeof FAC_PEN!=='undefined' && !FAC_PEN[id]) FAC_PEN[id] = {t, hu, q, p, w:w||'Atención al Cliente'}; } catch(err){} return id; };
 
 /* Callbacks para onclick sin funciones globales sueltas */
 const CBS = {}; let seq = 0;
@@ -112,7 +114,30 @@ AC.memoPdf = m => AC.dlg(AC.cab(`MEMO de devolución ${esc(m.numero)}`, 'Vista p
     <table><thead><tr><th>Contenedor</th><th>Tipo / tamaño</th><th>Depósito de devolución</th></tr></thead><tbody>${m.conts.map(c=>`<tr><td>${esc(c.num)}</td><td>${esc(AC.isoTxt(c.tipo))}</td><td>${esc(m.dep)}</td></tr>`).join('')}</tbody></table>
     <p style="margin-top:12px">El contenedor debe devolverse vacío en el depósito indicado. Este documento lo descarga el cliente desde el Portal Externo.</p>
     <table class="fp-sign"><tr><td><div>Atención al Cliente</div></td><td><div>Depósito</div></td><td><div>Transportista</div></td></tr></table></div>`
+  + AC.memoProp(m)
   + AC.pie(AC.btn('Descargar PDF', AC.cb(()=>AC.descargar(`${m.numero}.pdf`)), 'ghost'), AC.btn('Cerrar','acCerrar()','','data-ac="cerrar-memo"')), 'lg');
+
+/* Propuestas en el MEMO (HU-ATC-04):
+   I-105: el MEMO emitido desde Liberación queda Emitido, con vigencia, cliente y publicado en el Portal Externo; no se duplica.
+   I-087: cada contenedor muestra la instrucción que fijó su depósito, para contrastarla con el direccionamiento permanente. */
+AC.memoVence = m => AC.sumarDias(m.fecha, 7);
+AC.memoInstr = (m, c) => {
+  dpSeed(); const k = (AC.dep(m.dep) || {}).codigo, hoy = (m.fecha || AC.ahora()).slice(0,10);
+  const r = DP.lista.find(x=>!x.sistema && x.cliente===m.consignatario);
+  const d = r && r.detalles.find(x=>x.dep===k && x.desde <= hoy && hoy <= x.hasta);
+  return d ? `Direccionamiento permanente de ${r.cliente} (vigente del ${AC.f(d.desde)} al ${AC.f(d.hasta)})` : (c.origen || 'Preasignación');
+};
+AC.memoProp = m => {
+  AC.pen('PEN-I105-01', 'I-105', 'HU-ATC-04', 'Adjuntar BL/contenedor, depósito, vigencia, paso y error que impide emitir; confirmar que se cumplen las precondiciones de liberación.', 'El MEMO se emite una sola vez al aprobar la liberación, queda Emitido con su vigencia y se publica en el Portal Externo.');
+  AC.pen('PEN-I087-01', 'I-087', 'HU-ATC-04', 'Identificar BL, contenedor, vigencia y error del MEMO del caso; confirmar si comparte causa con I-105.', 'El MEMO muestra por contenedor la instrucción que fijó el depósito, para contrastarla con el direccionamiento permanente.');
+  return `<div ${CC.propuesta('HU-ATC-04 · I-105','MEMO emitido desde Liberación')} id="memoEmitido" style="margin-top:12px;padding:10px;border-radius:8px">
+      <div class="ac-row"><b>Estado del MEMO</b>${CC.marca('Corrige','HU-ATC-04','I-105','PEN-I105-01')}</div>
+      <div class="fac-g4" style="margin-top:6px">${CC.campoLectura('Estado', 'Emitido')}${CC.campoLectura('Vigencia', `Hasta el ${AC.f(AC.memoVence(m))}`)}${CC.campoLectura('Cliente', m.consignatario || '-')}${CC.campoLectura('Publicación', 'Disponible en el Portal Externo')}</div>
+      <div class="ac-mut">Se emite una sola vez al aprobar la liberación. Volver a consultar no crea otro MEMO.</div></div>
+    <div ${CC.propuesta('HU-ATC-04 · I-087','Instrucción aplicada')} id="memoInstr" style="margin-top:10px;padding:10px;border-radius:8px">
+      <div class="ac-row"><b>Instrucción aplicada por contenedor</b>${CC.marca('Corrige','HU-ATC-04','I-087','PEN-I087-01')}</div>
+      ${AC.tabla([{t:'Contenedor', k:'num'}, {t:'Depósito', v:()=>esc(m.dep)}, {t:'Instrucción que fijó el depósito', v:c=>esc(AC.memoInstr(m, c))}], m.conts)}</div>`;
+};
 
 /* Datos maestros ficticios del módulo */
 AC.depositos = [
@@ -204,10 +229,51 @@ window.libBuscar = () => { libLeer(); LIB.pagina = 1; CC.refrescar('screenAcLibe
 window.libLimpiar = () => { LIB.f = {sol:'',bl:'',hijo:'',estado:'Pendiente',nave:'',viaje:'',cons:'',agente:'',desde:'',hasta:''}; LIB.pagina = 1; CC.refrescar('screenAcLiberacion'); };
 window.libPagina = (p, t) => { if(t) LIB.tam = t; LIB.pagina = p; CC.refrescar('screenAcLiberacion'); };
 window.libAvanz = () => { libLeer(); LIB.avanz = !LIB.avanz; CC.refrescar('screenAcLiberacion'); };
-window.libExportar = () => CC.exportarExcel('Liberaciones_de_carga', 'Liberaciones',
+/* Propuesta HU-DOC-10 · I-075: el reporte de liberaciones se descarga en cualquier estado, una fila por contenedor con BL, cliente, contenedor, fecha, usuario, pago y estado */
+const LIB_REP_COLS = ['BL','Cliente','Contenedor','Fecha','Usuario','Pago','Estado','Número de solicitud'];
+window.libExportar = () => CC.verPropuestas ? libReporte() : libExportarConnect();
+function libReporte(){
+  const filas = libFiltrar().slice(0,1000).flatMap(r=>(r.contenedores.length ? r.contenedores : [{num:'-'}])
+    .map(c=>[r.bl, r.consignatario, c.num, AC.fh(r.creado), r.creadoPor, r.val.pagos ? 'Pagado' : 'Pendiente', r.estado, r.id]));
+  LIB.ultRep = {estado:LIB.f.estado || 'Todos', filas:filas.length, cols:LIB_REP_COLS.slice()};
+  CC.exportarExcel(`Reporte_liberaciones_${(LIB.f.estado || 'Todos').replace(/\s+/g,'_')}`, 'Liberaciones', LIB_REP_COLS, filas);
+}
+const libExportarConnect = () => CC.exportarExcel('Liberaciones_de_carga', 'Liberaciones',
   ['Número de solicitud','Estado','Bloqueado por','Fecha de Bloqueo','Número de BL','Número de Hijo BL','Nave','Viaje','Puerto operativo','Consignatario','Agente aduanal','Fecha de creación','Creado por','Origen'],
   libFiltrar().slice(0,1000).map(r=>[r.id, r.estado, r.bloqueadoPor, AC.fh(r.fechaBloqueo), r.bl, r.hijo, r.nave, r.viaje, r.puerto, r.consignatario, r.agente, AC.fh(r.creado), r.creadoPor, r.origen]));
 window.libEliminar = id => AC.confirmar('Confirmación', '¿Deseas eliminar esta liberación de carga?', ()=>{ LIB.lista = LIB.lista.filter(r=>r.id!==id); CC.refrescar('screenAcLiberacion'); CC.toast('La liberación de carga se eliminó correctamente','success'); });
+
+/* Propuestas de reportes de Liberación (HU-DOC-10): I-075 reporte de liberaciones e I-110 reporte de memos emitidos */
+function libReportesHtml(){
+  AC.pen('PEN-I075-01', 'I-075', 'HU-DOC-10', 'Registrar periodo, filtros y al menos un BL en cada estado que permita repetir el defecto.', 'Exportar descarga el reporte del estado y del rango de fechas filtrados, una fila por contenedor.');
+  AC.pen('PEN-I110-01', 'I-110', 'HU-DOC-10', 'Registrar periodo, filtros, memo de ejemplo y el paso o mensaje exacto que impide generar el reporte.', 'Reporte por periodo con número de memo, BL, contenedor, depósito, fecha de emisión, vigencia y estado, exportable a Excel.');
+  return `<div class="ac-rep2">
+    <div ${CC.propuesta('HU-DOC-10 · I-075','Reporte de liberaciones','fac-note')} id="libRepNota"><b>Reporte de liberaciones</b> ${CC.marca('Corrige','HU-DOC-10','I-075','PEN-I075-01')}<br>
+      Exportar descarga el reporte del estado y del rango de fechas filtrados (Pendiente, En proceso, Aprobado o Rechazado) sin el error «recurso no encontrado». Trae una fila por contenedor con BL, cliente, contenedor, fecha, usuario, pago y estado.</div>
+    <div ${CC.propuesta('HU-DOC-10 · I-110','Reporte de memos emitidos','fac-note')} id="libMemoRepNota"><b>Reporte de memos emitidos</b> ${CC.marca('Corrige','HU-DOC-10','I-110','PEN-I110-01')}<br>
+      Número de memo, BL, contenedor, depósito, fecha de emisión, vigencia y estado del periodo elegido.
+      <div style="margin-top:8px">${AC.btn('Generar reporte de memos', 'libMemoRep()', 'ghost', 'id="libMemoRepBtn"')}</div></div></div>`;
+}
+const LIB_MEMO_COLS = ['Número de memo','BL','Contenedor','Depósito','Fecha de emisión','Vigencia','Estado'];
+const libMemoFilas = (desde, hasta) => LIB.lista.flatMap(r=>r.memos).filter(m=>{ const d = m.fecha.slice(0,10); return (!desde || d >= desde) && (!hasta || d <= hasta); })
+  .flatMap(m=>m.conts.map(c=>({memo:m.numero, bl:m.bl, cont:c.num, dep:m.dep, emision:m.fecha, vence:AC.memoVence(m), estado: AC.memoVence(m) < AC.hoy() ? 'Vencido' : 'Emitido'})));
+window.libMemoRep = () => {
+  libSeed(); const st = { desde:`${AC.hoy().slice(0,8)}01`, hasta:AC.hoy(), filas:null }; let bg;
+  const html = () => AC.cab('Reporte de memos emitidos', 'Memos de devolución emitidos en el periodo')
+    + `<div class="fac-g3">${CC.campo('Desde *', `<input type="date" id="libMrDesde" value="${esc(st.desde)}">`)}${CC.campo('Hasta *', `<input type="date" id="libMrHasta" value="${esc(st.hasta)}">`)}
+      <div class="fac-f"><label>&nbsp;</label>${AC.btn('Generar', AC.cb(()=>{ st.desde = AC.v('libMrDesde'); st.hasta = AC.v('libMrHasta');
+        if(!st.desde || !st.hasta){ CC.toast('Ingrese el periodo del reporte.','error'); return; }
+        if(st.desde > st.hasta){ CC.toast('La fecha Desde no puede ser mayor que Hasta.','error'); return; }
+        st.filas = libMemoFilas(st.desde, st.hasta); AC.repintar(bg, html()); }), '', 'data-ac="memo-rep-generar"')}</div></div>`
+    + (st.filas ? `<div class="ac-row" style="margin:10px 0 6px"><b>Resultados (${st.filas.length})</b></div>`
+      + AC.tabla([{t:'Número de memo', k:'memo'}, {t:'BL', k:'bl'}, {t:'Contenedor', k:'cont'}, {t:'Depósito', k:'dep'}, {t:'Fecha de emisión', v:x=>AC.fh(x.emision)}, {t:'Vigencia', v:x=>AC.f(x.vence)},
+          {t:'Estado', v:x=>CC.chipEstado(x.estado, x.estado==='Emitido' ? 'aprobada' : 'anulada')}], st.filas, 'No hay memos emitidos en el periodo.') : '')
+    + AC.pie(AC.btn('Cerrar','acCerrar()','ghost','data-ac="memo-rep-cerrar"'), AC.btn('Exportar', AC.cb(()=>{
+        if(!st.filas || !st.filas.length){ CC.toast('Genere el reporte con memos para exportar.','error'); return; }
+        LIB.ultMemoRep = {filas:st.filas.length, cols:LIB_MEMO_COLS.slice()};
+        CC.exportarExcel('Reporte_memos_emitidos', 'Memos', LIB_MEMO_COLS, st.filas.map(x=>[x.memo, x.bl, x.cont, x.dep, AC.fh(x.emision), AC.f(x.vence), x.estado])); }), '', 'data-ac="memo-rep-exportar"'));
+  bg = AC.dlg(html(), 'lg');
+};
 
 function libBuscarHtml(){
   libSeed(); const f = LIB.f, filas = libFiltrar();
@@ -227,6 +293,7 @@ function libBuscarHtml(){
         CC.campo('Viaje', AC.lista('libFViaje', f.viaje, viajes, 'Ingresa el viaje', 'maxlength="10"')),
         `<div class="fac-span4">${AC.link(LIB.avanz ? 'Ocultar filtros avanzados' : 'Filtros avanzados', 'libAvanz()', 'id="libAvz"')}</div>`, avz],
       buscar:'libBuscar()', limpiar:'libLimpiar()' })
+    + libReportesHtml()
     + CC.tablaResultados({ id:'libRes', filas, pagina:LIB.pagina, tam:LIB.tam, fnPagina:'libPagina', exportar:'libExportar()', vacio:'No se encontraron liberaciones con los filtros seleccionados.',
       columnas:[
         {t:'Número de solicitud', v:r=>AC.link(r.id, `libAbrir('${r.id}')`, `data-lib="${r.id}"`)}, {t:'Estado', v:r=>CC.chipEstado(r.estado)},
@@ -483,11 +550,13 @@ function insHtml(){
         {t:'Unidad', v:c=>d.edit ? CC.selector(AC.unidades, c.unidad, `onchange="insSet(${c._i},'unidad',this.value)"`, 'Elegir Tipo de Unidad') : esc(c.unidad)},
         {t:'Fecha inicial de cálculo', v:c=>d.edit ? CC.selector(AC.fechasIni, c.fini, `onchange="insSet(${c._i},'fini',this.value)"`, 'Elegir fecha inicial de cálculo') : esc(c.fini)},
         {t:'Fecha de devolución', v:c=>AC.fh(c.devol)}, {t:'Estado', v:c=>c.estado ? CC.chipEstado(c.estado, c.estado==='Devuelto'?'aprobada':'pendiente') : ''},
-        {t:'Modo de ingreso', v:c=>esc(c.modo)},
-        {t:'Acción', v:c=>{ if(!(c.elegible || c.estado==='Devuelto')) return ''; const a = [];
+        {t:'Modo de ingreso', v:c=>esc(c.modo)}]
+        .concat(CC.verPropuestas ? [{t:`Días libres aplicados ${CC.marca('Agrega','HU-ATC-03','I-107')}`, v:c=>c.aplicado ? `<span data-ins-aplicado="${esc(c.num)}">${esc(c.aplicado.usuario)}</span><div class="ac-mut">${AC.fh(c.aplicado.fecha)}</div>` : '<span class="ac-mut">-</span>'}] : [])
+        .concat([{t:'Acción', v:c=>{ if(!(c.elegible || c.estado==='Devuelto')) return ''; const a = [];
           if(c.elegible && c.estado==='Pendiente') a.push(AC.link('Registrar', `insDevol(${c._i},'registrar')`, `data-accion="registrar"`));
           if(c.estado==='Devuelto' && c.modo==='Manual'){ a.push(AC.link('Corregir', `insDevol(${c._i},'corregir')`)); a.push(AC.link('Anular', `insAnularDevol(${c._i})`)); }
-          a.push(AC.link('Historial', `insHistorial(${c._i})`)); return `<div class="fac-rowacts">${a.join('')}</div>`; }}], vis)}</div>`;
+          a.push(AC.link('Historial', `insHistorial(${c._i})`)); return `<div class="fac-rowacts">${a.join('')}</div>`; }}]), vis)}</div>`
+      + (d.edit ? `<div ${CC.propuesta('HU-ATC-03 · I-107','Aplicación inmediata','fac-note')} id="insAplica" style="margin-top:8px">Los días libres se aplican al BL al grabar, sin aprobación de otro usuario. Queda tu usuario con la fecha y hora en la columna Días libres aplicados.</div>` : '');
   } else if(d.tab==='adj'){
     cuerpo = (d.edit ? `<div class="ac-row" style="margin-bottom:8px">${AC.btn('Subir Archivos', 'insSubir()', 'ghost', 'id="insSubir"')}${AC.btn('Eliminar', 'insAdjEliminar()', 'pink', d.selAdj.length ? '' : 'disabled')}</div>` : '')
       + AC.tabla([{t:'', v:(a,i)=>`<input type="checkbox" ${d.edit?'':'disabled'} ${d.selAdj.includes(i)?'checked':''} onchange="insSelAdj(${i},this.checked)">`}, {t:'Archivo', k:'nombre'}, {t:'Fecha', v:a=>AC.fh(a.fecha)},
@@ -521,7 +590,10 @@ window.insGuardar = () => {
   const d = INS.d;
   if(!d.nuevos){ CC.toast('Se requiere un nuevo archivo para justificar la modificación.','error'); return; }
   if(d.b.conts.some(c=>c.dias==='' || c.dias<0 || !c.unidad || !c.fini)){ CC.toast('Por favor, complete todos los campos obligatorios.','error'); return; }
-  d.edit = false; d.selAdj = []; AC.cerrar(); CC.toast('Instrucciones guardadas exitosamente.','success');
+  /* Propuesta I-107 (HU-ATC-03): los días libres cambiados se aplican al grabar y guardan usuario y fecha */
+  const ahora = AC.ahora(), antes = {}; (d.copia.conts || []).forEach(c=>antes[c.num] = [c.dias, c.unidad, c.fini].join('|'));
+  let n = 0; d.b.conts.forEach(c=>{ if(antes[c.num] !== [c.dias, c.unidad, c.fini].join('|')){ c.aplicado = {usuario:AC.yo(), fecha:ahora}; n++; } });
+  d.edit = false; d.selAdj = []; AC.cerrar(); CC.toast(`Instrucciones guardadas exitosamente.${CC.verPropuestas && n ? ` Días libres aplicados al BL en ${n} contenedor(es).` : ''}`,'success');
 };
 window.insSubir = () => AC.adjuntar({base:'Sustento_dias_libres', ext:'pdf'}, files=>{ INS.d.b.adjuntos.push(...files); INS.d.nuevos += files.length; insRe(); });
 window.insAdjEliminar = () => AC.confirmar('Confirmar eliminación', '¿Está seguro de que desea eliminar el archivo seleccionado?', ()=>{ const d = INS.d; d.b.adjuntos = d.b.adjuntos.filter((a,i)=>!d.selAdj.includes(i)); d.selAdj = []; insRe(); });
@@ -707,8 +779,11 @@ function dpFormHtml(){
     : `<div class="ac-row" style="margin-bottom:8px">${AC.btn('Subir Archivos','dpSubir()','ghost','id="dpSubir"')}${AC.btn('Eliminar','dpEliminarAdj()','pink', DP.selAdj.length ? '' : 'disabled')}</div>`
       + AC.tabla([{t:'', v:(a,i)=>`<input type="checkbox" ${DP.selAdj.includes(i)?'checked':''} onchange="dpSelAdj(${i},this.checked)">`}, {t:'Nombre', k:'nombre'}, {t:'Fecha', v:a=>AC.fh(a.fecha)}, {t:'Usuario', v:a=>esc(a.usuario || 'Usuario')},
         {t:'Acciones', v:a=>AC.link('⤓', AC.cb(()=>AC.descargar(a.nombre)), 'title="Descargar"')}], r.adjuntos, 'Sin archivos adjuntos.');
+  AC.pen('PEN-I092-01', 'I-092', 'HU-DOC-30', 'Definir formatos y tamaño del sustento, sustitución o eliminación del adjunto y tratamiento de instrucciones existentes sin documento.', 'Al menos un adjunto (PDF o imagen, hasta 10 MB). Sin adjunto no se guarda, al crear ni al editar.', 'Documentación');
+  const sust = `<div ${CC.propuesta('HU-DOC-30 · I-092','Sustento obligatorio','fac-note')} id="dpSustento" style="margin:10px 0">${CC.marca('Corrige','HU-DOC-30','I-092','PEN-I092-01')}
+    El documento de sustento es obligatorio: adjunta al menos un archivo en la pestaña Adjuntos. Sin sustento no se guarda, ni al crear ni al editar. ${r.adjuntos.length ? `<b>${r.adjuntos.length} adjunto(s) cargado(s).</b>` : '<b>Aún no hay sustento.</b>'}</div>`;
   return `<div class="fac-card" id="dpForm"><div class="fac-head"><h3>${t}</h3></div><div class="fac-g3">${CC.campo('Cliente', CC.selector(dpClientes(), r.cliente, 'id="dpCli" maxlength="200"', 'Ingresar Cliente'))}</div>
-    ${AC.tabs([['det','Direccionamiento Permanente'],['adj','Adjuntos']], DP.tab, 'dpTab')}${cuerpo}
+    ${sust}${AC.tabs([['det','Direccionamiento Permanente'],['adj','Adjuntos']], DP.tab, 'dpTab')}${cuerpo}
     <div class="fac-btns">${AC.btn('Cancelar','dpCancelar()','ghost')}${AC.btn('Guardar','dpGuardar()','','id="dpGuardar"')}</div></div>`;
 }
 window.dpCancelar = () => AC.confirmar('Confirmación', `¿Estás seguro de que desea cancelar la ${DP.modo==='crear' ? 'creación' : 'edición'} del direccionamiento del cliente?`, ()=>{ DP.vista = 'lista'; DP.act = null; CC.abrir('screenAcDirPermanente'); });
@@ -717,6 +792,8 @@ window.dpGuardar = () => {
   if(r.detalles.some((d,i)=>r.detalles.findIndex(x=>k(x)===k(d))!==i)){ CC.toast('Existen Direccionamientos Permanentes duplicados','error'); return; }
   if(r.detalles.some(d=>d.desde && d.hasta && d.desde > d.hasta)){ CC.toast('Existen Fechas de Vigencia inválidas','error'); return; }
   if(!r.cliente || !r.detalles.length || r.detalles.some(d=>!d.linea || !d.carga || !d.dep || !d.desde || !d.hasta)){ CC.toast('Por favor complete todos los campos obligatorios','error'); return; }
+  /* Propuesta I-092 (HU-DOC-30): el sustento es obligatorio al crear y al editar */
+  if(CC.verPropuestas && !r.adjuntos.length){ DP.tab = 'adj'; dpPintar(); CC.toast('Adjunte el documento de sustento para guardar el direccionamiento permanente.','error'); return; }
   r.detalles.forEach(d=>{ if(!d.usuario){ d.usuario = AC.yo(); d.fecha = AC.ahora(); } });
   const crear = DP.modo==='crear';
   if(crear){ r.id = ++DP.seq; DP.lista.push(r); } else DP.lista[DP.lista.findIndex(x=>x.id===r.id)] = r;

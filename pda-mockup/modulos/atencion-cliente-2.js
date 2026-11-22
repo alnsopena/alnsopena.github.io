@@ -407,8 +407,11 @@ window.soBuscar = () => { soLeer(); soSeed(); const f = SO.f;
   SO.conf = SO.lista.find(c=>c.ambito===f.ambito && c.socio===soSocio() && c.oper===f.oper) || null; SO.buscado = true; SO.edit = false; SO.tab = 'dias'; CC.refrescar('screenAcSobreestadia'); };
 window.soLimpiar = () => { if(SO.edit) return; SO.f = {ambito:'',linea:'',cliente:'',oper:''}; SO.conf = null; SO.buscado = false; CC.refrescar('screenAcSobreestadia'); };
 window.soNuevo = () => { const f = SO.f; SO.conf = {id:0, ambito:f.ambito, socio:soSocio(), oper:f.oper, detalles:[], adjuntos:[]}; soEditar(); };
-window.soEditar = () => { SO.copia = AC.clon(SO.conf); SO.edit = true; SO.nuevos = 0; SO.sel = []; SO.selAdj = []; CC.refrescar('screenAcSobreestadia'); };
-window.soCancelar = () => { SO.edit = false; SO.conf = SO.conf.id ? SO.lista.find(c=>c.id===SO.conf.id) : null; CC.refrescar('screenAcSobreestadia'); };
+window.soEditar = () => { SO.cruce = ''; SO.copia = AC.clon(SO.conf); SO.edit = true; SO.nuevos = 0; SO.sel = []; SO.selAdj = []; CC.refrescar('screenAcSobreestadia'); };
+window.soCancelar = () => { SO.edit = false;
+  /* I-097: al cancelar, la regla existente vuelve tal cual estaba (sin las filas rechazadas) */
+  if(SO.conf.id && SO.copia){ const i = SO.lista.findIndex(c=>c.id===SO.conf.id); if(i>=0) SO.lista[i] = SO.copia; SO.conf = SO.lista[i]; } else SO.conf = null;
+  CC.refrescar('screenAcSobreestadia'); };
 window.soTab = t => { SO.tab = t; CC.refrescar('screenAcSobreestadia'); };
 window.soSet = (i, k, v) => { SO.conf.detalles[i][k] = v; SO.cambio = true; };
 window.soSel = (i, on) => { SO.sel = on ? [...new Set(SO.sel.concat(i))] : SO.sel.filter(x=>x!==i); CC.refrescar('screenAcSobreestadia'); };
@@ -419,7 +422,15 @@ window.soSelAdj = (i, on) => { SO.selAdj = on ? [...new Set(SO.selAdj.concat(i))
 window.soEliminarAdj = () => AC.confirmar('Confirmación', '¿Estás seguro de que deseas eliminar los archivos seleccionados?', ()=>{ SO.conf.adjuntos = SO.conf.adjuntos.filter((a,i)=>!SO.selAdj.includes(i)); SO.selAdj = []; CC.refrescar('screenAcSobreestadia'); });
 window.soGuardar = () => {
   const c = SO.conf, cli = c.ambito==='Cliente', k = d => [d.linea, d.tam, d.unidad, d.fini].join('|');
-  if(c.detalles.some((d,i)=>c.detalles.some((x,j)=>j!==i && k(x)===k(d) && x.desde && d.desde && x.desde <= (d.hasta||'9') && d.desde <= (x.hasta||'9')))){ CC.toast('Existen Días Libres duplicados','error'); return; }
+  const cruce = (d, x) => k(x)===k(d) && x.desde && d.desde && x.desde <= (d.hasta||'9') && d.desde <= (x.hasta||'9');
+  if(c.detalles.some((d,i)=>c.detalles.some((x,j)=>j!==i && cruce(d, x)))){
+    /* Propuesta I-097 (HU-ATC-11): el mensaje identifica la regla que se cruza; la regla vigente no cambia */
+    if(CC.verPropuestas){ const ant = SO.copia ? SO.copia.detalles : [], nueva = c.detalles.find((d,i)=>c.detalles.some((x,j)=>j!==i && cruce(d,x)) && !ant.some(a=>JSON.stringify(a)===JSON.stringify(d))) || c.detalles[0];
+      const vig = c.detalles.find(x=>x!==nueva && cruce(nueva, x));
+      SO.cruce = `No se grabó: la vigencia del ${AC.f(nueva.desde)} al ${AC.f(nueva.hasta)} se cruza con la regla vigente de ${AC.isoTxt(nueva.tam)} (${nueva.unidad}, ${nueva.fini}) del ${AC.f(vig.desde)} al ${AC.f(vig.hasta)}${cli ? ` de ${AC.lineaNombre(nueva.linea)} para ${c.socio}` : ''}. La regla vigente no cambia; para cambiar condiciones, primero cierra su vigencia.`;
+      CC.refrescar('screenAcSobreestadia'); }
+    CC.toast('Existen Días Libres duplicados','error'); return; }
+  SO.cruce = '';
   if(c.detalles.some(d=>d.desde && d.hasta && d.desde > d.hasta)){ CC.toast('Existen Fechas de Vigencia inválidas','error'); return; }
   if(!c.detalles.length || c.detalles.some(d=>(cli && !d.linea) || !d.tam || d.dias==='' || Number(d.dias)<0 || !d.unidad || !d.fini || !d.desde || !d.hasta)){ CC.toast('Por favor complete todos los campos obligatorios','error'); return; }
   if(c.id && JSON.stringify(c.detalles)!==JSON.stringify(SO.copia.detalles) && !SO.nuevos){ CC.toast('Se requiere un nuevo archivo para justificar la modificación','error'); return; }
@@ -442,7 +453,10 @@ function soHtml(){
         ${!ed && c && c.id ? AC.btn('Editar','soEditar()','ghost','id="soEditar"') : ''}${!ed && !c ? AC.btn('Nuevo','soNuevo()','','id="soNuevo"') : ''}</div></div>`
       + (c ? AC.tabs([['dias','Días Libres'],['adj','Adjuntos']], SO.tab, 'soTab')
         + (SO.tab==='dias'
-          ? `<div class="ac-row" style="margin-bottom:8px">${AC.btn('Agregar','soAgregar()','ghost', ed ? 'id="soAgregar"' : 'disabled')}${AC.btn('Eliminar','soEliminar()','pink', ed && SO.sel.length ? '' : 'disabled')}</div><div class="ac-tbl-in">${AC.tabla(cols, c.detalles, 'Sin días libres configurados.')}</div>`
+          ? (ed ? `<div ${CC.propuesta('HU-ATC-11 · I-097','Vigencias que se cruzan','fac-note')} id="soCruce" style="margin-bottom:8px">${CC.marca('Corrige','HU-ATC-11','I-097')}
+              No se graba una regla con la misma Línea, Cliente, Tamaño/Tipo, Unidad de Conteo y Fecha inicial si su vigencia se cruza con otra (las fechas de inicio y fin cuentan). La regla vigente no cambia.
+              ${SO.cruce ? `<div class="fac-note warn" id="soCruceMsg" style="margin:8px 0 0">${esc(SO.cruce)}</div>` : ''}</div>` : '')
+            + `<div class="ac-row" style="margin-bottom:8px">${AC.btn('Agregar','soAgregar()','ghost', ed ? 'id="soAgregar"' : 'disabled')}${AC.btn('Eliminar','soEliminar()','pink', ed && SO.sel.length ? '' : 'disabled')}</div><div class="ac-tbl-in">${AC.tabla(cols, c.detalles, 'Sin días libres configurados.')}</div>`
           : `<div class="ac-row" style="margin-bottom:8px">${AC.btn('Subir Archivos','soSubir()','ghost', ed ? 'id="soSubir"' : 'disabled')}${AC.btn('Eliminar','soEliminarAdj()','pink', ed && SO.selAdj.length ? '' : 'disabled')}</div>`
             + AC.tabla([{t:'', v:(a,i)=>`<input type="checkbox" ${ed?'':'disabled'} ${SO.selAdj.includes(i)?'checked':''} onchange="soSelAdj(${i},this.checked)">`}, {t:'Nombre', k:'nombre'}, {t:'Fecha', v:a=>AC.fh(a.fecha)}, {t:'Usuario', v:a=>esc(a.usuario||'Usuario')},
               {t:'Acciones', v:a=>AC.link('⤓', AC.cb(()=>AC.descargar(a.nombre)), 'title="Descargar"')}], c.adjuntos, 'Sin archivos adjuntos.'))
@@ -492,10 +506,29 @@ window.daAccion = acc => {
       const m = AC.v('daMot'); if(!m){ CC.toast('El motivo es obligatorio.','error'); return; }
       sel.forEach(d=>{ d.hist.push({ts:Date.now(), user:AC.yo(), prev:d.estado, next:DA_NUEVO[acc], comment:m}); d.estado = DA_NUEVO[acc]; });
       AC.cerrar(); DA.sel = []; CC.refrescar('screenAcDanos'); CC.toast('Estado actualizado correctamente.','success');
-      if(acc==='Notificar') AC.correo(sel.map(d=>({para:`${AC.correoDe(d.consig)}; ${AC.correoDe(AC.lineaNombre(d.linea))}`, cc:`sucursal.${AC.slug(d.sucursal)}@cosmos.example`, asunto:`Notificación de daño de contenedor ${d.cont} - BL ${d.bl}`, adjuntos:d.adjuntos.map(a=>a.nombre).join(', '),
+      if(acc==='Notificar' && CC.verPropuestas) daCorreo(sel, m);
+      else if(acc==='Notificar') AC.correo(sel.map(d=>({para:`${AC.correoDe(d.consig)}; ${AC.correoDe(AC.lineaNombre(d.linea))}`, cc:`sucursal.${AC.slug(d.sucursal)}@cosmos.example`, asunto:`Notificación de daño de contenedor ${d.cont} - BL ${d.bl}`, adjuntos:d.adjuntos.map(a=>a.nombre).join(', '),
         cuerpo:`Estimados:\n\nSe registró un daño en el contenedor ${d.cont} (BL ${d.bl}), devuelto en ${depNom(d.dep)}.\nCosto estimado: USD ${CC.dinero(d.costos)}. Presupuesto ${d.presupuesto}.\nMotivo: ${m}\n\nAtención al Cliente`})), 'Correo de notificación enviado');
     }), '', 'data-ac="da-confirmar"')), 'sm');
 };
+/* Propuestas en el aviso de cobranza de daños: I-094 (HU-ATC-06) depósito notificante y asunto que identifica la carga;
+   I-028 (HU-ATC-07) un solo asunto (el de I-048) y destinatarios: contactos de Atención al Cliente de consignatario, embarcador y naviera, con copia a la sucursal.
+   El mensaje y los sustentos se mantienen como hoy. */
+const daAsunto = d => { const [nave, viaje] = String(d.naveViaje).split(' - ');
+  return `[AVISO DE COBRANZA - DAÑOS DE CONTENEDORES] BL ${d.bl} CONT ${d.cont} - ${nave || '-'} Viaje: ${viaje || '-'}`; };
+const daPara = d => [['Consignatario', AC.correoDe(d.consig)], ['Embarcador', `atencion@embarcador${AC.slug(d.bl).slice(-4)}.example`], ['Naviera', AC.correoDe(AC.lineaNombre(d.linea))]];
+function daCorreo(sel, motivo){
+  AC.dlg(AC.cab('Correo de notificación enviado', 'Vista previa: así llega el aviso de cobranza de daños.')
+    + sel.map(d=>`<div class="ac-mail" data-da-mail="${esc(d.cont)}"><dl>
+        <dt>Para</dt><dd>${daPara(d).map(([r,c])=>`${esc(c)} <span class="ac-mut">(${r})</span>`).join('<br>')} ${CC.marca('Corrige','HU-ATC-07','I-028')}</dd>
+        <dt>CC</dt><dd>sucursal.${esc(AC.slug(d.sucursal))}@cosmos.example <span class="ac-mut">(Sucursal ${esc(d.sucursal)})</span></dd>
+        <dt>Asunto</dt><dd><b data-da-asunto>${esc(daAsunto(d))}</b> ${CC.marca('Corrige','HU-ATC-06','I-094')}</dd>
+        <dt>Adjuntos</dt><dd>${esc(d.adjuntos.map(a=>a.nombre).join(', '))}</dd></dl>
+      <div class="ac-body">${esc(`Estimados:\n\nSe registró un daño en el contenedor ${d.cont} (BL ${d.bl}), devuelto en ${depNom(d.dep)}.\nCosto estimado: USD ${CC.dinero(d.costos)}. Presupuesto ${d.presupuesto}.\nMotivo: ${motivo}\n\nAtención al Cliente`)}</div>
+      <div ${CC.propuesta('HU-ATC-06 · I-094','Depósito notificante')} style="margin-top:6px;padding:6px 8px;border-radius:8px">Depósito notificante: <b>${esc(depNom(d.dep))}</b></div></div>`).join('')
+    + `<div ${CC.propuesta('HU-ATC-07 · I-028','Asunto y destinatarios','fac-note')} id="daCorreoNota" style="margin-top:10px">Un solo asunto para todo aviso de cobranza de daños: BL, contenedor, nave y viaje, armado en la plantilla de correo. Para que un contacto reciba el aviso, basta con registrarlo como contacto de Atención al Cliente en el socio.</div>`
+    + AC.pie(AC.btn('Cerrar','acCerrar()','','data-ac="cerrar-correo"')), 'md');
+}
 window.daAdjuntos = id => { const d = DA.lista.find(x=>x.id===id);
   const tablaAdj = x => x.adjuntos.length ? AC.tabla([{t:'Archivo', k:'nombre'}, {t:'Fecha de carga', v:a=>AC.fh(a.fecha)}, {t:'Descargar', v:a=>AC.btn('Descargar', AC.cb(()=>AC.descargar(a.nombre)), 'ghost')}], x.adjuntos) : '<div class="ac-empty">El daño no tiene adjuntos.</div>';
   if(CC.verPropuestas){ const grupo = DA.lista.filter(x=>x.bl===d.bl);
@@ -569,6 +602,8 @@ window.daNEliminarAdj = () => { daLeerN(); const N = DA.nuevo; N.adjuntos = N.ad
 window.daNGuardar = () => { daLeerN(); const N = DA.nuevo, f = N.form;
   if(!N.sel.length){ CC.toast('Seleccione al menos un contenedor.','error'); return; }
   if(!f.consig || !N.nv || !f.agente || !f.linea || f.costos==='' || !f.suc || !f.ingreso || !f.pres){ CC.toast('Por favor, complete todos los campos obligatorios.','error'); return; }
+  /* Propuesta I-094 (HU-ATC-06): en el Portal Interno el depósito notificante es obligatorio */
+  if(CC.verPropuestas && !f.dep){ CC.toast('Seleccione el depósito notificante.','error'); return; }
   const porCont = CC.verPropuestas;
   if(porCont){ const falta = N.sel.filter(c=>DA_TIPOS.some(t=>!(N.porCont[c]||[]).some(a=>a.tipo===t[0])));
     if(falta.length){ CC.toast(`Cada contenedor necesita Liquidación, Fotos y EIR. Falta completar: ${falta.join(', ')}.`,'error'); daNAbrir(falta[0]); return; } }
@@ -609,7 +644,8 @@ function daNuevoHtml(){
     ${ok ? `<div class="ac-row"><b>Contenedores encontrados para BL: ${esc(N.bl)}</b><span class="ac-mut">${N.sel.length} seleccionados</span></div>${AC.tabla([{t:'', v:c=>`<input type="checkbox" class="daNCont" value="${esc(c)}" ${N.sel.includes(c)?'checked':''} onchange="daNRe()">`}, {t:'Contenedor', v:c=>esc(c)}], N.conts)}` : ''}
     <div class="fac-g3" style="margin-top:12px">${CC.campo('Consignatario / Embarcador *', CC.selector(CC.datos.socios.consignatarios.map(c=>c.razonSocial).concat(CC.datos.socios.embarcadores.map(c=>c.razonSocial)), f.consig, `id="daNCons" ${dis}`, 'Seleccionar'))}
       ${CC.campo('Nave - Viaje *', `<input disabled value="${esc(N.nv)}">`)}${CC.campo('Agente de Aduana *', CC.selector(AC.agentes.map(a=>a.nombre), f.agente, `id="daNAg" ${dis}`, 'Seleccionar'))}
-      ${CC.campo('Línea Naviera *', CC.selector(CC.datos.lineas.map(l=>[l.codigo,l.nombre]), f.linea, `id="daNLin" ${dis}`, 'Seleccionar'))}${CC.campo('Depósito', CC.selector(AC.depositos.map(d=>[d.codigo,d.razon]), f.dep, `id="daNDep" ${dis}`, 'Seleccionar'))}
+      ${CC.campo('Línea Naviera *', CC.selector(CC.datos.lineas.map(l=>[l.codigo,l.nombre]), f.linea, `id="daNLin" ${dis}`, 'Seleccionar'))}${CC.verPropuestas ? CC.campo(`Depósito notificante * ${CC.marca('Agrega','HU-ATC-06','I-094')}`, CC.selector(AC.depositos.map(d=>[d.codigo,d.razon]), f.dep, `id="daNDep" ${dis}`, 'Seleccionar el depósito que comunica el daño'))
+        : CC.campo('Depósito', CC.selector(AC.depositos.map(d=>[d.codigo,d.razon]), f.dep, `id="daNDep" ${dis}`, 'Seleccionar'))}
       ${CC.campo('Costos (USD) *', `<input type="number" min="0" id="daNCos" value="${esc(f.costos??'')}" ${dis}>`)}${CC.campo('Sucursal *', CC.selector(AC.sucursales, f.suc, `id="daNSuc" ${dis}`, 'Seleccionar'))}
       ${CC.campo('Fecha de Ingreso *', `<input type="date" id="daNIng" value="${esc(f.ingreso||'')}" ${dis}>`)}${CC.campo('N° de Presupuesto *', `<input id="daNPre" value="${esc(f.pres||'')}" ${dis}>`)}</div>
     ${CC.verPropuestas ? daNAcordeon(N, ok) : `<div class="ac-row" style="margin-top:12px"><b>Adjuntos</b><span class="ac-mut">Mínimo 3 (Liquidación, Fotos y EIR)</span><span class="ac-sp"></span>${AC.btn('Subir archivo','daNSubir()','ghost', ok ? 'id="daNSubir"' : 'disabled')}${AC.btn('Eliminar','daNEliminarAdj()','pink', N.selAdj.length ? '' : 'disabled')}</div>
@@ -874,7 +910,32 @@ window.mdExportar = () => CC.exportarExcel('Mandatos_Electronicos', 'Mandatos', 
   mdFiltrar().map(m=>[m.n, m.cliente, m.tTer, m.tercero, m.tipo, mdVig(m), m.bl||'-', m.oper, MD_EST[m.estado], CC.fecha(m.fReg)]));
 function mdCambia(n, nuevo, com){ const m = MD.lista.find(x=>x.n===n);
   m.hist.push(mdH(m.estado, nuevo, com, AC.yo(), AC.ahora())); m.estado = nuevo; if(com) m.obs = com;
-  CC.refrescar('screenAcMandato'); CC.toast(`Mandato ${n}: ${MD_EST[nuevo]}`, 'success'); }
+  const aviso = CC.verPropuestas && /OBSERVADO|RECHAZADO/.test(nuevo);
+  CC.refrescar('screenAcMandato'); CC.toast(`Mandato ${n}: ${MD_EST[nuevo]}${aviso ? '. Se envió el aviso al cliente.' : ''}`, 'success'); }
+/* Propuesta I-034 (HU-ATC-01): al observar o rechazar se envía el comentario al cliente.
+   Para: usuario externo que registró el mandato y contactos de Atención al Cliente del socio. CC: usuario interno que decide.
+   Si no hay correo registrado, el aviso queda registrado y la decisión se guarda igual. */
+const mdAviso = (m, h) => ({ de:'Atención al Cliente <atencionalcliente@cosmos.example>',
+  para:[m.hist[0] && /@/.test(m.hist[0].user) ? `${m.hist[0].user} (usuario que registró)` : '', `${AC.correoDe(m.cliente)} (Atención al Cliente de ${m.cliente})`].filter(Boolean),
+  cc:/@/.test(h.user) ? h.user : `${AC.slug(h.user)}@cosmos.example`, asunto:`Mandato electrónico ${m.n}: ${MD_EST[h.next]}`,
+  cuerpo:`Estimado buen día,\n\n${h.com},\n\nSaludos,\n\nAtención al Cliente\natencionalcliente@cosmos.example` });
+window.mdCorreo = (n, i) => { const m = MD.lista.find(x=>x.n===n), h = m.hist[i], a = mdAviso(m, h);
+  AC.dlg(AC.cab('Aviso al cliente', `Vista previa del correo enviado al cliente (mandato ${MD_EST[h.next].toLowerCase()})`)
+    + `<div class="ac-mail" id="mdMail"><dl><dt>De</dt><dd>${esc(a.de)}</dd><dt>Para</dt><dd>${a.para.map(esc).join('<br>')}</dd><dt>CC</dt><dd>${esc(a.cc)} <span class="ac-mut">(usuario que decidió)</span></dd>
+      <dt>Asunto</dt><dd><b>${esc(a.asunto)}</b> ${CC.marca('Agrega','HU-ATC-01','I-034')}</dd></dl><div class="ac-body">${esc(a.cuerpo)}</div></div>
+      <div class="ac-mut" style="margin-top:8px">Si el cliente no tiene correo registrado, el aviso queda registrado y la decisión se guarda igual.</div>`
+    + AC.pie(AC.btn('Cerrar','acCerrar()','','data-ac="md-correo-cerrar"')), 'md'); };
+/* Propuesta I-083 (HU-ATC-01): el mandato se descarga sin error interno y se revisa antes de decidir */
+window.mdPdf = n => { const m = MD.lista.find(x=>x.n===n);
+  AC.pen('PEN-I083-02', 'I-083', 'HU-ATC-01', 'Ejecutar el retest de la descarga del mandato con perfil COSMOS para confirmar lo informado por el proveedor; si es conforme, pasar a cierre.', 'La descarga abre el documento del mandato elegido para revisarlo y luego aprobar, observar o rechazar.');
+  AC.dlg(AC.cab(`Mandato Electrónico ${esc(m.n)}`, `Vista previa del documento ${esc(m.archivo)}`)
+    + `<div ${CC.propuesta('HU-ATC-01 · I-083','Descarga del mandato')} id="mdPdfProp" style="padding:10px;border-radius:8px">${CC.marca('Corrige','HU-ATC-01','I-083','PEN-I083-02')}
+      <div class="fac-pdf" style="margin-top:8px"><div class="fp-top"><div class="fp-logo">MANDATO</div><div class="fp-co"><b>${esc(m.cliente)}</b><br>Mandato electrónico ${esc(m.tipo==='Por BL' ? 'por BL' : 'por vigencia')}</div><div class="fp-box">${esc(m.n)}</div></div>
+        <div class="fp-grid" style="margin-top:14px"><div class="fp-kv"><span class="k">Mandante</span><span>${esc(m.cliente)}</span><span class="k">Mandatario</span><span>${esc(m.tercero)}</span><span class="k">Tipo de socio</span><span>${esc(m.tTer)}</span></div>
+        <div class="fp-kv"><span class="k">Operación</span><span>${esc(m.oper)}</span><span class="k">${m.tipo==='Por BL' ? 'BL' : 'Vigencia'}</span><span>${esc(m.tipo==='Por BL' ? m.bl : mdVig(m))}</span><span class="k">Fecha registro</span><span>${AC.fh(m.fReg)}</span></div></div>
+        <p style="margin-top:12px">El mandante autoriza al mandatario a realizar en su nombre los trámites de la carga indicada ante Cosmos.</p></div>
+      <div class="ac-mut" style="margin-top:6px">Se abre el documento del mandato elegido, sin error interno. Después de revisarlo, decide desde el detalle.</div></div>`
+    + AC.pie(AC.btn('Descargar PDF', AC.cb(()=>AC.descargar(m.archivo)), 'ghost', 'data-ac="md-pdf-descargar"'), AC.btn('Cerrar','acCerrar()','','data-ac="md-pdf-cerrar"')), 'lg'); };
 window.mdAccion = (n, nuevo) => {
   if(nuevo==='APROBADO') return AC.confirmar('Aprobar Mandato Electrónico', '¿Estás seguro de que deseas aprobar el mandato electrónico?', ()=>mdCambia(n, 'APROBADO', ''), 'Aceptar');
   const v = nuevo==='OBSERVADO' ? 'observar' : 'rechazar';
@@ -885,8 +946,9 @@ window.mdVer = n => { const m = MD.lista.find(x=>x.n===n);
     + `<div class="fac-g3" style="margin-top:10px">${CC.campoLectura('Cliente', m.cliente)}${CC.campoLectura('Tipo de Mandato', m.tipo)}${CC.campoLectura('Tipo de Operación', m.oper)}
       ${CC.campoLectura('Tipo de socio', m.tTer)}${CC.campoLectura('Nombre del socio', m.tercero)}${CC.campoLectura(m.tipo==='Por BL' ? 'BL' : 'Vigencia', m.tipo==='Por BL' ? m.bl : mdVig(m))}
       ${CC.campoLectura('Fecha registro', AC.fh(m.fReg))}${CC.campoLectura('Observación', m.obs || '-')}
-      <div class="fac-f"><label>Mandato electrónico (PDF/imagen)</label>${m.archivo ? AC.link(esc(m.archivo), AC.cb(()=>AC.descargar(m.archivo)), 'data-md-descargar="1"') : '<span class="ac-mut">Sin adjunto</span>'}</div></div>
-    <div class="fac-sec">Historial</div>${AC.tabla([{t:'Estado Previo', v:h=>h.prev ? MD_EST[h.prev] : '-'}, {t:'Estado Actual', v:h=>MD_EST[h.next]}, {t:'Usuario', k:'user'}, {t:'Fecha', v:h=>AC.fh(h.ts)}, {t:'Comentario', v:h=>esc(h.com||'-')}], m.hist)}`
+      <div class="fac-f"><label>Mandato electrónico (PDF/imagen)</label>${m.archivo ? AC.link(esc(m.archivo), CC.verPropuestas ? `mdPdf('${m.n}')` : AC.cb(()=>AC.descargar(m.archivo)), 'data-md-descargar="1"') : '<span class="ac-mut">Sin adjunto</span>'}</div></div>
+    <div class="fac-sec">Historial</div>${AC.tabla([{t:'Estado Previo', v:h=>h.prev ? MD_EST[h.prev] : '-'}, {t:'Estado Actual', v:h=>MD_EST[h.next]}, {t:'Usuario', k:'user'}, {t:'Fecha', v:h=>AC.fh(h.ts)}, {t:'Comentario', v:h=>esc(h.com||'-')}]
+      .concat(CC.verPropuestas ? [{t:`Aviso al cliente ${CC.marca('Agrega','HU-ATC-01','I-034')}`, v:(h,i)=>/OBSERVADO|RECHAZADO/.test(h.next) ? AC.link('Ver correo', `mdCorreo('${m.n}',${i})`, `data-md-correo="${i}"`) : '<span class="ac-mut">-</span>'}] : []), m.hist)}`
     + AC.pie(m.estado==='PENDIENTE' ? AC.btn('Observar', `acCerrar();mdAccion('${m.n}','OBSERVADO')`, 'ghost') : '', /PENDIENTE|OBSERVADO/.test(m.estado) ? AC.btn('Rechazar', `acCerrar();mdAccion('${m.n}','RECHAZADO')`, 'pink') : '',
       m.estado==='PENDIENTE' ? AC.btn('Aprobar', `acCerrar();mdAccion('${m.n}','APROBADO')`) : '', AC.btn('Cerrar','acCerrar()','ghost','data-ac="md-cerrar"')), 'lg');
 };
