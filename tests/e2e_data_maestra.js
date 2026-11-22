@@ -117,7 +117,7 @@ const ruido = /^(start|onHasParentDirectory|addRow) is not defined/;
   check((await p.$$eval('#ptEditor .md-body thead th', x => x.map(e => e.textContent.trim()))).some(t => t.startsWith('Código ERP')) && !!(await p.$('#ptEditor [data-rdcerp]')), 'I-035: Código ERP del contacto');
   await p.click('#ptEditor .md-tabs button:has-text("Información Financiera")'); await W();
   const thB = await p.$$eval('#ptEditor .md-body thead th', x => x.map(e => e.textContent.trim()));
-  check(thB.some(t => t.startsWith('SWIFT')) && thB.includes('País') && thB.includes('Cuenta de detracción') && thB.includes('CCI'), 'I-035: SWIFT, País, Cuenta de detracción y CCI');
+  check(thB.some(t => t.startsWith('SWIFT')) && thB.includes('País') && thB.includes('Cta. detracción') && thB.includes('CCI'), 'I-035: SWIFT, País, Cuenta de detracción y CCI');
   await p.fill('#ptRd [data-rdf="pro_aduana"]', '0118'); await p.fill('#ptEditor [data-f=doc]', '20600000999');
   await p.click('#ptEditor button[onclick="savePartner()"]'); await W();
   check(!(await p.evaluate(() => pt.edit)), 'I-035: guarda con los datos por rol completos');
