@@ -6012,7 +6012,7 @@ function renderPtEditor(){
       ${d.contactos.map((c,i)=>`<tr>${pick('contactos',i)}<td>${csel('contactos',i,'tipo',PT_CONTACT_TYPES,c.tipo)}</td><td>${cell('contactos',i,'nombre',c.nombre,'',100)}</td><td>${cell('contactos',i,'tel',c.tel,'',25)}</td>
         <td>${cell('contactos',i,'movil',c.movil,'',25)}</td><td>${cell('contactos',i,'email',c.email,'',200)}</td><td>${cell('contactos',i,'dir',c.dir,'',200)}</td><td>${cell('contactos',i,'notas',c.notas,'',400)}</td>${ptRdErpTd(c,i,edit)}</tr>`).join('') || empty(9,'Sin contactos.')}
     </tbody></table></div>${fErr(E,'contactos')}`;
-  else body = `<div class="results-table"><table><thead><tr>${ph}<th>Banco *</th><th>Tipo *</th><th>Cuenta *</th><th>Moneda *</th>${ptRdBancoTh()}</tr></thead><tbody>
+  else body = `<div class="pda-row-sub cc-prop" style="margin:0 0 8px">SWIFT, País, Cta. detracción y CCI se traen de SAP. ${fm('Agrega',PT_RD_HU,PT_RD_TK)}</div><div class="results-table"><table><thead><tr>${ph}<th>Banco *</th><th>Tipo *</th><th>Cuenta *</th><th>Moneda *</th>${ptRdBancoTh()}</tr></thead><tbody>
       ${d.bancos.map((b,i)=>`<tr>${pick('bancos',i)}<td>${csel('bancos',i,'banco',['',...CB_BANKS],b.banco)}</td><td>${csel('bancos',i,'tipo',PT_BANK_TYPES,b.tipo)}</td><td>${cell('bancos',i,'cuenta',b.cuenta,'',25)}</td>
         <td>${csel('bancos',i,'moneda',['PEN','USD'],b.moneda)}</td>${ptRdBancoTd(b,i,edit)}</tr>`).join('') || empty(9,'Sin cuentas.')}
     </tbody></table></div>${fErr(E,'bancos')}`;
@@ -6083,7 +6083,7 @@ function ptRdRolTd(r, i, edit){
 }
 function ptRdErpTh(){ return `<th class="cc-prop">Código ERP ${fm('Agrega: Name de SAP',PT_RD_HU,PT_RD_TK)}</th>`; }
 function ptRdErpTd(x, i, edit){ return `<td class="cc-prop">${edit && i!=null ? `<input value="${esc(x.codeErp||'')}" maxlength="50" data-rdcerp oninput="ptUpdRow('contactos',${i},'codeErp',this.value)">` : esc(x.codeErp||'-')}</td>`; }
-function ptRdBancoTh(){ return `<th class="cc-prop">SWIFT ${fm('Agrega',PT_RD_HU,PT_RD_TK)}</th><th class="cc-prop">País</th><th class="cc-prop">Cuenta de detracción</th><th class="cc-prop">CCI</th>`; }
+function ptRdBancoTh(){ return `<th class="cc-prop" style="white-space:nowrap">SWIFT</th><th class="cc-prop" style="white-space:nowrap">País</th><th class="cc-prop" style="white-space:nowrap">Cta. detracción</th><th class="cc-prop" style="white-space:nowrap">CCI</th>`; }
 function ptRdBancoTd(b, i, edit){
   const inp = (k, max, ph) => edit ? `<input value="${esc(b[k]||'')}" maxlength="${max}" placeholder="${ph||''}" oninput="ptUpdRow('bancos',${i},'${k}',this.value)">` : esc(b[k]||'-');
   const det = edit ? `<select onchange="ptUpdRow('bancos',${i},'detrac',this.value)">${['No','Sí'].map(o=>`<option ${o===(b.detrac||'No')?'selected':''}>${o}</option>`).join('')}</select>` : esc(b.detrac||'No');

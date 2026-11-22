@@ -2116,10 +2116,11 @@
 .pt-rd-f select,.pt-rd-f input{width:100%;min-width:0}
 .ca-rol-sel{min-width:130px}
 /* HU-DM-01 · I-035: la tabla de cuentas suma columnas; se desplaza en horizontal y los combos muestran el texto completo */
-#ptEditor .md-body table:has([data-rdcci]){min-width:1650px}
+#ptEditor .md-body table:has([data-rdcci]) select,#ptEditor .md-body table:has([data-rdcci]) input{min-width:0;width:100%}
 #ptEditor .md-body table:has([data-rdcci]) select{min-width:130px;width:100%}
 #ptEditor .md-body table:has([data-rdcci]) td:nth-child(-n+3) select{min-width:230px}
 #ptEditor .md-body .results-table:has([data-rdcci]){overflow-x:auto}
 
   /* Socio: alinear las cajas de una fila aunque una etiqueta lleve marca de propuesta */
   #ptEditor .filters-grid{align-items:end}
+  #ptEditor .results-table th,#ptEditor .results-table td{padding-left:10px;padding-right:10px}
