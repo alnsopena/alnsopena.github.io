@@ -100,3 +100,151 @@
       {go:()=>{ CC.abrir('screenSeries'); lqSerNuevo(); }, el:'#lqSerFicha', h:'Nueva Serie', p:'Código de exactamente 4 caracteres, correlativo desde 1 y código ERP de hasta 10.'}]}]
   });
 })();
+
+/* Pre-registro y Provisiones (propuesta HU-FAC-01 · I-014, definición de Facturación del 22/11/2026).
+   Con "Ver propuestas" encendido reemplaza la consulta de Provisiones: barra operativa (Nave, Viaje, ETA, Cotización),
+   Filtros avanzados, KPIs y grilla plana "Servicios por liquidar". Apagado, Provisiones se ve como Connect.
+   Menú: solo cambia el texto visible (Facturación > Pre-registro y Provisiones / Emisión de Documentos); data-menu y funciones no cambian. */
+(function(){
+  'use strict';
+  const MK = k => typeof fm==='function' ? fm(k, 'HU-FAC-01', 'I-014') : '';
+  const PROP = t => `class="cc-prop" data-prop="HU-FAC-01 · I-014 · ${t}"`;
+  /* Cotizaciones de cada escala: la PDA aprobada y, si hay, una cotización adicional (equivale a una adenda de la FDA, I-202) */
+  const COTS = [
+    {nave:'PACIFIC HORIZON', nro:'115E', cot:'PDA2026000041PECLL', svcs:[['TAR-0201',1450],['TAR-0310',700],['TAR-0510',2500],['TAR-0610',540],['TAR-0420',180]]},
+    {nave:'PACIFIC HORIZON', nro:'115E', cot:'PDA2026000063PECLL', adicional:true, svcs:[['TAR-0312',360],['TAR-0421',180]]},
+    {nave:'BOX ENDURANCE', nro:'684', cot:'PDA2026000035PECLL', svcs:[['TAR-0201',1210],['TAR-0510',1250],['TAR-0312',240]]},
+    {nave:'OCEAN MERIDIAN', nro:'27N', cot:'PDA2026000047PEPAR', svcs:[['TAR-0420',180],['TAR-0311',620]]},
+    {nave:'REEFER ATLANTIC', nro:'31S', cot:'PDA2026000044PEPAI', svcs:[['TAR-0421',180],['TAR-0510',1250]]}
+  ];
+  const TIPOS_FECHA = [['docDate','Emisión Doc.'],['recDate','Recepción'],['payDate','Vencimiento']];
+  const FILTROS = () => ({doc:'',prov:'',num:'',est:'',from:'',to:'',tipo:'docDate'});
+  const S = window.LQP = {nave:'PACIFIC HORIZON', viaje:'115E', cot:'', adv:false, f:FILTROS(), ok:true, page:1, size:10};
+  const naves = () => [...new Set(facVoys().map(v=>v.nave))];
+  const cotsDe = (nave, nro) => COTS.filter(c=>c.nave===nave && c.nro===nro).sort((a,b)=>a.cot.localeCompare(b.cot));
+  const etaTxt = v => v && v.eta ? fmtDate(v.eta) : 'Sin ETA registrado';
+  /* Provisión vigente del servicio: la última no anulada ni canjeada con la misma nave, viaje y servicio */
+  const provDe = (nave, nro, svc) => FP.list.filter(p=>p.status!=='ANULADO' && !p.linked && p.lines.some(l=>l.nave===nave && l.nro===nro && l.svc===svc)).sort((a,b)=>b.id-a.id)[0] || null;
+  /* Ejemplo: remolcaje de PACIFIC HORIZON ya pre-registrado como Provisional (sin documento del proveedor) */
+  function semilla(){
+    if(!FP.list.length) fpSeed();
+    if(FP.list.some(p=>p.id===70)) return;
+    const t = FAC_TARIFFS.find(x=>x.code==='TAR-0510'), v = facVoy('PACIFIC HORIZON','115E');
+    const p = fpNew({id:70, code:'PRV00000000070', prov:t.prov, sit:'Provisional', docType:'Aviso', docSerie:'PROV', docNum:'0000000070', docDate:'2026-09-06', recDate:'2026-09-06', payDate:'2026-10-06',
+      desc:'Servicios de PDA2026000041PECLL', lines:[fpMkLine(t, v.nave, v.nro, v.cliente, 'Reembolsable', 2, v.eta)]});
+    p.hist = [{ts:'2026-09-06T09:00:00', user:'P. Díaz (Facturación)', prev:'SIN PROVISIÓN', next:'PROVISIONADO', comment:'Pre-registro desde Servicios por liquidar'}];
+    FP.list.unshift(p);
+  }
+  window.lqpGuiaCanje = () => { semilla(); fpOpen(70); };
+  window.lqpReset = () => Object.assign(S, {nave:'PACIFIC HORIZON', viaje:'115E', cot:'', adv:false, f:FILTROS(), ok:true, page:1});
+  function filas(){
+    semilla();
+    const out = [];
+    cotsDe(S.nave, S.viaje).filter(c=>!S.cot || c.cot===S.cot).forEach(c=>c.svcs.forEach(([code, imp])=>{
+      const t = FAC_TARIFFS.find(x=>x.code===code) || {}, p = provDe(c.nave, c.nro, t.svc);
+      out.push({c, t, imp, p, est:p ? fpStL(p.status) : 'Por liquidar', doc:p && p.sit==='Original' && p.docNum ? `${p.docSerie}-${p.docNum}` : 'Pendiente'});
+    }));
+    const f = S.f, q = x=>normTxt(x||'');
+    return out.filter(r=>(!f.doc || (r.p && q(r.doc).includes(q(f.doc))))
+      && (!f.prov || q(r.t.prov).includes(q(f.prov)))
+      && (!f.num || (r.p && q(r.p.code).includes(q(f.num))))
+      && (!f.est || r.est===f.est)
+      && (!f.from || (r.p && (r.p[f.tipo]||'')>=f.from)) && (!f.to || (r.p && (r.p[f.tipo]||'')<=f.to)));
+  }
+  const tono = e => e==='Por liquidar' ? 'lqp-naranja' : /PROVISIONADO|LIQUIDADO|CANJEADO/.test(e) ? 'lqp-verde' : /ERROR/.test(e) ? 'lqp-rojo' : 'lqp-gris';
+  const cotTxt = c => c.cot + (c.adicional ? ' (Adicional)' : '');
+  window.lqpRender = function(){
+    const root = document.getElementById('fpRoot'); if(!root) return;
+    facSetBar('screenProvisions','Pre-registro y Provisiones',['Inicio','Facturación','Pre-registro y Provisiones']);
+    const v = facVoys().find(x=>x.nave===S.nave && x.nro===S.viaje), vs = facVoys().filter(x=>x.nave===S.nave), cs = cotsDe(S.nave, S.viaje);
+    const rows = S.ok ? filas() : [], pend = rows.filter(r=>!r.p).length, f = S.f;
+    const estados = ['Por liquidar', ...fpStOpts().map(o=>Array.isArray(o)?o[1]:o).filter(x=>!/SIN PROVISI|PENDIENTE/.test(x))];
+    const cotSel = cs.length>=2
+      ? fSel(cs.map(c=>[c.cot, cotTxt(c)]), S.cot, `id="lqpCot" onchange="lqpSet('cot',this.value)"`, `Todas las cotizaciones (${cs.length})`)
+      : fSel(cs.map(c=>[c.cot, cotTxt(c)]), cs[0] ? cs[0].cot : '', `id="lqpCot" ${cs.length?'':'disabled'} onchange="lqpSet('cot',this.value)"`, cs.length ? null : 'Sin cotizaciones');
+    const pag = rows.slice((S.page-1)*S.size, S.page*S.size);
+    root.innerHTML = `
+    <div class="fac-acts" style="justify-content:flex-end;margin-bottom:12px">${fChgBtn()}</div>
+    <div class="fac-card" id="lqpBar">
+      <h3>Pre-registro y Provisiones ${MK('Modifica: título, barra operativa y Consultar')}</h3>
+      <div class="fac-sub">Elige Nave y Viaje, revisa los servicios cotizados y pre-registra los que faltan liquidar.</div>
+      <div class="lqp-bar" ${PROP('Barra operativa')}>
+        ${fF('Nave', `<input id="lqpNave" list="lqpNaves" placeholder="Buscar nave" value="${esc(S.nave)}" onchange="lqpSet('nave',this.value)"><datalist id="lqpNaves">${naves().map(n=>`<option value="${esc(n)}"></option>`).join('')}</datalist>`)}
+        ${fF('N° Viaje / Escala', fSel(vs.map(x=>x.nro), S.viaje, `id="lqpViaje" ${vs.length?'':'disabled'} onchange="lqpSet('viaje',this.value)"`, vs.length?'Elegir un viaje':'Elige una nave'))}
+        ${fF('ETA operativo', `<input id="lqpEta" readonly tabindex="-1" class="${v && v.eta?'':'lqp-sineta'}" value="${esc(S.viaje ? etaTxt(v) : '')}" placeholder="DD/MM/AAAA">`)}
+        ${fF('N° de Cotización / PDA / OS', cotSel)}
+        <div class="lqp-go"><button type="button" class="cc-btn" id="lqpConsultar" onclick="lqpConsultar()">Consultar</button></div>
+      </div>
+      <button type="button" class="lqp-adv-btn" id="lqpAdvBtn" aria-expanded="${S.adv}" onclick="lqpAdv()"><span>${S.adv?'▲':'▼'}</span> Filtros avanzados</button>
+      ${S.adv ? `<div class="lqp-adv" id="lqpAdv" ${PROP('Filtros avanzados')}>
+        ${fF('N° Doc. Proveedor', `<input id="lqpDoc" placeholder="F001-00045612" value="${esc(f.doc)}" onchange="lqpF('doc',this.value)">`)}
+        ${fF('Proveedor', `<input id="lqpProv" list="lqpProvs" placeholder="RUC / Razón Social" value="${esc(f.prov)}" onchange="lqpF('prov',this.value)"><datalist id="lqpProvs">${FAC_PROVS.map(p=>`<option value="${esc(p)}"></option>`).join('')}</datalist>`)}
+        ${fF('N° Provisión', `<input id="lqpNum" placeholder="PRV00000000071" value="${esc(f.num)}" onchange="lqpF('num',this.value)">`)}
+        ${fF('Estado', fSel(estados, f.est, `id="lqpEst" onchange="lqpF('est',this.value)"`, 'Todos'))}
+        ${fF('Rango de Fechas', `<div class="fac-range"><input type="date" id="lqpFrom" value="${f.from}" onchange="lqpF('from',this.value)"><input type="date" id="lqpTo" value="${f.to}" onchange="lqpF('to',this.value)"></div>`)}
+        ${fF('Tipo de Fecha', fSel(TIPOS_FECHA, f.tipo, `id="lqpTipo" onchange="lqpF('tipo',this.value)"`))}
+        <div class="lqp-go"><button type="button" class="cc-btn pink" onclick="lqpLimpiar()">Limpiar</button></div>
+      </div>` : ''}
+    </div>
+    ${S.ok ? `<div class="lqp-kpis" id="lqpKpis" ${PROP('Resumen de control')}>
+      <div class="lqp-kpi"><span>Total servicios cotizados</span><b>${rows.length}</b></div>
+      <div class="lqp-kpi lqp-naranja"><span>Pendientes de pre-registro</span><b>${pend}</b></div>
+      <div class="lqp-kpi lqp-verde"><span>Pre-registrados / Provisionados</span><b>${rows.length-pend}</b></div>
+    </div>
+    <div class="fac-card" style="padding:0" id="lqpRes">
+      <div class="fac-head" style="padding:20px 26px;margin:0 0 18px;border-bottom:1px solid var(--cx-line2)"><h3>Servicios por liquidar (${rows.length}) ${MK('Modifica: grilla plana por cotización')}</h3></div>
+      <div style="padding:0 26px 26px"><div class="fac-scroll" style="max-height:none"><table class="fac-tbl lqp-tbl"><thead><tr><th>N° Cotización</th><th>Servicio Cotizado</th><th>Proveedor Asignado / Estimado</th><th class="num">Importe Cotizado</th><th>N° Doc. Tercero</th><th>Estado Liquidación</th><th>Acción</th></tr></thead><tbody>
+        ${pag.map(r=>`<tr><td class="lqp-nw">${esc(r.c.cot)}${r.c.adicional?' <span class="lqp-adic">(Adicional)</span>':''}</td><td>${esc(r.t.svc)}</td><td>${esc(r.t.prov)}</td><td class="num lqp-nw">USD ${fMoney(r.imp)}</td><td class="lqp-nw">${esc(r.doc)}</td>
+          <td class="lqp-nw"><span class="lqp-est ${tono(r.est)}">● ${esc(r.est)}</span></td>
+          <td class="lqp-nw">${r.p ? `<button type="button" class="fac-link" onclick="fpOpen(${r.p.id})">Ver Doc</button>` : `<button type="button" class="cc-btn lqp-pre" onclick="lqpPre('${r.c.cot}','${r.t.code}')">+ Pre-registrar</button>`}</td></tr>`).join('')
+          || '<tr><td colspan="7" class="fac-empty">No se encontraron servicios cotizados con los criterios seleccionados</td></tr>'}
+      </tbody></table></div>
+      <div class="cc-pager">${pagerHtml(rows.length, S.page, S.size, 'lqpGo')}</div></div>
+    </div>` : ''}`;
+  };
+  window.lqpSet = (k, val) => {
+    if(k==='nave'){ S.nave = val; const vs = facVoys().filter(x=>x.nave===val); S.viaje = vs.length===1 ? vs[0].nro : ''; S.cot = ''; S.ok = false; }
+    if(k==='viaje'){ S.viaje = val; S.cot = ''; S.ok = false; }
+    if(k==='cot') S.cot = val;
+    lqpRender();
+  };
+  window.lqpF = (k, val) => { S.f[k] = val; S.page = 1; lqpRender(); };
+  window.lqpAdv = () => { S.adv = !S.adv; lqpRender(); };
+  window.lqpLimpiar = () => { S.f = FILTROS(); S.page = 1; lqpRender(); };
+  window.lqpGo = (p, size) => { if(size) S.size = size; S.page = p || 1; lqpRender(); };
+  window.lqpConsultar = () => {
+    if(!S.nave || !S.viaje){ toast('Elige Nave y N° Viaje / Escala','error'); return; }
+    S.ok = true; S.page = 1; lqpRender();
+    if(!filas().length) toast('No se encontraron resultados con los criterios seleccionados','info');
+  };
+  /* + Pre-registrar: abre Crear Provisión (registro existente) con el servicio cotizado precargado */
+  window.lqpPre = (cot, code) => {
+    const t = FAC_TARIFFS.find(x=>x.code===code), v = facVoy(S.nave, S.viaje), hoy = new Date().toISOString().slice(0,10);
+    if(!t) return;
+    FP.draft = fpNew({id:0, prov:t.prov, docType:'Aviso', docSerie:'PROV', docNum:String(FP.nextPrv).padStart(10,'0'), docDate:hoy, recDate:hoy, payDate:hoy,
+      desc:`Servicios de ${cot}`, lines:[fpMkLine(t, v.nave, v.nro, v.cliente, 'Reembolsable', 1, v.eta)], picked:[]});
+    fpOpen(0);
+  };
+
+  /* Menú: con propuestas encendido cambia solo el texto visible; data-menu, opciones y funciones quedan igual */
+  const RENOMBRA = {'Liquidación':['Facturación','HU-FAC-01 · I-014'], 'Provisiones':['Pre-registro y Provisiones','HU-FAC-01 · I-014'], 'Documentos Contables':['Emisión de Documentos','HU-FAC-02 · I-042']};
+  function envolver(btn, viejo){
+    if(!btn || btn.querySelector('.lqp-cx')) return;
+    const n = [...btn.childNodes].find(x=>x.nodeType===3 && x.textContent.trim()===viejo); if(!n) return;
+    const [nuevo, tk] = RENOMBRA[viejo], s = document.createElement('span');
+    s.className = 'lqp-txt';
+    s.innerHTML = `<span class="lqp-cx">${viejo}</span><span class="lqp-pr" title="Modifica · ${tk}">${nuevo}</span>`;
+    btn.replaceChild(s, n);
+  }
+  function menu(){
+    envolver(document.querySelector('#ccMenu button[data-menu="Liquidación"]'), 'Liquidación');
+    const dd = document.getElementById('ccDropdown');
+    if(dd && dd.dataset.menu==='Liquidación') dd.querySelectorAll('button[data-cc-op]').forEach(b=>{ envolver(b,'Provisiones'); envolver(b,'Documentos Contables'); });
+  }
+  function enlazar(){
+    menu();
+    ['ccMenu','ccDropdown'].forEach(id=>{ const el = document.getElementById(id); if(el && !el.dataset.lqp){ el.dataset.lqp = '1'; new MutationObserver(menu).observe(el, {childList:true}); } });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', enlazar); else setTimeout(enlazar, 0);
+  window.addEventListener('load', enlazar);
+})();
