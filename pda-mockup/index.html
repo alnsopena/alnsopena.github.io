@@ -5870,6 +5870,7 @@ function showPtView(v){
   document.getElementById('ptDetail').style.display = v==='detail' ? '' : 'none';
   const nb = document.getElementById('ptNewBtn'); if(nb) nb.style.visibility = v==='list' ? '' : 'hidden';
   const bb = document.getElementById('ptBackBtn'); if(bb) bb.style.display = v==='list' || pt.returnTo!=='landing' ? '' : 'none';
+  const hd = document.querySelector('#screenPartners .buscar-head > div:first-child'); if(hd) hd.style.display = v==='list' ? '' : 'none';
   const t = document.getElementById('ccPbTitle'), c = document.getElementById('ccCrumbs');
   if(v==='detail'){
     const ttl = pt.isNew ? 'Crear Socio' : 'Editar Socio';
@@ -6089,9 +6090,9 @@ function ptRdBancoTd(b, i, edit){
 /* 3.10: dirección desde SAP, solo en Socio */
 function ptRdDirFlds(inp){
   return [['dirPais','País','Ingresar País'],['dirDep','Departamento','Ingresar Departamento'],['dirProv','Provincia','Ingresar Provincia'],['dirDist','Distrito','Ingresar Distrito']]
-    .map(([k,l,ph])=>`<div ${CC.propuesta(`${PT_RD_HU} · ${PT_RD_TK}`, 'Dirección desde SAP', 'filter-field')} data-rddir="${k}"><label>${l}</label>${inp(k,ph,false,100)}</div>`).join('');
+    .map(([k,l,ph])=>`<div class="filter-field cc-prop" data-rddir="${k}"><label>${l} ${fm('Agrega',PT_RD_HU,PT_RD_TK)}</label>${inp(k,ph,false,100)}</div>`).join('');
 }
-function ptRdDirNota(){ return `<div ${CC.propuesta(`${PT_RD_HU} · ${PT_RD_TK}`, 'Dirección desde SAP', 'pda-row-sub')} id="ptRdDirNota">País, Departamento, Provincia y Distrito se llenan al sincronizar con SAP (BPAddresses). Solo se usan en Socio: la facturación no cambia por ahora. Ubigeo no se mapea. ${fm('Agrega',PT_RD_HU,PT_RD_TK,'PEN-I035-01')}</div>`; }
+function ptRdDirNota(){ return `<div class="pda-row-sub cc-prop" style="margin:4px 0 10px" id="ptRdDirNota">País, Departamento, Provincia y Distrito se llenan al sincronizar con SAP (BPAddresses). Solo se usan en Socio: la facturación no cambia por ahora. Ubigeo no se mapea. ${fm('Agrega',PT_RD_HU,PT_RD_TK,'PEN-I035-01')}</div>`; }
 const ptRdFh = iso => iso ? `${fmtDate(iso)} ${iso.slice(11,16)}` : '-';
 /* 3.7: se habilita con Número Documento y tipo (Cliente o Proveedor); vuelve a habilitarse si cambia alguno */
 const ptRdKey = d => `${d.tipoDoc}|${String(d.doc||'').trim()}|${ptRdClase(d)}`;
