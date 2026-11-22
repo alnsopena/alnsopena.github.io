@@ -6087,7 +6087,7 @@ function ptRdRolMk(d){ return `<div class="cc-prop" style="margin:0 0 8px"><span
 function ptRdRolTh(d){ return `<th class="cc-prop">Tipo Socio</th><th class="cc-prop">Requiere Código Aduanas</th>${d && ptRdLinea(d)?'<th class="cc-prop">Aplica comisión de tarifa</th>':''}`; }
 function ptRdRolTd(r, i, edit, d){
   const c = PT_ROL_CAT[r.rol] || ['-', false];
-  const com = r.rol==='Línea naviera' ? `<input type="checkbox" data-rdcom ${edit?'':'disabled'} ${r.comision?'checked':''} onchange="ptUpdRow('roles',${i},'comision',this.checked)">` : '-';
+  const com = r.rol==='Línea naviera' ? `<input type="checkbox" data-rdcom style="width:auto;margin:0" ${edit?'':'disabled'} ${r.comision?'checked':''} onchange="ptUpdRow('roles',${i},'comision',this.checked)">` : '-';
   return `<td class="cc-prop" data-rdtipo>${c[0]}</td><td class="cc-prop">${c[1]?'Sí':'No'}</td>${d && ptRdLinea(d)?`<td class="cc-prop">${com}</td>`:''}`;
 }
 /* Lista: Código ERP por rol y estado de sincronización con SAP (sin modificar el socio) */
