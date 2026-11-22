@@ -1,6 +1,6 @@
 // Uso: MOCKUP_HTML=<ruta a index.html> node tests/e2e_documentacion.js
 // Documentación v37: Importación (Documentos, BL, Transbordo, Direccionamiento), Exportación (Documentos, Reserva, Cutoff)
-// y las propuestas I-037, I-062, I-017, I-080, I-081, I-185, I-069, I-055, I-074, I-078, I-036, I-060, I-019, I-022 e I-182. Falla si hay errores JS.
+// y las propuestas I-037, I-062, I-017, I-080, I-081, I-185, I-069, I-055, I-074, I-078, I-036, I-060, I-019, I-022, I-182 y el lote 39 (I-020, I-030, I-038, I-057, I-070, I-073, I-076, I-079, I-088, I-090, I-093, I-102, I-103, I-112, I-113, I-121, I-174, I-192). Falla si hay errores JS.
 const { chromium } = require('playwright'); const path = require('path');
 const HTML = process.env.MOCKUP_HTML || path.resolve(__dirname, '../repo/pda-mockup/index.html');
 let fails = 0; const check = (c, m) => { console.log(c ? 'OK ' : 'FALLA', m); if (!c) fails++; };
@@ -304,6 +304,83 @@ const ruido = /^(start|onHasParentDirectory|addRow) is not defined/;
   await p.click('#docTRes tr:has-text("ZIMUTRS0000041") button[title="Ver historial"]'); await W();
   check(await p.isVisible('#docHistVinc'), 'I-017: vínculo del transbordo con el BL de Exportación'); await modalBtn('Cerrar');
 
+  // Lote 39: tickets de Documentación en Reportado
+  const sel = async (s, v) => { await p.selectOption(s, v); await W(); };
+  const archivo = async (n) => { await p.setInputFiles('#docUpFile', { name: n, mimeType: 'application/octet-stream', buffer: Buffer.from('x') }); await W(); };
+  await menu('Importación', 'Documentos');
+  await p.evaluate(() => { docIF('nave', 'BOX ENDURANCE'); docIF('viaje', '684'); docIBuscar(); }); await W();
+  // I-038 / I-057: vista previa y Observaciones del CDL
+  await p.evaluate(() => docCdl('descargar')); await W();
+  const cdl = await txt('#docCdl38');
+  check(cdl.includes('Régimen') && cdl.includes('Receptor de carga') && cdl.includes('Peso manifestado (kg)'), 'I-038: vista previa del CDL con el mapeo de la HU');
+  check(await p.isVisible('[data-p57]') && cdl.includes('transbordo vía'), 'I-057: columna Observaciones con sus reglas');
+  await p.evaluate(() => CC.cerrarModal()); await W();
+  // I-073: conciliación del listado de descarga
+  await p.evaluate(() => docUpAbrir('imp')); await W();
+  await sel('#docUpSrv', 'LINER'); await sel('#docUpLin', 'ZIM'); await sel('#docUpTipo', 'LDD'); await archivo('LDD_BOX_684.xlsx');
+  await p.click('#docUpGuardar'); await W(1600);
+  const ldd = await txt('#docLdd73');
+  check(['Faltante', 'Excedente', 'Fecha y hora de descarga', 'Estado del BL'].every(x => ldd.includes(x)), 'I-073: conciliación por contenedor con fecha, hora y estado');
+  await sel('#docLddF', 'Faltante');
+  check((await p.$$('#docLdd73 tbody tr')).length === 1 && (await txt('#docLdd73 tbody')).includes('Faltante'), 'I-073: filtro por resultado');
+  await p.evaluate(() => CC.cerrarModal()); await W();
+  // I-079 / I-088 / I-093: carga Liner
+  await p.evaluate(() => docUpAbrir('imp')); await W();
+  await sel('#docUpSrv', 'LINER'); await sel('#docUpLin', 'ZIM');
+  for (const t of ['MRR', 'MR', 'BAPLIE']) { await sel('#docUpTipo', t); await archivo(`${t}_BOX_684.xlsx`); }
+  await p.click('#docUpGuardar'); await W(1600);
+  check((await txt('#docLin79')).includes('Solo en BAPLIE') && (await txt('#docLin79')).includes('Solo en Manifest Report') && await p.isVisible('#docCruceExp'), 'I-079: cruce BAPLIE y Manifest con excluidos y motivo');
+  check((await txt('#docLin88')).includes('Solo completa vacíos'), 'I-088: fuentes por campo y prioridad');
+  check((await txt('#docLin93')).includes('POD (07097)') && (await txt('#docLin93')).includes('FPD (07097)'), 'I-093: POD, FPD e indicador');
+  await p.evaluate(() => CC.cerrarModal()); await W();
+  // I-090: PDF Tramp
+  await p.evaluate(() => docUpAbrir('imp')); await W();
+  await sel('#docUpSrv', 'TRAMP'); await archivo('BL_TRAMP.pdf');
+  await p.click('#docUpGuardar'); await W(1600);
+  check((await txt('#docTr90')).includes('Encontrada en Connect') && (await txt('#docTr90')).includes('PEN-I090-02'), 'I-090: datos leídos del PDF y nave y viaje resueltos');
+  await p.evaluate(() => CC.cerrarModal()); await W();
+  // I-020 / I-030: datos enviados en la transmisión
+  await p.evaluate(() => docILimpiar()); await W();
+  await p.click('#docIRes tr:has-text("ZIMUREE0000031") button[title="Ver historial"]'); await W();
+  await p.click('#facModalBox .fac-tabs button:has-text("Eventos")'); await W();
+  await p.click('#facModalBox button[title="Ver línea de tiempo de auditoría"] >> nth=0'); await W();
+  check((await txt('[data-p20]')).includes('GoodsStatusCode') && (await txt('[data-p20]')).includes('4'), 'I-020: condición de carga 4 por defecto en la transmisión');
+  check((await txt('[data-p30]')).includes('Descripciones') && (await txt('[data-p30]')).includes('Información de Carga'), 'I-030: descripción enviada a SDA');
+  await p.evaluate(() => CC.cerrarModal()); await W();
+
+  await menu('Exportación', 'Documentos');
+  check(await p.isVisible('#docE192') && (await txt('#docE192')).includes('por definir'), 'I-192: cabotaje marcado como por definir');
+  check((await txt('#docERes')).includes('Rectificación 0153'), 'I-112: resultado de la rectificación en la grilla');
+  await p.click('#docERepTx'); await W();
+  const rtx = await txt('#docRepTx');
+  check(['Número de envío', 'Código SUNAT', 'Fecha de respuesta', '0154'].every(x => rtx.includes(x)), 'I-103: reporte con una fila por envío');
+  await p.evaluate(() => CC.cerrarModal()); await W();
+  await p.evaluate(() => { docEF('nave', 'BOX ENDURANCE'); docEF('viaje', '684'); docEBuscar(); docESel('E2', true); }); await W();
+  await p.click('#docERes button:has-text("Enviar Aviso de Zarpe")'); await W();
+  check((await txt('#docZar102')).includes('Aviso de salida · Reserva') && (await txt('#docZar102')).includes('Fecha de zarpe'), 'I-102: asunto y datos del Aviso de salida');
+  await p.click('#docZarOk'); await W(); check(toast().includes('Aviso de Zarpe'), 'I-102: envío tras revisar');
+  await p.click('#docEF button:has-text("Enviar CAL/VGM")'); await W();
+  check((await txt('#docCal113')).includes('terminal-callao.example') && (await txt('#docCal113')).includes('no pide ni valida correo'), 'I-113: destinatarios por terminal y sucursal');
+  await p.evaluate(() => CC.cerrarModal()); await W();
+  // Reserva: I-070, I-121, I-174, I-076
+  await p.evaluate(() => docExpEditar('E3')); await W(250);
+  check((await txt('#docCoarri')).includes('Conforme'), 'I-121: COARRI leído y cruzado con el BL');
+  await p.click('#docTmgOk'); await W(); await modalBtn('Aprobar');
+  check((await txt('#docTmg')).includes('Disponible para TMG'), 'I-174: BL habilitado para TMG tras aprobar fletes y recargos');
+  await p.click('#docEdTabs .fac-tabs button:has-text("Descripciones")'); await W();
+  check(await p.isVisible('#docDesc70'), 'I-070: aviso de valores previos en un BL transmitido');
+  await p.evaluate(() => docVolver(true)); await W();
+  await p.evaluate(() => docExpEditar('E8')); await W(250);
+  check((await txt('#docCoarri')).includes('Discrepancia'), 'I-121: discrepancia de precinto');
+  await p.evaluate(() => docVolver(true)); await W();
+  await p.evaluate(() => docExpEditar('E2')); await W(250);
+  await p.click('#docEdEditar'); await W(250); if (await abierto()) await modalBtn('Omitir');
+  await p.click('#docEdTabs .fac-tabs button:has-text("Información de Equipos")'); await W();
+  const pin = p.locator('#docGequipos input[style*="110px"]').first(); await pin.fill('5608.12'); await pin.dispatchEvent('change'); await W();
+  check((await txt('[data-p76]')).includes('no corresponde a una partida vigente'), 'I-076: mensaje de partida no vigente');
+  await p.evaluate(() => docEdCancelar()); await W(); if (await abierto()) await modalBtn('Salir sin guardar');
+  await p.evaluate(() => docVolver(true)); await W();
+
   // Interruptor: apagado oculta las propuestas sin romper Connect
   await top(); await p.click('#propToggle'); await W(250);
   check(!(await p.isVisible('#docTAnBtn')) && (await txt('#docTRes')).includes('Numeración de solicitud de transbordo'), 'apagado oculta I-069 y deja Transbordo de Connect');
@@ -312,8 +389,10 @@ const ruido = /^(start|onHasParentDirectory|addRow) is not defined/;
   await menu('Exportación', 'Documentos');
   check(!(await txt('#docERes')).includes('Corrector 1'), 'apagado oculta la columna Correctores (I-078)');
   check(!(await p.isVisible('#docETurBtn')), 'apagado oculta Cargar recargos TUR (I-060)');
+  check(!(await p.isVisible('#docE192')) && !(await p.isVisible('#docERepTx')) && !(await txt('#docERes')).includes('Rectificación 0153'), 'apagado oculta I-192, I-103 e I-112');
   await p.evaluate(() => docExpEditar('E7')); await W(250);
   check(!(await p.isVisible('#docEdNN')) && (await txt('#docEdCab')).includes('TRANSMITIDO A SUNAT'), 'apagado oculta el BL No Negociable (I-022) y deja la Reserva de Connect');
+  check(!(await p.isVisible('#docCoarri')) && !(await p.isVisible('#docTmg')), 'apagado oculta COARRI (I-121) y consulta TMG (I-174)');
   await p.click('#docEdTabs .fac-tabs button:has-text("Recargo - Cláusula")'); await W();
   check(!(await p.isVisible('#docRecTur')) && (await txt('#docEdTabs')).includes('Lugar de Pago'), 'apagado oculta los recargos TUR y deja la grilla de Connect');
   await p.evaluate(() => docVolver(true)); await W();

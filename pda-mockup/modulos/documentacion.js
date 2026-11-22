@@ -3,6 +3,7 @@
    Exportación: Documentos (búsqueda y Reserva), Cutoff.
    Propuesta I-037 (HU-DOC-23): restricciones de exportación (mantenimiento y alertas que solo avisan).
    Propuestas I-062, I-017, I-080, I-081, I-185, I-069, I-055, I-074, I-078, I-036, I-060, I-019, I-022 e I-182: ver bloque "PROPUESTAS sobre Documentación".
+   Lote 39 (I-020, I-030, I-038, I-057, I-070, I-073, I-076, I-079, I-088, I-090, I-093, I-102, I-103, I-112, I-113, I-121, I-174, I-192): ver "PROPUESTAS lote 39".
    Todo en memoria, con CC.datos y datos ficticios propios. La pantalla antigua screenDocBl queda sin enlace en el menú. */
 (function(){
 'use strict';
@@ -226,7 +227,7 @@ function tocar(b){ b.audit.u = CC.usuario(); b.audit.ts = ahora(); }
 
 /* ---------- SUNAT: transmisión simulada (Pendiente y luego respuesta) ---------- */
 function transmitir(b, lista, code, motivo, alTerminar){
-  const t = tx(code, 'PENDING', {user:CC.usuario(), motivo:motivo||''}); b[lista].push(t);
+  const t = tx(code, 'PENDING', {user:CC.usuario(), motivo:motivo||''}); t.env = t.ts; b[lista].push(t);
   b.hist.push(ev(`Transmisión SUNAT ${code} (${COD[code]}) enviada${motivo?`. Motivo: ${motivo}`:''}`, CC.usuario(), t.ts, {code, status:'PENDING'}));
   refrescarActiva();
   setTimeout(()=>{
@@ -285,7 +286,7 @@ window.docImpSunat = (id, c) => {
 window.docHist = (id, soloEventos) => { const b = buscarBL(id); K.h = {b, tab:soloEventos?'ev':'cam', solo:!!soloEventos, f:{ver:'', origen:'', campo:''}, linea:null}; pintarHist(); };
 function pintarHist(){
   const h = K.h, b = h.b, cams = b.cambios || [], campos = [...new Set(cams.flatMap(c=>c.campos.map(x=>x.campo)))];
-  const evs = b.hist.slice().reverse().map((e,i)=>`<tr><td>${fdt(e.ts)}</td><td>${esc(e.user)}</td><td style="white-space:normal">${esc(e.comment)}${h.linea===i&&e.sunat?`<ol class="doc-linea"><li>Enviado a SUNAT por ${esc(e.user)}</li><li>Recibido por SUNAT</li><li>Respuesta: ${esc(ST_SUNAT[e.sunat.status]||e.sunat.status)} (${esc(e.sunat.code)})</li></ol>`:''}</td><td>${e.sunat?ico('linea','Ver línea de tiempo de auditoría',`docHistLinea(${i})`):''}</td></tr>`).join('');
+  const evs = b.hist.slice().reverse().map((e,i)=>`<tr><td>${fdt(e.ts)}</td><td>${esc(e.user)}</td><td style="white-space:normal">${esc(e.comment)}${h.linea===i&&e.sunat?`<ol class="doc-linea"><li>Enviado a SUNAT por ${esc(e.user)}</li><li>Recibido por SUNAT</li><li>Respuesta: ${esc(ST_SUNAT[e.sunat.status]||e.sunat.status)} (${esc(e.sunat.code)})</li></ol>${PV()?txDatosHtml(b, e):''}`:''}</td><td>${e.sunat?ico('linea','Ver línea de tiempo de auditoría',`docHistLinea(${i})`):''}</td></tr>`).join('');
   const evT = `<table class="fac-tbl"><thead><tr><th>Fecha</th><th>Usuario</th><th>Comentario</th><th></th></tr></thead><tbody>${evs||'<tr><td colspan="4" class="fac-empty">Sin eventos</td></tr>'}</tbody></table>`;
   const vis = cams.filter(c=>(!h.f.ver||String(c.ver)===h.f.ver) && (!h.f.origen||(h.f.origen==='Portal'?c.origen!=='Edición interna':c.origen==='Edición interna'))).map(c=>({...c, campos:c.campos.filter(x=>!h.f.campo||x.campo===h.f.campo)})).filter(c=>c.campos.length);
   const camT = `<div class="fac-g4">${campo('Versión',`<input type="number" min="1" value="${esc(h.f.ver)}" onchange="docHistF('ver',this.value)">`)}${campo('Origen',sel(['Todos','Portal','Edición interna'],h.f.origen||'Todos',`onchange="docHistF('origen',this.value==='Todos'?'':this.value)"`))}${campo('Campo',sel(['Todos',...campos],h.f.campo||'Todos',`onchange="docHistF('campo',this.value==='Todos'?'':this.value)"`))}<div class="fac-f"><label>&nbsp;</label>${ghost('Limpiar filtros','docHistF()')}</div></div>${PV()?leyendaAprob(b):''}
@@ -366,12 +367,14 @@ window.docCdl = modo => {
   const errs = eqs.filter(x=>!x.e.sellos.length).map(x=>`Contenedor ${x.e.numero} del BL ${x.b.numero||'Pendiente'} sin sellos registrados.`);
   K.cdl = {modo, v, term, bls, eqs};
   dlg('Validación CDL', `<div class="fac-sec">Mensajes Generales</div><ul class="doc-ul"><li>Formato del terminal: ${esc(term)}</li><li>Viaje ${esc(v.numero)}: ${bls.length} BL y ${eqs.length} contenedores.</li></ul>
-    <div class="fac-sec">Mensajes de Error</div>${errs.length?`<ul class="doc-ul err">${errs.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'<p class="doc-mut">Sin errores.</p>'}`,
-    errs.length ? [['Cerrar','docCbSi()']] : [['Cancelar','docCbNo()','ghost'],[modo==='enviar'?'Enviar':'Descargar','docCdlOk()']]);
+    <div class="fac-sec">Mensajes de Error</div>${errs.length?`<ul class="doc-ul err">${errs.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'<p class="doc-mut">Sin errores.</p>'}${PV()?cdlPrev(K.cdl):''}`,
+    errs.length ? [['Cerrar','docCbSi()']] : [['Cancelar','docCbNo()','ghost'],[modo==='enviar'?'Enviar':'Descargar','docCdlOk()']], PV() ? 'lg' : undefined);
 };
 window.docCdlOk = () => { const c = K.cdl; CC.cerrarModal();
   if(c.modo==='enviar'){ CC.toast('El correo ha sido enviado exitosamente','success'); return; }
-  CC.exportarExcel(`CDL_${c.term.replace(/\s/g,'')}_${c.v.numero}`, 'CDL', ['Número BL','Contenedor','Tipo','Peso Bruto (KG)','Sellos','Puerto Descarga'], c.eqs.map(x=>[x.b.numero, x.e.numero, x.e.tipo, x.e.peso||x.e.vgm, x.e.sellos.map(s=>s.numero).join(' '), x.b.puertoDescarga]));
+  const cab = ['Número BL','Contenedor','Tipo','Peso Bruto (KG)','Sellos','Puerto Descarga'], fila = x=>[x.b.numero, x.e.numero, x.e.tipo, x.e.peso||x.e.vgm, x.e.sellos.map(s=>s.numero).join(' '), x.b.puertoDescarga];
+  if(PV()) CC.exportarExcel(`CDL_${c.term.replace(/\s/g,'')}_${c.v.numero}`, 'CDL', [...cab,'Régimen','Receptor de carga','Bultos manifestados','Commodities','Peso manifestado (kg)','Observaciones'], c.eqs.map(x=>{ const r = cdlFila(x, c.term); return [...fila(x), r.reg, r.rec, r.bultos, r.com, r.peso, r.obs||'']; }));
+  else CC.exportarExcel(`CDL_${c.term.replace(/\s/g,'')}_${c.v.numero}`, 'CDL', cab, c.eqs.map(fila));
   CC.toast('El archivo ha sido descargado exitosamente.','success'); };
 window.docImpExportar = () => CC.exportarExcel(`Importaciones_${sello()}`, 'Importaciones', ['Número BL','Consignatario','Nave','Número de Viaje','Fecha de Emisión','Número de Manifiesto','Puerto Carga','Puerto Descarga','Puerto Final','Tipo de BL','Indicador','Estado BL','Estado Pago','Última Tx SUNAT','Estado SUNAT'],
   filasImp().map(b=>{ const l = last(b.sunat); return [b.numero||'Pendiente', b.consignatario, b.nave, b.viaje, fd(b.emision), b.manifiesto, b.puertoCarga, b.puertoDescarga, b.puertoFinal, b.tipo, b.indicador, b.estado, b.pago, l?l.c:'', l?ST_SUNAT[l.st]:'']; }));
@@ -464,10 +467,10 @@ window.docUpGuardar = () => {
 function lddResultado(u){
   const eqs = S.imp.filter(b=>b.nave===u.nave && b.viaje===u.viaje).flatMap(b=>b.equipos);
   K.ldd = [['Contenedor(es) extra', ['ZIMU9988771']], ['Contenedor(es) faltante(s)', eqs.slice(0,1).map(e=>e.numero)], ['Contenedor(es) con precintos(s) diferente(s)', eqs.slice(1,2).map(e=>`${e.numero}: sistema ${e.sellos[0]?e.sellos[0].numero:'sin sello'}, terminal ZS900001`)], ['BL(s) no encontrado(s)', ['ZIMUBOX0000099']]];
-  dlg('Listado de Descarga - Mensajes', `<p>Existen discrepancias entre la información del sistema y el listado de descarga del terminal</p>${K.ldd.map(([t,l])=>`<div class="fac-sec">${t}</div>${l.length?`<ul class="doc-ul">${l.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'<p class="doc-mut">Ninguno</p>'}`).join('')}`,
-    [['Exportar','docLddExp()','ghost'],['Cerrar','docCbSi()']], 'md');
+  K.ldd73 = ldd73Filas(u); K.lddF = 'Todos'; pintarLdd();
 }
-window.docLddExp = () => CC.exportarExcel('Listado_Descarga_Discrepancias', 'Discrepancias', ['Bloque','Detalle'], K.ldd.flatMap(([t,l])=>l.map(x=>[t,x])));
+window.docLddExp = () => PV() ? CC.exportarExcel('Listado_Descarga_Conciliacion', 'Conciliación', ['Contenedor','Número BL','Resultado','Precinto en el sistema','Precinto del terminal','Fecha y hora de descarga','Estado del BL'], (K.ldd73||[]).map(r=>[r.cont, r.bl, r.st, r.ps, r.pt, r.f?fdt(r.f):'', r.eb]))
+  : CC.exportarExcel('Listado_Descarga_Discrepancias', 'Discrepancias', ['Bloque','Detalle'], K.ldd.flatMap(([t,l])=>l.map(x=>[t,x])));
 function generarBL(u){
   const n = u.servicio==='TRAMP' ? 1 : 2, nuevos = [];
   for(let i=0;i<n;i++){ const num = `${u.linea||'TRP'}U${u.nave.replace(/\W/g,'').slice(0,3).toUpperCase()}${String(++S.seq).padStart(7,'0')}`;
@@ -475,8 +478,8 @@ function generarBL(u){
     b.audit = {c:'Carga de archivos', cts:ahora(), u:CC.usuario(), ts:ahora()}; b.hist = [ev(`BL generado por carga de archivos (${u.files.map(f=>f.cod||f.tipo).join(', ')})`, CC.usuario())];
     S.imp.push(b); nuevos.push(b); }
   dlg('Mensajes de Generación del BL', `<div class="fac-sec">Mensajes Generales</div><ul class="doc-ul"><li>Se generaron ${nuevos.length} BL en estado POR REVISAR.</li><li>Archivos procesados: ${u.files.map(f=>esc(f.nombre)).join(', ')}.</li></ul>
-    <div class="fac-sec">Mensajes del BL</div><table class="fac-tbl"><thead><tr><th>Número BL</th><th>Mensaje</th></tr></thead><tbody>${nuevos.map(b=>{ const p = pendImp(b); return `<tr><td>${esc(b.numero)}</td><td style="white-space:normal">${p.length?`Campos pendientes para aprobar: ${p.slice(0,3).map(esc).join(', ')}${p.length>3?'…':''}`:'Sin observaciones'}</td></tr>`; }).join('')}</tbody></table>`,
-    [['Cerrar',"docGenFin('imp')"]], 'md');
+    <div class="fac-sec">Mensajes del BL</div><table class="fac-tbl"><thead><tr><th>Número BL</th><th>Mensaje</th></tr></thead><tbody>${nuevos.map(b=>{ const p = pendImp(b); return `<tr><td>${esc(b.numero)}</td><td style="white-space:normal">${p.length?`Campos pendientes para aprobar: ${p.slice(0,3).map(esc).join(', ')}${p.length>3?'…':''}`:'Sin observaciones'}</td></tr>`; }).join('')}</tbody></table>${!PV() ? '' : u.servicio==='LINER' ? linerHtml(u, nuevos) : trampHtml(u, nuevos[0])}`,
+    [['Cerrar',"docGenFin('imp')"]], PV() ? 'lg' : 'md');
 }
 window.docGenFin = k => { CC.cerrarModal(); CC.toast(k==='imp'?'El proceso de importación ha finalizado.':'El proceso de carga de reservas ha finalizado.','success'); refrescarActiva(); };
 
@@ -601,12 +604,13 @@ function edHtml(k){
     </div>${dl('docEdPuertos', puertos())}</div>`;
   const sunatInfo = imp && d.info ? `<div class="fac-card"><div class="fac-sec" style="margin-top:0">Información SUNAT</div><div class="fac-g4">${CC.campoLectura('Número de Detalle', d.info.detalle)}${CC.campoLectura('Número Electrónico', d.info.electronico)}</div></div>` : '';
   const tabs = [['gen','Información General'],['eq','Información de Equipos'],['carga','Información de Carga'],['rec','Recargo - Cláusula'],['desc','Descripciones']].concat(!imp && !E.nuevo ? [['traz','Trazabilidad']] : []);
-  const cuerpo = E.tab==='gen' ? genHtml(k, d, ro) : E.tab==='eq' ? eqHtml(k, d, ro) : E.tab==='carga' ? grid('carga', imp?CARGA_IMP:CARGA_EXP, d, ro) : E.tab==='rec' ? (PV() && !E.nuevo ? recPropHtml(k, d) : '') + grid('recargos', RECARGOS, d, ro) : E.tab==='desc' ? grid('descripciones', DESCS, d, ro) : trazHtml(d);
+  const cuerpo = E.tab==='gen' ? genHtml(k, d, ro) : E.tab==='eq' ? eqHtml(k, d, ro) : E.tab==='carga' ? grid('carga', imp?CARGA_IMP:CARGA_EXP, d, ro) : E.tab==='rec' ? (PV() && !E.nuevo ? recPropHtml(k, d) : '') + grid('recargos', RECARGOS, d, ro) : E.tab==='desc' ? (PV() && !E.nuevo ? desc70Html(d) : '') + grid('descripciones', DESCS, d, ro) : trazHtml(d);
   const pend = imp ? pendImp(d) : pendExp(d), exc = imp || !P37() ? [] : excesos(d);
   const pie = `${(d.estado==='POR REVISAR'||!d.estado) ? `<div class="fac-card" id="docEdPend"><h3>${imp?'Campos pendientes para Aprobar BL':'Campos pendientes para Aprobar Reserva'}</h3>${pend.length?`<ul class="doc-ul">${pend.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'<p>Ninguno</p>'}</div>` : ''}
     ${!imp && !E.nuevo && d.estado==='POR REVISAR' && PV() ? parcialHtml(d) : ''}
     ${exc.length ? `<div class="fac-card" ${CC.propuesta('I-037','Restricciones de exportación')} id="docEdR37"><h3>Restricciones de exportación ${M37()}</h3><p class="doc-mut">Aviso: los equipos superan una restricción vigente. No bloquea el guardado ni la transmisión.</p><ul class="doc-ul warn">${exc.map(x=>`<li>${esc(excTxt(x))}</li>`).join('')}</ul></div>` : ''}
     ${!imp && !E.nuevo && d.estado==='APROBADO' && resOk(d) && !S.manifSalida.has(d.nave+'|'+d.viaje) ? '<div class="fac-card"><h3>Manifiesto de salida pendiente</h3><p>El viaje del BL aún no cuenta con el manifiesto de salida completado.</p></div>' : ''}
+    ${!imp && !E.nuevo && PV() ? coarriHtml(d) + tmgHtml(d) : ''}
     ${!imp && !E.nuevo && d.estado!=='POR REVISAR' && pendSunatExp(d).length ? `<div class="fac-card" id="docEdPendS"><h3>Campos pendientes para transmitir a SUNAT</h3><ul class="doc-ul">${pendSunatExp(d).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}`;
   const botones = ro ? '' : `<div class="fac-btns">${ghost('Cancelar','docEdCancelar()')}${btn(E.nuevo?'Crear':'Guardar','docEdGuardar()','','id="docEdGuardar"')}</div>`;
   return `${alerta}${cab}${!imp && !E.nuevo && PV() ? borradorHtml(d) + nnHtml(d) : ''}${ident}${nv}${sunatInfo}<div class="fac-card" id="docEdTabs"><div class="fac-tabs">${tabs.map(([t,l])=>`<button type="button" class="${E.tab===t?'on':''}" onclick="docEdTab('${t}')">${l}</button>`).join('')}</div>${cuerpo}</div>${pie}${botones}`;
@@ -675,7 +679,7 @@ function grid(lista, spec, d, ro){
     if(t==='eqSel') return sel(d.equipos.filter(e=>!e.roleado).map(e=>e.numero), r.equipo, `${dis} onchange="${on}"`, 'Elegir');
     if(t==='sellos') return `<button type="button" class="fac-link" onclick="docSellos(${i})">Sellos (${r.sellos.length})</button>`;
     if(t==='pelig') return `<button type="button" class="fac-link" onclick="docPelig(${i})">Material Peligroso (${r.peligrosos.length})</button>`;
-    if(t==='partida') return `<div class="doc-cell">${inputDe('t', r.partida, on, null, dis, 'style="width:110px"')}${ro?'':ico('lista','Elegir partida arancelaria',`docPartida(${i})`)}</div>`;
+    if(t==='partida') return `<div class="doc-cell">${inputDe('t', r.partida, on, null, dis, 'style="width:110px"')}${ro?'':ico('lista','Elegir partida arancelaria',`docPartida(${i})`)}</div>${exp?partidaMsg(r.partida):''}`;
     if(t==='desc') return `<div class="doc-cell"><span class="doc-desc" title="${esc(r[key])}">${esc(r[key]||'')}</span>${ro?'':ico('lapiz','Editar descripción',`docDescEd('${lista}',${i},'${key}')`)}</div>`;
     return inputDe(t, r[key], on, o, dis, t==='t'?'style="width:150px"':'');
   };
@@ -821,7 +825,7 @@ function camposPendSunat(lista){ aviso('Campos pendientes para transmitir a SUNA
 window.docExpSunat = (id, w, accion) => {
   const b = buscarBL(id), o = w==='res' ? opsRes(b) : opsBl(b); if(!o) return; if(o.block){ CC.toast(o.block,'error'); return; }
   const code = accion==='cancel' ? o.cancel : o.send; if(!code) return;
-  if(w==='bl' && accion!=='cancel'){ const p = pendSunatExp(b); if(p.length){ camposPendSunat(p); return; } }
+  if(w==='bl' && accion!=='cancel'){ if(PV() && bloqueoPartida(b)) return; const p = pendSunatExp(b); if(p.length){ camposPendSunat(p); return; } }
   confirmar('Transmisión SUNAT', MSJ_TX[w][accion==='cancel'?1:0], 'Confirmar', ()=>{
     const primero = ['0171','0154'].includes(code) || o.retry;
     if(primero) expTx(b, w, code, ''); else pedirMotivo({titulo:'Motivo', max:100, cb:m=>expTx(b, w, code, m)}); });
@@ -979,7 +983,7 @@ function htmlExp(){
       ${campo('Nave',`<input id="docENave" list="docENaves" placeholder="Ingresar nave" value="${esc(f.nave)}" onchange="docEF('nave',this.value)">${dl('docENaves',naves())}`)}
       ${campo('Número de Viaje',`<input id="docEViaje" list="docEViajes" placeholder="Ingresar número de viaje" value="${esc(f.viaje)}" ${f.nave?'':'disabled'} onchange="docEF('viaje',this.value)">${dl('docEViajes',viajesDe(f.nave))}`)}
       ${campo('Número de Reserva',`<input id="docEResv" placeholder="Ingresar número de reserva" value="${esc(f.res)}" onchange="docEF('res',this.value)">`)}
-      ${campo('Indicador',sel(IND_EXP,f.ind,`onchange="docEF('ind',this.value)"`,'Elegir indicador'))}
+      ${campo('Indicador',sel(IND_EXP,f.ind,`onchange="docEF('ind',this.value)"`,'Elegir indicador')+`<small ${PR('HU por definir','I-192','Cabotaje')} id="docE192" style="display:block;font-size:12px;margin-top:4px">Transmisiones de cabotaje: por definir</small>`)}
       ${campo('Número de Manifiesto',`<input placeholder="Ingresar número de manifiesto" value="${esc(f.mani)}" onchange="docEF('mani',this.value)">`)}
       ${campo('Fecha de Emisión',`<div class="fac-range"><input type="date" value="${f.desde}" onchange="docEF('desde',this.value)"><input type="date" value="${f.hasta}" onchange="docEF('hasta',this.value)"></div>`)}
       ${campo('Estado BL',sel(ST_BL,f.est,`id="docEEst" onchange="docEF('est',this.value)"`,'Elegir estado BL'))}
@@ -992,7 +996,7 @@ function htmlExp(){
       return `<button type="button" class="fac-link" onclick="docExpEditar('${b.id}')">${esc(b.numero)}</button>${b.extRes?' <span class="doc-ext" title="Reserva transmitida dentro de las 24h previas al ETA del viaje">(Reserva extemporánea)</span>':''}${b.extBl?' <span class="doc-ext" title="BL transmitido después de los 2 días calendario del Fin de Embarque">(BL extemporáneo)</span>':''}${x.length?` <span class="doc-r37 cc-prop" title="${esc('Restricción de exportación: '+x.map(excTxt).join(' '))}">${svgI('peso')}</span>`:''}`; }},
     {t:'Embarcador', v:'embarcador'},{t:'Nave', v:'nave'},{t:'Número de Viaje', v:'viaje'},{t:'ATA', v:b=>fd(b.ata)},{t:'Versión', v:'version'},...colCorrectores(),{t:'Fecha de Emisión', v:b=>fd(b.emision)},{t:'Número de Manifiesto', v:'manifiesto'},
     {t:'Puerto de Embarque', v:'puertoCarga'},{t:'Puerto de Descarga', v:'puertoDescarga'},{t:'Puerto Final', v:'puertoFinal'},{t:'Tipo de BL', v:'tipo'},{t:'Indicador', v:'indicador'},
-    {t:'Estado BL', v:b=>chipBL(b.estado)},{t:'Última Tx SUNAT', v:b=>ultTx([...b.res,...b.bl].sort((x,y)=>x.ts<y.ts?-1:1).pop())},{t:'Estado Pago', v:'pago'},
+    {t:'Estado BL', v:b=>chipBL(b.estado)+rect112(b)},{t:'Última Tx SUNAT', v:b=>ultTx([...b.res,...b.bl].sort((x,y)=>x.ts<y.ts?-1:1).pop())},{t:'Estado Pago', v:'pago'},
     {t:'Auditoría', v:b=>`<div class="doc-aud"><span class="doc-mut">Creación: ${fdt(b.audit.cts)} · ${esc(b.audit.c)}</span><span class="doc-mut">Modificación: ${fdt(b.audit.ts)} · ${esc(b.audit.u)}</span></div>`},
     {t:'Descargar BL', v:b=>puedeCorreo(b)?ico('imp','Descargar Borrador',`docPdf('BL','${b.id}')`):''},
     {t:'Estado SUNAT Reserva', v:b=>iconosExp(b,'res')},
@@ -1002,7 +1006,7 @@ function htmlExp(){
     {t:'Acciones', v:b=>puedeCorreo(b)?ico('desc','Descargar Aviso de Zarpe',`docPdf('Aviso de Zarpe','${b.id}')`):''}];
   return filtros + tabla({id:'docERes', titulo:`Resultados (${all.length})`, cols, filas:pg.filas, vacio:'No se encontraron resultados con los criterios seleccionados',
     acciones:`${btn('Transmitir BL','docExpLote()', '', all.length && conViaje ? '' : 'disabled')}${ghost('Enviar Aviso de Zarpe','docZarpe()', S.fe.sel.size?'':'disabled')}<span ${CC.propuesta('I-055','Eliminación en bloque')}>${ghost('Eliminar BL en bloque',"docElAbrir('exp')",'id="docEElBtn"')}</span>`,
-    pie:`<div class="fac-acts">${ghost('Exportar','docExpExportar()')}<span title="Incluye los BL de la nave y viaje seleccionados, o los de todas las naves en el rango de fecha de emisión (máximo un mes).">${ghost('Reporte de Documentación',"docReporte('exp')",'id="docERep"')}</span></div>${pager(all.length, pg.pagina, S.fe.tam, 'docEPag')}`});
+    pie:`<div class="fac-acts">${ghost('Exportar','docExpExportar()')}<span title="Incluye los BL de la nave y viaje seleccionados, o los de todas las naves en el rango de fecha de emisión (máximo un mes).">${ghost('Reporte de Documentación',"docReporte('exp')",'id="docERep"')}</span><span ${PR('HU-DOC-10','I-103','Reporte de BL transmitidos')}>${ghost('Reporte de BL transmitidos','docRepTx()','id="docERepTx"')}</span></div>${pager(all.length, pg.pagina, S.fe.tam, 'docEPag')}`});
 }
 window.docEF = (k, v) => { S.fe.f[k] = v; if(k==='nave') S.fe.f.viaje = ''; if(k==='nave' || k==='viaje') rerender('screenDocExp'); };
 window.docEBuscar = () => { const f = S.fe.f;
@@ -1017,8 +1021,8 @@ window.docExpExportar = () => { const l = filasExp().slice(0,1000); if(!l.length
 window.docZarpe = () => { const l = S.exp.filter(b=>S.fe.sel.has(b.id)); if(!l.length) return;
   const sin = l.filter(b=>!b.atd).map(b=>b.numero);
   if(sin.length){ CC.toast(sin.length>1?`No es posible realizar el envío porque los BL aún no han zarpado: ${sin.join(', ')}`:`No es posible realizar el envío porque el BL aún no ha zarpado: ${sin[0]}`,'error'); return; }
-  l.forEach(b=>b.hist.push(ev('Aviso de Zarpe enviado por correo', CC.usuario())));
-  CC.toast(l.length>1?'Emails de Aviso de Zarpe fueron enviados exitosamente':'Email de Aviso de Zarpe fue enviado exitosamente','success'); };
+  if(PV()){ K.zar = l; dlg('Enviar Aviso de Zarpe', zarpeHtml(l), [['Cancelar','docCbNo()','ghost'],['Enviar','docZarpeOk()','','id="docZarOk"']], 'lg'); return; }
+  enviarZarpe(l); };
 window.docCal = modo => {
   const f = S.fe.f; if(!f.viaje){ CC.toast('Ingrese el número de viaje para generar el CAL/VGM','error'); return; }
   const v = voyInfo(f.nave, f.viaje), term = TERMINAL(v.puerto); if(!term){ CC.toast('El viaje no tiene configurado un formato CAL para el terminal.','error'); return; }
@@ -1032,10 +1036,13 @@ window.docCal = modo => {
   if(sinVgm.length){ dlg('Resultados de la Validación VGM', `<div class="fac-sec">Mensajes Generales</div><ul class="doc-ul"><li>Formato del terminal: ${esc(term)}. ${bls.length} reservas y ${eqs.length} equipos.</li></ul>
       <div class="fac-sec">Mensajes de Error</div><p class="doc-err">No puede enviarse correo, los campos del VGM están incompletos.</p><table class="fac-tbl"><thead><tr><th>Número de Reserva</th><th>Equipo</th><th>Detalle</th></tr></thead><tbody>${sinVgm.map(x=>`<tr><td>${esc(x.b.numero)}</td><td>${esc(x.e.numero)}</td><td>VGM (KG) vacío</td></tr>`).join('')}</tbody></table>`,
       [['Descargar avisos (.txt)','docCalTxt()','ghost'],['Cerrar','docCbSi()']], 'md'); return; }
-  dlg('Enviar Email', `<p>Por favor elegir la plantilla del correo a enviar</p>${campo('Plantilla *', sel(['CAL/VGM DP World','CAL/VGM Euroandino','CAL/VGM General'], '', 'id="docCalPl"', 'Seleccionar plantilla'))}`, [['Cancelar','docCbNo()','ghost'],['Enviar Email','docCalEnviar()']]);
+  dlg('Enviar Email', `<p>Por favor elegir la plantilla del correo a enviar</p>${campo('Plantilla *', sel(['CAL/VGM DP World','CAL/VGM Euroandino','CAL/VGM General'], '', 'id="docCalPl"', 'Seleccionar plantilla'))}${PV()?cal113Html(K.cal):''}`, [['Cancelar','docCbNo()','ghost'],['Enviar Email','docCalEnviar()']]);
 };
 window.docCalTxt = () => descargarTxt(`Avisos_CAL_${K.cal.v.numero}.txt`, K.cal.avisos.join('\r\n'));
-window.docCalEnviar = () => { if(!$('docCalPl').value){ CC.toast('Por favor complete todos los campos obligatorios','error'); return; } CC.cerrarModal(); CC.toast('El correo ha sido enviado exitosamente.','success'); };
+window.docCalEnviar = () => { if(!$('docCalPl').value){ CC.toast('Por favor complete todos los campos obligatorios','error'); return; }
+  if(PV()){ const d = calDest(K.cal); if(!d.length){ CC.toast('La terminal y la sucursal no tienen contactos configurados para enviar el CAL/VGM. Puede descargarlo sin correo.','error'); return; }
+    K.cal.bls.forEach(b=>b.hist.push(ev(`CAL/VGM enviado a ${d.join(', ')}. Recepción registrada para el retest`, CC.usuario()))); }
+  CC.cerrarModal(); CC.toast('El correo ha sido enviado exitosamente.','success'); };
 /* Transmitir BL en lote (Exportación) */
 window.docExpLote = () => { const f = S.fe.f; if(!f.nave || !f.viaje){ CC.toast('Por favor complete todos los campos obligatorios','error'); return; }
   const c = S.exp.filter(b=>b.nave===f.nave && b.viaje===f.viaje && (()=>{ const o = opsBl(b); return o && !o.block && o.send; })());
@@ -1742,6 +1749,167 @@ function parcialHtml(d){ turSeed(); const b = buscarBL(d.id) || d, p = b.parcial
     <p>En cualquier edición puede guardar solo lo que cambió (por ejemplo, el cliente o el embarcador). Los campos pendientes no bloquean el guardado: se exigen al aprobar o transmitir.</p>
     ${p?`<div class="fac-note" id="docParcialUlt">Edición ${p.n} guardada el ${fdt(p.ts)} por ${esc(p.user)}. La reserva sigue en Por revisar: faltan ${p.pend} ${p.pend===1?'dato':'datos'} para aprobar.</div>`:`<p class="doc-mut">Ediciones guardadas en Por revisar: ${esc(b.edPR||1)}.</p>`}
     <p class="doc-mut">Por definir PEN-RES-02: matriz de campos exigidos al guardar, aprobar y transmitir.</p></div>`; }
+
+/* =====================================================================
+   PROPUESTAS lote 39 (tickets de Documentación en Reportado). Marca "HU-xxx · I-xxx"; se ocultan con "Ver propuestas" apagado.
+   I-020 I-030 transmisión · I-070 I-112 rectificación · I-076 partida · I-038 I-057 CDL · I-073 listado de descarga
+   I-079 I-088 I-093 carga Liner · I-090 PDF Tramp · I-102 aviso de salida · I-103 reporte de envíos · I-113 CAL/VGM
+   I-121 COARRI · I-174 consulta TMG · I-192 cabotaje (por definir)
+===================================================================== */
+const PR = (hu, t, texto, cls) => CC.propuesta(`${hu} · ${t}`, texto, cls);
+const chipT = (t, k) => { const c = TONO_AP[k==='ok'?'Aprobado':k==='mal'?'Rechazado':'Pendiente de aprobación']; return `<span class="cc-chip" style="background:${c[0]};color:${c[1]}">${esc(t)}</span>`; };
+const kv = l => `<dl class="fac-kv">${l.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${v}</dd>`).join('')}</dl>`;
+const tbl = (cab, filas, vacio) => `<div class="fac-scroll"><table class="fac-tbl"><thead><tr>${cab.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${filas.length ? filas.map(f=>`<tr>${f.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('') : `<tr><td colspan="${cab.length}" class="fac-empty">${vacio||'Sin registros'}</td></tr>`}</tbody></table></div>`;
+
+/* ---------- I-020 · HU-DOC-06 y I-030 · HU-DOC-07: qué se envía en la transmisión del manifiesto ---------- */
+const MANIF = ['0103','0102','0154','0153'];
+function condCarga(b){ const eq = (b.equipos||[]).filter(e=>!e.roleado), v = eq.filter(e=>e.cond==='EMPTY').length;
+  if(eq.length && v===eq.length) return '<b>10</b> · Carga vacía (todos los contenedores vacíos)';
+  if(v) return 'BL con contenedores llenos y vacíos: por definir (PEN-I020-02)';
+  return '<b>4</b> · Valor por defecto'; }
+function txDatosHtml(b, e){
+  if(!e.sunat || !MANIF.includes(e.sunat.code)) return '';
+  const info = [...new Set((b.carga||[]).map(x=>x.descripcion).filter(Boolean))], desc = (b.descripciones||[]).map(x=>x.descripcion).filter(Boolean);
+  return `<div ${PR('HU-DOC-06','I-020','Condición de carga enviada', 'fac-note')} data-p20><b>Condición de carga enviada</b> ${MKP('HU-DOC-06','I-020','PEN-I020-01')}<br>GoodsStatusCode (catálogo 239): ${condCarga(b)}. SUNAT debe mostrar la misma condición al consultar el BL.</div>
+    <div ${PR('HU-DOC-07','I-030','Descripción enviada a SDA', 'fac-note')} data-p30><b>Descripción enviada a SDA</b> ${MKP('HU-DOC-07','I-030','PEN-I030-02')}<br>Versión vigente V${esc(b.version||1)}, en una sola transacción. Información de Carga: ${esc(info.join(' / ')||'Sin datos')}. Descripciones: ${esc(desc.join(' / ')||'Sin datos')}.<br><span class="doc-mut">Cómo se combinan ambas según el tipo de carga: por definir (PEN-I030-02).</span></div>`;
+}
+
+/* ---------- I-070 · HU-DOC-22: valores previos al editar un BL transmitido ---------- */
+const txManif = b => [...(b.sunat||[]), ...(b.bl||[])].some(t=>['0103','0154'].includes(t.c) && t.st==='COMPLETED');
+function desc70Html(d){ const b = buscarBL(d.id) || d; if(!txManif(b)) return '';
+  return `<div ${PR('HU-DOC-22','I-070','Valores previos al editar', 'fac-note')} id="docDesc70"><b>BL transmitido: se conservan los valores previos</b> ${MKP('HU-DOC-22','I-070','PEN-I070-01')}<br>Al pulsar Editar se muestran las ${(b.descripciones||[]).length} descripción(es) y los demás campos ya guardados. Al guardar y pasar a Por rectificar solo cambia lo editado; Cancelar no borra valores.</div>`; }
+
+/* ---------- I-112 · HU-DOC-22: resultado de la rectificación en la grilla ---------- */
+function rect112(b){ if(!PV()) return ''; const l = lastBl(b); let t = '';
+  if(l && l.c==='0153') t = l.st==='PENDING' ? 'Rectificación 0153: pendiente de respuesta' : l.st==='ERROR' ? 'Rectificación 0153: con error' : 'Rectificación 0153: aceptada';
+  else if(b.estado==='POR RECTIFICAR') t = 'Rectificación 0153: por enviar';
+  return t ? `<small ${PR('HU-DOC-22','I-112','Rectificación en la grilla')} data-r112 style="display:block;font-size:12px;white-space:nowrap;margin-top:4px">${t}</small>` : ''; }
+
+/* ---------- I-076 · HU-DOC-16: partida no vigente con mensaje claro ---------- */
+const PARTIDA_MSG = 'La informacion registrada no corresponde a una partida vigente';
+const partidaInvalida = p => { const x = String(p||'').replace(/\D/g,''); return !!x && !PARTIDAS.some(c=>c[0]===x); };
+const partidaMsg = p => PV() && partidaInvalida(p) ? `<small ${PR('HU-DOC-16','I-076','Partida no vigente','doc-err')} data-p76 style="display:block;font-size:12px;white-space:normal;max-width:220px;margin-top:4px">${PARTIDA_MSG}</small>` : '';
+function bloqueoPartida(b){ const l = b.equipos.filter(e=>!e.roleado && partidaInvalida(e.partida)); if(!l.length) return false;
+  CC.modal(`<div ${PR('HU-DOC-16','I-076','Bloqueo por partida no vigente')} id="docP76"><h3>No se puede transmitir el BL ${MKP('HU-DOC-16','I-076','PEN-I076-01')}</h3>
+    <ul class="doc-ul err">${l.map(e=>`<li>Equipo ${esc(e.numero)}, partida ${esc(e.partida)}: ${PARTIDA_MSG}</li>`).join('')}</ul>
+    <p class="doc-mut">No se envía nada a SUNAT y el BL conserva sus datos y su estado. Corrija la partida en Información de Equipos.</p></div><div class="fac-btns">${btn('Entendido','CC.cerrarModal()')}</div>`, 'md');
+  return true; }
+
+/* ---------- I-038 y I-057 · HU-DOC-08: formato y Observaciones del CDL ---------- */
+const TERM_COD = {'DP World':'DPW', 'Euroandino':'TPE'};
+function obsCdl(b, e, term){
+  if(e.cond==='EMPTY') return '';
+  if(b.indicador==='Transbordo') return `transbordo vía ${TERM_COD[term]||term}`;
+  if(b.lineaCod!=='ZIM') return '';
+  if(b.tipoDespacho==='Diferido' || /extraportuario/i.test(b.tipoDespacho||'')) return 'OIMF';
+  if(/SADA/i.test(b.tipoDespacho||'')) return 'OICF';
+  return null; }
+function cdlFila(x, term){ const c = (x.b.carga||[]).find(k=>k.equipo===x.e.numero) || {}, o = obsCdl(x.b, x.e, term);
+  return {bl:x.b.numero||'Pendiente', cont:x.e.numero, reg:x.b.indicador, rec:[x.b.ruc, x.b.codAduana].filter(Boolean).join(' · '), bultos:c.cantidad??'', com:c.descripcion||'', peso:c.peso??'', obs:o}; }
+function cdlPrev(c){
+  const f = c.eqs.map(x=>cdlFila(x, c.term)), paita = c.term==='Euroandino', vis = f.slice(0, 8);
+  return `<div ${PR('HU-DOC-08','I-038','Formato y mapeo del CDL')} id="docCdl38" style="margin-top:12px"><div class="fac-sec">Vista previa del CDL ${MKP('HU-DOC-08','I-038','PEN-I038-03')}</div>
+    <p class="doc-mut" style="white-space:normal">${paita ? 'Formato Paita: se retiran RUC_IMPORTADOR, RUC_REMITENTE, RUC_ALMACEN_DESTINO, RUC_DESTINATARIO, DIR_LLEGADA y UBIGEO.' : `Formato ${esc(c.term)}: plantilla por puerto, terminal y tipo de carga (CDL o UDL) por confirmar en PEN-I038-03.`} Régimen sale del Indicador, Receptor de carga de la Entidad receptora (RUC y código, sin razón social), Bultos de la Cantidad de bultos y Commodities de la descripción por contenedor. Peso manifestado en kg, igual que en SDA (campo fuente: PEN-I038-01).</p>
+    ${tbl(['Contenedor','Número BL','Observaciones','Régimen','Receptor de carga','Bultos manifestados','Commodities','Peso manifestado (kg)'].map(t=>`<span style="white-space:normal;display:inline-block">${t}</span>`),
+      vis.map(r=>[esc(r.cont), esc(r.bl), r.obs===null ? '<span class="doc-mut">Por confirmar</span>' : r.obs ? `<b>${esc(r.obs)}</b>` : '<span class="doc-mut">En blanco</span>', esc(r.reg), esc(r.rec||'Sin datos'), esc(r.bultos), esc(r.com), esc(n0(r.peso))]))}
+    ${f.length>vis.length?`<p class="doc-mut">Y ${f.length-vis.length} contenedor(es) más en el archivo.</p>`:''}
+    <div ${PR('HU-DOC-08','I-057','Observaciones automáticas', 'fac-note')} data-p57 style="margin-top:8px"><b>Observaciones automáticas</b> ${MKP('HU-DOC-08','I-057','PEN-I057-02')}<br>Solo ZIM, OICF para SADA a almacén del cliente y OIMF para Diferido o SADA extraportuario; en todas las líneas, Transbordo genera «transbordo vía» y la terminal del viaje (${esc(TERM_COD[c.term]||c.term)}); vacíos y otras líneas sin transbordo quedan en blanco. Equivalencia de «SADA Descarga Directa» y precedencia: PEN-I057-01 y PEN-I057-02.</div></div>`;
+}
+
+/* ---------- I-073 · HU-DOC-38: conciliación del listado de descarga ---------- */
+const LDD_F = ['Todos','Descargado','Descargado con precinto distinto','Faltante','Excedente'];
+function ldd73Filas(u){
+  const bls = S.imp.filter(b=>b.nave===u.nave && b.viaje===u.viaje), filas = [];
+  bls.forEach(b=>b.equipos.forEach(e=>{ const k = filas.length, st = k===0 ? 'Faltante' : k===1 ? 'Descargado con precinto distinto' : 'Descargado';
+    filas.push({cont:e.numero, bl:b.numero||'Pendiente', st, ps:e.sellos[0]?e.sellos[0].numero:'Sin sello', pt:st==='Faltante'?'':k===1?'ZS900001':(e.sellos[0]?e.sellos[0].numero:''), f:st==='Faltante'?'':`2026-11-20T0${(k%8)+1}:15:00`}); }));
+  filas.push({cont:'ZIMU9988771', bl:'Sin BL en el sistema', st:'Excedente', ps:'', pt:'ZS900777', f:'2026-11-20T09:40:00'});
+  const estBl = n => { const l = filas.filter(r=>r.bl===n), d = l.filter(r=>/^Descargado/.test(r.st)).length; return !l.length || n==='Sin BL en el sistema' ? 'No registrado' : d===l.length ? 'Descargado' : d ? 'Descarga parcial' : 'No descargado'; };
+  return filas.map(r=>({...r, eb:estBl(r.bl)}));
+}
+function ldd73Html(){ const f = K.lddF || 'Todos', l = (K.ldd73||[]).filter(r=>f==='Todos' || r.st===f);
+  return `<div ${PR('HU-DOC-38','I-073','Conciliación por contenedor')} id="docLdd73" style="margin-top:12px"><div class="fac-sec">Conciliación por contenedor ${MKP('HU-DOC-38','I-073','PEN-I073-02')}</div>
+    <div class="fac-g3">${campo('Resultado', sel(LDD_F, f, 'id="docLddF" onchange="docLddF(this.value)"'))}</div>
+    ${tbl(['Contenedor','Número BL','Resultado','Precinto en el sistema','Precinto del terminal','Fecha y hora de descarga','Estado del BL'], l.map(r=>[esc(r.cont), esc(r.bl), chipT(r.st, r.st==='Descargado'?'ok':r.st==='Faltante'?'mal':'pend'), esc(r.ps||'Sin datos'), esc(r.pt||'Sin datos'), r.f?fdt(r.f):'<span class="doc-mut">Sin descarga</span>', esc(r.eb)]), 'No hay contenedores con ese resultado')}
+    <p class="doc-mut" style="white-space:normal">Exportar lleva estas filas y columnas. Si el archivo no es válido, el mensaje indica la fila y el campo rechazado (formato del puerto: PEN-I073-01). Aviso al cliente: PEN-I073-03.</p></div>`; }
+function pintarLdd(){
+  dlg('Listado de Descarga - Mensajes', `<p>Existen discrepancias entre la información del sistema y el listado de descarga del terminal</p>${K.ldd.map(([t,l])=>`<div class="fac-sec">${t}</div>${l.length?`<ul class="doc-ul">${l.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'<p class="doc-mut">Ninguno</p>'}`).join('')}${PV()?ldd73Html():''}`,
+    [['Exportar','docLddExp()','ghost'],['Cerrar','docCbSi()']], PV() ? 'lg' : 'md'); }
+window.docLddF = v => { K.lddF = v; pintarLdd(); };
+
+/* ---------- I-079, I-088 e I-093 · HU-DOC-26 y HU-DOC-28: carga Liner ---------- */
+function linerHtml(u, nuevos){
+  const eqs = nuevos.flatMap(b=>b.equipos.map(e=>({b, e})));
+  K.cruce = [...eqs.map(x=>['Coincidente', x.e.numero, x.b.numero, 'En BAPLIE y Manifest Report']), ['Solo en BAPLIE', 'ZIMU7711002', nuevos[0].numero, 'Retirado del Manifest Report: no se agrega al BL'], ['Solo en Manifest Report', 'ZIMU7711010', nuevos[nuevos.length-1].numero, 'Sin posición en el BAPLIE: no se agrega al BL']];
+  const fuentes = [['Consignatario, notificante, bultos y pesos','Manifest Report Romania (MRR) y Manifest Report 07097 (MR)','Prioritaria'],['Puerto de descarga (POD) y destino final (FPD)','Manifest Report 07097 (MR)','Prioritaria'],['Posición de estiba','BAPLIE','Se integra'],['Datos faltantes del BL','SBL','Solo completa vacíos'],['Contenedor del embarcador','SOC','Solo completa vacíos']];
+  return `<div ${PR('HU-DOC-26','I-079','Cruce BAPLIE y Manifest Report')} id="docLin79" style="margin-top:12px"><div class="fac-sec">Cruce BAPLIE y Manifest Report ${MKP('HU-DOC-26','I-079','PEN-I079-01')}</div>
+      <p class="doc-err">Existen discrepancias: ${K.cruce.filter(r=>r[0]!=='Coincidente').length} contenedor(es) excluido(s).</p>
+      ${tbl(['Resultado','Contenedor','Número BL','Motivo'], K.cruce.map(r=>[chipT(r[0], r[0]==='Coincidente'?'ok':'mal'), esc(r[1]), esc(r[2]), esc(r[3])]))}
+      <div class="fac-btns" style="justify-content:flex-start">${ghost('Exportar discrepancias','docCruceExp()','id="docCruceExp"')}</div></div>
+    <div ${PR('HU-DOC-28','I-088','Consolidación de fuentes Liner')} id="docLin88" style="margin-top:12px"><div class="fac-sec">Fuentes usadas por campo ${MKP('HU-DOC-28','I-088','PEN-I088-01')}</div>
+      ${tbl(['Campo','Fuente','Regla'], fuentes.map(r=>r.map(esc)))}
+      <p class="doc-mut" style="white-space:normal">Si vuelve a cargar una actualización, se actualiza el mismo BL, sin duplicarlo, y se muestra este reporte de observaciones.</p></div>
+    <div ${PR('HU-DOC-28','I-093','Puertos e indicador')} id="docLin93" style="margin-top:12px"><div class="fac-sec">Puertos e indicador ${MKP('HU-DOC-28','I-093','PEN-I093-01')}</div>
+      ${tbl(['Número BL','POD (07097)','FPD (07097)','Indicador'], nuevos.map(b=>[esc(b.numero), esc(b.puertoDescarga), esc(b.puertoFinal), b.puertoDescarga===b.puertoFinal ? esc(b.indicador) : '<span class="doc-mut">Según matriz POD y FPD (PEN-I093-01)</span>']))}
+      <p class="doc-mut" style="white-space:normal">POD y FPD se toman del Manifest Report 07097 y se completan con la descarga del BAPLIE. Si el POD es nacional y el FPD es distinto, el indicador sigue la matriz por aprobar.</p></div>`;
+}
+window.docCruceExp = () => CC.exportarExcel(`Cruce_BAPLIE_Manifest_${sello()}`, 'Discrepancias', ['Resultado','Contenedor','Número BL','Motivo'], (K.cruce||[]).filter(r=>r[0]!=='Coincidente'));
+
+/* ---------- I-090 · HU-DOC-29: lectura del PDF de BL Tramp ---------- */
+const trampHtml = (u, b) => `<div ${PR('HU-DOC-29','I-090','Lectura del PDF Tramp')} id="docTr90" style="margin-top:12px"><div class="fac-sec">Datos leídos del PDF ${MKP('HU-DOC-29','I-090','PEN-I090-02')}</div>
+  ${tbl(['Dato','Valor del PDF','Resultado'], [['Nave', esc(u.nave), 'Encontrada en Connect'], ['Número de Viaje', esc(u.viaje), 'Encontrado en Connect'], ['Número BL', esc(b.numero), 'BL único asociado a la nave y viaje'], ['Estado inicial', esc(b.estado), '<span class="doc-mut">Creado o Por revisar: PEN-I090-02</span>']])}
+  <p class="doc-mut" style="white-space:normal">Si la nave, el viaje u otro dato obligatorio no se reconoce, el mensaje indica cuál y no se crea el BL. Formatos admitidos: PEN-I090-01.</p></div>`;
+
+/* ---------- I-102 · HU-DOC-05: contenido del Aviso de salida ---------- */
+const enviarZarpe = l => { l.forEach(b=>b.hist.push(ev('Aviso de Zarpe enviado por correo', CC.usuario())));
+  CC.toast(l.length>1?'Emails de Aviso de Zarpe fueron enviados exitosamente':'Email de Aviso de Zarpe fue enviado exitosamente','success'); };
+function zarpeHtml(l){
+  return `<div ${PR('HU-DOC-05','I-102','Contenido del Aviso de salida')} id="docZar102"><p>${MKP('HU-DOC-05','I-102','PEN-I102-01')} Revise el contenido antes de enviar. El PDF y el correo llevan los mismos datos.</p>
+    ${l.map(b=>{ const eq = b.equipos.filter(e=>!e.roleado).map(e=>e.numero);
+      return `<div class="doc-ver"><div class="doc-ver-h"><b>Asunto:</b> <span>Aviso de salida · Reserva ${esc(b.refReserva||b.numero)} · BL ${esc(b.numero)}</span></div>
+      ${kv([['Nave', esc(b.nave)], ['Viaje', esc(b.viaje)], ['BL', esc(b.numero)], ['Fecha de zarpe', fdt(b.atd)], ['Destino', `${esc(b.puertoFinal)}${PAIS[b.puertoFinal]?' ('+esc(PAIS[b.puertoFinal])+')':''}`], ['Contenedor', eq.length ? esc(eq.join(', ')) : '<span class="doc-mut">Carga sin contenedor: PEN-I102-01</span>'], ['Destinatario', 'Contactos del booking (embarcador), sin un segundo registro']])}</div>`; }).join('')}
+    <p class="doc-mut" style="white-space:normal">Logo y cuentas bancarias: los del maestro de la línea y la sucursal (Configurar avisos, I-062).</p></div>`;
+}
+window.docZarpeOk = () => { CC.cerrarModal(); enviarZarpe(K.zar || []); };
+
+/* ---------- I-103 · HU-DOC-10: reporte de BL transmitidos (una fila por envío) ---------- */
+const REP_TX = ['Número BL','Booking','Fecha de envío','Número de envío','Código SUNAT','Estado SUNAT','Fecha de respuesta'];
+function repTxFilas(){ const q = S.fe.q;
+  return S.exp.filter(b=>(!q.nave||b.nave===q.nave) && (!q.viaje||b.viaje===q.viaje)).flatMap(b=>(b.bl||[]).map(t=>{ t.nEnv = t.nEnv || String(880000 + (++S.seq));
+    return [b.numero, b.refReserva||'', fdt(t.env||t.ts), t.nEnv, `${t.c} ${COD[t.c]||''}`.trim(), t.st==='PENDING' ? 'Pendiente de respuesta' : ST_SUNAT[t.st], t.st==='PENDING' ? '' : fdt(t.ts)]; })); }
+window.docRepTx = () => { const f = repTxFilas(), q = S.fe.q;
+  CC.modal(`<div ${PR('HU-DOC-10','I-103','Reporte de BL transmitidos')} id="docRepTx"><h3>Reporte de BL transmitidos ${MKP('HU-DOC-10','I-103','PEN-I103-01')}</h3>
+    <p class="doc-mut">Una fila por envío a SUNAT, cada una con su número de envío. ${q.nave&&q.viaje?`Nave ${esc(q.nave)}, viaje ${esc(q.viaje)}.`:'Todas las naves de la búsqueda.'}</p>
+    ${tbl(REP_TX, f.map(r=>r.map(x=>esc(x)||'<span class="doc-mut">Sin respuesta</span>')), 'No hay BL transmitidos')}</div>
+    <div class="fac-btns">${ghost('Exportar','docRepTxExp()')}${btn('Cerrar','CC.cerrarModal()')}</div>`, 'lg'); };
+window.docRepTxExp = () => CC.exportarExcel(`Reporte_BL_transmitidos_${sello()}`, 'Envíos', REP_TX, repTxFilas());
+
+/* ---------- I-113 · HU-DOC-37: destinatarios del CAL/VGM por terminal y sucursal ---------- */
+const CAL_CT = {'DP World':['cal.vgm@terminal-callao.example','documentacion@terminal-callao.example'], 'Euroandino':[]};
+const calDest = c => CAL_CT[c.term] || [];
+const cal113Html = c => { const d = calDest(c);
+  return `<div ${PR('HU-DOC-37','I-113','Destinatarios del CAL/VGM', d.length?'fac-note':'fac-note warn')} id="docCal113"><b>Destinatarios</b> ${MKP('HU-DOC-37','I-113','PEN-I113-01')}<br>Terminal ${esc(c.term)}, sucursal ${SUCURSAL}. Tipo de contacto: por definir (PEN-I113-01).<br>
+    ${d.length ? esc(d.join(', ')) : 'La terminal y la sucursal no tienen contactos configurados: no se puede enviar.'}<br><span class="doc-mut">El correo solo se pide para enviar. Descargar CAL/VGM no pide ni valida correo.</span></div>`; };
+
+/* ---------- I-121 · HU-TI-03: COARRI de la terminal contra el BL ---------- */
+function coarriHtml(d){
+  const ad = (d.errores||[]).some(x=>x.codigo==='1302'), filas = d.equipos.filter(e=>!e.roleado).map(e=>{ const s = (e.sellos.find(x=>x.tipo==='Sello de aduanas')||e.sellos[0]||{}).numero || '', t = ad ? s.slice(0,-1)+'9' : s;
+    return [esc(e.numero), esc(s||'Sin sello'), esc(t||'Sin sello'), esc(d.puertoCarga), esc(e.cond), s===t ? chipT('Conforme','ok') : chipT('Discrepancia: precinto','mal')]; });
+  return `<div ${PR('HU-TI-03','I-121','COARRI de la terminal', 'fac-card')} id="docCoarri"><div class="fac-head"><div><h3>COARRI de la terminal ${MKP('HU-TI-03','I-121','PEN-I121-02')}</h3>
+    <div class="fac-sub">${d.atd ? `Recibido y leído: COARRI_${esc(d.viaje)}_${esc(d.id)}.edi, identificador CO-${esc(d.viaje)}-${esc(d.id)}, ${fdt(d.atd)}.` : 'Aún no se recibe el COARRI del viaje.'}</div></div></div>
+    ${d.atd ? tbl(['Contenedor','Precinto en el BL','Precinto informado por la terminal','Puerto','Condición','Resultado'], filas) : ''}
+    <p class="doc-mut" style="white-space:normal">Se verifican dos pasos: la lectura del archivo y el cruce con el BL (contenedor, precintos, puerto y condición). Claves y mensajes de discrepancia: PEN-I121-02.</p></div>`;
+}
+
+/* ---------- I-174 · HU-DOC-36: consulta TMG de Exportación habilitada BL por BL ---------- */
+function tmgHtml(d){ const b = buscarBL(d.id) || d, ok = !!b.tmg;
+  return `<div ${PR('HU-DOC-36','I-174','Consulta TMG', 'fac-card')} id="docTmg"><div class="fac-head"><div><h3>Consulta TMG ${MKP('HU-DOC-36','I-174','PEN-I174-02')}</h3>
+    <div class="fac-sub">${ok ? `Disponible para TMG desde ${fdt(b.tmg.ts)} (${esc(b.tmg.user)}).` : 'No disponible para TMG: la consulta no devuelve ningún dato de este BL.'}</div></div>
+    <div class="fac-acts">${ok ? chipT('Disponible para TMG','ok') : chipT('No disponible para TMG','pend') + (b.estado!=='POR REVISAR' && b.estado!=='Anulado' ? ghost('Aprobar fletes y recargos',`docTmgAprobar('${b.id}')`,'id="docTmgOk"') : '')}</div></div>
+    <p class="doc-mut" style="white-space:normal">Exportación: el BL se expone a TMG solo después de esta segunda aprobación de fletes y recargos, BL por BL; la carga del reporte de fletes no lo habilita sola. Luego, los cambios de equipos, precintos y embarque se ven en la consulta. Importación sigue igual: desde el Aviso de llegada Emitido.</p></div>`; }
+window.docTmgAprobar = id => { const b = buscarBL(id);
+  confirmar('Aprobar fletes y recargos', `¿Aprueba los fletes y recargos del BL ${esc(b.numero)} para la consulta de TMG?`, 'Aprobar', ()=>{
+    b.tmg = {ts:ahora(), user:CC.usuario()}; b.hist.push(ev('Fletes y recargos aprobados: BL disponible para la consulta TMG', CC.usuario()));
+    CC.toast('BL disponible para la consulta TMG','success'); rerender(ED_ID('exp')); }); };
 
 /* =====================================================================
    Registro de pantallas
