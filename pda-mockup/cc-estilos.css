@@ -2106,21 +2106,37 @@
   .fac-cc small{color:var(--cx-muted)}
 
 /* HU-DM-01 · I-035: datos por rol en Socio */
-.pt-rd-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(520px,1fr));gap:14px;margin-top:10px}
+.pt-rd-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:16px;margin-top:12px}
 .pt-rd-card{border:1px solid #E3E8EB;border-radius:8px;padding:12px 14px;background:#fff}
-.pt-rd-hd{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.pt-rd-hd{display:flex;align-items:center;gap:8px;margin-bottom:12px;min-height:24px}
 .pt-rd-sp{flex:1}
-.pt-rd-btn{padding:7px 14px}
+.pt-rd-btn{padding:7px 14px;white-space:nowrap}
 .pt-rd-f.filters-grid{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:12px 16px}
-.pt-rd-f .filter-field label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pt-rd-f .filter-field label{white-space:nowrap}
 .pt-rd-f select,.pt-rd-f input{width:100%;min-width:0}
+.pt-rd-top{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted,#5B6B73)}
+.pt-rd-top b{color:var(--text,#1F2A30)}
+.pt-rd-st{display:inline-flex;align-items:center;height:22px;padding:0 10px;border-radius:11px;font-size:11.5px;font-weight:600;background:#EEF1F3;color:#5B6B73;white-space:nowrap;cursor:default}
+.pt-rd-st.ok{background:#E3F5EA;color:#1E7B45}
+.pt-rd-fh{font-size:12px;color:#8D9BA2;white-space:nowrap}
+.pt-info{display:inline-flex;align-items:center;justify-content:center;flex:none;width:16px;height:16px;border-radius:50%;border:1.5px solid #8D9BA2;color:#5B6B73;font:italic 700 10px/1 Georgia,serif;cursor:help;vertical-align:middle;margin-left:4px;user-select:none}
+.pt-info:hover,.pt-info:focus{border-color:var(--corp-blue,#0057DD);color:var(--corp-blue,#0057DD);outline:none}
+.pt-tip{position:fixed;z-index:9999;display:none;max-width:340px;background:#1F2A30;color:#fff;font-size:12px;line-height:1.45;font-weight:400;padding:8px 11px;border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.18);pointer-events:none;white-space:normal;text-transform:none;letter-spacing:0}
+.pt-sap{display:inline-block;margin-left:6px;padding:0 5px;border-radius:4px;background:#E8F0FE;color:#1A56C4;font-size:9.5px;font-weight:700;letter-spacing:.04em;line-height:16px;vertical-align:middle;cursor:default}
+.pt-rd-dir{margin-top:18px;margin-bottom:12px;padding-top:8px}
+#ptEditor .md-actions{align-items:center;flex-wrap:wrap;justify-content:flex-end}
+#ptEditor .md-actions .pt-info{margin:0 4px 0 -4px}
+body.chg-on #ptEditor .md-actions [data-rdsync][data-prop]::after{top:-19px;right:0}
+#ptEditor tr[data-rdsap] td{background:#F7F9FA}
 .ca-rol-sel{min-width:130px}
 /* HU-DM-01 · I-035: la tabla de cuentas suma columnas; se desplaza en horizontal y los combos muestran el texto completo */
 #ptEditor .md-body table:has([data-rdcci]) select,#ptEditor .md-body table:has([data-rdcci]) input{min-width:0;width:100%}
 #ptEditor .md-body table:has([data-rdcci]) select{min-width:130px;width:100%}
 #ptEditor .md-body table:has([data-rdcci]) td:nth-child(-n+3) select{min-width:230px}
 #ptEditor .md-body .results-table:has([data-rdcci]){overflow-x:auto}
+#ptEditor .md-body table:has([data-rdcci]) input:not([type=checkbox]){min-width:150px}
+#ptEditor .md-body table:has([data-rdcci]) td[data-rdcci] input{min-width:200px}
 
   /* Socio: alinear las cajas de una fila aunque una etiqueta lleve marca de propuesta */
-  #ptEditor .filters-grid{align-items:end}
+  #ptEditor .filters-grid{align-items:start}
   #ptEditor .results-table th,#ptEditor .results-table td{padding-left:10px;padding-right:10px}
