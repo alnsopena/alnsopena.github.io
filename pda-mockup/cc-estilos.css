@@ -2160,3 +2160,37 @@ body.chg-on #ptEditor .md-actions [data-rdsync][data-prop]::after{top:-19px;righ
 .ac-kv td{padding:4px 16px 4px 0;vertical-align:top;font-size:13px;overflow-wrap:anywhere}
 .ac-kv td:first-child{color:#5B6B73;font-weight:600;white-space:nowrap}
 .ac-json{background:#1F2A30;color:#D7E2F4;border-radius:8px;padding:12px 14px;font-size:12px;line-height:1.5;overflow-x:auto;margin:0}
+
+/* ===== Módulo FDA (HU-COM-06 · I-202) ===== */
+.fda-n{text-align:right!important;white-space:nowrap;font-variant-numeric:tabular-nums}
+.fda-cod{white-space:nowrap;font-variant-numeric:tabular-nums}
+.fda-tb{display:flex;flex-direction:column;gap:1px;white-space:nowrap}
+.fda-ro.fda-tb{flex-direction:row;align-items:center;gap:10px}
+.fda-aviso{font-size:11.5px;font-weight:600;color:#A15C00}.fda-aviso::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:#E8A317;margin-right:5px;vertical-align:1px}
+.fda-aviso.venc{color:#B3261E}.fda-aviso.venc::before{background:#B3261E}
+.fda-ro{min-height:36px;display:flex;align-items:center;gap:6px;padding:0 12px;border:1px solid var(--cc-line2,#DDE3E6);border-radius:6px;background:#fff}
+.fda-cab{margin-bottom:18px}
+.fda-tabs{margin-top:4px}
+.fda-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.fda-kpis>div{border:1px solid var(--cc-line2,#DDE3E6);border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:2px}
+.fda-kpis span{font-size:12px;color:var(--cc-gray,#6B7A82)}
+.fda-kpis b{font-size:16px;color:var(--cc-ink,#021E2F);font-variant-numeric:tabular-nums}
+.fda-kpis i{font-style:normal;font-size:12px;color:var(--cc-gray,#6B7A82)}
+.fda-comp tr.fda-tot td{font-weight:700;border-top:2px solid var(--cc-line2,#DDE3E6)}
+.fda-dif.up{color:#1B7F3B}.fda-dif.down{color:#B3261E}
+.fda-tag{display:inline-block;margin-left:4px;padding:0 6px;border-radius:4px;background:#EEF3FB;color:#2F5FA7;font-size:11px;font-weight:600}
+.fda-pend{display:inline-block;margin-left:4px;padding:0 6px;border-radius:10px;background:#FFF1D6;color:#8A5A00;font-size:11px}
+.fda-adhead{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:12px}
+.fda-adhead .fac-sub{max-width:760px}
+.fda-ad td{vertical-align:top}.fda-ad .fda-mot{min-width:200px}
+.fda-ad .fda-cambio{white-space:nowrap!important}.fda-ad .cc-chip{margin-bottom:4px}
+.fda-sub{font-size:11.5px;color:var(--cc-gray,#6B7A82);margin-top:2px;white-space:nowrap}
+.fda-adf textarea{width:100%;resize:vertical}
+.fda-pdfbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.fda-pdf{background:#EEF1F3;border-radius:8px;padding:16px;max-height:62vh;overflow:auto}
+.fda-pdf .pdf-page{margin:0 auto;max-width:820px}
+@media(max-width:1100px){.fda-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+#fdaRes .fac-tbl th,#fdaRes .fac-tbl td{padding-left:10px;padding-right:10px}
+#fdaRes .fac-tbl td{white-space:normal}
+.fda-ad td{white-space:normal}.fda-ad .fda-sub{white-space:normal}
+.fda-ad td:first-child{min-width:110px}
