@@ -5937,14 +5937,14 @@ function ptDelRow(list,i){ pt.draft[list].splice(i,1); pt.dirty = true; renderPt
 pt.sel = {};
 function ptSelRow(list,i,v){ const s = pt.sel[list] = pt.sel[list] || []; if(v) s.push(i); else pt.sel[list] = s.filter(x=>x!==i); }
 function ptDelSel(list){ const s = pt.sel[list] || []; if(!s.length){ toast('Seleccione al menos una fila','info'); return; } pt.draft[list] = pt.draft[list].filter((x,i)=>!s.includes(i)); pt.sel[list] = []; pt.dirty = true; renderPtEditor(); }
-function setPtTab(k){ pt.tab = k; renderPtEditor(); }
+function setPtTab(k){ pt.tab = k==='comercial' ? 'roles' : k; renderPtEditor(); }
 function startPtEdit(){ if(!canEditPartner()){ toast('Solo Facturación o Gerencia editan socios','error'); return; } pt.edit = true; renderPtEditor(); }
 function openPtHistory(){ openHistModal(pt.draft.hist||[]); }
 
 function renderPtEditor(){
   const ed = document.getElementById('ptEditor'), d = pt.draft; if(!d){ ed.innerHTML = ''; return; }
   const can = canEditPartner(), edit = pt.edit && can, dis = edit ? '' : 'disabled', E = pt.errs, pend = d.estado==='Por homologar', rdOn = ptRdOn();
-  if(!rdOn && pt.tab==='comercial') pt.tab = 'roles';
+  if(pt.tab==='comercial') pt.tab = 'roles';
   const sync = rdOn && can ? ptRdSyncBtn(d) : '';
   d.sftp = d.sftp || {on:false, host:'', puerto:22, usuario:'', metodo:'pass', clave:'', entrada:'', proceso:'', archivo:'', errores:'', patron:''};
   const fld = (label, html, k) => `<div class="filter-field"><label>${label}</label>${html}${fErr(E,k)}</div>`;
@@ -5997,7 +5997,7 @@ function renderPtEditor(){
       <label class="obs-filter"><input type="checkbox" ${dis} ${d.demurrage?'checked':''} onchange="ptUpd('demurrage',this.checked)"> Requiere archivo de Demurrage Free Days cargado</label></div>
     <div class="fac-sec">Configuración SFTP</div>${sftp}</div>`;
   const tab = pt.tab, cnt = n => ` <span class="cc-prop">(${n})</span>`;
-  const tabs = [['roles','Roles',d.roles.length],...(rdOn?[['comercial','Datos comerciales',null]]:[]),['contactos','Información de Contacto',d.contactos.length],['bancos','Información Financiera',d.bancos.length]]
+  const tabs = [['roles','Roles',d.roles.length],['contactos','Información de Contacto',d.contactos.length],['bancos','Información Financiera',d.bancos.length]]
     .map(([k,l,n])=>`<button class="${k===tab?'on':''}${n===null?' cc-prop':''}" data-tab="${k}" onclick="setPtTab('${k}')">${l}${n===null?'':cnt(n)}</button>`).join('');
   const cell = (list,i,k,v,ph,max,e=edit) => e ? `<input value="${esc(v||'')}" ${max?`maxlength="${max}"`:''} placeholder="${ph||''}" oninput="ptUpdRow('${list}',${i},'${k}',this.value)">` : esc(v||'-');
   const csel = (list,i,k,opts,v,e=edit) => e ? `<select onchange="ptUpdRow('${list}',${i},'${k}',this.value)">${opts.map(o=>`<option ${o===v?'selected':''}>${esc(o)}</option>`).join('')}</select>` : esc(v);
@@ -6009,10 +6009,9 @@ function renderPtEditor(){
   const empty = (n,t) => `<tr><td colspan="${n}" style="color:#8D9BA2;padding:14px 20px">${t}</td></tr>`;
   pt.sel = {};
   let body = '';
-  if(tab==='comercial') body = ptRdBlock(d, edit, E);
-  else if(tab==='roles') body = `<div class="results-table"><table><thead><tr>${ph}<th>Rol</th><th style="width:120px">Cliente</th><th style="width:120px">Proveedor</th>${ptRdRolTh()}</tr></thead><tbody>
+  if(tab==='roles') body = `<div class="results-table"><table><thead><tr>${ph}<th>Rol</th><th style="width:120px">Cliente</th><th style="width:120px">Proveedor</th>${ptRdRolTh()}</tr></thead><tbody>
       ${d.roles.map((r,i)=>`<tr>${pick('roles',i)}<td>${csel('roles',i,'rol',PT_ROLES,r.rol)}</td><td>${cchk('roles',i,'cliente',r.cliente)}</td><td>${cchk('roles',i,'proveedor',r.proveedor)}</td>${ptRdRolTd(r,i,edit)}</tr>`).join('') || empty(7,'Sin roles.')}
-    </tbody></table></div>${fErr(E,'roles')}`;
+    </tbody></table></div>${fErr(E,'roles')}${edit?`<div style="margin-top:10px;display:flex;gap:8px"><button class="btn-corp" onclick="ptAddRow('roles')">Añadir</button><button class="btn-corp-outline" onclick="ptDelSel('roles')">Eliminar</button></div>`:''}${rdOn?`<div style="margin-top:22px">${ptRdBlock(d, edit, E)}</div>`:''}`;
   else if(tab==='contactos') body = `<div class="results-table"><table><thead><tr>${ph}<th>Tipo *</th><th>Nombre *</th><th>Teléfono</th><th>Móvil</th><th>Email</th><th>Dirección</th><th>Notas</th>${ptRdErpTh()}</tr></thead><tbody>
       ${d.contactos.map((c,i,_,e=rowE(c))=>`<tr${sapRow(c)?' data-rdsap':''}>${pick('contactos',i,e)}<td>${csel('contactos',i,'tipo',PT_CONTACT_TYPES,c.tipo,e)}${sapB(c)}</td><td>${cell('contactos',i,'nombre',c.nombre,'',100,e)}</td><td>${cell('contactos',i,'tel',c.tel,'',25,e)}</td>
         <td>${cell('contactos',i,'movil',c.movil,'',25,e)}</td><td>${cell('contactos',i,'email',c.email,'',200,e)}</td><td>${cell('contactos',i,'dir',c.dir,'',200,e)}</td><td>${cell('contactos',i,'notas',c.notas,'',400,e)}</td>${ptRdErpTd(c,i,e)}</tr>`).join('') || empty(10,'Sin contactos.')}
@@ -6021,7 +6020,7 @@ function renderPtEditor(){
       ${d.bancos.map((b,i,_,e=rowE(b))=>`<tr${sapRow(b)?' data-rdsap':''}>${pick('bancos',i,e)}<td>${csel('bancos',i,'banco',['',...CB_BANKS],b.banco,e)}${sapB(b)}</td><td>${csel('bancos',i,'tipo',PT_BANK_TYPES,b.tipo,e)}</td><td>${cell('bancos',i,'cuenta',b.cuenta,'',25,e)}</td>
         <td>${csel('bancos',i,'moneda',['PEN','USD'],b.moneda,e)}</td>${ptRdBancoTd(b,i,e)}</tr>`).join('') || empty(9,'Sin cuentas.')}
     </tbody></table></div>${fErr(E,'bancos')}`;
-  if(edit && tab!=='comercial') body += `<div style="margin-top:10px;display:flex;gap:8px"><button class="btn-corp" onclick="ptAddRow('${tab}')">Añadir</button><button class="btn-corp-outline" onclick="ptDelSel('${tab}')">Eliminar</button></div>`;
+  if(edit && tab!=='roles') body += `<div style="margin-top:10px;display:flex;gap:8px"><button class="btn-corp" onclick="ptAddRow('${tab}')">Añadir</button><button class="btn-corp-outline" onclick="ptDelSel('${tab}')">Eliminar</button></div>`;
   ed.innerHTML = head + gen + `<div class="buscar-filters"><div class="md-tabs">${tabs}</div><div class="md-body">${body}</div></div>`;
 }
 /* ---------- Propuesta HU-DM-01 · I-035: datos por rol (Cliente / Proveedor / Ambos) y sincronización con SAP ----------
@@ -6249,7 +6248,7 @@ function ptBasicErrors(d){
   return E;
 }
 function ptShowErrs(E){
-  pt.errs = E; if(E.roles) pt.tab = 'roles'; else if(Object.keys(E).some(k=>k.startsWith('rd_'))) pt.tab = 'comercial'; else if(E.contactos) pt.tab = 'contactos'; else if(E.bancos) pt.tab = 'bancos';
+  pt.errs = E; if(E.roles) pt.tab = 'roles'; else if(Object.keys(E).some(k=>k.startsWith('rd_'))) pt.tab = 'roles'; else if(E.contactos) pt.tab = 'contactos'; else if(E.bancos) pt.tab = 'bancos';
   pt.edit = true; renderPtEditor();
   document.querySelector('#ptEditor .f-err')?.scrollIntoView({block:'center', behavior:'smooth'});
 }
