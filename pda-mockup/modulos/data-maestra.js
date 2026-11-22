@@ -165,6 +165,8 @@ CC.registrarPantalla({
 /* ============================================================
    CATÁLOGO
 ============================================================ */
+const rdCod = r => r.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]+/g,'_');
+const RD_MK = () => W.fm ? W.fm('Agrega', 'HU-DM-01', 'I-035', 'PEN-I035-01') : '';
 const el = (cod, desc, descEn, orden, extra) => ({cod, desc, descEn:descEn||'', orden:orden||0, color:'', defecto:false, alt:'', foraneo:'', sec:'', activo:true, ...(extra||{})});
 const CATS = [
   {cod:'PARTNER_STATUS', nombre:'Estado de Socio', desc:'Estados de aprobación del socio', sistema:true, ingles:true, elementos:[], estados:[el('PENDING_APPROVAL','Pendiente de aprobación','Pending approval',1,{color:'#F2B705',defecto:true}), el('APPROVED','Aprobado','Approved',2,{color:'#2E9E5B'})]},
@@ -176,6 +178,8 @@ const CATS = [
   {cod:'NATIONALITY', nombre:'Nacionalidad', desc:'Nacionalidad del socio', sistema:true, ingles:false, estados:[], elementos:[el('NATIONAL','Nacional','',1,{defecto:true}), el('FOREIGN','Extranjera','',2)]},
   {cod:'DOCUMENT_TYPE', nombre:'Tipo de Documento', desc:'Documentos de identidad', sistema:true, ingles:false, estados:[], elementos:[el('RUC','RUC','',1,{foraneo:'6'}), el('DNI','DNI','',2,{foraneo:'1'}), el('CE','Carné de Extranjería','',3,{foraneo:'4'}), el('PAS','Pasaporte','',4,{foraneo:'7'}), el('TAX','Tax ID','',5,{foraneo:'0'})]},
   {cod:'PAYMENT_CONDITION', nombre:'Condición de Pago', desc:'Condiciones de pago del socio', sistema:false, ingles:false, estados:[], elementos:[el('CASH','Contado','',1), el('CREDIT','Crédito','',2,{defecto:true})]},
+  /* Connect: PARTNER_ROLE. Propuesta HU-DM-01 · I-035: Tipo Socio y Requiere Código Aduanas por rol (los toma la pestaña Roles del Socio) */
+  {cod:'PARTNER_ROLE', nombre:'Rol de Socio', desc:'Roles comerciales del socio', sistema:true, ingles:false, estados:[], elementos:(W.PT_ROLES_LIST ? W.PT_ROLES_LIST() : []).map(([r,t,a],i)=>el(rdCod(r), r, '', i+1, {tipoSocio:t, reqAduana:a}))},
   {cod:'USER_STATUS', nombre:'Estado de Usuario', desc:'Estados del usuario', sistema:true, ingles:true, elementos:[], estados:[el('ACTIVE','Activo','Active',1,{color:'#2E9E5B',defecto:true}), el('INACTIVE','Inactivo','Inactive',2,{color:'#8D9BA2'})]}];
 const CA = {f:{nombre:'',cod:'',desc:''}, buscado:false, pagina:1, tam:10, view:'list', sel:null, tab:'elem', edit:false, draft:null, dirty:false, isNew:false};
 const caLista = () => CATS.filter(c=>(!CA.f.nombre||q(c.nombre).includes(q(CA.f.nombre)))&&(!CA.f.cod||q(c.cod).includes(q(CA.f.cod)))&&(!CA.f.desc||q(c.desc).includes(q(CA.f.desc))));
@@ -208,7 +212,9 @@ W.caGuardar = () => {
   const act = l => d[l].filter(x=>x.activo);
   if([...act('elementos'),...act('estados')].some(x=>!String(x.cod||'').trim() || !String(x.desc||'').trim())) E.items = 'Código y Descripción son obligatorios en cada elemento.';
   else if(act('estados').some(x=>!(+x.orden>0))) E.items = 'Todos los estados deben tener un campo orden válido (mayor a 0).';
-  CA.E = E; if(Object.keys(E).length){ caBarra(); CC.toast('Por favor, complete todos los campos obligatorios.','error'); return; }
+  if(!E.items && d.cod==='PARTNER_ROLE' && CC.verPropuestas){ const sc = act('elementos').find(x=>!x.tipoSocio); if(sc) E.items = `Todo rol debe tener Tipo Socio (Cliente, Proveedor o Ambos). Falta en: ${sc.desc}.`; }
+  CA.E = E; if(Object.keys(E).length){ caBarra(); CC.toast(E.items && E.items.startsWith('Todo rol') ? E.items : 'Por favor, complete todos los campos obligatorios.','error'); return; }
+  if(d.cod==='PARTNER_ROLE' && W.ptRdCatSync) W.ptRdCatSync(act('elementos').map(x=>[x.desc, x.tipoSocio, !!x.reqAduana]));
   if(CA.isNew){ d.cod = d.cod.trim().toUpperCase(); CATS.push(d); CA.sel = d.cod; } else Object.assign(CATS.find(c=>c.cod===CA.sel), d);
   CA.isNew = false; CA.edit = false; CA.draft = null; CA.dirty = false; CA.E = null; caBarra(); CC.toast('Catálogo guardado correctamente','success');
 };
@@ -218,7 +224,12 @@ function caDetalle(){
   const c = CA.edit ? CA.draft : CATS.find(x=>x.cod===CA.sel); if(!c) return '';
   const ed = CA.edit, E = CA.E || {}, ro = ed ? '' : 'disabled', l = CA.tab==='elem' ? 'elementos' : 'estados';
   const cols = [['cod','Código *'],['desc','Descripción *'],...(c.ingles?[['descEn','Descripción (Inglés)']]:[]),['orden','Orden'],...(l==='estados'?[['color','Color']]:[]),['defecto','Defecto'],['alt','Código alternativo'],['foraneo','Código foráneo'],['sec','Secuencia']];
-  const celda = (x, i, k) => k==='defecto' ? `<input type="checkbox" style="width:auto" ${ro} ${x.defecto?'checked':''} onchange="caFila('${l}',${i},'defecto',this.checked)">`
+  const rol = c.cod==='PARTNER_ROLE' && l==='elementos';
+  if(rol) cols.splice(2, 0, ['tipoSocio','Tipo Socio *'], ['reqAduana','Requiere Código Aduanas']);
+  const prop = k => rol && (k==='tipoSocio' || k==='reqAduana');
+  const celda = (x, i, k) => k==='tipoSocio' ? (ed ? `<select class="ca-rol-sel" data-catipo="${i}" onchange="caFila('${l}',${i},'tipoSocio',this.value)"><option value="">Elegir</option>${['Cliente','Proveedor','Ambos'].map(o=>`<option ${o===x.tipoSocio?'selected':''}>${o}</option>`).join('')}</select>` : esc(x.tipoSocio||'-'))
+    : k==='reqAduana' ? `<input type="checkbox" style="width:auto" data-caadu="${i}" ${ro} ${x.reqAduana?'checked':''} onchange="caFila('${l}',${i},'reqAduana',this.checked)">`
+    : k==='defecto' ? `<input type="checkbox" style="width:auto" ${ro} ${x.defecto?'checked':''} onchange="caFila('${l}',${i},'defecto',this.checked)">`
     : k==='color' ? (ed ? `<input type="color" value="${esc(x.color||'#8D9BA2')}" onchange="caFila('${l}',${i},'color',this.value)">` : `<span class="ca-color" style="background:${esc(x.color||'#fff')}"></span>${esc(x.color||'')}`)
     : ed ? `<input value="${esc(x[k]??'')}" ${k==='cod'&&x.cod&&!CA.isNew&&c.sistema?'disabled':''} oninput="caFila('${l}',${i},'${k}',this.value)">` : esc(x[k]??'');
   const filas = c[l].map((x,i)=>({x,i})).filter(o=>o.x.activo);
@@ -226,8 +237,9 @@ function caDetalle(){
     <div class="fac-g3">${CC.campo('Código *',`<input ${CA.isNew?'':'disabled'} maxlength="50" value="${esc(c.cod)}" oninput="caUpd('cod',this.value)">${err(E,'cod')}`)}${CC.campo('Nombre *',`<input ${ro} maxlength="100" value="${esc(c.nombre)}" oninput="caUpd('nombre',this.value)">${err(E,'nombre')}`)}${CC.campo('Descripción',`<input ${ro} maxlength="200" value="${esc(c.desc)}" oninput="caUpd('desc',this.value)">`)}</div>
     <div class="pt-checks" style="margin-top:10px"><label class="fac-chk"><input type="checkbox" ${ro} ${c.sistema?'checked':''} onchange="caUpd('sistema',this.checked)"> Es de Sistema</label><label class="fac-chk"><input type="checkbox" ${ro} ${c.ingles?'checked':''} onchange="caUpd('ingles',this.checked,true)"> Incluye Inglés</label></div></div>
   <div class="fac-card"><div class="fac-tabs"><button type="button" class="${CA.tab==='elem'?'on':''}" onclick="caTab('elem')">Elemento</button><button type="button" class="${CA.tab==='est'?'on':''}" onclick="caTab('est')">Estado</button></div>
-    <div class="fac-scroll"><table class="fac-tbl" id="caItems"><thead><tr>${ed?'<th style="width:36px"></th>':''}${cols.map(x=>`<th>${x[1]}</th>`).join('')}</tr></thead><tbody>
-    ${filas.map(({x,i})=>`<tr>${ed?`<td><input type="checkbox" data-i="${i}"></td>`:''}${cols.map(([k])=>`<td>${celda(x,i,k)}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${cols.length+1}" class="fac-empty">No se encontraron resultados con los criterios seleccionados.</td></tr>`}</tbody></table></div>${err(E,'items')}
+    ${rol?`<div ${CC.propuesta('HU-DM-01 · I-035','Clasificación de roles','fac-note')} id="caRolNota">Tipo Socio define si el rol es Cliente, Proveedor o Ambos y qué Datos por rol pide el Socio. Requiere Código Aduanas hace obligatorio el Código de Aduana del rol. Todo rol debe tener clasificación.</div>`:''}
+    <div class="fac-scroll"><table class="fac-tbl" id="caItems"><thead><tr>${ed?'<th style="width:36px"></th>':''}${cols.map(x=>`<th${prop(x[0])?' class="cc-prop"':''}>${x[1]}${x[0]==='tipoSocio'?' '+RD_MK():''}</th>`).join('')}</tr></thead><tbody>
+    ${filas.map(({x,i})=>`<tr>${ed?`<td><input type="checkbox" data-i="${i}"></td>`:''}${cols.map(([k])=>`<td${prop(k)?' class="cc-prop"':''}>${celda(x,i,k)}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${cols.length+1}" class="fac-empty">No se encontraron resultados con los criterios seleccionados.</td></tr>`}</tbody></table></div>${err(E,'items')}
     ${ed?`<div style="margin-top:10px;display:flex;gap:8px"><button type="button" class="cc-btn" onclick="caAgregar('${l}')">Agregar</button><button type="button" class="cc-btn pink" onclick="caEliminarSel('${l}')">Eliminar</button></div>`:''}</div>
   ${ed?`<div class="fac-btns"><button type="button" class="cc-btn" onclick="caCancelar()">Cancelar</button><button type="button" class="cc-btn" id="caGuardar" onclick="caGuardar()">Guardar</button></div>`:''}`;
 }

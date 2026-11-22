@@ -68,6 +68,71 @@ const ruido = /^(start|onHasParentDirectory|addRow) is not defined/;
   check(!(await p.evaluate(() => pt.edit)), 'I-035: con propuestas apagadas guarda como Connect');
   await props(true); await W();
 
+  // I-035 · épica completa: catálogo Partner Role, sincronización, faltantes, contactos, cuentas, dirección y selectores
+  await ir('Data Maestra', 'Catálogo');
+  await p.fill('#caCod', 'PARTNER_ROLE'); await p.click('#caFBuscar'); await W();
+  await p.click('#caRes button.fac-link:has-text("PARTNER_ROLE")'); await W();
+  const thCa = await p.$$eval('#caItems thead th', x => x.map(e => e.textContent.trim()));
+  check(thCa.some(t => t.startsWith('Tipo Socio')) && thCa.includes('Requiere Código Aduanas') && await visible('#caRolNota'), 'I-035: catálogo Partner Role con Tipo Socio y Requiere Código Aduanas');
+  await p.click('#caEditar'); await W();
+  await p.evaluate(() => caAgregar('elementos')); await W();
+  const nFil = (await p.$$('#caItems tbody tr')).length;
+  await p.fill(`#caItems tbody tr:nth-child(${nFil}) td:nth-child(2) input`, 'ROL_PRUEBA'); await p.fill(`#caItems tbody tr:nth-child(${nFil}) td:nth-child(3) input`, 'Rol de prueba');
+  await p.click('#caGuardar'); await W();
+  check((await txt('#toast')).includes('Todo rol debe tener Tipo Socio') && (await txt('#toast')).includes('Rol de prueba'), 'I-035: todo rol tiene clasificación');
+  await p.selectOption(`#caItems [data-catipo="${nFil - 1}"]`, 'Proveedor'); await p.check(`#caItems [data-caadu="${nFil - 1}"]`);
+  const iBk = await p.evaluate(() => PT_ROLES.indexOf('Broker')); await p.selectOption(`#caItems [data-catipo="${iBk}"]`, 'Cliente');
+  await p.click('#caGuardar'); await W();
+  check(await p.evaluate(() => PT_ROLES.includes('Rol de prueba') && PT_ROL_CAT['Rol de prueba'][0] === 'Proveedor' && PT_ROL_CAT['Rol de prueba'][1] === true && PT_ROL_CAT['Broker'][0] === 'Cliente'), 'I-035: el catálogo actualiza la clasificación que usa el Socio');
+  await props(false); await W();
+  check(!(await visible('#caRolNota')) && !(await p.$$eval('#caItems thead th', x => x.filter(e => e.getClientRects().length).map(e => e.textContent.trim()))).some(t => t.startsWith('Tipo Socio')), 'I-035: columnas del catálogo se ocultan con Ver propuestas apagado');
+  await props(true); await W();
+
+  await ir('Data Maestra', 'Socio');
+  await p.evaluate(() => { const x = PARTNERS.find(y => y.doc && y.estado === 'Homologado' && y.roles.every(r => r.rol === 'Proveedor'));
+    x.roles = [{ rol: 'Broker', cliente: true, proveedor: false }, { rol: 'Rol de prueba', cliente: false, proveedor: true }]; x.doc = ''; x.estado = 'Por homologar'; x.contactos = []; x.bancos = []; delete x.rd; window.__rdId = x.id; selectPartner(x.id, true); }); await W();
+  check((await txt('#ptRd [data-rdclase]')) === 'Ambos' && (await txt('#ptRd [data-rd="pro"]')).includes('Código de Aduana obligatorio por: Rol de prueba'), 'I-035: clasificación y Código de Aduana según el catálogo');
+  check(await p.isDisabled('#ptRd [data-rdsync="cli"]') && await p.isDisabled('#ptRd [data-rdsync="pro"]'), 'I-035: Sincronizar deshabilitado sin Número Documento');
+  await p.click('#ptEditor button[onclick="startPtEdit()"]'); await W();
+  await p.fill('#ptEditor [data-f=doc]', '20600000999'); await W();
+  check(!(await p.isDisabled('#ptRd [data-rdsync="pro"]')), 'I-035: Sincronizar se habilita con Número Documento y tipo');
+  await p.click('#ptEditor .md-tabs button:has-text("Roles")'); await W();
+  await p.click('#ptEditor .md-body tbody tr:nth-child(1) td:nth-child(4) input[type=checkbox]'); await W();
+  check(!(await p.evaluate(() => pt.draft.roles[0].proveedor)) && (await txt('#toast')).includes('es solo Cliente'), 'I-035: un rol Cliente no acepta Proveedor');
+  await p.fill('#ptRd [data-rdf="pro_aduana"]', ''); await p.fill('#ptRd [data-rdf="pro_erp"]', '');
+  await p.click('#ptEditor button[onclick="savePartner()"]'); await W();
+  const tst = await txt('#toast');
+  check(tst.includes('Falta el Código ERP Proveedor') && tst.includes('Falta el Código de Aduana Proveedor (lo requiere: Rol de prueba)'), 'I-035: mensaje nombra el código faltante');
+  check((await txt('#ptEditor [data-err="rd_pro_erp"]')) === 'Falta el Código ERP Proveedor', 'I-035: error junto al campo del rol');
+  await p.click('#ptRd [data-rdsync="pro"]'); await W();
+  const sp = await p.evaluate(() => ({ erp: pt.draft.rd.pro.erp, cli: pt.draft.rd.cli.sync, c: pt.draft.contactos.find(c => c.codeErp), b: pt.draft.bancos.find(b => b.cci), dir: [pt.draft.dirPais, pt.draft.dirDep, pt.draft.dirProv, pt.draft.dirDist].join('|') }));
+  check(sp.erp === 'P20600000999' && !sp.cli && (await txt('#ptRd [data-rd="pro"] [data-rdst]')) === 'SINCRONIZADO CON SAP', 'I-035: trae Código ERP con prefijo P solo para Proveedor');
+  check(((await p.getAttribute('#ptRd [data-rd="pro"] [data-rdst]', 'title')) || '').includes('UpdateTime'), 'I-035: tooltip con UpdateDate y UpdateTime del rol');
+  check(await p.isDisabled('#ptRd [data-rdsync="pro"]'), 'I-035: tras sincronizar se deshabilita');
+  check(!!sp.c && sp.c.codeErp === 'P20600000999-01' && !!sp.c.movil && !!sp.c.email && !!sp.b && sp.b.detrac === 'Sí' && sp.b.cci.length === 20 && sp.dir === 'Perú|Lima|Lima|San Isidro', 'I-035: trae contacto, cuenta y dirección de SAP');
+  check(await visible('#ptEditor [data-rddir="dirDist"]') && (await txt('#ptRdDirNota')).includes('la facturación no cambia') && (await txt('#ptRdDirNota')).includes('Ubigeo no se mapea'), 'I-035: País, Departamento, Provincia y Distrito con nota');
+  await p.fill('#ptEditor [data-f=doc]', '20600000998'); await W();
+  check(!(await p.isDisabled('#ptRd [data-rdsync="pro"]')), 'I-035: se habilita de nuevo si cambia el Número Documento');
+  await p.click('#ptEditor .md-tabs button:has-text("Información de Contacto")'); await W();
+  check((await p.$$eval('#ptEditor .md-body thead th', x => x.map(e => e.textContent.trim()))).some(t => t.startsWith('Código ERP')) && !!(await p.$('#ptEditor [data-rdcerp]')), 'I-035: Código ERP del contacto');
+  await p.click('#ptEditor .md-tabs button:has-text("Información Financiera")'); await W();
+  const thB = await p.$$eval('#ptEditor .md-body thead th', x => x.map(e => e.textContent.trim()));
+  check(thB.some(t => t.startsWith('SWIFT')) && thB.includes('País') && thB.includes('Cuenta de detracción') && thB.includes('CCI'), 'I-035: SWIFT, País, Cuenta de detracción y CCI');
+  await p.fill('#ptRd [data-rdf="pro_aduana"]', '0118'); await p.fill('#ptEditor [data-f=doc]', '20600000999');
+  await p.click('#ptEditor button[onclick="savePartner()"]'); await W();
+  check(!(await p.evaluate(() => pt.edit)), 'I-035: guarda con los datos por rol completos');
+  // 3.6 selectores: proveedor solo en Provisiones, cliente en PDA, Documentos Contables y BL
+  const sel = await p.evaluate(() => { const pro = FAC_PROVS.find(n => { const x = partnerByName(n); return x && ptRdSides(x).join() === 'pro'; }), cli = state.clients[0].name;
+    return { pro, cli, provOk: ptRdFiltra(FAC_PROVS, 'pro').includes(pro), cliEnPro: ptRdOk(cli, 'pro'), proEnCli: ptRdOk(pro, 'cli'), pda: ptRdFiltra(state.clients.map(c => c.name), 'cli').length === state.clients.length }; });
+  check(sel.provOk && !sel.cliEnPro && !sel.proEnCli && sel.pda, 'I-035: selectores filtran por tipo de socio');
+  await ir('Liquidación', 'Documentos Contables');
+  await p.fill('#fdFact', sel.pro); await p.press('#fdFact', 'Tab'); await W();
+  check((await p.evaluate(() => FD.f.fact)) === '' && (await txt('#toast')).includes('no tiene rol Cliente'), 'I-035: Documentos Contables no acepta un proveedor como cliente');
+  check(!(await p.$$eval('#fdFactL option', x => x.map(o => o.value))).includes(sel.pro), 'I-035: lista de Facturar a sin proveedores');
+  check(await p.evaluate(n => { CC.alternarPropuestas(false); const ok = ptRdOk(n, 'cli'); CC.alternarPropuestas(true); return ok; }, sel.pro), 'I-035: con Ver propuestas apagado no filtra');
+  // 3.5 y 3.12: los procesos muestran el dato del rol
+  check(await p.evaluate(n => /data-rdcons="pro"/.test(ptRdNota(n, 'pro')) && /del rol/.test(ptRdNota(n, 'pro')), sel.pro), 'I-035: Provisiones y Documentos Contables toman el Código ERP del rol');
+
   // Nave
   await ir('Data Maestra', 'Nave');
   check((await txt('#ccPbTitle')).includes('Buscar Nave'), 'Nave: título Buscar Nave');

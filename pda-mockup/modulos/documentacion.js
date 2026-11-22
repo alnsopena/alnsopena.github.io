@@ -484,7 +484,7 @@ window.docGenFin = k => { CC.cerrarModal(); CC.toast(k==='imp'?'El proceso de im
    MANTENIMIENTO: Crear/Editar BL (Importación) y Crear/Editar Reserva (Exportación)
 ===================================================================== */
 const OPC = {
-  lineas:()=>CC.datos.lineas.map(l=>l.nombre), cons:()=>CC.datos.socios.consignatarios.map(s=>s.razonSocial).concat(sociosNuevos(['Consignatario','Notificante'])), emb:()=>CC.datos.socios.embarcadores.map(s=>s.razonSocial).concat(sociosNuevos(['Embarcador'])),
+  lineas:()=>CC.datos.lineas.map(l=>l.nombre), cons:()=>rdFiltra(CC.datos.socios.consignatarios.map(s=>s.razonSocial).concat(sociosNuevos(['Consignatario','Notificante']))), emb:()=>rdFiltra(CC.datos.socios.embarcadores.map(s=>s.razonSocial).concat(sociosNuevos(['Embarcador']))),
   dep:()=>DEPOSITOS.map(d=>d.n), puertos
 };
 const GEN_IMP = [['tipo','Tipo de BL','s',TIPO_BL],['indicador','Indicador','s',IND_IMP,1],['tipoInd','Tipo de indicador','s',TIPO_IND,1],['linea','Línea Naviera','dl','lineas'],
@@ -648,6 +648,7 @@ function genHtml(k, d, ro){
     if(t==='dl') return campo(lbl, `<input list="docEdL${key}" value="${esc(d[key])}" ${dis} onchange="${on}">${dl('docEdL'+key, OPC[o]())}${sx}`);
     if(t==='emb') return d.tipoInd==='Nominativo' ? campo(lbl, `<input list="docEdLemb" value="${esc(d[key])}" ${dis} maxlength="200" onchange="${on}">${dl('docEdLemb', OPC.emb())}${sx}`) : campo(lbl, `<input value="${esc(d[key])}" ${dis} maxlength="200" onchange="${on}">${sx}`);
     if(key==='codAduana' && d.via==='Embarque Directo') return CC.campoLectura(l, '9998');
+    if(key==='codAduana') return campo(lbl, inputDe(t, d[key], on, o, dis) + `<small ${CC.propuesta('HU-DM-01 · I-035','Código de Aduana del rol','doc-mut')} data-rdadu style="display:block;font-size:12px">Se toma del rol del socio Entidad Receptora (Código de Aduana por rol), no de la cabecera.</small>`);
     if(key==='entidad' && d.via==='Embarque Directo') return CC.campoLectura(l, d.embarcador);
     return campo(lbl, inputDe(t, d[key], on, o, dis) + sx, t==='ta'?'':'');
   }).join('');
@@ -695,7 +696,11 @@ function trazHtml(d){
 }
 const edRe = () => { S.ed.dirty = true; rerender(ED_ID(S.ed.k)); };
 window.docEdTab = t => { S.ed.tab = t; rerender(ED_ID(S.ed.k)); };
-window.docEd = (key, v) => { const d = S.ed.d; d[key] = v;
+/* HU-DM-01 · I-035: consignatario, notificante y embarcador solo aceptan socios de tipo Cliente */
+const rdFiltra = l => typeof window.ptRdFiltra==='function' ? window.ptRdFiltra(l, 'cli') : l;
+window.docEd = (key, v) => { const d = S.ed.d;
+  if(['embarcador','consignatario','notificante'].includes(key) && typeof window.ptRdAviso==='function' && !window.ptRdAviso(v, 'cli')){ rerender(ED_ID(S.ed.k)); return; }
+  d[key] = v;
   if(key==='linea') d.lineaCod = lineaCod(v);
   if(key==='via' && v==='Embarque Directo'){ d.codAduana = '9998'; d.entidad = d.embarcador; }
   if(key==='entidad'){ const dp = DEPOSITOS.find(x=>x.n===v); if(dp){ d.codAduana = dp.cod; d.ruc = dp.ruc; } }

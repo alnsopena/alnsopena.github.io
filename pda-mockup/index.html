@@ -2364,8 +2364,8 @@ function renderStep1(){
 
   // Cliente
   const sel = document.getElementById('clientSelect');
-  sel.innerHTML = state.clients.map(c=>`<option value="${esc(c.name)}" ${c.name===state.client.name?'selected':''}>${esc(c.name)}${partnerPending(c.name)?' · Pendiente de aprobación':''}</option>`).join('');
-  sel.onchange = e =>{ state.client = {...state.clients.find(x=>x.name===e.target.value)}; updateClientCard(); applyClientTariffs(null, true); };
+  sel.innerHTML = state.clients.filter(c=>c.name===state.client.name || ptRdOk(c.name,'cli')).map(c=>`<option value="${esc(c.name)}" ${c.name===state.client.name?'selected':''}>${esc(c.name)}${partnerPending(c.name)?' · Pendiente de aprobación':''}</option>`).join('');
+  sel.onchange = e =>{ if(!ptRdAviso(e.target.value,'cli')){ e.target.value = state.client.name; return; } state.client = {...state.clients.find(x=>x.name===e.target.value)}; updateClientCard(); applyClientTariffs(null, true); };
   updateClientCard();
 
   // Toggle bloques
@@ -5795,7 +5795,7 @@ const pt = {view:'list', f:{doc:'', name:'', rol:'', est:'', quick:''}, page:1, 
 
 function ptNew(o){
   return {id:'pt'+(ptSeq++), tipoPersona:'Persona Jurídica', nac:'Nacional', tipoDoc:'RUC', doc:'', corto:'', largo:'', erp:'', dir:'', moneda:'USD', aduana:'', pago:'Crédito',
-          relCosmos:false, demurrage:false, roles:[], contactos:[], bancos:[], estado:'Homologado', origen:null,
+          relCosmos:false, demurrage:false, dirPais:'', dirDep:'', dirProv:'', dirDist:'', roles:[], contactos:[], bancos:[], estado:'Homologado', origen:null,
           hist:[{ts:'2025-11-10T10:00:00', user:'Data Maestra', prev:'', next:'Homologado', comment:'Carga inicial'}], ...(o||{})};
 }
 function ptForeign(n){ return /\b(ltd|inc|a\/s|company|pte|gmbh|llc)\b/i.test(n); }
@@ -5805,8 +5805,8 @@ function seedPartners(){
   state.suppliers.forEach(s=>{
     const isValero = /^VALERO PERU/i.test(s);
     const p = ptNew({corto:s, largo:s, roles:[{rol:'Proveedor', cliente:false, proveedor:true}]});
-    p.doc = isValero ? '20513251506' : docFor(s); p.erp = (isValero ? 'C' : 'P') + p.doc;
-    if(isValero){ p.dir = 'AV. RICARDO RIVERA NAVARRETE NRO. 501 INT. 1501 LIMA - LIMA - SAN ISIDRO'; p.roles = [{rol:'Consignatario', cliente:true, proveedor:true},{rol:'Notificante', cliente:true, proveedor:true}]; }
+    p.doc = isValero ? '20600000501' : docFor(s); p.erp = (isValero ? 'C' : 'P') + p.doc;
+    if(isValero){ p.dir = 'AV. LOS EJEMPLOS 501 OF. 1501, SAN ISIDRO, LIMA'; p.roles = [{rol:'Consignatario', cliente:true, proveedor:false},{rol:'Notificante', cliente:true, proveedor:false},{rol:'Proveedor', cliente:false, proveedor:true}]; }
     else p.dir = 'LIMA - PERÚ';
     if(/DICAPI|Health|APN|MUNICIPALIDAD/i.test(s)) p.pago = 'Contado';
     PARTNERS.push(p);
@@ -5924,10 +5924,10 @@ function newPartner(){
   showPtView('detail'); renderPtEditor();
   document.querySelector('#ptEditor [data-f=doc]')?.focus();
 }
-function ptUpd(k,v,re){ pt.draft[k] = v; pt.dirty = true; clearErr(pt.errs, k, '#ptEditor'); if(re) renderPtEditor(); }
-function ptUpdRow(list,i,k,v,re){ pt.draft[list][i][k] = v; pt.dirty = true; if(list==='roles') clearErr(pt.errs, 'roles', '#ptEditor'); if(re) renderPtEditor(); }
+function ptUpd(k,v,re){ pt.draft[k] = v; pt.dirty = true; clearErr(pt.errs, k, '#ptEditor'); if(re) renderPtEditor(); else if(k==='doc') ptRdBtns(); }
+function ptUpdRow(list,i,k,v,re){ if(list==='roles' && !ptRdRolOk(pt.draft.roles[i],k,v)){ renderPtEditor(); return; } pt.draft[list][i][k] = v; if(list==='roles' && k==='rol'){ ptRdRolAplica(pt.draft.roles[i]); re = true; } pt.dirty = true; if(list==='roles') clearErr(pt.errs, 'roles', '#ptEditor'); if(re) renderPtEditor(); }
 function ptAddRow(list){
-  const row = list==='roles' ? {rol:PT_ROLES[0], cliente:false, proveedor:false} : list==='contactos' ? {tipo:PT_CONTACT_TYPES[0], nombre:'', tel:'', movil:'', email:'', dir:'', notas:''} : {banco:'', tipo:PT_BANK_TYPES[0], cuenta:'', moneda:'PEN'};
+  const row = list==='roles' ? {rol:PT_ROLES[0], cliente:false, proveedor:false} : list==='contactos' ? {tipo:PT_CONTACT_TYPES[0], nombre:'', tel:'', movil:'', email:'', dir:'', notas:''} : {banco:'', tipo:PT_BANK_TYPES[0], cuenta:'', moneda:'PEN', swift:'', pais:'', detrac:'No', cci:''};
   pt.draft[list].push(row); pt.dirty = true; renderPtEditor();
 }
 function ptDelRow(list,i){ pt.draft[list].splice(i,1); pt.dirty = true; renderPtEditor(); }
@@ -5983,11 +5983,13 @@ function renderPtEditor(){
       ${fld('Nombre Largo *', inp('largo','Ingresar Nombre',false,100), 'largo')}
       ${fld(`Código ERP * ${ptRdMk()}`, inp('erp','Ingresar Código ERP',false,25), 'erp')}
       ${fld('Dirección *', inp('dir','Ingresar Dirección',false,200), 'dir')}
+      ${ptRdDirFlds(inp)}
       ${fld(`Moneda ${ptRdMk()}`, `<select ${dis} onchange="ptUpd('moneda',this.value)"><option value="">Elegir Moneda</option><option value="USD" ${d.moneda==='USD'?'selected':''}>Dólar estadounidense</option><option value="PEN" ${d.moneda==='PEN'?'selected':''}>Sol peruano</option></select>`)}
       ${fld(`Código de Aduana ${ptRdMk()}`, inp('aduana','Ingresar Código de Aduana',false,4))}
       ${fld(`Condición de Pago ${ptRdMk()}`, sel('pago',['Crédito','Contado'],false,'Elegir Condición de Pago'))}
       ${fld('Representante de Línea', `<input ${dis} list="ptRepList" value="${esc(d.repLinea||'')}" placeholder="Buscar socio" oninput="ptUpd('repLinea',this.value)"><datalist id="ptRepList">${reps.map(x=>`<option value="${esc(x)}">`).join('')}</datalist>`)}
     </div>
+    ${ptRdDirNota()}
     <div class="pt-checks"><label class="obs-filter"><input type="checkbox" ${dis} ${d.relCosmos?'checked':''} onchange="ptUpd('relCosmos',this.checked)"> Relacionado con Cosmos</label>
       <label class="obs-filter"><input type="checkbox" ${dis} ${d.demurrage?'checked':''} onchange="ptUpd('demurrage',this.checked)"> Requiere archivo de Demurrage Free Days cargado</label></div>
     <div class="fac-sec">Configuración SFTP</div>${sftp}</div>`;
@@ -6003,38 +6005,42 @@ function renderPtEditor(){
   pt.sel = {};
   let body = '';
   if(tab==='roles') body = `<div class="results-table"><table><thead><tr>${ph}<th>Rol</th><th style="width:120px">Cliente</th><th style="width:120px">Proveedor</th>${ptRdRolTh()}</tr></thead><tbody>
-      ${d.roles.map((r,i)=>`<tr>${pick('roles',i)}<td>${csel('roles',i,'rol',PT_ROLES,r.rol)}</td><td>${cchk('roles',i,'cliente',r.cliente)}</td><td>${cchk('roles',i,'proveedor',r.proveedor)}</td>${ptRdRolTd(r,i,edit)}</tr>`).join('') || empty(4,'Sin roles.')}
+      ${d.roles.map((r,i)=>`<tr>${pick('roles',i)}<td>${csel('roles',i,'rol',PT_ROLES,r.rol)}</td><td>${cchk('roles',i,'cliente',r.cliente)}</td><td>${cchk('roles',i,'proveedor',r.proveedor)}</td>${ptRdRolTd(r,i,edit)}</tr>`).join('') || empty(7,'Sin roles.')}
     </tbody></table></div>${fErr(E,'roles')}`;
   else if(tab==='contactos') body = `<div class="results-table"><table><thead><tr>${ph}<th>Tipo *</th><th>Nombre *</th><th>Teléfono</th><th>Móvil</th><th>Email</th><th>Dirección</th><th>Notas</th>${ptRdErpTh()}</tr></thead><tbody>
       ${d.contactos.map((c,i)=>`<tr>${pick('contactos',i)}<td>${csel('contactos',i,'tipo',PT_CONTACT_TYPES,c.tipo)}</td><td>${cell('contactos',i,'nombre',c.nombre,'',100)}</td><td>${cell('contactos',i,'tel',c.tel,'',25)}</td>
-        <td>${cell('contactos',i,'movil',c.movil,'',25)}</td><td>${cell('contactos',i,'email',c.email,'',200)}</td><td>${cell('contactos',i,'dir',c.dir,'',200)}</td><td>${cell('contactos',i,'notas',c.notas,'',400)}</td>${ptRdErpTd(c)}</tr>`).join('') || empty(8,'Sin contactos.')}
+        <td>${cell('contactos',i,'movil',c.movil,'',25)}</td><td>${cell('contactos',i,'email',c.email,'',200)}</td><td>${cell('contactos',i,'dir',c.dir,'',200)}</td><td>${cell('contactos',i,'notas',c.notas,'',400)}</td>${ptRdErpTd(c,i,edit)}</tr>`).join('') || empty(9,'Sin contactos.')}
     </tbody></table></div>${fErr(E,'contactos')}`;
-  else body = `<div class="results-table"><table><thead><tr>${ph}<th>Banco *</th><th>Tipo *</th><th>Cuenta *</th><th>Moneda *</th>${ptRdErpTh()}</tr></thead><tbody>
+  else body = `<div class="results-table"><table><thead><tr>${ph}<th>Banco *</th><th>Tipo *</th><th>Cuenta *</th><th>Moneda *</th>${ptRdBancoTh()}</tr></thead><tbody>
       ${d.bancos.map((b,i)=>`<tr>${pick('bancos',i)}<td>${csel('bancos',i,'banco',['',...CB_BANKS],b.banco)}</td><td>${csel('bancos',i,'tipo',PT_BANK_TYPES,b.tipo)}</td><td>${cell('bancos',i,'cuenta',b.cuenta,'',25)}</td>
-        <td>${csel('bancos',i,'moneda',['PEN','USD'],b.moneda)}</td>${ptRdErpTd(b)}</tr>`).join('') || empty(5,'Sin cuentas.')}
+        <td>${csel('bancos',i,'moneda',['PEN','USD'],b.moneda)}</td>${ptRdBancoTd(b,i,edit)}</tr>`).join('') || empty(9,'Sin cuentas.')}
     </tbody></table></div>${fErr(E,'bancos')}`;
   if(edit) body += `<div style="margin-top:10px;display:flex;gap:8px"><button class="btn-add" onclick="ptAddRow('${tab}')">Añadir</button><button class="btn-corp-outline" onclick="ptDelSel('${tab}')">Eliminar</button></div>`;
   ed.innerHTML = head + gen + ptRdBlock(d, edit, E) + `<div class="buscar-filters"><div class="md-tabs">${tabs}</div><div class="md-body">${body}</div></div>`;
 }
 /* ---------- Propuesta HU-DM-01 · I-035: datos por rol (Cliente / Proveedor / Ambos) y sincronización con SAP ----------
-   Catálogo Partner Role con Tipo Socio y Requiere Código Aduanas (valores ficticios hasta cerrar PEN-I035-01).
+   Catálogo Partner Role (Data Maestra > Catálogo > PARTNER_ROLE) con Tipo Socio y Requiere Código Aduanas. PT_ROL_CAT es su copia en memoria.
    ERP, Moneda, Condición de Pago y Código de Aduana pasan de la cabecera al rol; la cabecera queda como en Connect. */
 const PT_ROL_CAT = {'Agente Marítimo':['Ambos',false],'Armador':['Cliente',false],'Línea naviera':['Ambos',true],'Operador portuario':['Proveedor',false],
   'Agente de carga':['Ambos',true],'Agente de aduanas':['Proveedor',true],'Consignatario':['Cliente',false],'Embarcador':['Cliente',false],'Broker':['Ambos',false],
   'Charterer':['Cliente',false],'Servicio Contable':['Proveedor',false],'Operador Logistico':['Proveedor',false],'Notificante':['Cliente',false],'Consolidador':['Ambos',true],
   'Depósito Aduanero':['Proveedor',true],'Depósito Temporal':['Proveedor',true],'Proveedor':['Proveedor',false],'Terminal':['Proveedor',true],'Puerto':['Proveedor',false],'Representante de Línea':['Cliente',false]};
+/* Catálogo Partner Role: lista para Data Maestra y sincronización al guardar el catálogo */
+function PT_ROLES_LIST(){ return PT_ROLES.map(r=>[r, ...(PT_ROL_CAT[r] || ['', false])]); }
+function ptRdCatSync(rows){ rows.forEach(([r,t,a])=>{ if(!r) return; PT_ROL_CAT[r] = [t||'', !!a]; if(!PT_ROLES.includes(r)) PT_ROLES.push(r); }); }
 const PT_RD_SIDE = {cli:{l:'Cliente', pre:'C', tipo:'cCustomer', k:'cliente'}, pro:{l:'Proveedor', pre:'P', tipo:'cSupplier', k:'proveedor'}};
 const PT_RD_TK = 'I-035', PT_RD_HU = 'HU-DM-01';
+const ptRdOn = () => !!(window.CC && CC.verPropuestas);
 function ptRdMk(){ return fm('Modifica: pasa al rol', PT_RD_HU, PT_RD_TK, 'PEN-I035-03'); }
 function ptRdPen(){
   if(FAC_PEN['PEN-I035-01']) return;
   const w = 'Data Maestra, Facturación y TI';
-  FAC_PEN['PEN-I035-01'] = {t:PT_RD_TK, hu:PT_RD_HU, w, q:'Aprobar matriz de campos obligatorios y roles, procesos afectados y alcance por fase; decidir qué dirección SAP se usa y el mapeo de Ubigeo.',
-    p:'Cliente y Proveedor exigen Código ERP, Moneda y Condición de Pago de su bloque. Código de Aduana solo si un rol del bloque lo pide en el catálogo. A SAP va la Dirección del socio (Street, Country, State, County como provincia, City como distrito). Ubigeo por definir.'};
-  FAC_PEN['PEN-I035-02'] = {t:PT_RD_TK, hu:PT_RD_HU, w, q:'Precisar cuándo se habilita o repite la sincronización, contrato vigente por rol, fallos, reintentos y actualización de contactos y cuentas existentes.',
-    p:'Sincronizar con SAP a demanda por rol, con el Número Documento y el tipo (cCustomer o cSupplier). Se puede repetir cuando quieras; solo actualiza el bloque elegido. Contactos y cuentas sin código ERP lo reciben; los que ya lo tienen no se pisan.'};
+  FAC_PEN['PEN-I035-01'] = {t:PT_RD_TK, hu:PT_RD_HU, w, q:'Aprobar matriz de roles (Tipo Socio y Requiere Código Aduanas), campos obligatorios, procesos afectados y alcance por fase; decidir qué dirección SAP se usa cuando hay varias.',
+    p:'Cada rol del catálogo tiene Tipo Socio (Cliente, Proveedor o Ambos). Cliente y Proveedor exigen Código ERP, Moneda y Condición de Pago de su bloque. Código de Aduana solo si un rol del bloque lo pide. De SAP se toma la primera dirección (Street, Country, State, County como provincia, City como distrito). Ubigeo (ZipCode) no se mapea.'};
+  FAC_PEN['PEN-I035-02'] = {t:PT_RD_TK, hu:PT_RD_HU, w, q:'Precisar contrato vigente por rol, fallos, reintentos y actualización de contactos y cuentas existentes.',
+    p:'Sincronizar con SAP por rol, con el Número Documento y el tipo (cCustomer o cSupplier). Se habilita cuando hay ambos datos y vuelve a habilitarse si cambia alguno. Solo actualiza el bloque elegido. Contactos y cuentas de SAP se agregan o actualizan por su código; los ingresados en Connect no se borran.'};
   FAC_PEN['PEN-I035-03'] = {t:PT_RD_TK, hu:PT_RD_HU, w, q:'Definir transición o migración de datos de cabecera al rol y proporcionar socio Cliente, Proveedor y Ambos con respuestas SAP de prueba.',
-    p:'La primera vez, cada rol copia Código ERP, Moneda, Condición de Pago y Código de Aduana de la cabecera. Desde ahí cada rol guarda los suyos. La cabecera se mantiene mientras los procesos migran.'};
+    p:'La primera vez, cada rol copia Código ERP, Moneda, Condición de Pago y Código de Aduana de la cabecera. Desde ahí cada rol guarda los suyos y los procesos leen el rol. La cabecera se mantiene mientras los procesos migran.'};
 }
 /* Transición: mientras el rol no se edite ni se sincronice, refleja los datos de la cabecera */
 function ptRd(d){
@@ -6043,72 +6049,133 @@ function ptRd(d){
   ['cli','pro'].forEach(s=>{ if(d.rd[s].origen==='cabecera') d.rd[s] = h(); });
   return d.rd;
 }
+const ptRdTipo = rol => (PT_ROL_CAT[rol]||[])[0] || '';
 function ptRdSides(d){ return Object.keys(PT_RD_SIDE).filter(s=>d.roles.some(r=>r[PT_RD_SIDE[s].k])); }
 function ptRdClase(d){ const s = ptRdSides(d); return s.length===2 ? 'Ambos' : s.length ? PT_RD_SIDE[s[0]].l : 'Sin clasificar'; }
 function ptRdAduana(d, side){ return d.roles.filter(r=>r[PT_RD_SIDE[side].k] && (PT_ROL_CAT[r.rol]||[])[1]).map(r=>r.rol); }
+/* 3.1: el Tipo Socio del catálogo fija qué casillas Cliente / Proveedor admite cada rol */
+function ptRdRolOk(r, k, v){
+  if(!ptRdOn() || !v || (k!=='cliente' && k!=='proveedor')) return true;
+  const t = ptRdTipo(r.rol); if(!t || t==='Ambos' || t===PT_RD_SIDE[k==='cliente'?'cli':'pro'].l) return true;
+  toast(`El rol ${r.rol} es solo ${t} en el catálogo Partner Role.`, 'error'); return false;
+}
+function ptRdRolAplica(r){ if(!ptRdOn()) return; const t = ptRdTipo(r.rol); if(t==='Cliente'){ r.cliente = true; r.proveedor = false; } else if(t==='Proveedor'){ r.cliente = false; r.proveedor = true; } }
+const PT_RD_LBL = {erp:['el','Código ERP'], moneda:['la','Moneda'], pago:['la','Condición de Pago'], aduana:['el','Código de Aduana']};
 function ptRdErrors(d, E){
-  const rd = ptRd(d), OB = 'Este campo es obligatorio';
-  ptRdSides(d).forEach(s=>{ const r = rd[s];
-    ['erp','moneda','pago'].forEach(k=>{ if(!String(r[k]||'').trim()) E[`rd_${s}_${k}`] = OB; });
-    if(ptRdAduana(d,s).length && !String(r.aduana||'').trim()) E[`rd_${s}_aduana`] = 'Un rol de este bloque requiere Código de Aduana';
+  const rd = ptRd(d);
+  const malos = d.roles.filter(r=>{ const t = ptRdTipo(r.rol); return (t==='Cliente' && r.proveedor) || (t==='Proveedor' && r.cliente); });
+  if(malos.length && !E.roles) E.roles = `El rol ${malos[0].rol} es solo ${ptRdTipo(malos[0].rol)} en el catálogo Partner Role.`;
+  ptRdSides(d).forEach(s=>{ const r = rd[s], S = PT_RD_SIDE[s], ad = ptRdAduana(d,s), m = k => `Falta ${PT_RD_LBL[k][0]} ${PT_RD_LBL[k][1]} ${S.l}`;
+    ['erp','moneda','pago'].forEach(k=>{ if(!String(r[k]||'').trim()) E[`rd_${s}_${k}`] = m(k); });
+    if(ad.length && !String(r.aduana||'').trim()) E[`rd_${s}_aduana`] = `${m('aduana')} (lo requiere: ${ad.join(', ')})`;
   });
 }
+function ptRdMsgs(E){ const m = Object.keys(E).filter(k=>k.startsWith('rd_')).map(k=>E[k]); return m.length ? m.join('. ') + '.' : ''; }
 function ptRdUpd(side, k, v){ ptRd(pt.draft)[side][k] = v; pt.draft.rd[side].origen = 'manual'; pt.dirty = true; clearErr(pt.errs, `rd_${side}_${k}`, '#ptEditor'); }
-function ptRdRolTh(){ return `<th class="cc-prop">Tipo Socio ${fm('Agrega',PT_RD_HU,PT_RD_TK)}</th><th class="cc-prop">Requiere Código Aduanas</th><th class="cc-prop">Aplica comisión de tarifa</th>`; }
+function ptRdRolTh(){ return `<th class="cc-prop">Tipo Socio ${fm('Agrega: del catálogo',PT_RD_HU,PT_RD_TK,'PEN-I035-01')}</th><th class="cc-prop">Requiere Código Aduanas</th><th class="cc-prop">Aplica comisión de tarifa <small>(solo Línea, opcional)</small></th>`; }
 function ptRdRolTd(r, i, edit){
   const c = PT_ROL_CAT[r.rol] || ['-', false];
   const com = r.rol==='Línea naviera' ? `<input type="checkbox" data-rdcom ${edit?'':'disabled'} ${r.comision?'checked':''} onchange="ptUpdRow('roles',${i},'comision',this.checked)">` : '-';
-  return `<td class="cc-prop">${c[0]}</td><td class="cc-prop">${c[1]?'Sí':'No'}</td><td class="cc-prop">${com}</td>`;
+  return `<td class="cc-prop" data-rdtipo>${c[0]}</td><td class="cc-prop">${c[1]?'Sí':'No'}</td><td class="cc-prop">${com}</td>`;
 }
-function ptRdErpTh(){ return `<th class="cc-prop">Código ERP ${fm('Agrega',PT_RD_HU,PT_RD_TK)}</th>`; }
-function ptRdErpTd(x){ return `<td class="cc-prop">${esc(x.codeErp||'-')}</td>`; }
+function ptRdErpTh(){ return `<th class="cc-prop">Código ERP ${fm('Agrega: Name de SAP',PT_RD_HU,PT_RD_TK)}</th>`; }
+function ptRdErpTd(x, i, edit){ return `<td class="cc-prop">${edit && i!=null ? `<input value="${esc(x.codeErp||'')}" maxlength="50" data-rdcerp oninput="ptUpdRow('contactos',${i},'codeErp',this.value)">` : esc(x.codeErp||'-')}</td>`; }
+function ptRdBancoTh(){ return `<th class="cc-prop">SWIFT ${fm('Agrega',PT_RD_HU,PT_RD_TK)}</th><th class="cc-prop">País</th><th class="cc-prop">Cuenta de detracción</th><th class="cc-prop">CCI</th>`; }
+function ptRdBancoTd(b, i, edit){
+  const inp = (k, max, ph) => edit ? `<input value="${esc(b[k]||'')}" maxlength="${max}" placeholder="${ph||''}" oninput="ptUpdRow('bancos',${i},'${k}',this.value)">` : esc(b[k]||'-');
+  const det = edit ? `<select onchange="ptUpdRow('bancos',${i},'detrac',this.value)">${['No','Sí'].map(o=>`<option ${o===(b.detrac||'No')?'selected':''}>${o}</option>`).join('')}</select>` : esc(b.detrac||'No');
+  return `<td class="cc-prop">${inp('swift',11)}</td><td class="cc-prop">${inp('pais',40)}</td><td class="cc-prop">${det}</td><td class="cc-prop" data-rdcci>${inp('cci',20,'20 dígitos')}</td>`;
+}
+/* 3.10: dirección desde SAP, solo en Socio */
+function ptRdDirFlds(inp){
+  return [['dirPais','País','Ingresar País'],['dirDep','Departamento','Ingresar Departamento'],['dirProv','Provincia','Ingresar Provincia'],['dirDist','Distrito','Ingresar Distrito']]
+    .map(([k,l,ph])=>`<div ${CC.propuesta(`${PT_RD_HU} · ${PT_RD_TK}`, 'Dirección desde SAP', 'filter-field')} data-rddir="${k}"><label>${l}</label>${inp(k,ph,false,100)}</div>`).join('');
+}
+function ptRdDirNota(){ return `<div ${CC.propuesta(`${PT_RD_HU} · ${PT_RD_TK}`, 'Dirección desde SAP', 'pda-row-sub')} id="ptRdDirNota">País, Departamento, Provincia y Distrito se llenan al sincronizar con SAP (BPAddresses). Solo se usan en Socio: la facturación no cambia por ahora. Ubigeo no se mapea. ${fm('Agrega',PT_RD_HU,PT_RD_TK,'PEN-I035-01')}</div>`; }
 const ptRdFh = iso => iso ? `${fmtDate(iso)} ${iso.slice(11,16)}` : '-';
+/* 3.7: se habilita con Número Documento y tipo (Cliente o Proveedor); vuelve a habilitarse si cambia alguno */
+const ptRdKey = d => `${d.tipoDoc}|${String(d.doc||'').trim()}|${ptRdClase(d)}`;
+function ptRdSyncWhy(d, s){
+  if(!canEditPartner()) return 'Solo Facturación o Gerencia sincronizan con SAP';
+  if(!String(d.doc||'').trim()) return 'Ingrese el Número Documento para sincronizar con SAP';
+  if(!ptRdSides(d).includes(s)) return `Marque el tipo ${PT_RD_SIDE[s].l} en Roles`;
+  const r = ptRd(d)[s]; if(r.sync && r.sync.key===ptRdKey(d)) return 'Ya sincronizado. Se habilita de nuevo si cambia el Número Documento o el tipo';
+  return '';
+}
+function ptRdBtns(){ const d = pt.draft; if(!d) return; document.querySelectorAll('#ptRd [data-rdsync]').forEach(b=>{ const w = ptRdSyncWhy(d, b.dataset.rdsync); b.disabled = !!w; b.title = w || `Traer de SAP los datos de ${PT_RD_SIDE[b.dataset.rdsync].l}`; }); }
 function ptRdBlock(d, edit, E){
   ptRdPen();
-  const rd = ptRd(d), sides = ptRdSides(d), dis = edit ? '' : 'disabled', can = canEditPartner();
-  const fld = (l, h, k) => `<div class="filter-field"><label>${l}</label>${h}${fErr(E,k)}</div>`;
-  const card = s => { const S = PT_RD_SIDE[s], r = rd[s], ad = ptRdAduana(d,s), k = x => `rd_${s}_${x}`;
-    const on = (x, v) => `onchange="ptRdUpd('${s}','${x}',this.value)"`;
-    const tip = r.sync ? `Sincronizado: ${ptRdFh(r.sync.ts)} · Actualizado en SAP: ${ptRdFh(r.sync.upd)}` : 'Aún no se sincroniza con SAP';
+  const rd = ptRd(d), sides = ptRdSides(d), dis = edit ? '' : 'disabled';
+  const fld = (l, h, k) => `<div class="filter-field"><label title="${l.replace(/"/g,'')}">${l}</label>${h}${fErr(E,k)}</div>`;
+  const card = s => { const S = PT_RD_SIDE[s], r = rd[s], ad = ptRdAduana(d,s), k = x => `rd_${s}_${x}`, why = ptRdSyncWhy(d, s);
+    const on = x => `onchange="ptRdUpd('${s}','${x}',this.value)"`;
+    const tip = r.sync ? `Actualizado en SAP (${S.l}) · UpdateDate: ${fmtDate(r.sync.upd)} · UpdateTime: ${r.sync.upd.slice(11,19)} · Sincronizado en Connect: ${ptRdFh(r.sync.ts)}` : 'Aún no se sincroniza con SAP';
     return `<div class="pt-rd-card" data-rd="${s}">
       <div class="pt-rd-hd"><b>${S.l}</b><span class="cc-chip on st-${r.sync?'aprobada':'pendiente'}" data-rdst title="${tip}">${r.sync?'SINCRONIZADO CON SAP':'SIN SINCRONIZAR'}</span>
-        <span class="pt-rd-sp"></span><button type="button" class="btn-corp-outline pt-rd-btn" data-rdsync="${s}" ${can?'':'disabled'} onclick="ptRdSync('${s}')">Sincronizar con SAP</button></div>
-      <div class="filters-grid g4">
+        <span class="pt-rd-sp"></span><button type="button" class="btn-corp-outline pt-rd-btn" data-rdsync="${s}" ${why?'disabled':''} title="${why||`Traer de SAP los datos de ${S.l}`}" onclick="ptRdSync('${s}')">Sincronizar con SAP</button></div>
+      <div class="filters-grid pt-rd-f">
         ${fld(`Código ERP ${S.l} *`, `<input ${dis} data-rdf="${s}_erp" maxlength="25" value="${esc(r.erp)}" placeholder="${S.pre} + Número Documento" oninput="ptRdUpd('${s}','erp',this.value)">`, k('erp'))}
-        ${fld(`Moneda ${S.l} *`, `<select ${dis} ${on('moneda')}><option value="">Elegir Moneda</option><option value="USD" ${r.moneda==='USD'?'selected':''}>Dólar estadounidense</option><option value="PEN" ${r.moneda==='PEN'?'selected':''}>Sol peruano</option></select>`, k('moneda'))}
-        ${fld(`Condición Pago ${S.l} *`, `<select ${dis} ${on('pago')}><option value="">Elegir Condición de Pago</option>${['Crédito','Contado'].map(o=>`<option ${o===r.pago?'selected':''}>${o}</option>`).join('')}</select>`, k('pago'))}
-        ${fld(`Código de Aduana${ad.length?' *':''}`, `<input ${dis} maxlength="4" value="${esc(r.aduana)}" placeholder="Ingresar Código de Aduana" oninput="ptRdUpd('${s}','aduana',this.value)">`, k('aduana'))}
+        ${fld(`Moneda ${S.l} *`, `<select ${dis} data-rdf="${s}_moneda" ${on('moneda')}><option value="">Elegir Moneda</option><option value="USD" ${r.moneda==='USD'?'selected':''}>Dólar estadounidense</option><option value="PEN" ${r.moneda==='PEN'?'selected':''}>Sol peruano</option></select>`, k('moneda'))}
+        ${fld(`Condición Pago ${S.l} *`, `<select ${dis} data-rdf="${s}_pago" ${on('pago')}><option value="">Elegir Condición de Pago</option>${['Crédito','Contado'].map(o=>`<option ${o===r.pago?'selected':''}>${o}</option>`).join('')}</select>`, k('pago'))}
+        ${fld(`Código de Aduana ${S.l}${ad.length?' *':''}`, `<input ${dis} data-rdf="${s}_aduana" maxlength="4" value="${esc(r.aduana)}" placeholder="Ingresar Código de Aduana" oninput="ptRdUpd('${s}','aduana',this.value)">`, k('aduana'))}
       </div>
-      <div class="pda-row-sub">${r.sync ? `Cargado desde SAP (CardType ${S.tipo}) el ${ptRdFh(r.sync.ts)}` : r.origen==='cabecera' ? 'Copiado de la cabecera del socio' : 'Ingresado en el rol'}${ad.length?` · Código de Aduana obligatorio por: ${esc(ad.join(', '))}`:''}</div>
+      <div class="pda-row-sub">${r.sync ? `Cargado desde SAP (CardType ${S.tipo}, CardCode ${esc(r.erp)}) el ${ptRdFh(r.sync.ts)} · Nombre Largo (CardName): ${esc(r.sync.name||'-')}` : r.origen==='cabecera' ? 'Copiado de la cabecera del socio' : 'Ingresado en el rol'}${ad.length?` · Código de Aduana obligatorio por: ${esc(ad.join(', '))}`:' · Código de Aduana opcional: ningún rol del bloque lo requiere'}</div>
     </div>`; };
-  const map = [['Código ERP del rol','CardCode (prefijo C o P)'],['Moneda del rol','DefaultCurrency'],['Condición de Pago del rol','PayTermsGrpCode'],['Fecha de sincronización','UpdateDate / UpdateTime'],
-    ['Nombre Largo','CardName (único para ambos roles)'],['Contactos','ContactEmployees: Name (Código ERP), FirstName + MiddleName + LastName, Phone1, MobilePhone, E_Mail'],
-    ['Información Financiera','BPBankAccounts: BankCode, AccountNo, BICSwiftCode, Country, U_MSS_TipoC, U_MSS_CtaDet, U_MSS_CCI, U_MSS_Moneda'],
-    ['Dirección','BPAddresses: Street, Country, State, County (provincia), City (distrito)']];
+  const map = [['Código ERP del rol','CardCode (prefijo C o P + Número Documento)'],['Moneda del rol','DefaultCurrency'],['Condición de Pago del rol','PayTermsGrpCode'],['Fecha y hora en SAP del rol','UpdateDate / UpdateTime'],
+    ['Nombre Largo','CardName (único para ambos roles)'],['Información de Contacto','ContactEmployees: Name (Código ERP), FirstName + MiddleName + LastName (Nombre), Phone1 (Teléfono), MobilePhone (Móvil), E_Mail (Email)'],
+    ['Información Financiera','BPBankAccounts: BankCode (Banco), AccountNo (Cuenta), BICSwiftCode (SWIFT), Country (País), U_MSS_TipoC (Tipo), U_MSS_CtaDet (Cuenta de detracción), U_MSS_CCI (CCI), U_MSS_Moneda (Moneda)'],
+    ['Dirección','BPAddresses: Street (Dirección), Country (País), State (Departamento), County (Provincia), City (Distrito). ZipCode (Ubigeo) no se mapea']];
   return `<div ${CC.propuesta(`${PT_RD_HU} · ${PT_RD_TK}`, 'Datos por rol y SAP', 'buscar-filters')} id="ptRd">
     <div class="md-cardhead"><div class="tf-title"><h3 class="md-h">Datos por rol</h3></div><div class="md-actions">Clasificación del socio: <b data-rdclase>${ptRdClase(d)}</b></div></div>
-    <div class="tf-reason pend">Código ERP, Moneda, Condición de Pago y Código de Aduana se guardan por rol. La primera vez se copian de la cabecera; luego cada rol mantiene los suyos. ${fm('Transición de cabecera al rol',PT_RD_HU,PT_RD_TK,'PEN-I035-03')}</div>
+    <div class="tf-reason pend">Código ERP, Moneda, Condición de Pago y Código de Aduana se guardan por rol, y los procesos (PDA, Provisiones, Documentos Contables, BL) los toman del rol, no de la cabecera. La primera vez se copian de la cabecera. ${fm('Transición de cabecera al rol',PT_RD_HU,PT_RD_TK,'PEN-I035-03')}</div>
     ${sides.length ? `<div class="pt-rd-g">${sides.map(card).join('')}</div>` : '<div class="pda-row-sub" style="padding:8px 0">Marca Cliente o Proveedor en la pestaña Roles para ver sus datos.</div>'}
-    <div class="pda-row-sub" style="margin-top:8px">Sincronizar trae de SAP solo el bloque elegido, sin pisar el otro rol. ${fm('Cuándo se habilita o repite',PT_RD_HU,PT_RD_TK,'PEN-I035-02')}</div>
-    <div class="fac-sec">Qué va a SAP ${fm('Dirección y Ubigeo por definir',PT_RD_HU,PT_RD_TK,'PEN-I035-01')}</div>
+    <div class="pda-row-sub" style="margin-top:8px">Sincronizar con SAP se habilita con Número Documento y tipo (Cliente o Proveedor), y otra vez si cambia alguno. Trae solo el bloque elegido, sin pisar el otro rol. ${fm('Contrato y reintentos',PT_RD_HU,PT_RD_TK,'PEN-I035-02')}</div>
+    <div class="fac-sec">Qué se trae de SAP ${fm('Matriz de roles y dirección',PT_RD_HU,PT_RD_TK,'PEN-I035-01')}</div>
     <div class="results-table"><table id="ptRdMap"><thead><tr><th>Dato en Connect</th><th>Campo SAP</th></tr></thead><tbody>${map.map(([a,b])=>`<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</tbody></table></div>
-    <div class="pda-row-sub">Dirección que va a SAP: ${esc(d.dir||'-')} · Ubigeo: Por definir</div>
   </div>`;
 }
+/* Respuesta SAP simulada (BusinessPartner por documento y CardType); datos ficticios */
+const PT_RD_SAP = {
+  cli:{moneda:'USD', pago:'Crédito', upd:'2026-11-15T09:40:12', cont:{tipo:'Facturación', nombre:'María Elena Quispe Rojas', tel:'014445566', movil:'987654321', email:'facturacion@cliente.example'},
+       banco:{banco:'Banco de Crédito del Perú', tipo:'Cuenta corriente', moneda:'USD', swift:'EJMPPEPL', pais:'Perú', detrac:'No', n:'1', cci:'00219100000000010155'}},
+  pro:{moneda:'PEN', pago:'Crédito', upd:'2026-11-12T16:05:30', cont:{tipo:'Cobranzas', nombre:'Jorge Luis Paredes Soto', tel:'017778899', movil:'912345678', email:'cobranzas@proveedor.example'},
+       banco:{banco:'BBVA Perú', tipo:'Cuenta de detracciones', moneda:'PEN', swift:'', pais:'Perú', detrac:'Sí', n:'2', cci:'01100000000000020277'}},
+  dir:{dir:'AV. LOS EJEMPLOS 456 OF. 301', dirPais:'Perú', dirDep:'Lima', dirProv:'Lima', dirDist:'San Isidro'}};
 function ptRdSync(side){
-  if(!canEditPartner()){ toast('Solo Facturación o Gerencia editan socios','error'); return; }
-  const d = pt.draft, S = PT_RD_SIDE[side];
-  if(!String(d.doc||'').trim()){ toast('Ingrese el Número Documento para sincronizar con SAP','error'); return; }
-  const r = ptRd(d)[side], now = new Date().toISOString();
-  /* Respuesta SAP simulada (BusinessPartner por documento y CardType); datos ficticios */
-  Object.assign(r, {erp:S.pre + d.doc, moneda:r.moneda || (side==='cli'?'USD':'PEN'), pago:r.pago || 'Crédito', origen:'sap', sync:{ts:now, upd:'2026-11-15T09:40:00'}});
-  d.contactos.forEach((c,i)=>{ if(!c.codeErp) c.codeErp = `${S.pre}${d.doc}-${i+1}`; });
-  d.bancos.forEach((b,i)=>{ if(!b.codeErp) b.codeErp = `${S.pre}B${i+1}`; });
-  ['erp','moneda','pago'].forEach(k=>{ if(pt.errs) delete pt.errs[`rd_${side}_${k}`]; });
+  const d = pt.draft, S = PT_RD_SIDE[side], why = ptRdSyncWhy(d, side);
+  if(why){ toast(why, 'error'); return; }
+  const r = ptRd(d)[side], now = new Date().toISOString(), X = PT_RD_SAP[side], code = S.pre + d.doc;
+  if(!d.largo) d.largo = (d.corto||'').toUpperCase();
+  Object.assign(r, {erp:code, moneda:X.moneda, pago:X.pago, origen:'sap', sync:{ts:now, upd:X.upd, key:ptRdKey(d), name:d.largo}});
+  const ce = `${code}-01`, c = d.contactos.find(x=>x.codeErp===ce), cn = {...X.cont, dir:'', notas:'', codeErp:ce};
+  if(c) Object.assign(c, cn); else d.contactos.push(cn);
+  const bk = `${code}-B${X.banco.n}`, b = d.bancos.find(x=>x.sapKey===bk), bn = {banco:X.banco.banco, tipo:X.banco.tipo, cuenta:`19100000${X.banco.n}0${d.doc.slice(-4)}`, moneda:X.banco.moneda, swift:X.banco.swift, pais:X.banco.pais, detrac:X.banco.detrac, cci:X.banco.cci, sapKey:bk};
+  if(b) Object.assign(b, bn); else d.bancos.push(bn);
+  Object.assign(d, PT_RD_SAP.dir);
+  if(pt.errs){ ['erp','moneda','pago'].forEach(k=>delete pt.errs[`rd_${side}_${k}`]); delete pt.errs.dir; }
   if(pt.edit) pt.dirty = true;
   else { const i = PARTNERS.findIndex(x=>x.id===d.id); d.hist.push({ts:now, user:curUser(), prev:d.estado, next:d.estado, comment:`Sincronizó ${S.l} con SAP`}); if(i>-1) PARTNERS[i] = clone(d); }
   renderPtEditor();
-  toast(`Datos de ${S.l} cargados desde SAP. ${side==='cli'?'Proveedor':'Cliente'} no cambia.`, 'success');
+  toast(`Datos de ${S.l} cargados desde SAP: Código ERP, Moneda, Condición de Pago, contacto, cuenta y dirección. ${side==='cli'?'Proveedor':'Cliente'} no cambia.`, 'success');
+}
+/* 3.6: los buscadores de socio de otras pantallas filtran por tipo (cli, pro o ambos) y no aceptan socios incompatibles.
+   Un nombre que no es socio registrado se deja pasar (lo resuelve el alta rápida de cada pantalla). */
+const PT_RD_REQ = {cli:'Cliente', pro:'Proveedor', ambos:'Cliente y Proveedor'};
+function ptRdOk(name, side){
+  if(!ptRdOn() || !String(name||'').trim()) return true;
+  const p = partnerByName(name); if(!p) return true;
+  const s = ptRdSides(p); return side==='ambos' ? s.length===2 : s.includes(side);
+}
+function ptRdFiltra(list, side){ return ptRdOn() ? list.filter(n=>ptRdOk(n, side)) : list; }
+function ptRdAviso(name, side){
+  if(ptRdOk(name, side)) return true;
+  toast(`${name} no tiene rol ${PT_RD_REQ[side]}. Elige un socio de tipo ${PT_RD_REQ[side]}.`, 'error'); return false;
+}
+/* 3.5 y 3.12: marca donde un proceso muestra el dato del socio, tomado del rol */
+function ptRdNota(name, side, k){
+  const p = partnerByName(name); if(!p) return '';
+  const r = ptRd(p)[side], lbl = k==='aduana' ? 'Código de Aduana' : 'Código ERP';
+  return `<div ${CC.propuesta(`${PT_RD_HU} · ${PT_RD_TK}`, 'Dato del rol', 'pda-row-sub')} data-rdcons="${side}">${lbl} ${PT_RD_SIDE[side].l} (del rol, no de la cabecera): <b>${esc(r[k||'erp']||'Sin código')}</b>${k?'':` · Moneda ${esc(r.moneda||'-')} · Condición de Pago ${esc(r.pago||'-')}`}</div>`;
 }
 const PT_DOC_HINT = {'DNI':'(8 dígitos numéricos)', 'RUC':'(11 dígitos numéricos)', 'Pasaporte':'(Máx. 15 caracteres alfanuméricos)', 'Carné de Extranjería':'(Máx. 11 caracteres alfanuméricos)', 'Tax ID':'(Máx. 20 caracteres)'};
 const PT_DOC_MAX = {'DNI':8, 'RUC':11, 'Pasaporte':15, 'Carné de Extranjería':11, 'Tax ID':20};
@@ -6120,7 +6187,7 @@ function openSamplePdaSafe(code){ if(SAMPLE_PDAS.some(x=>x.code===code)) openSam
 const PT_LBL = {tipoPersona:'Tipo Persona', nac:'Nacionalidad', tipoDoc:'Tipo Documento', doc:'Número Documento', corto:'Nombre Corto', largo:'Nombre Largo', erp:'Código ERP', dir:'Dirección'};
 function ptBasicErrors(d){
   const E = {}, OB = 'Este campo es obligatorio', v = k => String(d[k]||'').trim();
-  Object.keys(PT_LBL).forEach(k=>{ if(!v(k)) E[k] = OB; });
+  Object.keys(PT_LBL).forEach(k=>{ if(!v(k) && !(k==='erp' && window.CC && CC.verPropuestas)) E[k] = OB; });
   const doc = v('doc'), t = d.tipoDoc;
   if(doc && ((t==='RUC' && !/^\d{11}$/.test(doc)) || (t==='DNI' && !/^\d{8}$/.test(doc)) || (/Pasaporte|Carné/.test(t) && !/^[A-Za-z0-9]+$/.test(doc)) || doc.length > (PT_DOC_MAX[t]||20)))
     E.doc = `Número Documento ${PT_DOC_HINT[t]||''}`.trim();
@@ -6136,6 +6203,7 @@ function ptBasicErrors(d){
   else if(d.contactos.some(c=>!c.tel && !c.movil && !c.email)) E.contactos = 'Cada contacto debe tener al menos un Teléfono, Móvil o Correo.';
   else if(d.contactos.some(c=>(c.tel && !/^\d+$/.test(c.tel)) || (c.movil && !/^\d+$/.test(c.movil)))) E.contactos = 'Teléfono y Móvil solo admiten dígitos.';
   if(d.bancos.some(b=>!b.banco || !b.tipo || !String(b.cuenta||'').trim() || !b.moneda)) E.bancos = 'Banco, Tipo, Cuenta y Moneda son obligatorios.';
+  else if(window.CC && CC.verPropuestas && d.bancos.some(b=>b.cci && !/^\d{20}$/.test(b.cci))) E.bancos = 'El CCI tiene 20 dígitos.';
   const s = d.sftp;
   if(s && s.on){
     if(!String(s.host||'').trim()) E.sftp_host = 'El host SFTP es requerido';
@@ -6156,7 +6224,7 @@ function ptShowErrs(E){
 function savePartner(){
   if(!canEditPartner()){ toast('Solo Facturación o Gerencia editan socios','error'); return; }
   const d = pt.draft, E = ptBasicErrors(d);
-  if(Object.keys(E).length){ ptShowErrs(E); toast('Por favor, complete todos los campos obligatorios.','error'); return; }
+  if(Object.keys(E).length){ const rd = ptRdMsgs(E); ptShowErrs(E); toast(rd || 'Por favor, complete todos los campos obligatorios.','error'); return; }
   pt.errs = null;
   const user = curUser(), i = PARTNERS.findIndex(x=>x.id===d.id);
   const prevName = i>-1 ? PARTNERS[i].largo : null;
@@ -6188,6 +6256,7 @@ function homologatePartner(){
   if(Object.keys(E).length){
     const k = Object.keys(E)[0];
     ptShowErrs(E);
+    const rd = ptRdMsgs(E); if(rd){ toast(rd,'info'); return; }
     toast(k==='roles' ? 'Para aprobar el socio se debe asignar al menos un rol activo.' : `Para aprobar el socio se debe completar: ${PT_LBL[k] || E[k]}.`, 'info'); return;
   }
   if(!confirm('Al aprobar, el socio queda disponible en PDAs y viajes y no vuelve a pendiente. ¿Desea continuar?')) return;
@@ -6768,6 +6837,7 @@ function openProvisions(){
   facEnter('screenProvisions'); renderFp();
 }
 function fpSet(k, v){
+  if(k==='prov' && !ptRdAviso(v,'pro')){ renderFp(); return; }
   FP.f[k] = v;
   if(k==='cat' || k==='prov') FP.f.svc = '';
   renderFp();
@@ -6802,7 +6872,7 @@ function renderFpList(){
     <div class="fac-card">
       <h3>Buscar Provisiones ${fm('',FAC_HU.num,'I-042','PEN-JENNY-I042-01')}</h3><div class="fac-sub">Ingrese datos para buscar</div>
       <div class="fac-g4">
-        ${fF('Proveedor', `<input list="fpProvs" placeholder="Ingresar un proveedor" value="${esc(f.prov)}" onchange="fpSet('prov',this.value)"><datalist id="fpProvs">${FAC_PROVS.map(p=>`<option value="${esc(p)}"></option>`).join('')}</datalist>`)}
+        ${fF('Proveedor', `<input list="fpProvs" placeholder="Ingresar un proveedor" value="${esc(f.prov)}" onchange="fpSet('prov',this.value)"><datalist id="fpProvs">${ptRdFiltra(FAC_PROVS,'pro').map(p=>`<option value="${esc(p)}"></option>`).join('')}</datalist>`)}
         ${fF('Nave', `<input placeholder="Ingresar una nave" value="${esc(f.nave)}" onchange="fpSet('nave',this.value)">`)}
         ${fF(`Número de Viaje ${fm('Modifica: ETA a la derecha',FAC_HU.prov,'I-041','PEN-I041-01')}`, `<input id="fpViaje" list="fpVoys" placeholder="Ingresar un número de viaje" value="${esc(f.viaje)}" onchange="fpSet('viaje',this.value)">${facVoyList('fpVoys')}${voy?`<small class="cc-prop" style="color:var(--cc-sub);font-size:12px">ETA: ${facEta(voy)}</small>`:''}`)}
         ${fF('Número de Provisión', `<input placeholder="Ingresar un número de provisión" value="${esc(f.num)}" onchange="fpSet('num',this.value)">`)}
@@ -6906,7 +6976,7 @@ function renderFpDetail(){
         ${inp('Fecha de Recepción','recDate','date')}${inp('Fecha de Pago','payDate','date')}${ed&&!prov?sel('Tipo de Operación','op',['Venta Interna','Exportación']):fRo('Tipo de Operación',p.op)}${sel('Base Imponible','base',['Operación Gravada','Operación No Gravada'])}
         ${fRo('Total',fMoney(total))}${sel('Tipo de Impuesto','tax',['Impuesto General (18%)','Inafecto'])}${sel('Condición de Pago','cond',['Crédito','Contado'])}${sel('Idioma','lang',['Ambos','Español','Inglés'])}
         ${inp('Descripción','desc','','fac-span4')}
-      </div>
+      </div>${ptRdNota(p.prov,'pro')}
     </div>
     <div class="fac-card"><div class="fac-head" style="margin-bottom:12px"><h3>Detalle de Provisión ${fm('Bloqueo en Viaje',FAC_HU.prov,'I-014','PEN-I014-03')} ${fm('Agrega: ETA',FAC_HU.prov,'I-041','PEN-I041-01')}</h3>
         ${ed?`<div class="fac-acts"><button type="button" class="cc-btn" id="fpAddDet" onclick="fpAddDetail()">Agregar</button><button type="button" class="cc-btn pink" onclick="fpDelDetail()">Eliminar</button></div>`:''}</div>
@@ -7104,7 +7174,7 @@ function renderFd(){
   document.getElementById('fdRoot').innerHTML = tabs + body;
 }
 /* ---------- Consulta de documentos ---------- */
-function fdSet(k, v){ FD.f[k] = v; FD.page = 1; renderFd(); }
+function fdSet(k, v){ if(k==='fact' && !ptRdAviso(v,'cli')){ renderFd(); return; } FD.f[k] = v; FD.page = 1; renderFd(); }
 function fdClear(){ Object.keys(FD.f).forEach(k=>FD.f[k]= k==='sinLote'?false:''); FD.page = 1; renderFd(); }
 function fdFiltered(){
   const f = FD.f, q = x=>normTxt(x);
@@ -7136,7 +7206,7 @@ function fdListHtml(){
     <div class="fac-g4">
       ${fF('Número de Documento', `<input placeholder="Ingresar número de documento" value="${esc(f.num)}" onchange="fdSet('num',this.value)">`)}
       ${fF(`Documento a Emitir ${fm('Modifica',FAC_HU.lc,'I-040','PEN-I167-01')}`, fSel(fdTypes(), f.tipo, `onchange="fdSet('tipo',this.value)"`, 'Elegir documento a emitir'))}
-      ${fF('Facturar a', `<input placeholder="Ingresar el cliente a facturar" value="${esc(f.fact)}" onchange="fdSet('fact',this.value)">`)}
+      ${fF('Facturar a', `<input id="fdFact" list="fdFactL" placeholder="Ingresar el cliente a facturar" value="${esc(f.fact)}" onchange="fdSet('fact',this.value)"><datalist id="fdFactL">${ptRdOn()?PARTNERS.filter(p=>ptRdOk(p.largo,'cli')).map(p=>`<option value="${esc(p.largo)}"></option>`).join(''):''}</datalist>`)}
       ${fF('Fecha de Emisión', `<div class="fac-range"><input type="date" value="${f.from}" onchange="fdSet('from',this.value)"><input type="date" value="${f.to}" onchange="fdSet('to',this.value)"></div>`)}
       ${fF('Moneda', fSel([['PEN','Sol peruano'],['USD','Dólar estadounidense']], f.cur, `onchange="fdSet('cur',this.value)"`, 'Elegir moneda'))}
       ${fF(`Estado del Documento ${fm('Modifica: Registro de documento, antes Provisionado',FAC_HU.num,'I-042','PEN-JENNY-I042-01')}`, fSel(fdStOpts(), f.est, `id="fdEst" onchange="fdSet('est',this.value)"`, 'Elegir estado del documento'))}
@@ -7324,7 +7394,7 @@ function renderFdDetail(){
     </div>
     ${isNc?fdNcBoxHtml(d):''}
     <div class="fac-card"><h3 style="margin-bottom:16px">Información del Cliente</h3>
-      <div class="fac-g2">${fRo('Facturar a',facProp()?`${d.fact} - ${fdRuc(d.fact)}`:d.fact)}${fRo('Cobrar a',facProp()?`${d.collect} - ${fdRuc(d.collect)}`:d.collect)}${fRo('Dirección',d.addr,'fac-span2')}</div>
+      <div class="fac-g2">${fRo('Facturar a',facProp()?`${d.fact} - ${fdRuc(d.fact)}`:d.fact)}${fRo('Cobrar a',facProp()?`${d.collect} - ${fdRuc(d.collect)}`:d.collect)}${fRo('Dirección',d.addr,'fac-span2')}</div>${ptRdNota(d.fact,'cli')}
     </div>
     <div class="fac-card" id="fdViaje"><h3 style="margin-bottom:16px">Información del Viaje</h3>
       <div class="fac-g4">${fRo('Nave',d.noNave?'':d.nave)}${fF(`Número de Viaje`,`<input disabled value="${esc(d.noNave?'':d.nro)}">`)}${fF(`ETA ${fm('Agrega',FAC_HU.prov,'I-041','PEN-I041-01')}`,`<input id="fdEta" disabled value="${facEta(v)}">`,'cc-prop')}${fRo('Puerto',d.noNave?'':d.puerto)}

@@ -2111,3 +2111,12 @@
 .pt-rd-hd{display:flex;align-items:center;gap:10px;margin-bottom:10px}
 .pt-rd-sp{flex:1}
 .pt-rd-btn{padding:7px 14px}
+.pt-rd-f.filters-grid{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:12px 16px}
+.pt-rd-f .filter-field label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pt-rd-f select,.pt-rd-f input{width:100%;min-width:0}
+.ca-rol-sel{min-width:130px}
+/* HU-DM-01 · I-035: la tabla de cuentas suma columnas; se desplaza en horizontal y los combos muestran el texto completo */
+#ptEditor .md-body table:has([data-rdcci]){min-width:1650px}
+#ptEditor .md-body table:has([data-rdcci]) select{min-width:130px;width:100%}
+#ptEditor .md-body table:has([data-rdcci]) td:nth-child(-n+3) select{min-width:230px}
+#ptEditor .md-body .results-table:has([data-rdcci]){overflow-x:auto}
