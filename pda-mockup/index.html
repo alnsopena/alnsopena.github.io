@@ -6979,6 +6979,7 @@ function renderFpList(){
     <div class="fac-acts" style="justify-content:flex-end;margin-bottom:12px">${fChgBtn()}</div>
     <div class="fac-card">
       <h3>Buscar Provisiones ${fm('',FAC_HU.num,'I-042','PEN-JENNY-I042-01')}</h3><div class="fac-sub">Ingrese datos para buscar</div>
+      <div id="fpI175" ${CC.propuesta('Sin HU · I-175','Comisiones a proveedores: por definir')} style="margin:6px 0 2px;font-size:12.5px;color:var(--cc-gray)"><span class="fac-pill wait">Por definir</span> Comisiones a proveedores: cálculo, registro y liquidación sin reglas aprobadas.</div>
       <div class="fac-g4">
         ${fF('Proveedor', `<input list="fpProvs" placeholder="Ingresar un proveedor" value="${esc(f.prov)}" onchange="fpSet('prov',this.value)"><datalist id="fpProvs">${ptRdFiltra(FAC_PROVS,'pro').map(p=>`<option value="${esc(p)}"></option>`).join('')}</datalist>`)}
         ${fF('Nave', `<input placeholder="Ingresar una nave" value="${esc(f.nave)}" onchange="fpSet('nave',this.value)">`)}
@@ -7469,7 +7470,7 @@ function renderFdDetail(){
   facSetBar('screenAccDocs',titulo,['Inicio','Documentos Contables',titulo],nuevo?'fdCancelBlank()':'fdBack()');
   const v = facVoy(d.nave, d.nro), ed = d.edit, dis = ed?'':'disabled', isNc = fdIsNc(d), isLc = fdIsLc(d), isReg = d.status==='Registro de documento';
   /* Connect: Enviar a SAP desde Provisionado o SAP Error. Con I-042, en Registro de documento la acción es Emitir */
-  const canSend = d.status==='SAP Error' || (isReg && !facProp()), closed = d.status==='Anulado';
+  const canSend = d.status==='SAP Error' || (isReg && !facProp()) || (isNc && d.status==='Borrador' && facProp()), closed = d.status==='Anulado';
   const canEdit = !closed && !/Enviado a SAP|SAP OK/.test(d.status);
   const pago = d.paid==='Sí' ? '<span class="fac-pill ok">Pagado</span>' : '<span class="fac-pill wait">Pendiente de Pago</span>';
   document.getElementById('fdRoot').innerHTML = `
@@ -7500,7 +7501,7 @@ function renderFdDetail(){
         ${fF('Descripción Cover',`<input ${dis} value="${esc(d.coverDesc)}" onchange="fdDField('coverDesc',this.value)">`)}
       </div>
     </div>
-    ${isNc?fdNcBoxHtml(d):''}
+    ${isNc?fdNcBoxHtml(d)+fdNcSapHtml(d):''}
     <div class="fac-card"><h3 style="margin-bottom:16px">Información del Cliente</h3>
       <div class="fac-g2">${fRo('Facturar a',facProp()?`${d.fact} - ${fdRuc(d.fact)}`:d.fact)}${fRo('Cobrar a',facProp()?`${d.collect} - ${fdRuc(d.collect)}`:d.collect)}${fRo('Dirección',d.addr,'fac-span2')}</div>${ptRdNota(d.fact,'cli')}
     </div>
@@ -7591,9 +7592,18 @@ function fdEmitir(){
 }
 function fdSend(){
   const d = fdById(FD.sel);
-  d.sap = null; fdHist(d,'SAP OK','Envío simulado a SAP');
+  const cn = fdIsNc(d) && facProp();   /* HU-TI-02 (I-117): la NC va por CreditNotes, no por Invoice */
+  if(cn) d.erpNc = 'CN-' + (80000 + d.id);
+  d.sap = null; fdHist(d,'SAP OK', cn ? `Enviado a SAP por el método CreditNotes. Código ERP ${d.erpNc}` : 'Envío simulado a SAP');
   if(d.canje) d.canje.sap = 'Recibido en SAP';
-  toast('Documento enviado a SAP exitosamente.','success'); renderFd();
+  toast(cn ? `Nota de crédito enviada a SAP por CreditNotes. Código ERP ${d.erpNc}.` : 'Documento enviado a SAP exitosamente.','success'); renderFd();
+}
+/* HU-TI-02 (I-117): resultado visible del envío de la NC a SAP */
+function fdNcSapHtml(d){
+  const ok = d.status==='SAP OK', est = ok ? 'Recibido en SAP' : d.status==='SAP Error' ? 'Error en SAP' : d.status==='Anulado' ? 'Anulado' : 'Pendiente de envío';
+  return `<div id="fdNcSap" ${CC.propuesta('HU-TI-02 · I-117','Envío de la NC a SAP por CreditNotes','fac-card')}><h3 style="margin-bottom:16px">Envío a SAP</h3>
+    <div class="fac-g4">${fRo('Método SAP','CreditNotes')}${fRo('Documento Origen',d.assoc)}${fRo('Estado SAP',est)}${fRo('Código ERP',ok?(d.erpNc||'CN-'+(80000+d.id)):'-')}</div>
+    <div class="fac-note" style="margin-top:10px">Connect hoy la envía por Invoice. Con este cambio va por CreditNotes y SAP la registra como nota de crédito del documento origen.</div></div>`;
 }
 function fdAnnul(id){
   const d = fdById(id);

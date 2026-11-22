@@ -1112,7 +1112,8 @@ function opciones(k){
   return [];
 }
 /* Servicios propios de Documentación y Sobreestadía (ids que no están en el maestro de la PDA: no cambian sus totales) */
-const SVC_X = {doc:[{id:'agx_doc_bl', name:'EMISIÓN DE B/L', ser:'SER000901', unit:'B/L'},{id:'agx_doc_vb', name:'VISTO BUENO DE B/L', ser:'SER000902', unit:'B/L'},{id:'agx_doc_corr', name:'CORRECCIÓN DE MANIFIESTO', ser:'SER000903', unit:'Documento'}],
+const SVC_X = {doc:[{id:'agx_doc_bl', name:'EMISIÓN DE B/L', ser:'SER000901', unit:'B/L'},{id:'agx_doc_vb', name:'VISTO BUENO DE B/L', ser:'SER000902', unit:'B/L'},{id:'agx_doc_corr', name:'CORRECCIÓN DE MANIFIESTO', ser:'SER000903', unit:'Documento'},
+    {id:'agx_doc_do', name:'CONTAINER DELIVERY ORDER FEE', ser:'SER000904', unit:'B/L'},{id:'agx_doc_gad', name:'GASTOS ADMINISTRATIVOS (AUTOMÁTICA)', ser:'SER000905', unit:'B/L'}],
   ovs:[{id:'agx_ovs_cont', name:'SOBREESTADÍA DE CONTENEDOR', ser:'SER000951', unit:'Día'},{id:'agx_ovs_ret', name:'RETENCIÓN DE CONTENEDOR', ser:'SER000952', unit:'Día'}]};
 function svcList(c){ return kind(c)==='com' ? W.masterCatalog().map(m=>({id:m.id, name:m.name, ser:m.ser||'', unit:m.tariffUnit||m.unit||'Servicio'})) : SVC_X[kind(c)]; }
 function svcInfo(id){ const m = W.tfSvcAny(id); if(m) return {name:m.name, ser:m.ser||'', unit:m.tariffUnit||m.unit||'Servicio'}; return SVC_X.doc.concat(SVC_X.ovs).find(x=>x.id===id) || {name:id, ser:'', unit:''}; }
@@ -1132,6 +1133,14 @@ function seed(){
     lines:[ln('agx_ovs_cont',{calc:'PR', price:40, ranges:[{ini:1, fin:5, cost:0, price:40}, {ini:6, fin:'', cost:0, price:85}]})]});
   mk({ref:'SOBREESTADÍA EXPORTACIÓN ZIM DRY 40', clase:'Tarifa de Sobreestadía de Exportación', indBl:'Exportación', crit:[crit({linea:L[1].nombre, cont:'40DV'})],
     lines:[ln('agx_ovs_ret',{calc:'PR', price:20, ranges:[{ini:1, fin:10, cost:0, price:20}, {ini:11, fin:'', cost:0, price:45}]})]});
+  /* HU-FAC-09 (I-168, I-077): tarifa especial de un consignatario con descuento fijo y exoneración */
+  mk({ref:'TARIFA ESPECIAL VISTO BUENO '+CC.datos.socios.consignatarios[0].razonSocial.toUpperCase(), clase:'Tarifa de Documentación', tipoTarifa:'', from:'2026-09-01', to:'2026-12-31',
+    crit:[crit({linea:L[1].nombre, indbl:'Importación', cons:CC.datos.socios.consignatarios[0].razonSocial})],
+    lines:[ln('agx_doc_do',{price:85, desc:true, descType:'F', descVal:20}), ln('agx_doc_gad',{price:25, desc:true, descType:'P', descVal:100})]});
+  /* HU-ATC-13 (I-101): tarifa Pendiente con vigencia cruzada con la Aprobada y un hueco entre tramos */
+  mk({ref:'SOBREESTADÍA IMPORTACIÓN ZIM DRY 20 CAMPAÑA', clase:'Tarifa de Sobreestadía de Importación', indBl:'Importación', status:'Pendiente', from:'2026-09-07', to:'2026-12-31', hist:W.tfHist('2026-11-20T09:00:00', null),
+    crit:[crit({linea:L[1].nombre, cont:'20DV'})],
+    lines:[ln('agx_ovs_cont',{calc:'PR', price:12, retro:true, ranges:[{ini:1, fin:5, cost:0, price:12}, {ini:8, fin:14, cost:0, price:30}, {ini:15, fin:'', cost:0, price:55}]})]});
 }
 
 /* ---------- Consulta Tarifa ---------- */
@@ -1228,6 +1237,42 @@ W.renderTfList = function(){
 
 /* ---------- Edición de Tarifa ---------- */
 const mark = () => { tf.dirty = true; };
+/* HU-ATC-13 (I-101): tarifas de sobreestadía Aprobadas con la misma clave comercial y vigencia cruzada */
+const ovsKey = c => ['suc','puerto','linea','cliente','cont'].map(k=>c[k]||CRIT[k][1]||'').join('|');
+function ovsCruces(d){
+  if(!propOn() || kind(d.clase)!=='ovs') return [];
+  return TARIFFS.filter(t=>t.id!==d.id && t.status==='Aprobada' && t.clase===d.clase && (!t.to || !d.from || t.to>=d.from) && (!d.to || !t.from || t.from<=d.to)
+    && t.crit.some(c=>d.crit.some(x=>ovsKey(x)===ovsKey(c))));
+}
+function ovsCruceHtml(d){
+  const c = d.status==='Pendiente' ? ovsCruces(d) : [];
+  if(!c.length) return '';
+  return `<div ${CC.propuesta('HU-ATC-13 · I-101','Vigencia cruzada con una tarifa Aprobada','fac-note')} id="tfCruce">Vigencia cruzada con ${c.map(t=>`<a href="#" onclick="selectTariff('${t.id}');return false">${esc(t.code)}</a> (Aprobada, ${W.fmtDate(t.from)} al ${W.fmtDate(t.to)})`).join(', ')}.
+    Se puede registrar como Pendiente; al aprobar se rechaza. Cierre la vigencia de la anterior o ajuste las fechas.</div>`;
+}
+/* HU-FAC-09 (I-168, I-077): tarifa especial de un cliente aplicada al BL según su vigencia */
+const esEspecial = d => kind(d.clase)==='doc' && d.lines.some(l=>l.desc) && d.crit.some(c=>c.cons && !/^Todos/.test(c.cons));
+W.agTfEval = v => { TS.fEval = v; W.renderTfEditor(); };
+function especialHtml(d){
+  if(!esEspecial(d) || d.status!=='Aprobada') return '';
+  const f = TS.fEval || W.todayISO(), vig = W.tfVigente(d, f), cur = d.currency, m2 = W.money2;
+  const cons = (d.crit.find(c=>c.cons && !/^Todos/.test(c.cons))||{}).cons;
+  const bl = (CC.datos.blImportacion.find(b=>/ZIM/i.test(b.linea||''))||CC.datos.blImportacion[0]||{}).numero || '-';
+  const fila = l => { const s = svcInfo(l.svc), base = +l.price||0, dsc = l.descType==='F' ? Math.min(base, +l.descVal||0) : base*(+l.descVal||0)/100;
+    const cond = l.descType==='P' && +l.descVal>=100 ? 'Exoneración' : l.descType==='F' ? `Descuento ${cur} ${m2(l.descVal)}` : `Descuento ${m2(l.descVal)}%`;
+    return {s, base, cobra: vig ? base-dsc : base, cond}; };
+  const R = d.lines.filter(l=>l.desc).map(fila), tot = R.reduce((a,r)=>a+r.cobra,0);
+  return `<div id="tfEspecial" ${CC.propuesta('HU-FAC-09 · I-168 · I-077','Tarifa especial aplicada al BL','fac-card')}>
+    <div class="fac-head"><div><h3>Aplicación al BL</h3><div class="fac-sub">Se evalúa con la misma fecha que hoy usa Connect para elegir la tarifa del BL.</div></div></div>
+    <div class="fac-g4 ag-fg">${fld('Consignatario', `<input disabled value="${esc(cons)}">`)}${fld('BL', `<input disabled value="${esc(bl)}">`)}
+      ${fld('Fecha de evaluación', `<input type="date" id="tfEvalF" value="${esc(f)}" onchange="agTfEval(this.value)">`)}
+      ${fld('Resultado', `<input disabled id="tfEvalRes" value="${vig ? 'Tarifa especial vigente: se aplica' : 'Tarifa especial vencida: se usa la estándar'}">`)}</div>
+    <div class="fac-scroll" style="margin-top:12px"><table class="fac-tbl"><thead><tr><th>Servicio</th><th class="num">Tarifa estándar</th><th>Condición especial</th><th class="num">Se cobra</th></tr></thead><tbody>
+      ${R.map(r=>`<tr><td><b>${esc(r.s.ser)}</b> ${esc(r.s.name)}</td><td class="num">${cur} ${m2(r.base)}</td><td>${vig ? esc(r.cond) : `<s>${esc(r.cond)}</s>`}</td><td class="num">${cur} ${m2(r.cobra)}</td></tr>`).join('')}
+      <tr><td colspan="3"><b>Total</b></td><td class="num"><b>${cur} ${m2(tot)}</b></td></tr></tbody></table></div>
+    <div class="fac-note" style="margin-top:10px">${vig ? `Vigente del ${W.fmtDate(d.from)} al ${W.fmtDate(d.to)}: el BL muestra el descuento y la exoneración, sin duplicar conceptos.`
+      : `Vencida a esa fecha (vigencia ${W.fmtDate(d.from)} al ${W.fmtDate(d.to)}): el BL se factura con la tarifa estándar vigente, sin bloquear la facturación.`} I-077 se prueba con este mismo recorrido (retest de UAT-012).</div></div>`;
+}
 W.agTfSet = (k, v, re) => {
   const d = tf.draft;
   if(k==='clase' && v!==d.clase){
@@ -1261,7 +1306,7 @@ W.renderTfEditor = function(){
     if(['Aprobada','Rechazada'].includes(d.status) && can) b += `<button type="button" ${P('Nueva versión de la tarifa','cc-btn ghost')} onclick="newTariff('${d.id}')">Nueva versión</button>`;
   }
   const chips = TF_EST.map(s=>`<span class="cc-chip ${s===d.status?'on st-'+s.toLowerCase():''}">${s}</span>`).join('');
-  const repl = d.status==='Pendiente' ? W.tfOverlaps(d) : [];
+  const repl = d.status==='Pendiente' && !(k==='ovs' && propOn()) ? W.tfOverlaps(d) : [];
   const replHtml = repl.length ? `<span ${P('Reemplazo automático de la tarifa anterior','tf-repl')} title="Al aprobarse, la anterior vence un día antes de esta Vigencia Desde">Reemplaza a ${repl.map(t=>`<a href="#" onclick="selectTariff('${t.id}');return false">${W.tfShort(t.code)}</a>`).join(', ')}</span>` : '';
   const last = ['Rechazada','Anulada'].includes(d.status) ? [...(d.hist||[])].reverse().find(h=>h.next===d.status) : null;
   const reason = last ? `<div ${P('Banda con el motivo','tf-reason '+d.status.toLowerCase())}><b>${d.status}</b> · ${esc(last.user)} · ${W.fmtDate(last.ts)}: ${esc(last.comment)}</div>` : '';
@@ -1279,7 +1324,7 @@ W.renderTfEditor = function(){
   if(k==='ovs') F.push(fld('Aplica Split', `<label class="fac-chk"><input type="checkbox" ${dis} ${d.split?'checked':''} onchange="agTfSet('split',this.checked)"> Aplica Split</label>`),
     fld('Unidad de quiebre'+(d.split?' *':''), `<input type="number" min="1" step="1" ${edit&&d.split?'':'disabled'} value="${esc(d.unidadQ??'')}" oninput="agTfSet('unidadQ',this.value)">`));
   const info = `<div class="fac-card"><div class="fac-head md-cardhead"><div class="tf-title"><h3 class="md-h">Información General</h3>${tf.isNew?'':`<button type="button" class="tf-hist" title="Historial de Cambios" onclick="openTfHistory()">${ICO.hist}</button>`}${replHtml}</div>
-    <div class="fac-acts md-actions"><div class="cc-chips">${chips}</div>${b}</div></div>${reason}<div class="fac-g4 ag-fg">${F.join('')}</div></div>`;
+    <div class="fac-acts md-actions"><div class="cc-chips">${chips}</div>${b}</div></div>${reason}${tf.isNew?'':ovsCruceHtml(d)}<div class="fac-g4 ag-fg">${F.join('')}</div></div>${tf.isNew||edit?'':especialHtml(d)}`;
   const cnt = n => ` <span class="cc-prop">(${n})</span>`;
   const tabs = `<button type="button" class="${tf.tab!=='svc'?'on':''}" onclick="agTfTab('crit')">Criterios Comerciales${cnt(d.crit.length)}</button><button type="button" class="${tf.tab==='svc'?'on':''}" onclick="agTfTab('svc')">Servicios${cnt(d.lines.length)}</button>`;
   const body = tf.tab==='svc' ? tabSvc(d, edit) : tabCrit(d, edit);
@@ -1356,8 +1401,16 @@ function rangosMal(R){
     if(r.fin!=='' && r.fin!=null && +r.fin<=+r.ini) return 'El final del rango debe ser mayor que el inicio del rango';
     if(r.cost==='' || +r.cost<0) return 'El precio de costo es obligatorio y debe ser > 0';
     if(!(+r.price>0)) return 'El precio de venta es obligatorio y debe ser > 0';
+    if(propOn()){ if(j>0 && +r.ini<=+R[j-1].fin) return `Los tramos se cruzan: el tramo ${j+1} empieza en el día ${r.ini} y el tramo ${j} termina en el día ${R[j-1].fin}. No se puede grabar.`; continue; }
     if((j>0 && +r.ini!==+R[j-1].fin+1) || (j===0 && +r.ini!==1)) return 'Los rangos no pueden solaparse o tener saltos'; }
   return '';
+}
+/* HU-ATC-13 (I-101): límites inclusivos; tramos seguidos válidos; cruce se rechaza; hueco se advierte y permite grabar */
+const propOn = () => CC.verPropuestas!==false;
+function rangosHueco(R){
+  const f = [];
+  R.forEach((r,j)=>{ const desde = j ? +R[j-1].fin+1 : 1; if(+r.ini>desde && (j===0 || +R[j-1].fin>0)) { const h = +r.ini-1; f.push(desde===h ? `${desde}` : h===desde+1 ? `${desde} y ${h}` : `${desde} a ${h}`); } });
+  return f.length ? `Faltan ${f.length===1 && !/ /.test(f[0]) ? 'el día' : 'los días'} ${f.join(', ')} entre tramos. Puede grabar; esos días no tendrán tarifa.` : '';
 }
 function ldPinta(){
   const d = tf.draft, l = LD.l, dis = LD.ro ? 'disabled' : '', k = kind(d.clase), E = LD.E || {}, pr = l.calc==='PR';
@@ -1387,7 +1440,9 @@ function ldPinta(){
     h += `<div class="fac-sec ag-sech">Rangos${LD.ro?'':`<span><button type="button" class="cc-btn ghost" onclick="agTfRng()">Agregar</button><button type="button" class="cc-btn pink" ${Object.values(LD.rsel).some(Boolean)?'':'disabled'} onclick="agTfRngDel()">Eliminar</button></span>`}</div>
       <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th></th><th>Inicio de Rango</th><th>Fin de Rango</th><th>Precio de Costo</th><th>Precio de Venta</th></tr></thead><tbody>
       ${l.ranges.map((r,j)=>`<tr><td><input type="checkbox" ${dis} ${LD.rsel[j]?'checked':''} onchange="agTfRngSel(${j},this.checked)"></td>${['ini','fin','cost','price'].map(x=>`<td><input ${dis} inputmode="decimal" style="width:110px" value="${esc(r[x]??'')}" onchange="agTfRngSet(${j},'${x}',this.value)"></td>`).join('')}</tr>`).join('') || '<tr><td colspan="5" class="fac-empty">Sin rangos.</td></tr>'}
-      </tbody></table></div>${bad && l.ranges.length?`<div class="f-err">${bad}</div>`:''}`;
+      </tbody></table></div>${bad && l.ranges.length?`<div class="f-err" id="ldRngErr">${bad}${propOn()&&/se cruzan/.test(bad)?' '+CC.marca('Modifica','HU-ATC-13','I-101'):''}</div>`:''}`;
+    const hueco = !bad && propOn() ? rangosHueco(l.ranges) : '';
+    if(hueco) h += `<div ${CC.propuesta('HU-ATC-13 · I-101','Aviso de hueco entre tramos','fac-note')} id="ldHueco" style="margin-top:8px">${hueco}</div>`;
   }
   h += `<div class="fac-btns"><button type="button" class="cc-btn pink" onclick="CC.cerrarModal()">${LD.ro?'Cerrar':'Cancelar'}</button>${LD.ro?'':'<button type="button" class="cc-btn" id="ldOk" onclick="agTfLineOk()">Guardar</button>'}</div>`;
   CC.modal(h, 'lg');
@@ -1409,12 +1464,14 @@ W.agTfLineOk = function(){
   if(l.desc){ if(!l.descType) E.descType = 'Obligatorio'; if(l.descVal==='' || !(+l.descVal>=0)) E.descVal = 'Obligatorio'; else if(l.descType==='P' && +l.descVal>100) E.descVal = 'El porcentaje de descuento debe estar entre 0.00 y 100.00'; }
   if(Object.keys(E).length){ LD.E = E; ldPinta(); CC.toast('Por favor revise los campos marcados','error'); return; }
   if(pr && !l.ranges.length){ CC.toast('Por favor ingrese un item en los rangos','error'); return; }
-  if(pr && rangosMal(l.ranges)){ CC.toast('Algunos rangos son inválidos, por favor revíselos','error'); return; }
+  if(pr && rangosMal(l.ranges)){ CC.toast(propOn() ? rangosMal(l.ranges) : 'Algunos rangos son inválidos, por favor revíselos','error'); return; }
+  const aviso = pr && propOn() ? rangosHueco(l.ranges) : '';
   ['factor','minQty','cost','price','vat','min','descVal'].forEach(x=>{ l[x] = W.parseNum(l[x]) || 0; });
   if(pr){ l.ranges = l.ranges.map(r=>({ini:+r.ini, fin:r.fin===''||r.fin==null?'':+r.fin, cost:+r.cost||0, price:+r.price})); l.price = l.ranges[0].price; }
   const d = tf.draft; if(LD.i>-1) d.lines[LD.i] = l; else d.lines.push(l);
   if(!d.ref) d.ref = svcInfo(l.svc).name;
   mark(); CC.cerrarModal(); W.renderTfEditor();
+  if(aviso) CC.toast(aviso, 'info');
 };
 
 /* ---------- Guardar, Cancelar, Eliminar, estados ---------- */
@@ -1461,6 +1518,8 @@ W.agTfAprobar = function(){
   if(t.status!=='Pendiente'){ CC.toast("Solo se pueden aprobar tarifas en estado 'Pendiente'.",'error'); return; }
   if(!t.crit.length){ CC.toast('Se necesita al menos un criterio comercial para poder aprobar una tarifa','error'); return; }
   if(!t.lines.length){ CC.toast('Se necesita al menos un servicio para poder aprobar una tarifa','error'); return; }
+  const cruce = ovsCruces(t);
+  if(cruce.length){ CC.toast(`No se puede aprobar: la tarifa ${cruce.map(o=>o.code).join(', ')} ya está Aprobada con la misma Sucursal, Puerto, Línea, Cliente y Tamaño/Tipo, y su vigencia se cruza. Cierre la vigencia de la anterior o ajuste las fechas.`,'error'); return; }
   confirmar('Confirmar Aprobación','¿Está seguro de aprobar esta tarifa?', ()=>W.approveTariff());
 };
 W.agTfMotivo = function(next){
