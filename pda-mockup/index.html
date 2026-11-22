@@ -5948,6 +5948,8 @@ function renderPtEditor(){
   const ed = document.getElementById('ptEditor'), d = pt.draft; if(!d){ ed.innerHTML = ''; return; }
   const can = canEditPartner(), edit = pt.edit && can, dis = edit ? '' : 'disabled', E = pt.errs, pend = d.estado==='Por homologar', rdOn = ptRdOn();
   if(pt.tab==='comercial') pt.tab = 'roles';
+  /* I-035: con la propuesta, Cliente y Proveedor salen del catálogo de roles (Tipo Socio) */
+  if(rdOn) d.roles.forEach(r=>{ const tp = (PT_ROL_CAT[r.rol]||[''])[0]; if(tp){ r.cliente = tp==='Cliente'||tp==='Ambos'; r.proveedor = tp==='Proveedor'||tp==='Ambos'; } });
   const sync = rdOn && can ? ptRdSyncBtn(d) : '';
   d.sftp = d.sftp || {on:false, host:'', puerto:22, usuario:'', metodo:'pass', clave:'', entrada:'', proceso:'', archivo:'', errores:'', patron:''};
   const fld = (label, html, k) => `<div class="filter-field"><label>${label}</label>${html}${fErr(E,k)}</div>`;
@@ -6004,7 +6006,7 @@ function renderPtEditor(){
     .map(([k,l,n])=>`<button class="${k===tab?'on':''}${n===null?' cc-prop':''}" data-tab="${k}" onclick="setPtTab('${k}')">${l}${n===null?'':cnt(n)}</button>`).join('');
   const cell = (list,i,k,v,ph,max,e=edit) => e ? `<input value="${esc(v||'')}" ${max?`maxlength="${max}"`:''} placeholder="${ph||''}" oninput="ptUpdRow('${list}',${i},'${k}',this.value)">` : esc(v||'-');
   const csel = (list,i,k,opts,v,e=edit) => e ? `<select onchange="ptUpdRow('${list}',${i},'${k}',this.value)">${opts.map(o=>`<option ${o===v?'selected':''}>${esc(o)}</option>`).join('')}</select>` : esc(v);
-  const cchk = (list,i,k,v) => `<input type="checkbox" ${edit?'':'disabled'} ${v?'checked':''} onchange="ptUpdRow('${list}',${i},'${k}',this.checked)">`;
+  const cchk = (list,i,k,v) => `<input type="checkbox" ${edit && !(rdOn && list==='roles')?'':'disabled'} ${rdOn && list==='roles'?'title="Según el catálogo de roles"':''} ${v?'checked':''} onchange="ptUpdRow('${list}',${i},'${k}',this.checked)">`;
   const pick = (list,i,e=edit) => !edit ? '' : e ? `<td style="width:36px"><input type="checkbox" onchange="ptSelRow('${list}',${i},this.checked)"></td>` : '<td style="width:36px"></td>';
   /* HU-DM-01 · I-035: contactos y cuentas traídos de SAP quedan en solo lectura */
   const sapRow = x => rdOn && !!(x.sap || x.sapKey), rowE = x => edit && !sapRow(x), sapB = x => sapRow(x) ? PT_SAP_B : '';
@@ -6083,12 +6085,12 @@ function ptRdMsgs(E){ const m = Object.keys(E).filter(k=>k.startsWith('rd_')).ma
 function ptRdUpd(side, k, v){ ptRd(pt.draft)[side][k] = v; pt.draft.rd[side].origen = 'manual'; pt.dirty = true; clearErr(pt.errs, `rd_${side}_${k}`, '#ptEditor'); }
 /* La comisión de tarifa solo aplica a Línea naviera: la columna aparece si el socio tiene ese rol */
 const ptRdLinea = d => d.roles.some(r=>r.rol==='Línea naviera');
-function ptRdRolMk(d){ return `<div class="cc-prop" style="margin:0 0 8px"><span class="chg-tag fac-pentag" data-pen="PEN-I035-01" title="Ver consulta y propuesta" style="margin-left:0">Columnas Tipo Socio, Requiere Código Aduanas${ptRdLinea(d)?' y comisión':''} · ${fmTxt('',PT_RD_HU,PT_RD_TK,'PEN-I035-01')}</span></div>`; }
-function ptRdRolTh(d){ return `<th class="cc-prop">Tipo Socio</th><th class="cc-prop">Requiere Código Aduanas</th>${d && ptRdLinea(d)?'<th class="cc-prop">Aplica comisión de tarifa</th>':''}`; }
+function ptRdRolMk(d){ return `<div class="cc-prop" style="margin:0 0 8px"><span class="chg-tag fac-pentag" data-pen="PEN-I035-01" title="Ver consulta y propuesta" style="margin-left:0">Cliente y Proveedor según el catálogo de roles${ptRdLinea(d)?' y comisión de tarifa':''} · ${fmTxt('',PT_RD_HU,PT_RD_TK,'PEN-I035-01')}</span></div>`; }
+function ptRdRolTh(d){ return `${d && ptRdLinea(d)?'<th class="cc-prop">Aplica comisión de tarifa</th>':''}`; }
 function ptRdRolTd(r, i, edit, d){
   const c = PT_ROL_CAT[r.rol] || ['-', false];
   const com = r.rol==='Línea naviera' ? `<input type="checkbox" data-rdcom style="width:auto;margin:0" ${edit?'':'disabled'} ${r.comision?'checked':''} onchange="ptUpdRow('roles',${i},'comision',this.checked)">` : '-';
-  return `<td class="cc-prop" data-rdtipo>${c[0]}</td><td class="cc-prop">${c[1]?'Sí':'No'}</td>${d && ptRdLinea(d)?`<td class="cc-prop">${com}</td>`:''}`;
+  return `${d && ptRdLinea(d)?`<td class="cc-prop">${com}</td>`:''}`;
 }
 /* Lista: Código ERP por rol y estado de sincronización con SAP (sin modificar el socio) */
 function ptRdListTd(p){
