@@ -2194,3 +2194,8 @@ body.chg-on #ptEditor .md-actions [data-rdsync][data-prop]::after{top:-19px;righ
 #fdaRes .fac-tbl td{white-space:normal}
 .fda-ad td{white-space:normal}.fda-ad .fda-sub{white-space:normal}
 .fda-ad td:first-child{min-width:110px}
+
+/* ===== Módulo Atención al cliente: tickets Reportado (atc39) ===== */
+.ac-rep2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;margin-bottom:12px}
+.ac-rep2>.fac-note{margin:0}
+#memoInstr .fac-tbl td,#peDgConc .fac-tbl td{white-space:normal}

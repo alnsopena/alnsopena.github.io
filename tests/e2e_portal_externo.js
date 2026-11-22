@@ -83,6 +83,17 @@ const pdf = name => ({ name, mimeType: 'application/pdf', buffer: Buffer.from('%
 
   // 2b. HU-DOC-27: prototipos I-114 (avisos, por defecto, contenedores, aprobación automática), I-099 (reporte) e I-085 (carga rodante)
   check((await txt('#peDiAvisos')).includes('Registro'), 'I-114: aviso de registro guardado en el direccionamiento');
+  // I-025 (HU-DOC-04): BL que aún no existe, sin error y sin duplicar la solicitud provisional
+  check((await txt('#peDiProv')).includes('Solicitud provisional') && (await txt('#peDiProv')).includes('HU-DOC-04 · I-025'), 'I-025: la solicitud queda Provisional y se vinculará al llegar el BL (HU-DOC-04 · I-025)');
+  await menu('Importaciones'); await p.click('#peDiNuevo'); await W(250);
+  await p.fill('#peDiFBl', 'ANDESNEW00001'); await p.dispatchEvent('#peDiFBl', 'change'); await W();
+  check((await txt('#peDiProv')).includes('aún no existe en Connect'), 'I-025: avisa que el BL aún no existe y permite registrar la solicitud');
+  await p.fill('#peDiFVj', '115E - PACIFIC HORIZON - Callao'); await p.dispatchEvent('#peDiFVj', 'change'); await W();
+  await p.selectOption('#peDiFDesp', 'Diferido'); await W();
+  await p.fill('#peDiFReg', 'ALMACÉN EXTRAPORTUARIO DEMO S.A.C.'); await p.dispatchEvent('#peDiFReg', 'change'); await W();
+  await p.click('#peDiCNuevo'); await W(); await p.fill('.pe-cnt', 'TGHU1234567'); await p.dispatchEvent('.pe-cnt', 'change');
+  await p.click('#peDiGuardar'); await W(300);
+  check((await toast()).includes('Ya existe una solicitud provisional') && (await p.evaluate(() => PE.dir.filter(d => d.bl === 'ANDESNEW00001').length)) === 1, 'I-025: no duplica la solicitud provisional del mismo BL');
   await menu('Importaciones'); await p.click('#peDiF button:has-text("Buscar")'); await W();
   check((await txt('#peDiRes')).includes('Por defecto') && (await txt('#peDiRep')).includes('Reporte de direccionamiento'), 'I-114 e I-099: BL de Importación por defecto y bloque de reporte');
   const [xls] = await Promise.all([p.waitForEvent('download', { timeout: 4000 }).catch(() => null), p.click('#peDiRepX')]);
@@ -143,6 +154,7 @@ const pdf = name => ({ name, mimeType: 'application/pdf', buffer: Buffer.from('%
   await p.fill('.pe-osfecha >> nth=0', enDias(3)); await p.dispatchEvent('.pe-osfecha >> nth=0', 'change'); await W();
   await p.click('#peOsRes .pe-ic[title="Ver"] >> nth=0'); await W();
   check((await txt('#facModalBox')).includes('Detalle del cálculo'), 'detalle del cálculo por contenedor');
+  check(await p.isVisible('#peOsDesc.cc-prop') && (await txt('#peOsDesc')).includes('HU-ATC-05 · I-084'), 'I-084: fecha de descarga y cálculo de sobrestadía marcados (HU-ATC-05 · I-084)');
   await p.click('#facModalBox button:has-text("Cerrar")'); await W();
 
   // 6. Pago: generar liquidación y pagar con ASBANC
@@ -159,8 +171,15 @@ const pdf = name => ({ name, mimeType: 'application/pdf', buffer: Buffer.from('%
   check(!(await txt('#facModalBox')).toLowerCase().includes('tarjeta'), 'Pagar sin tarjeta ni pasarela');
   await p.click('#pePaySig'); await W(800);
   check(/^CS\d{9}$/.test(await txt('#peTicket')), 'ticket ASBANC generado');
+  check(await p.isVisible('#pePayAsbNota.cc-prop') && (await txt('#pePayAsbNota')).includes('Pago confirmado'), 'I-026: explica la confirmación de ASBANC a Connect');
   await p.click('#pePayFin'); await W(800);
   check((await toast()).includes('Pagos registrados exitosamente'), 'pago finalizado');
+  await p.selectOption('#pePgInfo', 'PAYFUL'); await W(); await p.click('#pePgBuscar'); await W();
+  check((await txt('#pePgRes')).includes('HU-ATC-09 · I-026') && await p.locator('[data-pg-asbanc-ok]').count() >= 1, 'I-026: pago ASBANC esperando confirmación, marcado HU-ATC-09 · I-026');
+  const liqAsb = await p.locator('[data-pg-asbanc-ok]').first().getAttribute('data-pg-asbanc-ok');
+  await p.locator('[data-pg-asbanc-ok]').first().click(); await W(250);
+  const lq = await p.evaluate(n => PE.liq.find(l => l.n === n), liqAsb);
+  check((await toast()).includes('ASBANC confirmó') && lq.estado === 'Pago confirmado' && lq.factura && (await txt(`[data-pg-asbanc="${liqAsb}"]`)).includes('Confirmado por ASBANC'), 'I-026: la confirmación deja la liquidación en Pago confirmado y facturada');
 
   // 7. Matriz con otro cliente (exportador): HU-FAC-07 y editar BL
   await p.click('#peSalir'); await W(250);
@@ -203,10 +222,16 @@ const pdf = name => ({ name, mimeType: 'application/pdf', buffer: Buffer.from('%
   await p.click('#peDgRes button.fac-link:has-text("ZIMUBOX0000011")'); await W(250);
   await p.click('#peDgAprobar'); await W(); await conf();
   check((await txt('#peDgForm')).includes('Aprobado'), 'desglose aprobado');
+  check(await p.isVisible('#peDgConc.cc-prop') && (await txt('#peDgConc')).includes('HU-ATC-14 · I-108') && (await p.locator('#peDgConc [data-dg-conc]').count()) === 4 && (await txt('#peDgConcTot')) !== '', 'I-108: el desglose aprobado asigna cada concepto una vez y recalcula el total');
   await menu('Liberaciones y trámites', 'Solicitud de Liberación de carga');
   await p.click('#peRlF button:has-text("Buscar")'); await W();
   await p.click('#peRlRes .pe-ic[title="Memo de Devolución"] >> nth=0'); await W();
   check((await txt('#peRlRes')).includes('MD-000101') && (await txt('#peRlRes')).includes('Pagar sobreestadía'), 'memo visible con liberación aprobada (APROVED corregido)');
+  check(await p.isVisible('#peMemoNota.cc-prop') && (await txt('#peMemoNota')).includes('HU-ATC-04 · I-089'), 'I-089: MEMO publicado tras la factura y el pago (HU-ATC-04 · I-089)');
+  await p.click('[data-pe-memo="MD-000101"]'); await W();
+  const mv = (await p.locator('#peMemoPdf input').evaluateAll(x => x.map(i => i.value))).join('|');
+  check(await p.isVisible('#peMemoPdf.cc-prop') && ['MD-000101', 'COSMOS AGENCIA MARÍTIMA', 'ZIMUBOX0000011', 'Liberado'].every(t => mv.includes(t)), 'I-089: el cliente abre el PDF del MEMO con número, agencia, BL, depósito y vigencia');
+  await p.click('#facModalBox button:has-text("Cerrar")'); await W();
   await menu('Liquidaciones y Pagos', 'Pago');
   await p.selectOption('#pePgOper', 'Importación'); await W();
   check((await p.$$eval('#peDlPgCli option', o => o.map(x => x.value))).includes('ANDES MINING EXPORT S.A.'), 'HU-DM-01: Importación ofrece Consignatarios');

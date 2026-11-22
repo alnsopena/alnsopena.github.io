@@ -41,7 +41,14 @@ const ruido = /^(start|onHasParentDirectory|addRow) is not defined/;
   await p.selectOption('#mdFEst', ''); await p.click('#mdF button:has-text("Buscar")'); await W();
   await p.click('[data-md-ver="ME-000105"]'); await W();
   check((await dlg().textContent()).includes('Falta la firma del representante legal') && (await dlg().textContent()).includes('Historial'), 'I-046: el detalle guarda la decisión en el historial');
-  await enDlg('[data-md-descargar]'); check((await toast()).includes('mandato-pacific-vigencia.pdf'), 'I-046: descarga del mandato');
+  await enDlg('[data-md-descargar]');
+  check(await dlg().locator('#mdPdfProp.cc-prop').isVisible() && (await dlg().textContent()).includes('HU-ATC-01 · I-083'), 'I-083: la descarga abre el mandato (marca HU-ATC-01 · I-083)');
+  await enDlg('[data-ac="md-pdf-descargar"]'); check((await toast()).includes('mandato-pacific-vigencia.pdf'), 'I-046/I-083: descarga del mandato sin error interno');
+  await enDlg('[data-ac="md-pdf-cerrar"]');
+  await enDlg('[data-md-correo="1"]');
+  const mail = await dlg().textContent();
+  check(mail.includes('Falta la firma del representante legal') && mail.includes('Mandato electrónico ME-000105: Observado') && mail.includes('HU-ATC-01 · I-034') && mail.includes('usuario que decidió'), 'I-034: aviso al cliente con el comentario, la decisión y copia al usuario interno');
+  await enDlg('[data-ac="md-correo-cerrar"]');
   await enDlg('[data-ac="md-cerrar"]');
   await p.click('[data-md-rechazar="ME-000105"]'); await W(); await dlg().locator('textarea').fill('Documento ilegible'); await enDlg('[data-ac="motivo-ok"]');
   check((await toast()).includes('ME-000105: Rechazado'), 'I-046: rechazar un observado');
@@ -112,6 +119,10 @@ const ruido = /^(start|onHasParentDirectory|addRow) is not defined/;
   const g0 = await txt(`#daNAdjCont details[data-da-grupo="${conts[0]}"]`), g1 = await txt(`#daNAdjCont details[data-da-grupo="${conts[1]}"]`);
   check(g0.includes('Completo') && g0.includes('3 archivo(s)') && g1.includes('0 archivo(s)'), 'I-047: lo cargado en un contenedor no se asocia al otro');
   await p.fill('#daNCos', '250'); await p.fill('#daNPre', 'PRE-TEST-01');
+  check((await txt('#daNuevoF')).includes('Depósito notificante *') && (await txt('#daNuevoF')).includes('HU-ATC-06 · I-094'), 'I-094: Depósito notificante obligatorio y marcado');
+  await p.click('#daNGuardar'); await W();
+  check((await toast()).includes('depósito notificante'), 'I-094: no graba sin depósito notificante en el Portal Interno');
+  await p.selectOption('#daNDep', { index: 1 }); await W();
   await p.click('#daNGuardar'); await W();
   check((await toast()).includes(conts[1]) && (await p.isVisible(`#daNAdjCont details[data-da-grupo="${conts[1]}"][open]`)), 'I-047: exige los adjuntos de cada contenedor y abre el que falta');
   await p.click(`#daNAdjCont details[data-da-grupo="${conts[0]}"] summary`); await W();
@@ -144,6 +155,81 @@ const ruido = /^(start|onHasParentDirectory|addRow) is not defined/;
   await prop(false);
   check(!(await p.isVisible('#isoCard')) && await p.isVisible('#caF'), 'I-051: Ver propuestas apagado vuelve a Buscar Catálogo');
   check(!(await p.isVisible('#caIso')), 'I-051: el botón se oculta con Ver propuestas apagado');
+  await prop(true);
+
+  // ===== Tickets Reportado de Atención al cliente (portal interno), atc39 =====
+  // I-075 · Reporte de liberaciones en los cuatro estados
+  await ir('Liberación de la Carga');
+  check(await p.isVisible('#libRepNota.cc-prop') && (await txt('#libRepNota')).includes('HU-DOC-10 · I-075'), 'I-075: reporte de liberaciones marcado HU-DOC-10 · I-075');
+  let repOk = true;
+  for (const est of ['Pendiente', 'En proceso', 'Aprobado', 'Rechazado']) {
+    await p.selectOption('#libFEst', est); await p.click('#libF button:has-text("Buscar")'); await W();
+    await p.click('#libRes button:has-text("Exportar")'); await W();
+    const r = await p.evaluate(() => AC.lib().ultRep);
+    repOk = repOk && !!r && r.estado === est && r.filas > 0 && r.cols.slice(0, 7).join('|') === 'BL|Cliente|Contenedor|Fecha|Usuario|Pago|Estado';
+  }
+  check(repOk, 'I-075: descarga el reporte en Pendiente, En proceso, Aprobado y Rechazado con BL, cliente, contenedor, fecha, usuario, pago y estado');
+  // I-110 · Reporte de memos emitidos
+  await p.click('#libMemoRepBtn'); await W(); await enDlg('[data-ac="memo-rep-generar"]');
+  const mr = await dlg().textContent();
+  check(/Resultados \([1-9]\d*\)/.test(mr) && ['Número de memo', 'Depósito', 'Fecha de emisión', 'Vigencia', 'Estado'].every(t => mr.includes(t)), 'I-110: genera el reporte de memos emitidos del periodo');
+  await enDlg('[data-ac="memo-rep-exportar"]');
+  check((await p.evaluate(() => (AC.lib().ultMemoRep || {}).filas)) > 0, 'I-110: exporta el reporte con sus filas');
+  await enDlg('[data-ac="memo-rep-cerrar"]');
+  // I-105 e I-087 · MEMO emitido con estado, vigencia e instrucción aplicada
+  await p.selectOption('#libFEst', 'Aprobado'); await p.click('#libF button:has-text("Buscar")'); await W();
+  await p.locator('#libRes [data-lib]').first().click(); await W(250);
+  await p.click('#libDet [data-tab="dep"]'); await W();
+  await p.locator('[data-memo]').first().click(); await W();
+  const memo = await dlg().textContent();
+  const memoVals = (await dlg().locator('#memoEmitido input').evaluateAll(x => x.map(i => i.value))).join('|');
+  check(await dlg().locator('#memoEmitido.cc-prop').isVisible() && memoVals.includes('Emitido') && /Hasta el \d{2}\/\d{2}\/\d{4}/.test(memoVals) && memoVals.includes('Disponible en el Portal Externo') && memo.includes('HU-ATC-04 · I-105'), 'I-105: el MEMO queda Emitido, con vigencia y publicado (HU-ATC-04 · I-105)');
+  check(await dlg().locator('#memoInstr.cc-prop').isVisible() && memo.includes('Instrucción que fijó el depósito') && memo.includes('HU-ATC-04 · I-087'), 'I-087: el MEMO muestra la instrucción aplicada a cada contenedor (HU-ATC-04 · I-087)');
+  await enDlg('[data-ac="cerrar-memo"]');
+  await p.evaluate(() => libVolver()); await W(250);
+  // I-092 · Sustento obligatorio en Direccionamiento Permanente
+  await ir('Direccionamiento Permanente');
+  await p.click('#dpF button:has-text("Buscar")'); await W(); await p.click('#dpNuevo'); await W(250);
+  check(await p.isVisible('#dpSustento.cc-prop') && (await txt('#dpSustento')).includes('HU-DOC-30 · I-092'), 'I-092: aviso de sustento obligatorio marcado');
+  await p.selectOption('#dpCli', { index: 1 }); await p.click('#dpAgregar'); await W();
+  await p.evaluate(() => { dpSet(0, 'linea', 'ZIM'); dpSet(0, 'carga', 'Carga suelta'); dpSet(0, 'dep', '3014'); dpSet(0, 'desde', '2026-12-01'); dpSet(0, 'hasta', '2027-06-30', 1); }); await W();
+  await p.click('#dpGuardar'); await W();
+  check((await toast()).includes('documento de sustento') && await p.isVisible('#dpSubir'), 'I-092: sin sustento no se guarda y abre Adjuntos');
+  await p.click('#dpSubir'); await W(); await enDlg('[data-ac="seleccionar"]'); await enDlg('[data-ac="guardar-adj"]');
+  await p.click('#dpGuardar'); await W();
+  check((await toast()).includes('creado exitosamente'), 'I-092: con sustento se guarda');
+  // I-107 · Días libres aplicados al grabar, con usuario y fecha
+  await ir('Instrucciones');
+  await p.fill('#insFBl', bl0); await p.click('#insF button:has-text("Buscar")'); await W(200);
+  await p.click(`[data-ins="${bl0}"]`); await W(); await enDlg('#insEditar');
+  check(await dlg().locator('#insAplica.cc-prop').isVisible(), 'I-107: aviso de aplicación inmediata marcado');
+  await dlg().locator('.ac-tbl-in tbody tr').first().locator('input[type=number]').fill('33'); await dlg().locator('.ac-tbl-in tbody tr').first().locator('input[type=number]').dispatchEvent('change');
+  await enDlg('[data-tab="adj"]'); await enDlg('#insSubir'); await enDlg('[data-ac="seleccionar"]'); await enDlg('[data-ac="guardar-adj"]');
+  await enDlg('#insGuardar');
+  check((await toast()).includes('Días libres aplicados al BL'), 'I-107: los días libres se aplican al grabar, sin aprobación');
+  await p.click(`[data-ins="${bl0}"]`); await W();
+  check(await dlg().locator('[data-ins-aplicado]').count() >= 1 && (await dlg().textContent()).includes('HU-ATC-03 · I-107'), 'I-107: queda el usuario con fecha y hora');
+  await enDlg('button:has-text("Cerrar")');
+  // I-097 · Vigencias superpuestas de días libres
+  await ir('Sobreestadía');
+  await p.selectOption('#soFAmb', 'Cliente'); await W(); await p.selectOption('#soFCli', 'ANDES MINING EXPORT S.A.'); await p.selectOption('#soFOper', 'Importación');
+  await p.click('#soF button:has-text("Buscar")'); await W(); await p.click('#soEditar'); await W();
+  check(await p.isVisible('#soCruce.cc-prop') && (await txt('#soCruce')).includes('HU-ATC-11 · I-097'), 'I-097: regla de vigencias marcada');
+  await p.click('#soAgregar'); await W();
+  await p.evaluate(() => { const v = {linea:'ZIM', tam:'42G1', dias:'18', unidad:'Días calendario', fini:'Fecha de descarga', desde:'2026-12-31', hasta:'2027-02-28'}; Object.entries(v).forEach(([k, x]) => soSet(2, k, x)); });
+  await p.click('#soGuardar'); await W();
+  check((await toast()).includes('duplicados') && (await txt('#soCruceMsg')).includes('se cruza') && (await txt('#soCruceMsg')).includes('31/12/2026'), 'I-097: rechaza la vigencia que se cruza (extremos inclusivos) e identifica la regla');
+  await p.click('#soRes .pink:has-text("Cancelar")'); await W();
+  check(await p.locator('#soRes .ac-tbl-in tbody tr').count() === 2 && !(await txt('#soRes')).includes('18'), 'I-097: la regla existente no cambia y no se crea otra');
+  await p.click('#soEditar'); await W(); await p.click('#soAgregar'); await W();
+  await p.evaluate(() => { const v = {linea:'ZIM', tam:'42G1', dias:'18', unidad:'Días calendario', fini:'Fecha de descarga', desde:'2027-01-01', hasta:'2027-03-31'}; Object.entries(v).forEach(([k, x]) => soSet(2, k, x)); });
+  await p.click('#soRes [data-tab="adj"]'); await W(); await p.click('#soSubir'); await W(); await enDlg('[data-ac="seleccionar"]'); await enDlg('[data-ac="guardar-adj"]');
+  await p.click('#soGuardar'); await W();
+  check((await toast()).includes('modificado exitosamente'), 'I-097: una vigencia sin cruce se registra');
+  // Interruptor: las propuestas de los tickets se ocultan con Ver propuestas apagado
+  await ir('Liberación de la Carga'); await prop(false);
+  check(!(await p.isVisible('#libRepNota')) && !(await p.isVisible('#libMemoRepNota')), 'I-075/I-110: se ocultan con Ver propuestas apagado');
+  await p.click('#libRes button:has-text("Exportar")'); await W();
   await prop(true);
 
   check(await p.evaluate(() => !Object.keys(localStorage).length), 'sin localStorage');

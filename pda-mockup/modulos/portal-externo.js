@@ -515,6 +515,15 @@ function diHtml(){
     + (u.buscado ? CC.tablaResultados({id:'peDiRes', columnas:cols, filas:diFilas(), pagina:u.pagina, tam:u.tam, fnPagina:'peDiPagina', vacio:'No se encontraron resultados con los criterios seleccionados'}) : '')
     + dl('peDlNave', dat().naves.map(n=>n.nombre)) + dl('peDlDiVj', vjsDe(f.nave));
 }
+/* Propuesta I-025 (HU-DOC-04): si el BL aún no existe, la solicitud se guarda como Provisional sin error y se vincula cuando llega el BL.
+   Por definir PEN-I025-01 (provisional o BL, datos mínimos, permisos) y PEN-I025-02 (vinculación, caducidad, duplicados). */
+const diSinBL = m => !!m.bl && !diBLs().some(b=>b.numero===m.bl);
+function diProvisional(m, cr){
+  if(!P() || !(cr ? diSinBL(m) : m.estado==='PROVISIONAL')) return '';
+  return `<div ${CC.propuesta('HU-DOC-04 · I-025','Direccionamiento provisional','fac-note')} id="peDiProv" style="margin-top:14px"><b>${cr ? `El BL ${e(m.bl)} aún no existe en Connect` : 'Solicitud provisional'}</b> ${CC.marca('Corrige','HU-DOC-04','I-025','PEN-I025-01')}<br>
+    ${cr ? 'Puedes registrarla igual: se guarda como Provisional, sin error, con N° BL, Viaje/Nave, Tipo de Despacho, Entidad Receptora y contenedores.' : 'Se registró antes de que el BL exista en Connect.'}
+    Cuando el BL llegue, la solicitud se vincula sola y no se duplica ${CC.marca('Propuesta TI por validar','HU-DOC-04','I-025','PEN-I025-02')}.</div>`;
+}
 function diForm(){
   const u = diUI(), m = u.form, md = u.modo, cr = md==='crear', ed = md!=='ver', v = viaje(m.nave, m.viaje);
   const sadaCli = m.desp==='SADA Almacén del cliente';
@@ -543,7 +552,7 @@ function diForm(){
     <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th></th><th>Número de Contenedor</th></tr></thead><tbody>${m.conts.map((c,i)=>`<tr><td><input type="checkbox" ${dis(cr)} onchange="PE.ui.di.selC[${i}]=this.checked"></td><td><input class="pe-cnt" maxlength="11" ${dis(cr)} placeholder="Ingrese número de contenedor" value="${e(c)}" onchange="peDiContN(${i},this.value)" style="width:200px"></td></tr>`).join('') || '<tr><td colspan="2" class="fac-empty">Sin contenedores</td></tr>'}</tbody></table></div>`;
   return `<div class="fac-card" id="peDiForm">${md!=='crear' ? chipsTodos(DIR_ST, m.estado, DTONO) : ''}
     <div class="fac-head"><h3>Datos Generales</h3><div class="fac-acts">${m.id ? `<button type="button" class="cc-btn ghost" onclick="peDiHist('${m.id}')">Historial de versiones</button>` : ''}${puedeEditar ? '<button type="button" class="cc-btn" id="peDiEditar" onclick="peDiEditar()">Editar</button>' : ''}</div></div>
-    <div class="fac-g3">${campos.join('')}</div>
+    <div class="fac-g3">${campos.join('')}</div>${diProvisional(m, cr)}
     <div class="fac-sec">Entidad Receptora Registrada (Cliente)</div><div class="fac-g3">${reg.join('')}</div>
     <div class="fac-sec">Entidad Receptora Aplicada</div><div class="fac-g3">${apl.join('')}</div>${contsT}${avisos}
     ${ed ? '<div class="fac-btns"><button type="button" class="cc-btn ghost" onclick="peDiVolver()">Cancelar</button><button type="button" class="cc-btn" id="peDiGuardar" onclick="peDiGuardar()">Guardar</button></div>' : ''}</div>
@@ -591,6 +600,7 @@ W.peDiGuardar = () => {
     const rod = P() && m.carga==='Carga rodante';
     m.conts = m.conts.filter(Boolean); if(!m.conts.length && !rod) return CC.toast('Se requiere agregar al menos un equipo.', 'error');
     const existe = diBLs().some(b=>b.numero===m.bl);
+    if(!existe && P() && PE.dir.some(d=>d.bl===m.bl && d.estado==='PROVISIONAL')) return CC.toast(`Ya existe una solicitud provisional para el BL ${m.bl}. Edítala en lugar de crear otra.`, 'error');
     const auto = existe && P() && DIR_AUTO.includes(m.desp);
     const d = {...JSON.parse(JSON.stringify(m)), id:'DR-' + String(200 + PE.dir.length).padStart(6,'0'), estado:auto ? 'APPROVED' : existe ? 'PENDING' : 'PROVISIONAL', fReg:ahora(), hist:[{fecha:ahora(), user:PE.ses.correo, tipo:'Registro', cambios:[]}]};
     if(P()){ d.tipo = 'Web'; if(auto) d.apl = {...d.reg}; d.avisos = [{fecha:ahora(), evento:'Registro', para:diPara(d)}]; if(auto) d.avisos.push({fecha:ahora(), evento:'Aprobado automáticamente', para:diPara(d)}); }
@@ -847,6 +857,20 @@ function dgHtml(){
   return filt + `<div class="fac-card" id="peDgRes"><div class="fac-head"><h3>Resultados (${filas.length})</h3></div><div class="fac-scroll"><table class="fac-tbl"><thead><tr><th></th><th>N° BL Master</th><th>Viaje</th><th>Nave</th><th>Consignatario/Embarcador</th><th>Puerto Operativo</th><th>Linea</th><th>Fecha Registro</th><th>Fecha Aprobación/Rechazo</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
     ${rows || '<tr><td colspan="11" class="fac-empty">No se encontraron resultados con los criterios seleccionados</td></tr>'}</tbody></table></div><div class="fac-btns">${CC.paginador(filas.length, pg.pagina, u.tam, 'peDgPagina')}</div></div>`;
 }
+/* Propuesta I-108 (HU-ATC-14): al aprobar el desglose, sus conceptos de cobranza quedan asignados al BL una sola vez y se recalculan subtotal, IGV y total.
+   PEN-I108-02: en qué acción se asignan y qué pasa al modificar o reaprobar. PEN-I108-03: BL eliminado. Importes ficticios. */
+const DG_CONC = [['Visto bueno y documentación', 120], ['Emisión de BL hijo', 35]];
+function dgConceptos(d){
+  if(!P() || !d || d.estado!=='APROBADO') return '';
+  const filas = d.hijos.flatMap(h=>DG_CONC.map(([c, base])=>({bl:h.bl, c, base, igv:+(base*0.18).toFixed(2), tot:+(base*1.18).toFixed(2)})));
+  const t = k => filas.reduce((a,x)=>a + x[k], 0);
+  return `<div ${CC.propuesta('HU-ATC-14 · I-108','Conceptos de cobranza del desglose')} id="peDgConc" style="margin-top:16px;padding:10px;border-radius:8px">
+    <div class="fac-head" style="margin-bottom:6px"><h3 style="font-size:15px">Conceptos de cobranza asignados al BL ${CC.marca('Corrige','HU-ATC-14','I-108','PEN-I108-02')}</h3></div>
+    <div class="pe-help" style="margin-bottom:8px">Con el desglose aprobado, cada concepto se asigna una sola vez a cada BL hijo y se recalculan subtotal, IGV y total. Así el BL sigue a pago y transmisión.</div>
+    <div class="fac-scroll"><table class="fac-tbl"><thead><tr><th>BL Hijo</th><th>Concepto</th><th>Moneda</th><th class="num">Subtotal</th><th class="num">IGV</th><th class="num">Total</th></tr></thead><tbody>
+    ${filas.map(x=>`<tr data-dg-conc="${e(x.bl)}"><td>${e(x.bl)}</td><td>${e(x.c)}</td><td>USD</td><td class="num">${CC.dinero(x.base)}</td><td class="num">${CC.dinero(x.igv)}</td><td class="num">${CC.dinero(x.tot)}</td></tr>`).join('')}
+    <tr><td colspan="3"><b>Total del desglose</b></td><td class="num"><b>${CC.dinero(t('base'))}</b></td><td class="num"><b>${CC.dinero(t('igv'))}</b></td><td class="num"><b id="peDgConcTot">${CC.dinero(t('tot'))}</b></td></tr></tbody></table></div></div>`;
+}
 function dgForm(){
   const u = dgUI(), m = u.form, md = u.modo, ed = md!=='ver', cr = md==='crear', b = bl(m.bl), cur = u.id && PE.des.find(d=>d.id===u.id);
   const imp = b && !esExp(b), partes = b ? (esExp(b) ? EMBS() : CONS()) : [];
@@ -867,7 +891,7 @@ function dgForm(){
   return `<div class="fac-card" id="peDgForm"><div class="fac-head"><div>${cur && !cr ? chipsTodos(DGST, cur.estado, DGTONO) : ''}</div><div class="fac-acts">${acts}</div></div>
     <div class="fac-g3">${F('Numero de BL', `<input id="peDgFBl" list="peDlDgBl" ${dis(cr)} placeholder="Ingrese el BL" value="${e(m.bl)}" onchange="peDgF(this.value)">${ayuda}`)}${b ? CC.campoLectura('Indicador', b.indicador) + CC.campoLectura('Nave / Viaje', `${b.nave} / ${b.viaje}`) : ''}</div>
     <div class="fac-tabs" style="margin-top:18px"><button type="button" class="${u.tab==='hijos' ? 'on' : ''}" onclick="peDgTab('hijos')">Registro de Desglose</button><button type="button" id="peDgTabAdj" class="${u.tab==='adj' ? 'on' : ''}" onclick="peDgTab('adj')">Adjuntos</button></div>
-    ${u.tab==='adj' ? adj : hijos}${imp && ed ? '<div class="pe-help" style="margin-top:8px">En importación se exige la Carta de Desglose y el MBL Endosado.</div>' : ''}
+    ${u.tab==='adj' ? adj : hijos}${md==='ver' ? dgConceptos(cur) : ''}${imp && ed ? '<div class="pe-help" style="margin-top:8px">En importación se exige la Carta de Desglose y el MBL Endosado.</div>' : ''}
     ${ed ? '<div class="fac-btns"><button type="button" class="cc-btn ghost" onclick="peDgVolver()">Cancelar</button><button type="button" class="cc-btn" id="peDgGuardar" onclick="peDgGuardar()">Guardar</button></div>' : ''}</div>
     ${dl('peDlDgBl', dgElegibles().map(x=>x.numero))}${dl('peDlDgP', partes)}`;
 }
@@ -933,10 +957,21 @@ function rlFilas(){
     && (!f.hijo || x.hijo.includes(f.hijo.toUpperCase())) && (!f.cont || x.b.contenedores.some(c=>c.includes(f.cont.toUpperCase()))) && (!f.ruc || rucDe(x.b.consignatario).includes(f.ruc))
     && (!f.sol || (x.r && x.r.id.includes(f.sol.toUpperCase())))).sort((a,c)=>a.b.numero.localeCompare(c.b.numero));
 }
+/* Propuesta I-089 (HU-ATC-04): con la factura de liberación emitida y el pago confirmado, el BL y sus contenedores quedan Liberados
+   y el cliente autorizado descarga el MEMO publicado en PDF. PEN-I089-02: retest de pago y emisión con SAP. */
+const memoNota = () => `<div ${CC.propuesta('HU-ATC-04 · I-089','MEMO publicado','pe-help')} id="peMemoNota" style="margin-top:8px;padding:6px 8px;border-radius:8px">Factura de liberación emitida, pago confirmado, BL y contenedores Liberados: el MEMO queda publicado y Descargar Memo abre su PDF. ${CC.marca('Corrige','HU-ATC-04','I-089','PEN-I089-02')}</div>`;
+W.peMemoPdf = (id, n) => { const r = PE.rel.find(x=>x.id===id), mm = r.memos.find(x=>x.n===n), cs = conts(r.bl).slice(0, mm.cant), apr = (r.hist||[]).find(h=>aprobado(h.next));
+  CC.modal(`<h3>Memo de Devolución ${e(n)}</h3><div class="fac-sub">Vista previa del PDF publicado para el cliente</div>
+    <div ${CC.propuesta('HU-ATC-04 · I-089','MEMO publicado')} id="peMemoPdf" style="margin-top:10px;padding:10px;border-radius:8px">${CC.marca('Corrige','HU-ATC-04','I-089','PEN-I089-02')}
+      <div class="fac-g3" style="margin-top:8px">${CC.campoLectura('Número', n)}${CC.campoLectura('Fecha de emisión', fhh(r.fecha))}${CC.campoLectura('Agencia', 'COSMOS AGENCIA MARÍTIMA')}
+        ${CC.campoLectura('Usuario', apr ? apr.user : 'mesa.ayuda@cosmos.example')}${CC.campoLectura('BL', r.bl)}${CC.campoLectura('Depósito de devolución', mm.dep)}
+        ${CC.campoLectura('Contenedor', cs.map(c=>c.numero).join(', ') || 'Sin datos')}${CC.campoLectura('Vigencia', `Hasta el ${CC.fecha(mm.vence)}`)}${CC.campoLectura('Estado del BL', 'Liberado')}</div>
+      <div class="pe-help" style="margin-top:6px">Factura de liberación emitida y pago confirmado antes de publicar el MEMO.</div></div>
+    <div class="fac-btns"><button type="button" class="cc-btn ghost" onclick="peDescarga('Memo ${e(n)}.pdf')">Descargar PDF</button><button type="button" class="cc-btn" onclick="CC.cerrarModal()">Cerrar</button></div>`, 'lg'); };
 const memoTabla = (r, conPagar) => `<table class="fac-tbl"><thead><tr><th>Número del Memo</th><th>Fecha de Vencimiento</th><th>Depósito de Devolución</th><th>Tipo de Memo</th><th>Cantidad de Contenedores</th><th>Descargar BL</th></tr></thead><tbody>
-  ${r.memos.length ? r.memos.map(mm=>`<tr><td>${mm.n}</td><td>${CC.fecha(mm.vence)}</td><td>${e(mm.dep)}</td><td>${e(mm.tipo)}</td><td>${mm.cant}</td><td>${mm.ok ? `<button type="button" class="cc-btn ghost" onclick="peDescarga('Memo ${mm.n}.pdf')">Descargar Memo</button>` : (conPagar ? '<button type="button" class="cc-btn pink" onclick="CC.ir(\'Liquidaciones y Pagos\',\'Pago\')">Pagar sobreestadía</button>' : '<span class="pe-sd err">Vencido</span>')}</td></tr>`
+  ${r.memos.length ? r.memos.map(mm=>`<tr><td>${mm.n}</td><td>${CC.fecha(mm.vence)}</td><td>${e(mm.dep)}</td><td>${e(mm.tipo)}</td><td>${mm.cant}</td><td>${mm.ok ? `<button type="button" class="cc-btn ghost" data-pe-memo="${mm.n}" onclick="${CC.verPropuestas ? `peMemoPdf('${r.id}','${mm.n}')` : `peDescarga('Memo ${mm.n}.pdf')`}">Descargar Memo</button>` : (conPagar ? '<button type="button" class="cc-btn pink" onclick="CC.ir(\'Liquidaciones y Pagos\',\'Pago\')">Pagar sobreestadía</button>' : '<span class="pe-sd err">Vencido</span>')}</td></tr>`
     + (mm.ok ? '' : '<tr><td colspan="6" class="pe-wrap"><div class="fac-note warn" style="margin:0">El memo se encuentra vencido. Debe regularizar la sobreestadía para poder generarlo.</div></td></tr>')).join('')
-  : '<tr><td colspan="6" class="fac-empty">No se encontraron memos de devolución para esta solicitud</td></tr>'}</tbody></table>`;
+  : '<tr><td colspan="6" class="fac-empty">No se encontraron memos de devolución para esta solicitud</td></tr>'}</tbody></table>${r.memos.some(mm=>mm.ok) ? memoNota() : ''}`;
 function rlHtml(){
   const u = rlUI(); if(u.modo!=='buscar') return rlForm();
   const f = u.f;
@@ -1118,10 +1153,15 @@ function osHtml(){
     <tbody>${rows || '<tr><td colspan="8" class="fac-empty">No se encontraron resultados</td></tr>'}</tbody></table></div>
     <div class="fac-btns" style="justify-content:space-between"><button type="button" class="cc-btn" onclick="peOsExportar()">Exportar</button>${CC.paginador(filas.length, pg.pagina, u.tamP, 'peOsPagina')}</div></div>`;
 }
+/* Propuesta I-084 (HU-ATC-05): la fecha de descarga se muestra y con ella se calculan días usados, sobrestadía e importe.
+   Si la nave aún no descarga, se indica Sin descarga y no se calcula. PEN-I084-02: origen de la fecha. */
+const osSinDesc = k => P() && k.imp && k.ini > hoyISO();
+const osNota = b => P() && !esExp(b) ? `<div ${CC.propuesta('HU-ATC-05 · I-084','Fecha de descarga','pe-help')} id="peOsDesc" style="margin-bottom:8px;padding:6px 8px;border-radius:8px">La fecha de descarga sale de la descarga de la nave. Con ella y los días libres vigentes se calculan días usados, sobrestadía e importe. Si la nave aún no descarga, se muestra Sin descarga y no se calcula. ${CC.marca('Corrige','HU-ATC-05','I-084','PEN-I084-02')}</div>` : '';
 function osDetalle(b){
-  return `<table class="fac-tbl"><thead><tr><th>Contenedor</th><th>Tamaño/Tipo</th><th>Fecha Descarga / Salida Depósito</th><th>Unidad de Conteo</th><th>Fecha Inicial de Cálculo</th><th class="num">Días Libres</th><th class="num">Días Usados</th><th>Fecha Devolución / Embarque</th><th class="num">Días Sobreestadía</th><th class="num">Total Bruto</th><th class="num">IGV</th><th class="num">Total Neto</th><th>Acciones</th></tr></thead><tbody>
+  return osNota(b) + `<table class="fac-tbl"><thead><tr><th>Contenedor</th><th>Tamaño/Tipo</th><th>Fecha Descarga / Salida Depósito</th><th>Unidad de Conteo</th><th>Fecha Inicial de Cálculo</th><th class="num">Días Libres</th><th class="num">Días Usados</th><th>Fecha Devolución / Embarque</th><th class="num">Días Sobreestadía</th><th class="num">Total Bruto</th><th class="num">IGV</th><th class="num">Total Neto</th><th>Acciones</th></tr></thead><tbody>
     ${conts(b.numero).map(c=>{ const k = calc(c);
       const fecha = !k.imp ? CC.fecha(k.fin) : k.devuelto ? `${CC.fecha(k.fin)} <span class="pe-tag">Devuelto</span>` : `<input type="date" class="pe-osfecha" min="${hoyISO()}" value="${k.fin}" onchange="peOsFecha('${c.numero}',this.value)">`;
+      if(osSinDesc(k)) return `<tr data-os-sindesc="${c.numero}"><td>${c.numero}</td><td>${c.tipo}</td><td><span class="pe-sd">Sin descarga</span></td><td>Días calendario</td><td>${sd('')}</td><td class="num">${c.diasLibres}</td><td colspan="6" class="pe-help">Se calcula cuando la nave descargue.</td><td></td></tr>`;
       return `<tr><td>${c.numero}</td><td>${c.tipo}</td><td>${CC.fecha(k.ini)}</td><td>Días calendario</td><td>${CC.fecha(k.ini)}</td><td class="num">${c.diasLibres}</td><td class="num">${k.dias}</td><td>${fecha}</td><td class="num">${k.ost}</td>
         <td class="num">${CC.dinero(k.bruto)}</td><td class="num">${CC.dinero(k.igv)}</td><td class="num">${CC.dinero(k.neto)}</td><td>${ic('ojo','Ver',`peOsVer('${c.numero}')`)}</td></tr>`; }).join('')}</tbody></table>`;
 }
@@ -1157,6 +1197,17 @@ function pgFiltra(b){ const f = pgUI().f;
 function pgFilas(){ const f = pgUI().f;
   if(f.info==='PENDING') return pendientes().filter(r=>pgFiltra(r.b));
   return PE.liq.filter(l=>l.info===f.info && l.estado!=='Anulado' && pgFiltra(bl(l.bl))).map(l=>({key:l.n, l, b:bl(l.bl)})); }
+/* Propuesta I-026 (HU-ATC-09): ASBANC confirma el pago a Connect; la liquidación queda asociada al documento, pasa a Pago confirmado y se factura.
+   PEN-I026-01: contrato y código de éxito; PEN-I026-02: revalidar pagos ya visibles. Operación bancaria ficticia. */
+const pgAsbanc = l => {
+  if(!CC.verPropuestas || !/^ASBANC/.test(l.medio || '')) return '';
+  return `<div ${CC.propuesta('HU-ATC-09 · I-026','Confirmación ASBANC','pe-help')} data-pg-asbanc="${l.n}" style="margin-top:4px;padding:4px 6px;border-radius:6px">`
+    + (l.estado==='Pago confirmado' ? `Confirmado por ASBANC · Op. ${e(l.op || '0000153251')}${l.factura ? ' · Factura emitida' : ''}`
+      : `Esperando la confirmación de ASBANC. <button type="button" class="fac-link" data-pg-asbanc-ok="${l.n}" onclick="pePgAsbanc('${l.n}')">Simular confirmación</button>`) + '</div>';
+};
+W.pePgAsbanc = n => { const l = PE.liq.find(x=>x.n===n); if(!l || l.estado==='Pago confirmado') return;
+  Object.assign(l, {estado:'Pago confirmado', factura:true, op:String(153300 + PE.liq.indexOf(l)).padStart(10,'0')});
+  CC.toast(`ASBANC confirmó el pago de ${n}: queda asociado a la liquidación y se emitió la factura.`, 'success'); pinta('screenPePago'); };
 function pgHtml(){
   const u = pgUI(), f = u.f, prop = CC.verPropuestas;
   const clientes = prop && f.oper ? (f.oper==='Importación' ? CONS() : EMBS()) : EMBS();
@@ -1180,7 +1231,7 @@ function pgHtml(){
     rows = pg.filas.map(r=>{ const [n,h,cl,nv,vj,ind,pt] = base(r); return `<tr><td>${chk(r)}</td><td>${e(n)}</td><td>${sd(h)}</td><td>${e(cl)}</td><td>${e(nv)}</td><td>${e(vj)}</td><td>${ind}</td><td>${e(pt)}</td><td>${r.tipo}</td><td>${e(r.concepto)}</td></tr>`; });
   } else {
     const con = f.info==='PAYFUL';
-    head = ['Número de liquidación','Fecha Registro','BL','BL Hijo','Nave','Viaje','Cliente','Consignatario','Indicador','Puerto','Tipo','Facturar a','Condición de pago','Moneda', ...(con ? ['Estado de liquidación'] : []), 'Total a pagar', ...(con ? ['Fecha de pago'] : []), 'Acciones'];
+    head = ['Número de liquidación','Fecha Registro','BL','BL Hijo','Nave','Viaje','Cliente','Consignatario','Indicador','Puerto','Tipo','Facturar a','Condición de pago','Moneda', ...(con ? [`Estado de liquidación${prop ? ' ' + CC.marca('Corrige','HU-ATC-09','I-026','PEN-I026-01') : ''}`] : []), 'Total a pagar', ...(con ? ['Fecha de pago'] : []), 'Acciones'];
     const primero = {};
     rows = pg.filas.map(r=>{ const l = r.l, [n,h,cl,nv,vj,ind,pt] = base(r); let acc = '';
       if(!con) acc = l.fecha.slice(0,10)===hoyISO() ? ic('tacho','Anular',`pePgAnular('${l.n}')`) : '';
@@ -1188,7 +1239,7 @@ function pgHtml(){
         acc = ic('clip','Adjuntos',`pePgAdj('${l.n}')`) + (nn ? ic('desc', g || 'Descargar BL No Negociable', `peNN('${l.bl}')`, !!g) : '') + (l.factura ? ic('rec','Factura',`peDescarga('${l.n}.pdf')`) : '')
           + (!esExp(r.b) && relDe(l.bl,'') ? ic('doc','Memo de Devolución',`pePgMemo('${l.bl}')`) : ''); }
       return `<tr><td>${chk(r)}</td><td>${l.n}</td><td>${CC.fecha(l.fecha)}</td><td>${e(n)}</td><td>${sd(h)}</td><td>${e(nv)}</td><td>${e(vj)}</td><td>${e(cl)}</td><td>${sd(consDe(r.b))}</td><td>${ind}</td><td>${e(pt)}</td><td>${l.tipo}</td><td>${e(l.facturar)}</td><td>${l.cond}</td><td>${l.moneda}</td>
-        ${con ? `<td>${CC.chipEstado(l.estado, l.estado==='Pago confirmado' ? 'aprobada' : 'pendiente')}</td>` : ''}<td class="num">${CC.dinero(l.total)}</td>${con ? `<td>${fhh(l.fPago)}</td>` : ''}<td class="fac-rowacts">${acc}</td></tr>`; });
+        ${con ? `<td>${CC.chipEstado(l.estado, l.estado==='Pago confirmado' ? 'aprobada' : 'pendiente')}${pgAsbanc(l)}</td>` : ''}<td class="num">${CC.dinero(l.total)}</td>${con ? `<td>${fhh(l.fPago)}</td>` : ''}<td class="fac-rowacts">${acc}</td></tr>`; });
   }
   const nsel = Object.values(u.sel).filter(Boolean).length;
   const btn = f.info==='PENDING' ? `<button type="button" class="cc-btn" id="pePgGenerar" onclick="pePgGenerar()" ${dis(nsel)}>Generar liquidación</button>` : f.info==='PAYLESS' ? `<button type="button" class="cc-btn" id="pePgPagar" onclick="pePgPagar()" ${dis(nsel)}>Pagar</button>` : '<span></span>';
@@ -1285,7 +1336,7 @@ function payModal(){
   } else {
     const asb = p.metodo==='ASBANC';
     html = `<h3>${asb ? 'Epay (Ticket generado)' : 'Transferencia/Depósito (pago registrado)'}</h3>
-      ${asb ? `<p style="font-size:13.5px">Ticket ASBANC generado. Realiza el pago desde tu aplicación bancaria usando este número de ticket. ${corrige('Decía "Realize"')}</p><div class="pe-grp"><span class="pe-help">Ticket ASBANC</span><div class="pe-pills"><span class="pe-ticket" id="peTicket">${p.ticket}</span><button type="button" class="cc-btn ghost" onclick="pePayCopiar()">Copiar</button></div></div>`
+      ${asb ? `<p style="font-size:13.5px">Ticket ASBANC generado. Realiza el pago desde tu aplicación bancaria usando este número de ticket. ${corrige('Decía "Realize"')}</p><div class="pe-grp"><span class="pe-help">Ticket ASBANC</span><div class="pe-pills"><span class="pe-ticket" id="peTicket">${p.ticket}</span><button type="button" class="cc-btn ghost" onclick="pePayCopiar()">Copiar</button></div></div>` + `<div ${CC.propuesta('HU-ATC-09 · I-026','Confirmación ASBANC','pe-help')} id="pePayAsbNota" style="margin-top:8px;padding:6px 8px;border-radius:8px">Cuando pagues en tu banco, ASBANC confirma el pago a Connect: la liquidación pasa a Pago confirmado, queda asociada a tu documento y se emite la factura. Si la confirmación no llega, sigue en Pago Pendiente y Cosmos la revisa, sin error interno.</div>`
         : `<p style="font-size:13.5px">Hemos registrado tu pago por transferencia/depósito.</p><table class="fac-tbl"><thead><tr><th>Número de operación bancaria</th><th>Banco de origen</th><th>Número de cuenta</th><th>Fecha de pago</th><th class="num">Monto pagado</th><th>Comentarios</th><th>Moneda</th></tr></thead><tbody>${p.ops.map(x=>`<tr><td>${e(x.num)}</td><td>${e(x.banco)}</td><td>${e(x.cuenta)}</td><td>${CC.fecha(x.fecha)}</td><td class="num">${CC.dinero(x.monto)}</td><td>${sd(x.com)}</td><td>USD</td></tr>`).join('')}</tbody></table>`}
       <div class="fac-kv" style="margin-top:12px"><span>Total</span><b>USD ${CC.dinero(tot)}</b><span>Fecha y hora</span><b>${fhh(p.ts)}</b><span>Estado</span><b>${asb ? 'Pendiente de pago' : 'Pendiente de confirmación'}</b></div>
       <div class="fac-btns"><button type="button" class="cc-btn ghost" onclick="pePayAnterior()">Anterior</button><button type="button" class="cc-btn" id="pePayFin" onclick="pePayFinalizar()">Finalizar</button></div>`;
