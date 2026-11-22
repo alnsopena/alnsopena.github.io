@@ -234,6 +234,7 @@
           <div class="filter-field"><label>Número Documento</label><input id="pfDoc" list="pfDocList" maxlength="20" placeholder="Número Documento" oninput="setPtFilter('doc',this.value)"><datalist id="pfDocList"></datalist></div>
           <div class="filter-field"><label>Nombre Largo</label><input id="pfName" list="pfNameList" maxlength="100" placeholder="Ingresar Nombre" oninput="setPtFilter('name',this.value)"><datalist id="pfNameList"></datalist></div>
           <div class="filter-field"><label>Rol</label><select id="pfRol" onchange="setPtFilter('rol',this.value)"></select></div>
+          <div class="filter-field cc-prop" data-prop="Propuesta · HU-DM-01 · I-035 · Tipo"><label>Tipo</label><select id="pfTipo" onchange="setPtFilter('tipo',this.value)"><option value="">Todos</option><option>Cliente</option><option>Proveedor</option><option>Ambos</option></select></div>
           <div class="filter-field"><label>Estado</label><select id="pfEst" onchange="setPtFilter('est',this.value)"><option value="">Todos los estados</option><option value="Por homologar">Pendiente de aprobación</option><option value="Homologado">Aprobado</option></select></div>
         </div>
         <div class="filter-actions tf-actions">
@@ -245,7 +246,7 @@
         <div class="tf-quick cc-prop" data-prop="Propuesta · I-016 · Accesos rápidos" id="ptQuick"></div>
         <button class="btn-corp-outline" id="ptExp" onclick="exportPtCsv()">Exportar</button></div>
       <div class="results-table"><table>
-        <thead><tr><th>Número Documento</th><th>Nombre Corto</th><th>Dirección</th><th class="cc-prop">Roles</th><th>Estado</th></tr></thead>
+        <thead><tr><th>Número Documento</th><th>Nombre Corto</th><th>Dirección</th><th class="cc-prop">Roles</th><th class="cc-prop">Código ERP</th><th class="cc-prop">SAP</th><th>Estado</th></tr></thead>
         <tbody id="ptResults"></tbody></table><div class="cc-pager" id="ptPager"></div></div>
     </div>
     <div id="ptDetail" style="display:none"><div id="ptEditor"></div></div>
@@ -5791,7 +5792,7 @@ const PT_ROLES = ['Agente Marítimo','Armador','Línea naviera','Operador portua
 const PT_CONTACT_TYPES = ['Importación','Exportación','Operaciones','Comercial','Facturación','Cobranzas'];
 const PT_BANK_TYPES = ['Cuenta corriente','Cuenta de ahorros','Cuenta de detracciones'];
 let PARTNERS = []; let ptSeq = 1;
-const pt = {view:'list', f:{doc:'', name:'', rol:'', est:'', quick:''}, page:1, size:10, selId:null, draft:null, edit:false, isNew:false, dirty:false, tab:'roles', returnTo:'landing', errs:null};
+const pt = {view:'list', f:{doc:'', name:'', rol:'', est:'', tipo:'', quick:''}, page:1, size:10, selId:null, draft:null, edit:false, isNew:false, dirty:false, tab:'roles', returnTo:'landing', errs:null};
 
 function ptNew(o){
   return {id:'pt'+(ptSeq++), tipoPersona:'Persona Jurídica', nac:'Nacional', tipoDoc:'RUC', doc:'', corto:'', largo:'', erp:'', dir:'', moneda:'USD', aduana:'', pago:'Crédito',
@@ -5846,7 +5847,7 @@ const DM_HIST_IC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 /* ---------- Pantalla ---------- */
 function openPartners(pre, returnTo){
   pt.returnTo = returnTo || 'landing';
-  pt.f = {doc:'', name:'', rol:'', est:'', quick:'', ...(pre||{})}; pt.page = 1;
+  pt.f = {doc:'', name:'', rol:'', est:'', tipo:'', quick:'', ...(pre||{})}; pt.page = 1;
   document.getElementById('pfRol').innerHTML = '<option value="">Seleccione Roles</option>' + PT_ROLES.map(r=>`<option>${r}</option>`).join('');
   document.getElementById('pfDocList').innerHTML = PARTNERS.filter(p=>p.doc).map(p=>`<option value="${esc(p.doc)}">`).join('');
   document.getElementById('pfNameList').innerHTML = PARTNERS.map(p=>`<option value="${esc(p.largo)}">`).join('');
@@ -5858,10 +5859,10 @@ function openPartners(pre, returnTo){
 }
 function openPartner(id, returnTo){ openPartners(null, returnTo); selectPartner(id, true); }
 function ptSyncFilters(){
-  document.getElementById('pfDoc').value = pt.f.doc; document.getElementById('pfName').value = pt.f.name; document.getElementById('pfRol').value = pt.f.rol; document.getElementById('pfEst').value = pt.f.est||'';
+  document.getElementById('pfDoc').value = pt.f.doc; document.getElementById('pfName').value = pt.f.name; document.getElementById('pfRol').value = pt.f.rol; document.getElementById('pfEst').value = pt.f.est||''; document.getElementById('pfTipo').value = pt.f.tipo||'';
 }
 function setPtFilter(k,v){ pt.f[k] = v; pt.page = 1; renderPtList(); }
-function clearPtFilters(){ pt.f = {doc:'', name:'', rol:'', est:'', quick:''}; pt.page = 1; ptSyncFilters(); renderPtList(); }
+function clearPtFilters(){ pt.f = {doc:'', name:'', rol:'', est:'', tipo:'', quick:''}; pt.page = 1; ptSyncFilters(); renderPtList(); }
 function setPtQuick(k){ pt.f.quick = pt.f.quick===k ? '' : k; pt.page = 1; renderPtList(); }
 function ptGo(p, size){ if(size) pt.size = size; pt.page = p; renderPtList(); }
 function showPtView(v){
@@ -5889,17 +5890,19 @@ function closePartners(){
 function ptFiltered(over){
   const f = {...pt.f, ...(over||{})}, d = normTxt(f.doc), n = normTxt(f.name);
   return PARTNERS.filter(p=>(!d || normTxt(p.doc).includes(d)) && (!n || normTxt(p.largo).includes(n) || normTxt(p.corto).includes(n)) &&
-    (!f.rol || p.roles.some(r=>r.rol===f.rol)) && (!f.est || p.estado===f.est) && (f.quick!=='pend' || p.estado==='Por homologar') && (f.quick!=='rej' || p.estado==='Rechazado'));
+    (!f.rol || p.roles.some(r=>r.rol===f.rol)) && (!f.est || p.estado===f.est) && (!f.tipo || !ptRdOn() || ptRdClase(p)===f.tipo) && (f.quick!=='pend' || p.estado==='Por homologar') && (f.quick!=='rej' || p.estado==='Rechazado'));
 }
-function ptHasF(){ return ['doc','name','rol','est'].some(k=>pt.f[k]); }
+function ptHasF(){ return ['doc','name','rol','est'].some(k=>pt.f[k]) || !!(pt.f.tipo && ptRdOn()); }
 function renderPtList(){
   const all = ptFiltered().sort((a,b)=>(a.estado==='Homologado') - (b.estado==='Homologado') || a.corto.localeCompare(b.corto));
   const pages = Math.max(1, Math.ceil(all.length/pt.size)); pt.page = Math.min(Math.max(1, pt.page), pages);
   const list = all.slice((pt.page-1)*pt.size, pt.page*pt.size);
   document.getElementById('ptResults').innerHTML = list.map(p=>`<tr class="mt-row" onclick="selectPartner('${p.id}')">
       <td><span class="pda-code-link">${esc(p.doc||'Sin documento')}</span></td><td><span class="pda-code-link">${esc(p.corto)}</span></td><td>${esc(p.dir||'-')}</td>
-      <td class="cc-prop">${esc(p.roles.map(r=>r.rol).join(', ')||'-')}</td><td>${dmPill(p.estado)}</td></tr>`).join('')
-    || '<tr><td colspan="5" style="text-align:center;padding:30px;color:#8D9BA2;font-style:italic">No se encontraron resultados con los criterios seleccionados.</td></tr>';
+      <td class="cc-prop">${esc(p.roles.map(r=>r.rol).join(', ')||'-')}</td>${ptRdListTd(p)}<td>${dmPill(p.estado)}</td></tr>`).join('')
+    || '<tr><td colspan="8" style="text-align:center;padding:30px;color:#8D9BA2;font-style:italic">No se encontraron resultados con los criterios seleccionados.</td></tr>';
+  /* Con el filtro Tipo (propuesta) los cinco filtros van en una sola fila */
+  const fg = document.querySelector('#ptList .filters-grid'); if(fg) fg.style.gridTemplateColumns = ptRdOn() && innerWidth>1100 ? '1.5fr 1fr 1fr 1fr 1fr' : '';
   document.getElementById('ptCount').textContent = all.length;
   document.getElementById('ptPager').innerHTML = pagerHtml(all.length, pt.page, pt.size, 'ptGo');
   const hf = ptHasF(), bb = document.getElementById('ptBuscar'), bl = document.getElementById('ptLimpiar');
@@ -6009,16 +6012,16 @@ function renderPtEditor(){
   const empty = (n,t) => `<tr><td colspan="${n}" style="color:#8D9BA2;padding:14px 20px">${t}</td></tr>`;
   pt.sel = {};
   let body = '';
-  if(tab==='roles') body = `<div class="results-table"><table><thead><tr>${ph}<th>Rol</th><th style="width:120px">Cliente</th><th style="width:120px">Proveedor</th>${ptRdRolTh()}</tr></thead><tbody>
-      ${d.roles.map((r,i)=>`<tr>${pick('roles',i)}<td>${csel('roles',i,'rol',PT_ROLES,r.rol)}</td><td>${cchk('roles',i,'cliente',r.cliente)}</td><td>${cchk('roles',i,'proveedor',r.proveedor)}</td>${ptRdRolTd(r,i,edit)}</tr>`).join('') || empty(7,'Sin roles.')}
+  if(tab==='roles') body = `${rdOn?ptRdRolMk(d):''}<div class="results-table"><table><thead><tr>${ph}<th>Rol</th><th style="width:120px">Cliente</th><th style="width:120px">Proveedor</th>${ptRdRolTh(d)}</tr></thead><tbody>
+      ${d.roles.map((r,i)=>`<tr>${pick('roles',i)}<td>${csel('roles',i,'rol',PT_ROLES,r.rol)}</td><td>${cchk('roles',i,'cliente',r.cliente)}</td><td>${cchk('roles',i,'proveedor',r.proveedor)}</td>${ptRdRolTd(r,i,edit,d)}</tr>`).join('') || empty(7,'Sin roles.')}
     </tbody></table></div>${fErr(E,'roles')}${edit?`<div style="margin-top:10px;display:flex;gap:8px"><button class="btn-corp" onclick="ptAddRow('roles')">Añadir</button><button class="btn-corp-outline" onclick="ptDelSel('roles')">Eliminar</button></div>`:''}${rdOn?`<div style="margin-top:22px">${ptRdBlock(d, edit, E)}</div>`:''}`;
   else if(tab==='contactos') body = `<div class="results-table"><table><thead><tr>${ph}<th>Tipo *</th><th>Nombre *</th><th>Teléfono</th><th>Móvil</th><th>Email</th><th>Dirección</th><th>Notas</th>${ptRdErpTh()}</tr></thead><tbody>
       ${d.contactos.map((c,i,_,e=rowE(c))=>`<tr${sapRow(c)?' data-rdsap':''}>${pick('contactos',i,e)}<td>${csel('contactos',i,'tipo',PT_CONTACT_TYPES,c.tipo,e)}${sapB(c)}</td><td>${cell('contactos',i,'nombre',c.nombre,'',100,e)}</td><td>${cell('contactos',i,'tel',c.tel,'',25,e)}</td>
-        <td>${cell('contactos',i,'movil',c.movil,'',25,e)}</td><td>${cell('contactos',i,'email',c.email,'',200,e)}</td><td>${cell('contactos',i,'dir',c.dir,'',200,e)}</td><td>${cell('contactos',i,'notas',c.notas,'',400,e)}</td>${ptRdErpTd(c,i,e)}</tr>`).join('') || empty(10,'Sin contactos.')}
+        <td>${cell('contactos',i,'movil',c.movil,'',25,e)}</td><td>${cell('contactos',i,'email',c.email,'',200,e)}</td><td>${cell('contactos',i,'dir',c.dir,'',200,e)}</td><td>${cell('contactos',i,'notas',c.notas,'',400,e)}</td>${ptRdErpTd(c,i,e)}</tr>`).join('') || empty(10,'Sin contactos.' + ptRdSinSap(d,'los contactos'))}
     </tbody></table></div>${fErr(E,'contactos')}`;
   else body = `<div class="results-table"><table><thead><tr>${ph}<th>Banco *</th><th>Tipo *</th><th>Cuenta *</th><th>Moneda *</th>${ptRdBancoTh()}</tr></thead><tbody>
       ${d.bancos.map((b,i,_,e=rowE(b))=>`<tr${sapRow(b)?' data-rdsap':''}>${pick('bancos',i,e)}<td>${csel('bancos',i,'banco',['',...CB_BANKS],b.banco,e)}${sapB(b)}</td><td>${csel('bancos',i,'tipo',PT_BANK_TYPES,b.tipo,e)}</td><td>${cell('bancos',i,'cuenta',b.cuenta,'',25,e)}</td>
-        <td>${csel('bancos',i,'moneda',['PEN','USD'],b.moneda,e)}</td>${ptRdBancoTd(b,i,e)}</tr>`).join('') || empty(9,'Sin cuentas.')}
+        <td>${csel('bancos',i,'moneda',['PEN','USD'],b.moneda,e)}</td>${ptRdBancoTd(b,i,e)}</tr>`).join('') || empty(9,'Sin cuentas.' + ptRdSinSap(d,'las cuentas'))}
     </tbody></table></div>${fErr(E,'bancos')}`;
   if(edit && tab!=='roles') body += `<div style="margin-top:10px;display:flex;gap:8px"><button class="btn-corp" onclick="ptAddRow('${tab}')">Añadir</button><button class="btn-corp-outline" onclick="ptDelSel('${tab}')">Eliminar</button></div>`;
   ed.innerHTML = head + gen + `<div class="buscar-filters"><div class="md-tabs">${tabs}</div><div class="md-body">${body}</div></div>`;
@@ -6078,11 +6081,20 @@ function ptRdErrors(d, E){
 }
 function ptRdMsgs(E){ const m = Object.keys(E).filter(k=>k.startsWith('rd_')).map(k=>E[k]); return m.length ? m.join('. ') + '.' : ''; }
 function ptRdUpd(side, k, v){ ptRd(pt.draft)[side][k] = v; pt.draft.rd[side].origen = 'manual'; pt.dirty = true; clearErr(pt.errs, `rd_${side}_${k}`, '#ptEditor'); }
-function ptRdRolTh(){ return `<th class="cc-prop">Tipo Socio ${fm('Agrega: del catálogo',PT_RD_HU,PT_RD_TK,'PEN-I035-01')}</th><th class="cc-prop">Requiere Código Aduanas</th><th class="cc-prop">Aplica comisión de tarifa <small>(solo Línea, opcional)</small></th>`; }
-function ptRdRolTd(r, i, edit){
+/* La comisión de tarifa solo aplica a Línea naviera: la columna aparece si el socio tiene ese rol */
+const ptRdLinea = d => d.roles.some(r=>r.rol==='Línea naviera');
+function ptRdRolMk(d){ return `<div class="cc-prop" style="margin:0 0 8px"><span class="chg-tag fac-pentag" data-pen="PEN-I035-01" title="Ver consulta y propuesta" style="margin-left:0">Columnas Tipo Socio, Requiere Código Aduanas${ptRdLinea(d)?' y comisión':''} · ${fmTxt('',PT_RD_HU,PT_RD_TK,'PEN-I035-01')}</span></div>`; }
+function ptRdRolTh(d){ return `<th class="cc-prop">Tipo Socio</th><th class="cc-prop">Requiere Código Aduanas</th>${d && ptRdLinea(d)?'<th class="cc-prop">Aplica comisión de tarifa</th>':''}`; }
+function ptRdRolTd(r, i, edit, d){
   const c = PT_ROL_CAT[r.rol] || ['-', false];
   const com = r.rol==='Línea naviera' ? `<input type="checkbox" data-rdcom ${edit?'':'disabled'} ${r.comision?'checked':''} onchange="ptUpdRow('roles',${i},'comision',this.checked)">` : '-';
-  return `<td class="cc-prop" data-rdtipo>${c[0]}</td><td class="cc-prop">${c[1]?'Sí':'No'}</td><td class="cc-prop">${com}</td>`;
+  return `<td class="cc-prop" data-rdtipo>${c[0]}</td><td class="cc-prop">${c[1]?'Sí':'No'}</td>${d && ptRdLinea(d)?`<td class="cc-prop">${com}</td>`:''}`;
+}
+/* Lista: Código ERP por rol y estado de sincronización con SAP (sin modificar el socio) */
+function ptRdListTd(p){
+  const rd = ptRd({...p, rd: p.rd ? {cli:{...p.rd.cli}, pro:{...p.rd.pro}} : undefined}), sides = ptRdSides(p);
+  const erp = sides.map(s=>rd[s].erp).filter(Boolean).join(' / ') || '-', ok = sides.length && sides.every(s=>rd[s].sync);
+  return `<td class="cc-prop" style="white-space:nowrap">${esc(erp)}</td><td class="cc-prop" style="white-space:nowrap">${ok?'Sincronizado':'Sin sincronizar'}</td>`;
 }
 function ptRdErpTh(){ return `<th class="cc-prop" style="white-space:nowrap">ID contacto SAP ${ptInfo('Name de ContactEmployees en SAP. No es el Código ERP del socio: ese va por rol en Datos comerciales.')}${fm('Agrega',PT_RD_HU,PT_RD_TK)}</th><th class="cc-prop" style="white-space:nowrap">Rol SAP</th>`; }
 /* Rol SAP: según el bloque del que vino el contacto (prefijo C o P del ID) */
@@ -6094,13 +6106,19 @@ function ptRdBancoTd(b, i, edit){
   const det = edit ? `<select onchange="ptUpdRow('bancos',${i},'detrac',this.value)">${['No','Sí'].map(o=>`<option ${o===(b.detrac||'No')?'selected':''}>${o}</option>`).join('')}</select>` : esc(b.detrac||'No');
   return `<td class="cc-prop">${inp('swift',11)}</td><td class="cc-prop">${inp('pais',40)}</td><td class="cc-prop">${det}</td><td class="cc-prop" data-rdcci>${inp('cci',20,'20 dígitos')}</td>`;
 }
+/* Lista vacía sin sincronizar: indica usar el botón de arriba (no agrega otro) */
+function ptRdSinSap(d, que){
+  if(!ptRdOn()) return '';
+  const rd = ptRd(d); if(ptRdSides(d).some(s=>rd[s].sync)) return '';
+  return canEditPartner() ? ` Sincroniza con SAP para traer ${que}: usa el botón «Sincronizar con SAP» de arriba.` : ' Aún no se sincroniza con SAP.';
+}
 /* 3.10: dirección desde SAP, solo en Socio. Solo lectura: la llena Sincronizar con SAP */
 const PT_SAP_B = '<span class="pt-sap" title="Dato traído de SAP: solo lectura">SAP</span>';
 function ptInfo(t, id){ return `<span class="pt-info" tabindex="0" role="img" aria-label="${esc(t)}" data-tip="${esc(t)}"${id?` id="${id}"`:''}>i</span>`; }
 function ptRdDirBlk(d){
   const nota = 'País, Departamento, Provincia y Distrito se llenan al sincronizar con SAP (BPAddresses). Solo se usan en Socio: la facturación no cambia por ahora. Ubigeo no se mapea.';
   const f = ([k,l],i) => `<div class="filter-field" data-rddir="${k}"><label>${l} ${PT_SAP_B}${i===0?' '+ptInfo(nota,'ptRdDirNota'):''}</label><input disabled data-f="${k}" value="${esc(d[k]||'')}" placeholder="Se trae de SAP"></div>`;
-  return `<div ${CC.propuesta(`${PT_RD_HU} · ${PT_RD_TK}`, 'Dirección desde SAP · PEN-I035-01', 'pt-rd-dir')} id="ptRdDir"><div class="filters-grid g4">${[['dirPais','País'],['dirDep','Departamento'],['dirProv','Provincia'],['dirDist','Distrito']].map(f).join('')}</div></div>`;
+  return `<div ${CC.propuesta(`${PT_RD_HU} · ${PT_RD_TK}`, 'Dirección desde SAP · PEN-I035-01', 'pt-rd-dir')} id="ptRdDir"><div class="fac-sec" style="margin-top:4px">Dirección desde SAP</div><div class="filters-grid g4">${[['dirPais','País'],['dirDep','Departamento'],['dirProv','Provincia'],['dirDist','Distrito']].map(f).join('')}</div></div>`;
 }
 /* Tooltip de los íconos (i): flotante para que no lo recorte una tabla con desplazamiento */
 function ptTip(el){
@@ -6115,7 +6133,7 @@ document.addEventListener('mouseover', e=>ptTip(e.target.closest && e.target.clo
 document.addEventListener('focusin', e=>ptTip(e.target.closest && e.target.closest('.pt-info')));
 document.addEventListener('scroll', ()=>ptTip(null), true);
 /* Con Ver propuestas cambia la cabecera y las pestañas: se vuelve a pintar la ficha */
-window.addEventListener('cc:propuestas', ()=>{ if(pt.view==='detail' && pt.draft) renderPtEditor(); });
+window.addEventListener('cc:propuestas', ()=>{ if(pt.view==='detail' && pt.draft) renderPtEditor(); else if(pt.view==='list' && document.getElementById('ptResults')) renderPtList(); });
 /* Hora local (la marca se guarda en UTC) */
 const ptRdFh = iso => { const t = iso ? new Date(iso) : null; if(!t || isNaN(t)) return '-'; const z = n => String(n).padStart(2,'0'); return `${z(t.getDate())}/${z(t.getMonth()+1)}/${t.getFullYear()} ${z(t.getHours())}:${z(t.getMinutes())}`; };
 /* 3.7: se habilita con Número Documento y tipo (Cliente o Proveedor); vuelve a habilitarse si cambia alguno */

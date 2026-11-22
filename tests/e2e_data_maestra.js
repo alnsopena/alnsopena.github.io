@@ -25,7 +25,7 @@ const ruido = /^(start|onHasParentDirectory|addRow) is not defined/;
   await ir('Data Maestra', 'Socio');
   check((await txt('#ccPbTitle')).includes('Buscar Socios'), 'Socio: título Buscar Socios sin elegir Marítimo o Terrestre');
   check(await p.isDisabled('#ptBuscar'), 'Socio: Buscar inactivo sin filtros');
-  check((await p.$$eval('#screenPartners thead th', x => x.map(e => e.textContent.trim()))).join('|') === 'Número Documento|Nombre Corto|Dirección|Roles|Estado', 'Socio: columnas (Roles es propuesta)');
+  check((await p.$$eval('#screenPartners thead th', x => x.map(e => e.textContent.trim()))).join('|') === 'Número Documento|Nombre Corto|Dirección|Roles|Código ERP|SAP|Estado', 'Socio: columnas (Roles, Código ERP y SAP son propuesta)');
   await p.selectOption('#pfEst', 'Por homologar'); await W();
   check((await txt('#ptResults')).includes('Pendiente de aprobación') && !(await txt('#ptResults')).includes('Por homologar'), 'Socio: estado Pendiente de aprobación');
   await p.selectOption('#currentUser', { label: 'P. Díaz (Facturación)' }); await W();
