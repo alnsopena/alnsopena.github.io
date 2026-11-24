@@ -19,7 +19,7 @@
 
   const GRUPOS = [
     {k:'urgente',  t:'Urgente',           c:'#e11d48', ayuda:'Necesitan acción hoy'},
-    {k:'plazo',    t:'Plazo por vencer',  c:'#d97706', ayuda:'FDA con time-bar en 30 días o menos'},
+    {k:'plazo',    t:'Plazo por vencer',  c:'#d97706', ayuda:'Liquidaciones y plazos de reclamo por vencer'},
     {k:'atencion', t:'Requiere atención', c:'#4f46e5', ayuda:'Pendientes que se están demorando'},
     {k:'proximas', t:'Próximas escalas',  c:'#64748b', ayuda:'Llegan en 7 días con la PDA aprobada'},
   ];
@@ -32,16 +32,16 @@
      que:'La nave llega el 11 nov y la PDA sigue pendiente de aprobación. Revisa la PDA y apruébala para generar la OS, o regístrale una observación.', pda:P('tramps','crude','dis','2026-11-11T06:00','2026-11-12T18:00')},
     {g:'urgente', tipo:'PDA', cod:'PDA2026000405PEPAI', viaje:'112N', nave:'MARE ANDINO', puerto:'Paita', cliente:'Southern Bulk Carriers', com:'L. Torres', mon:'USD', monto:12915.40, ft:'ETA', f:'2026-11-13', estado:'Pendiente de aprobación', motivo:'Observada: falta el GRT de la nave', fase:1, destino:'pda', obs:'Falta el GRT de la nave',
      que:'La PDA está observada porque falta el GRT de la nave. Completa el dato en la ficha de la nave y vuelve a enviar la PDA para su aprobación.', pda:P('tramps','dry_bulk','load','2026-11-13T08:00','2026-11-15T20:00')},
-    {g:'urgente', tipo:'FDA', cod:'FDA2026000097PEMRI', viaje:'021E', nave:'ATLANTIC CONDOR', puerto:'Matarani', cliente:'Altiplano Ores Trading', com:'R. Salas', mon:'USD', monto:38204.75, ft:'Zarpe', f:'2026-11-03', estado:'Sin enviar', motivo:'FDA sin enviar: 6 días desde el zarpe', fase:2, destino:'fda',
-     que:'La escala zarpó el 3 nov y la FDA aún no se envía al cliente. Revisa la comparación contra la PDA y envíala.'},
+    {g:'plazo', tipo:'FDA', cod:'FDA2026000097PEMRI', viaje:'021E', nave:'ATLANTIC CONDOR', puerto:'Matarani', cliente:'Altiplano Ores Trading', com:'R. Salas', mon:'USD', monto:38204.75, ft:'Zarpe', f:'2026-11-03', estado:'Sin enviar', motivo:'La liquidación vence mañana: 6 de 7 días desde el zarpe', fase:2, destino:'fda',
+     que:'La escala zarpó el 3 nov y la liquidación (FDA) vence mañana, al cumplir 7 días. Revísala y envíala hoy.'},
     {g:'plazo', tipo:'FDA', cod:'FDA2026000081PEILQ', viaje:'088S', nave:'SOL DE ILO', puerto:'Ilo', cliente:'Andina Tankers Ltd.', com:'L. Torres', mon:'USD', monto:9870.10, ft:'Zarpe', f:'2026-10-14', estado:'Enviada', motivo:'Time-bar vence en 12 días (21 nov)', fase:2, destino:'fda',
      que:'El plazo de reclamo (time-bar) vence el 21 nov. Confirma con el cliente y cierra la FDA antes de esa fecha para no perder el cobro.'},
     {g:'plazo', tipo:'FDA', cod:'FDA2026000079PESVY', viaje:'310N', nave:'CORAL BAY', puerto:'Salaverry', cliente:'Southern Bulk Carriers', com:'R. Salas', mon:'PEN', monto:61250.00, ft:'Zarpe', f:'2026-10-09', estado:'Enviada', motivo:'Time-bar vence en 21 días (30 nov)', fase:2, destino:'fda',
      que:'El plazo de reclamo (time-bar) vence el 30 nov. Haz seguimiento al cliente y cierra la FDA antes de esa fecha.'},
     {g:'atencion', tipo:'PDA', cod:'PDA2026000398PEMRI', viaje:'022E', nave:'AMAZONAS SPIRIT', puerto:'Matarani', cliente:'Altiplano Ores Trading', com:'R. Salas', mon:'USD', monto:18640.00, ft:'ETA', f:'2026-11-24', estado:'Pendiente de aprobación', motivo:'Pendiente de aprobación hace 4 días', fase:1, destino:'pda',
      que:'La PDA lleva 4 días pendiente de aprobación. Apruébala, obsérvala o anúlala para que no quede abierta.', pda:P('tramps','dry_bulk','load','2026-11-24T08:00','2026-11-27T20:00')},
-    {g:'atencion', tipo:'PDA', cod:'PDA2026000377PEPAI', viaje:'017S', nave:'NORTE GRANDE', puerto:'Paita', cliente:'Pacific Gas Shipping', com:'L. Torres', mon:'USD', monto:11260.00, ft:'Zarpe', f:'2026-11-01', estado:'Aprobada', motivo:'Zarpó hace 8 días y la PDA sigue sin finalizar', fase:1, destino:'pda',
-     que:'La escala zarpó el 1 nov y la PDA sigue aprobada. Revisa costos y facturación de la escala y finaliza la PDA para cerrarla.', pda:P('tramps','chem','dis','2026-10-30T06:00','2026-11-01T18:00')},
+    {g:'urgente', tipo:'PDA', cod:'PDA2026000377PEPAI', viaje:'017S', nave:'NORTE GRANDE', puerto:'Paita', cliente:'Pacific Gas Shipping', com:'L. Torres', mon:'USD', monto:11260.00, ft:'Zarpe', f:'2026-11-01', estado:'Aprobada', motivo:'Liquidación vencida: zarpó hace 8 días (plazo 7) y los costos superan la PDA en 22 %', fase:1, destino:'pda', costos:13737.20,
+     que:'La escala zarpó el 1 nov y lleva 8 días sin liquidar (plazo: 7 días). Además, los costos registrados ya superan la PDA en 22 %. Revisa los costos, liquida la escala y factura.', pda:P('tramps','chem','dis','2026-10-30T06:00','2026-11-01T18:00')},
     {g:'atencion', tipo:'Factura', cod:'F001-00004521', viaje:'090S', nave:'SANTA ROSA', puerto:'Talara', cliente:'Andina Tankers Ltd.', com:'L. Torres', mon:'USD', monto:3120.00, ft:'Venció', f:'2026-10-22', estado:'Vencida', motivo:'Factura vencida hace 18 días, sin pago', fase:1, destino:'cobranza',
      que:'La factura de la escala venció el 22 oct y no registra pago. Gestiona el cobro en Cobranzas.'},
     {g:'atencion', tipo:'FDA', cod:'FDA2026000088PECLL', viaje:'201N', nave:'PACIFIC TERN', puerto:'Callao', cliente:'Pacific Gas Shipping', com:'R. Salas', mon:'USD', monto:27315.60, ft:'Zarpe', f:'2026-10-20', estado:'Enviada', motivo:'Consulta del cliente sin responder hace 2 días', fase:2, destino:'fda',
@@ -60,7 +60,7 @@
   const suma = l => Math.round(l.reduce((a,c)=>a+usd(c),0)*100)/100;
 
   /* ---------- Estado de la pantalla ---------- */
-  const E = { f:{grupo:'', com:'', puerto:'', texto:''}, pagina:1, tam:10, sel:null };
+  const E = { f:{unidad:'maritimo', grupo:'', com:'', puerto:'', texto:''}, pagina:1, tam:10, sel:null };
   const filas = () => {
     const t = (E.f.texto||'').trim().toLowerCase();
     const orden = GRUPOS.map(g=>g.k);
@@ -90,7 +90,7 @@
   .sg-kpi .n{font-size:12px;color:#64748b}.sg-f2{color:#94a3b8}
   .sg-cta{font-size:12px;color:#64748b}
   tr.sg-sel td{background:#fff7e6}
-  .sg-mot{display:flex;align-items:flex-start;gap:0;min-width:170px}
+  .sg-mot{display:flex;align-items:flex-start;gap:0;min-width:170px;max-width:340px;white-space:normal}
   .sg-x{position:absolute;top:12px;right:12px;width:32px;height:32px;border:none;background:transparent;border-radius:8px;cursor:pointer;font-size:20px;color:#475569}
   .sg-x:hover{background:#f1f5f9}
   .sg-modal-k{font-size:12px;font-weight:600;color:#003d53;margin:14px 0 4px}
@@ -102,7 +102,7 @@
   /* ---------- Acciones ---------- */
   W.sgSet = (k, v) => { E.f[k] = v; };
   W.sgBuscar = () => { const t = D.getElementById('sgTexto'); if(t) E.f.texto = t.value; E.pagina = 1; CC.refrescar(ID); };
-  W.sgLimpiar = () => { E.f = {grupo:'', com:'', puerto:'', texto:''}; E.pagina = 1; E.sel = null; CC.refrescar(ID); };
+  W.sgLimpiar = () => { E.f = {unidad:'maritimo', grupo:'', com:'', puerto:'', texto:''}; E.pagina = 1; E.sel = null; CC.refrescar(ID); };
   W.sgGrupo = k => { E.f.grupo = E.f.grupo===k ? '' : k; E.pagina = 1; CC.refrescar(ID); };
   W.sgPagina = (p, tam) => { if(tam) E.tam = tam; E.pagina = p; CC.refrescar(ID); };
   W.sgExportar = () => CC.exportarExcel('Seguimiento_cuentas_escala', 'Cuentas abiertas',
@@ -129,6 +129,7 @@
       <p style="margin:0">${esc(c.que)}</p>
       <div class="sg-modal-k">Datos</div>
       <div style="font-size:14px;color:#334155">${esc(c.cliente)} · ${esc(c.mon)} ${din(c.monto)} · ${esc(c.ft)} ${fecha(c.f)} · Comercial ${esc(c.com)}</div>
+      ${c.costos ? `<div style="font-size:14px;color:#334155;margin-top:4px">Costos registrados: ${esc(c.mon)} ${din(c.costos)} (+${Math.round((c.costos/c.monto-1)*100)} % sobre la PDA)</div>` : ''}
       ${c.fase===2 ? `<div class="sg-aviso">Fase 2: la FDA es una propuesta del mockup y aún no existe en Connect (pendiente PEN-I016-09).</div>` : ''}
       <div class="fac-btns"><button type="button" class="cc-btn" onclick="sgIr('${esc(c.cod)}')">${DESTINO[c.destino]}</button></div>`);
   };
@@ -155,17 +156,20 @@
         <div class="sg-cta">Elige un grupo para filtrar la tabla.</div></div></div></div>`;
   }
   function indicadores(){
-    const venc = CUENTAS.filter(c=>c.tipo==='Factura'), plazo = CUENTAS.filter(c=>c.g==='plazo');
+    const HOY = new Date('2026-11-09T00:00:00');
+    const sinFact = CUENTAS.filter(c => c.ft==='Zarpe' && c.estado!=='Enviada');
+    const vencidas = sinFact.filter(c => (HOY - new Date(c.f+'T00:00:00'))/864e5 > 7);
     const k = (l, v, n, f2) => `<div class="sg-kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="n">${n}${f2?' · <span class="sg-f2">fase 2</span>':''}</div></div>`;
-    return `<div class="fac-card" id="sgIndicadores"><div class="fac-head"><div><h3>Indicadores del mes</h3><div class="fac-sub">Para Gerencia: comparan lo cotizado con lo cobrado y miden el cierre de cada escala</div></div></div>
-      <div class="sg-kpis">${k('Variación PDA vs. facturado','+2.8 %','Escalas cerradas en octubre')}${k('Saldo vencido por cobrar','USD '+din(suma(venc)), venc.length+(venc.length===1?' factura':' facturas'))}
-      ${k('Días del zarpe a la FDA','4.2 días','Promedio; meta 3 días',true)}${k('FDA en riesgo de time-bar', plazo.length+' · USD '+din(suma(plazo)),'Vencen en 30 días o menos',true)}</div></div>`;
+    return `<div class="fac-card" id="sgIndicadores"><div class="fac-head"><div><h3>Indicadores del mes</h3><div class="fac-sub">Para Gerencia: cuánto falta facturar de servicios ya prestados y cuánto demora la liquidación</div></div></div>
+      <div class="sg-kpis">${k('Monto estimado sin facturar','USD '+din(suma(sinFact)), sinFact.length+(sinFact.length===1?' escala zarpada':' escalas zarpadas')+' sin factura (valor de la PDA)')}${k('Liquidaciones vencidas', String(vencidas.length), 'Más de 7 días desde el zarpe')}
+      ${k('Días del zarpe a la liquidación','8.4 días','Promedio; meta 7 días',true)}${k('Variación PDA vs. facturado','+2.8 %','Escalas cerradas en octubre')}</div></div>`;
   }
   function filtros(){
     const opts = (lista, v, k, ph) => `<select onchange="sgSet('${k}',this.value)"><option value="">${ph}</option>${lista.map(x=>`<option ${x[0]===v?'selected':''} value="${esc(x[0])}">${esc(x[1])}</option>`).join('')}</select>`;
     const unicos = k => [...new Set(CUENTAS.map(c=>c[k]))].sort().map(x=>[x,x]);
-    return CC.filtros({ id:'sgF', titulo:'Buscar cuentas', sub:'Filtra por grupo, comercial, puerto, nave o código', cols:4,
-      campos:[CC.campo('Grupo', opts(GRUPOS.map(g=>[g.k,g.t]), E.f.grupo, 'grupo', 'Todos')),
+    return CC.filtros({ id:'sgF', titulo:'Buscar cuentas', sub:'Filtra por unidad de negocio, grupo, comercial, puerto, nave o código', cols:3,
+      campos:[CC.campo('Unidad de negocio', `<select onchange="sgSet('unidad',this.value)"><option value="maritimo" selected>Agenciamiento marítimo</option><option disabled>Aduanas (próxima etapa)</option><option disabled>Servicios logísticos (próxima etapa)</option></select>`),
+              CC.campo('Grupo', opts(GRUPOS.map(g=>[g.k,g.t]), E.f.grupo, 'grupo', 'Todos')),
               CC.campo('Comercial', opts(unicos('com'), E.f.com, 'com', 'Todos')),
               CC.campo('Puerto', opts(unicos('puerto'), E.f.puerto, 'puerto', 'Todos')),
               CC.campo('Nave o código', `<input id="sgTexto" placeholder="Ej.: PACIFIC AURORA" value="${esc(E.f.texto)}" onkeydown="if(event.key==='Enter')sgBuscar()">`)],
@@ -204,7 +208,7 @@
     },
     guia: [{t:'Seguimiento del reporte diario', steps:[
       {go:()=>CC.abrir(ID), el:'#sgResumen', h:'Resumen', p:'Lo mismo que el correo: total abierto, lo urgente y una barra por grupo. Elige un grupo para filtrar.'},
-      {el:'#sgIndicadores', h:'Indicadores del mes', p:'Para Gerencia: variación PDA vs. facturado, saldo vencido, días a la FDA y time-bar en riesgo.'},
+      {el:'#sgIndicadores', h:'Indicadores del mes', p:'Para Gerencia: monto estimado sin facturar, liquidaciones vencidas, días a la liquidación y variación PDA vs. facturado.'},
       {el:'#sgRes', h:'Regularizar', p:'Cada cuenta explica qué hacer y lleva a la PDA, la FDA o Cobranzas.'}]}]
   });
 
